@@ -1,0 +1,20 @@
+# Backup files
+index_backup_*.html
+index_dev.html
+SYMBEAST_GUIDE_backup_*.html
+
+# GIF and MP4 (replaced by WebM)
+*.gif
+*.mp4
+
+# Dev/test scripts
+check2.js
+fix*.js
+test.js
+
+# Screenshots
+screen_current.jpg
+
+# Stats/tools (optional docs)
+SCOUT_STATS.html
+TOWER_STATS.html

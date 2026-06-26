@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYMBEAST — Compendium</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0518;color:#c8b8e8;font-family:'Segoe UI',sans-serif;font-size:14px;line-height:1.6}
+h2{font-family:'Orbitron',monospace;font-size:14px;color:#bb77ee;letter-spacing:2px;margin:0 0 12px}
+h3{font-size:13px;color:#9966cc;letter-spacing:1px;margin:0 0 8px;font-family:'Orbitron',monospace}
+#nav{position:sticky;top:0;z-index:100;background:#0d0820;border-bottom:1px solid #2a1a4a;display:flex;gap:2px;padding:8px 16px;overflow-x:auto;flex-wrap:nowrap}
+.ntab{padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'Orbitron',monospace;color:#886699;white-space:nowrap;border:1px solid transparent;transition:all .2s}
+.ntab:hover{color:#cc88ff;border-color:#4a2a7a}
+.ntab.active{color:#dd99ff;background:#1a0a30;border-color:#6633aa}
+section{display:none;padding:24px 20px;max-width:900px;margin:0 auto}
+section.active{display:block}
+.card{background:#100828;border:1px solid #2a1a4a;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:16px}
+.fcard{background:#0d0520;border:1px solid #3a1a6a;border-radius:10px;padding:12px 14px}
+.fname{font-family:'Orbitron',monospace;font-size:13px;font-weight:bold;margin-bottom:4px}
+.fkey{font-size:11px;color:#664488;margin-bottom:8px}
+.fstats{display:flex;gap:8px;font-size:12px;margin-bottom:8px;flex-wrap:wrap}
+.stat-pill{background:#1a0830;border:1px solid #3a1a5a;border-radius:5px;padding:2px 8px;color:#bb99dd}
+.fpassive{font-size:11px;color:#9977bb;line-height:1.5;border-top:1px solid #2a1240;padding-top:8px;margin-top:4px}
+.fod{font-size:11px;color:#ffaa44;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+th{background:#1a0a30;color:#bb77ee;font-family:'Orbitron',monospace;font-size:10px;padding:7px 10px;text-align:left;border-bottom:1px solid #3a1a6a;letter-spacing:1px}
+td{padding:6px 10px;border-bottom:1px solid #1a0a28;color:#c0a8e0;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#130a24}
+.yes{color:#44dd88}.no{color:#664466}.pct{color:#ffcc44;font-weight:bold}.hard{color:#ff8844}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:bold;margin-right:4px}
+.b-f{background:#3a1510;color:#ff7755;border:1px solid #5a2520}
+.b-w{background:#0e2a28;color:#44ddcc;border:1px solid #1a4a44}
+.b-s{background:#0e1e38;color:#5599ff;border:1px solid #1a3060}
+.b-n{background:#1a1a2a;color:#8888aa;border:1px solid #2a2a3a}
+.b-r{background:#1a1010;color:#ffaa44;border:1px solid #3a2010}
+.b-e{background:#0a0a1a;color:#bb88ff;border:1px solid #2a1a4a}
+.move-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.move-card{background:#0d0520;border:1px solid #3a1a6a;border-radius:10px;padding:14px;text-align:center}
+.move-name{font-family:'Orbitron',monospace;font-size:15px;font-weight:bold;margin-bottom:6px}
+.move-dmg{font-size:22px;font-weight:bold;color:#dd99ff;margin-bottom:4px}
+.move-desc{font-size:11px;color:#7755aa}
+.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #2a1a4a}
+.sec-icon{font-size:22px}
+.info{background:#0d0520;border-left:3px solid #6633aa;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#aa88cc}
+.hdr{background:linear-gradient(135deg,#0a0215,#1a0530);border-radius:12px;padding:20px 24px;margin:16px 20px;border:1px solid #3a1a6a;text-align:center}
+.hdr h1{font-family:'Orbitron',monospace;font-size:22px;color:#dd99ff;letter-spacing:3px;margin-bottom:4px}
+.hdr p{color:#664488;font-size:12px;letter-spacing:1px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.tag{display:inline-block;background:#1a0a30;border:1px solid #3a1a5a;border-radius:4px;padding:1px 7px;font-size:10px;color:#9977bb;margin:2px}
+.bug-fixed{color:#44dd88}.bug-cause{color:#cc8844}
+.tier-header{background:#1a0a30;color:#ffcc44;font-family:'Orbitron',monospace;font-size:11px;padding:6px 10px;border-radius:6px;margin:10px 0 6px;letter-spacing:1px}
+.stat-box{background:#0d0520;border:1px solid #2a1a5a;border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:6px}
+code{color:#cc88ff;font-size:11px}
+@media(max-width:560px){.two-col,.three-col{grid-template-columns:1fr}.card-grid{grid-template-columns:1fr}.move-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>⚔ SYMBEAST</h1>
+  <p>COMPENDIUM — อัปเดต 2026-06-26</p>
+</div>
+
+<div id="nav">
+  <div class="ntab active" onclick="show('overview',this)">ภาพรวม</div>
+  <div class="ntab" onclick="show('battle',this)">Battle</div>
+  <div class="ntab" onclick="show('forms',this)">Forms</div>
+  <div class="ntab" onclick="show('finals',this)">Final Forms</div>
+  <div class="ntab" onclick="show('scout',this)">Scout</div>
+  <div class="ntab" onclick="show('drops',this)">Drop Rates</div>
+  <div class="ntab" onclick="show('items',this)">Items</div>
+  <div class="ntab" onclick="show('artifacts',this)">Artifacts</div>
+  <div class="ntab" onclick="show('enemies',this)">Enemies</div>
+  <div class="ntab" onclick="show('enemy-stats',this)">Enemy Stats</div>
+  <div class="ntab" onclick="show('replay',this)">Replay</div>
+  <div class="ntab" onclick="show('tower',this)">Tower</div>
+  <div class="ntab" onclick="show('systems',this)">Systems</div>
+  <div class="ntab" onclick="show('bugs',this)">Bug Log</div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="s-overview" class="active">
+  <div class="sec-header"><span class="sec-icon">🐾</span><h2>ภาพรวมเกม</h2></div>
+  <div class="info">Single-file HTML game — monster-collecting + turn-based battle. ฟักไข่ → เก็บ Symbol → evolve → fuse → rebirth เพื่อสร้าง creature แข็งแกร่ง</div>
+  <div class="card-grid">
+    <div class="card"><h3>🔄 Game Loop</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">🥚 Egg → LARVA<br>🏋️ Train Larva (25% bonus carry ไป Evolve)<br>🧬 เก็บ Symbol 3 ตัว → EVOLVE<br>💀 FUSE 2 evolved → FINAL FORM<br>🔮 REBIRTH → bonus stats ถาวร<br>🗺️ Scout map → battle/items/boss<br>🏔️ Tower mode — ท้าทายพิเศษ</p></div>
+    <div class="card"><h3>📊 Limits</h3><table style="margin:0"><tr><td>MAX_PETS (active)</td><td style="color:#dd99ff">4</td></tr><tr><td>MAX_STORAGE</td><td style="color:#dd99ff">10</td></tr><tr><td>MAX_INVENTORY</td><td style="color:#dd99ff">20 slots</td></tr><tr><td>MAX_STAMINA</td><td style="color:#dd99ff">30 AP</td></tr><tr><td>MAX_OVERDRIVE</td><td style="color:#dd99ff">5</td></tr><tr><td>Scout Grid</td><td style="color:#dd99ff">8×8 = 64 cells</td></tr></table></div>
+    <div class="card"><h3>⚡ Symbols</h3>
+      <div style="margin-bottom:6px"><span class="badge b-f">✊ F FIST</span><span style="font-size:12px;color:#ff7755">ATK↑</span></div>
+      <div style="margin-bottom:6px"><span class="badge b-w">🪶 W WING</span><span style="font-size:12px;color:#44ddcc">SPD↑</span></div>
+      <div><span class="badge b-s">🛡 S SHIELD</span><span style="font-size:12px;color:#5599ff">DEF↑</span></div>
+    </div>
+    <div class="card"><h3>💾 Save</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">3 save slots (symbeast_v2_slot1/2/3)<br>HP regen offline: +1 / 10 วินาที<br>Stamina regen: +1 / 60 วินาที<br>replayStage/replayHard บันทึกใน save</p></div>
+  </div>
+  <h2>🚦 Game States</h2>
+  <div class="card" style="font-size:12px;color:#9977bb;line-height:2">
+    <code>title</code> → <code>egg</code> → <code>menu</code> → <code>scout</code> / <code>battle</code> / <code>train</code> / <code>status</code> / <code>evolve</code> / <code>party</code> / <code>expedition</code> / <code>inventory</code> / <code>result</code> / <code>stageclear</code> / <code>tower</code>
+  </div>
+</section>
+
+<!-- BATTLE -->
+<section id="s-battle">
+  <div class="sec-header"><span class="sec-icon">⚔️</span><h2>Battle System</h2></div>
+  <h3 style="margin-bottom:10px">MOVES (Rock-Paper-Scissors)</h3>
+  <div class="move-grid">
+    <div class="move-card"><div class="move-name" style="color:#ff7755">✊ STRIKE</div><div class="move-dmg">20</div><div class="move-desc">ชนะ RUSH<br>แพ้ GUARD</div></div>
+    <div class="move-card"><div class="move-name" style="color:#44ddcc">🪶 RUSH</div><div class="move-dmg">15</div><div class="move-desc">ชนะ GUARD<br>แพ้ STRIKE</div></div>
+    <div class="move-card"><div class="move-name" style="color:#5599ff">🛡 GUARD</div><div class="move-dmg">10</div><div class="move-desc">ชนะ STRIKE<br>แพ้ RUSH</div></div>
+  </div>
+  <div class="two-col" style="margin-bottom:16px">
+    <div class="card"><h3>Damage Multiplier</h3><table style="margin:0"><tr><td>WIN</td><td class="pct">×2.0</td></tr><tr><td>DRAW</td><td style="color:#cc88ff">×1.0</td></tr><tr><td>LOSE</td><td style="color:#886688">×0.5</td></tr></table></div>
+    <div class="card"><h3>Crit System</h3><table style="margin:0"><tr><td>Boss base chance</td><td class="pct">12%</td></tr><tr><td>Non-boss base</td><td class="pct">8%</td></tr><tr><td>Default multiplier</td><td class="pct">×1.6</td></tr><tr><td>deathblow</td><td class="pct">×2.0</td></tr><tr><td>sniper_eye (ทุกรอบที่ 3)</td><td class="pct">×2.0 (การันตี crit)</td></tr></table></div>
+  </div>
+  <h3 style="margin-bottom:10px">Turn Order & Stun</h3>
+  <div class="info" style="margin-bottom:16px">
+    <b style="color:#dd99ff">playerFirst</b> = playerSPD ≥ enemySPD (คำนวณก่อน passive block)<br><br>
+    <b style="color:#dd99ff">ตีก่อน</b> แล้วโดน stun → cancel attack เทิร์นนั้นทันที<br>
+    <b style="color:#dd99ff">ตีหลัง</b> แล้วโดน stun → carry flag ไปเทิร์นถัดไป<br>
+    Symmetric ทั้ง 2 ฝั่ง — flags: <code>bs.playerStunnedNextTurn</code> / <code>bs.enemyStunnedNextTurn</code>
+  </div>
+  <h3 style="margin-bottom:10px">Turn Processing Order (doTurn)</h3>
+  <div class="card" style="font-size:12px;color:#9977bb;line-height:2">
+    1. Capture <code>startHp</code> (HP ก่อนเทิร์น สำหรับ Execution/Iron Will threshold)<br>
+    2. OVERDRIVE buffs<br>
+    3. Evolved/Final form passives<br>
+    4. Artifact slot 1 effects (รวม Iron Will boost, Execution ×3, Chain Strike streak)<br>
+    5. Artifact slot 2 effects<br>
+    6. Deferred Lifesteal (SOVEREIGN / M+M form / crimson_fang / blood_pact / soul_reaper)<br>
+    7. Iron Will final cap (หลัง enemy passives ทั้งหมด — กัน "survived but died")<br>
+    8. Enemy passives (atk_boost, enrage, counter_rush, reflect, etc.)<br>
+    9. Apply damage<br>
+    10. Post-damage effects (regen, revive, etc.)
+  </div>
+  <h3 style="margin-bottom:10px">Overdrive</h3>
+  <div class="card">
+    <p style="font-size:12px;color:#9977bb;margin-bottom:10px">ใช้ได้เฉพาะ Final Form | ชาร์จจากการชนะ | MAX 5 ช่อง | Overdrive turn ไม่นับ odBuff turnsLeft</p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <span class="tag"><span style="color:#ff7755">F+F</span> APOCALYPSE 💥</span>
+      <span class="tag"><span style="color:#ff9944">F+W</span> THUNDER FANG ⚡</span>
+      <span class="tag"><span style="color:#ff7755">F+S</span> FORTRESS BREAK 🛡</span>
+      <span class="tag"><span style="color:#ffaa44">F+M</span> CONQUEROR'S WRATH ⚔️</span>
+      <span class="tag"><span style="color:#44ddcc">W+W</span> DEATH SCYTHE 💀</span>
+      <span class="tag"><span style="color:#55aadd">W+S</span> IRON CURTAIN 🌀</span>
+      <span class="tag"><span style="color:#88ddcc">W+M</span> SOUL SURGE 🌫️</span>
+      <span class="tag"><span style="color:#5599ff">S+S</span> EARTHSHATTER 🏔️</span>
+      <span class="tag"><span style="color:#7788ff">S+M</span> DIVINE AEGIS 🏰</span>
+      <span class="tag"><span style="color:#cc77ff">M+M</span> BLOOD TRIBUTE 👑</span>
+    </div>
+  </div>
+</section>
+
+<!-- FORMS -->
+<section id="s-forms">
+  <div class="sec-header"><span class="sec-icon">🧬</span><h2>Evolved Forms (10 form)</h2></div>
+  <div class="info">ต้องการ Symbol 3 ตัว | formKey = sorted(F→W→S→M) join | Train bonus 25% carry ไปด้วยเมื่อ Evolve</div>
+  <div class="card-grid">
+    <div class="fcard"><div class="fname" style="color:#ff4444">BRAWLER</div><div class="fkey">FFF</div><div class="fstats"><span class="stat-pill">HP 65</span><span class="stat-pill">ATK 24</span><span class="stat-pill">SPD 10</span><span class="stat-pill">DEF 4</span></div><div class="fpassive">💢 ATK เพิ่ม 25% ทุกรอบ</div></div>
+    <div class="fcard"><div class="fname" style="color:#ff8c42">RAZORCLAW</div><div class="fkey">FFW</div><div class="fstats"><span class="stat-pill">HP 65</span><span class="stat-pill">ATK 20</span><span class="stat-pill">SPD 14</span><span class="stat-pill">DEF 4</span></div><div class="fpassive">⚡ 25% crit chance (×1.6)</div></div>
+    <div class="fcard"><div class="fname" style="color:#c0392b">IRONJAW</div><div class="fkey">FFS</div><div class="fstats"><span class="stat-pill">HP 80</span><span class="stat-pill">ATK 20</span><span class="stat-pill">SPD 10</span><span class="stat-pill">DEF 8</span></div><div class="fpassive">🩸 Drain 25% damage เป็น HP ทุกรอบ</div></div>
+    <div class="fcard"><div class="fname" style="color:#f1c40f">BLITZ</div><div class="fkey">FWW</div><div class="fstats"><span class="stat-pill">HP 60</span><span class="stat-pill">ATK 16</span><span class="stat-pill">SPD 18</span><span class="stat-pill">DEF 4</span></div><div class="fpassive">⚡ 25% stun ศัตรู 1 รอบ</div></div>
+    <div class="fcard"><div class="fname" style="color:#9b59b6">CHAMPION</div><div class="fkey">FWS</div><div class="fstats"><span class="stat-pill">HP 75</span><span class="stat-pill">ATK 16</span><span class="stat-pill">SPD 14</span><span class="stat-pill">DEF 8</span></div><div class="fpassive">🏆 WIN: ATK +20% และ recv -20%</div></div>
+    <div class="fcard"><div class="fname" style="color:#8e44ad">FORTRESS</div><div class="fkey">FSS</div><div class="fstats"><span class="stat-pill">HP 90</span><span class="stat-pill">ATK 16</span><span class="stat-pill">SPD 10</span><span class="stat-pill">DEF 12</span></div><div class="fpassive">🔄 Reflect 25% damage ทุกรอบ</div></div>
+    <div class="fcard"><div class="fname" style="color:#1abc9c">SPECTER</div><div class="fkey">WWW</div><div class="fstats"><span class="stat-pill">HP 60</span><span class="stat-pill">ATK 12</span><span class="stat-pill">SPD 22</span><span class="stat-pill">DEF 4</span></div><div class="fpassive">👻 Dodge 25%</div></div>
+    <div class="fcard"><div class="fname" style="color:#16a085">SWIFTGUARD</div><div class="fkey">WWS</div><div class="fstats"><span class="stat-pill">HP 75</span><span class="stat-pill">ATK 12</span><span class="stat-pill">SPD 18</span><span class="stat-pill">DEF 8</span></div><div class="fpassive">🌀 10% dodge → ฟื้น 50% MaxHP ทันที</div></div>
+    <div class="fcard"><div class="fname" style="color:#2980b9">SHIELDWING</div><div class="fkey">WSS</div><div class="fstats"><span class="stat-pill">HP 90</span><span class="stat-pill">ATK 12</span><span class="stat-pill">SPD 14</span><span class="stat-pill">DEF 12</span></div><div class="fpassive">🛡 WIN: ลด damage รับ 60%</div></div>
+    <div class="fcard"><div class="fname" style="color:#2c3e50">BASTION</div><div class="fkey">SSS</div><div class="fstats"><span class="stat-pill">HP 105</span><span class="stat-pill">ATK 12</span><span class="stat-pill">SPD 10</span><span class="stat-pill">DEF 16</span></div><div class="fpassive">⬛ 35% halve incoming damage</div></div>
+  </div>
+  <h3 style="margin-bottom:8px">Train Bonus Carry System</h3>
+  <div class="card"><table style="margin:0">
+    <tr><td>ATK Train (×N)</td><td>→ Evolved ATK += ⌊N×0.25⌋</td></tr>
+    <tr><td>SPD Train (×N)</td><td>→ Evolved SPD += ⌊N×0.25⌋</td></tr>
+    <tr><td>DEF Train (×N)</td><td>→ Evolved DEF += ⌊N×0.25⌋</td></tr>
+    <tr><td>HP Train (×N)</td><td>→ Evolved MaxHP += ⌊N×0.25⌋</td></tr>
+    <tr><td>หลัง Evolve</td><td>trainBonuses reset = 0 (shiny ×1.2 applied หลัง bonus)</td></tr>
+  </table></div>
+</section>
+
+<!-- FINALS -->
+<section id="s-finals">
+  <div class="sec-header"><span class="sec-icon">💀</span><h2>Final Forms — Fusion (10 form)</h2></div>
+  <div class="info">ต้องการ evolved pet 2 ตัว + Fusion Stone + 300G | Fusion bonus = ((excess_base + excess_sac) / 2) × 0.5</div>
+  <div class="card-grid">
+    <div class="fcard"><div class="fname" style="color:#ff2200">RAGNAROK</div><div class="fkey">F+F</div><div class="fstats"><span class="stat-pill">HP 130</span><span class="stat-pill">ATK 40</span><span class="stat-pill">SPD 12</span><span class="stat-pill">DEF 8</span></div><div class="fpassive">ATK+20%/รอบ + drain 15% (35% เมื่อ HP&lt;50%)</div><div class="fod">💥 APOCALYPSE</div></div>
+    <div class="fcard"><div class="fname" style="color:#0088ff">STORMFANG</div><div class="fkey">F+W</div><div class="fstats"><span class="stat-pill">HP 120</span><span class="stat-pill">ATK 36</span><span class="stat-pill">SPD 22</span><span class="stat-pill">DEF 8</span></div><div class="fpassive">ATK+15%/รอบ + 20% stun → ATK×1.5 รอบถัดไป (ถ้า stun)</div><div class="fod">⚡ THUNDER FANG</div></div>
+    <div class="fcard"><div class="fname" style="color:#aaaa44">IRONCLAD</div><div class="fkey">F+S</div><div class="fstats"><span class="stat-pill">HP 140</span><span class="stat-pill">ATK 34</span><span class="stat-pill">SPD 12</span><span class="stat-pill">DEF 18</span></div><div class="fpassive">ATK+15%/รอบ + reflect 20% + stack max3 (+5%ATK +5%reflect/hit)</div><div class="fod">🛡 FORTRESS BREAK</div></div>
+    <div class="fcard"><div class="fname" style="color:#cc6600">WARLORD</div><div class="fkey">F+M</div><div class="fstats"><span class="stat-pill">HP 130</span><span class="stat-pill">ATK 36</span><span class="stat-pill">SPD 16</span><span class="stat-pill">DEF 12</span></div><div class="fpassive">ATK+20%/รอบ + WIN:+15%ATK | 2WIN ติด = +35%</div><div class="fod">⚔️ CONQUEROR'S WRATH</div></div>
+    <div class="fcard"><div class="fname" style="color:#8800cc">PHANTASM</div><div class="fkey">W+W</div><div class="fstats"><span class="stat-pill">HP 110</span><span class="stat-pill">ATK 28</span><span class="stat-pill">SPD 32</span><span class="stat-pill">DEF 8</span></div><div class="fpassive">Dodge stack 20%→30%→40% (max3) + heal 20% MaxHP/dodge</div><div class="fod">💀 DEATH SCYTHE</div></div>
+    <div class="fcard"><div class="fname" style="color:#4488aa">VANGUARD</div><div class="fkey">W+S</div><div class="fstats"><span class="stat-pill">HP 140</span><span class="stat-pill">ATK 24</span><span class="stat-pill">SPD 24</span><span class="stat-pill">DEF 16</span></div><div class="fpassive">25% dodge + Shield stack max3 (-15% dmg/stack)</div><div class="fod">🌀 IRON CURTAIN</div></div>
+    <div class="fcard"><div class="fname" style="color:#6633aa">WRAITH</div><div class="fkey">W+M</div><div class="fstats"><span class="stat-pill">HP 130</span><span class="stat-pill">ATK 30</span><span class="stat-pill">SPD 28</span><span class="stat-pill">DEF 10</span></div><div class="fpassive">25% dodge → ATK+50% รอบถัดไป (ถ้า dodge)</div><div class="fod">🌫️ SOUL SURGE</div></div>
+    <div class="fcard"><div class="fname" style="color:#446644">COLOSSUS</div><div class="fkey">S+S</div><div class="fstats"><span class="stat-pill">HP 160</span><span class="stat-pill">ATK 24</span><span class="stat-pill">SPD 12</span><span class="stat-pill">DEF 24</span></div><div class="fpassive">recv -35% + reflect 20% (40% HP>60%) | 3 hits → ATK+50%</div><div class="fod">🏔️ EARTHSHATTER</div></div>
+    <div class="fcard"><div class="fname" style="color:#224466">AEGIS</div><div class="fkey">S+M</div><div class="fstats"><span class="stat-pill">HP 160</span><span class="stat-pill">ATK 20</span><span class="stat-pill">SPD 12</span><span class="stat-pill">DEF 26</span></div><div class="fpassive">recv -30% | HP&lt;40%: ATK+50% + regen 8% MaxHP/รอบ</div><div class="fod">🏰 DIVINE AEGIS</div></div>
+    <div class="fcard"><div class="fname" style="color:#ccaa00">SOVEREIGN</div><div class="fkey">M+M</div><div class="fstats"><span class="stat-pill">HP 140</span><span class="stat-pill">ATK 32</span><span class="stat-pill">SPD 20</span><span class="stat-pill">DEF 16</span></div><div class="fpassive">Lifesteal 3/6/9% stack max2 (ไม่ reset เมื่อ LOSE) + WIN:+15%ATK/-15%recv</div><div class="fod">👑 BLOOD TRIBUTE (lifesteal defer หลัง ATK boosts)</div></div>
+  </div>
+  <h3 style="margin-bottom:10px">Rebirth System</h3>
+  <div class="card"><table style="margin:0">
+    <tr><td>ราคา</td><td><span class="pct">🔮 Rebirth Stone + 💰 1000G</span> (ต้องมีทั้งคู่)</td></tr>
+    <tr><td>Bonus</td><td>stat แต่ละตัว +25% ของ stat ปัจจุบัน (ถาวร)</td></tr>
+    <tr><td>หลัง rebirth</td><td>stats = form.stat + rebirthBonus | trainCount reset = 0</td></tr>
+    <tr><td>Stack</td><td>rebirth ซ้ำได้ไม่จำกัด — bonus สะสมทุกครั้ง</td></tr>
+  </table></div>
+</section>
+
+<!-- SCOUT -->
+<section id="s-scout">
+  <div class="sec-header"><span class="sec-icon">🗺️</span><h2>Scout System</h2></div>
+  <div class="two-col" style="margin-bottom:14px">
+    <div class="card"><h3>Grid</h3><p style="font-size:12px;color:#9977bb">8×8 = 64 cells<br>scoutPos เริ่ม (0,0) — บ้าน<br>เดิน 1 ก้าว = 1 Stamina (MAX 30)</p></div>
+    <div class="card"><h3>Biomes</h3><table style="margin:0"><tr><th>Biome</th><th>Major (50%)</th></tr><tr><td>🏜️ Desert</td><td><span class="badge b-f">F</span></td></tr><tr><td>🌲 Forest</td><td><span class="badge b-s">S</span></td></tr><tr><td>🌿 Grass</td><td><span class="badge b-w">W</span></td></tr></table></div>
+  </div>
+  <h3 style="margin-bottom:8px">Cell Types</h3>
+  <table>
+    <tr><th>Type</th><th>จำนวน</th><th>รายละเอียด</th></tr>
+    <tr><td>👾 monster</td><td>10</td><td>ศัตรูปกติ</td></tr>
+    <tr><td>💀 boss</td><td>1</td><td>guaranteed | type สุ่ม F/W/S อิสระจาก biome</td></tr>
+    <tr><td>👹 mini_boss</td><td>0–1</td><td>25% spawn chance</td></tr>
+    <tr><td>🏪 secret_shop</td><td>0–1</td><td>12% spawn chance</td></tr>
+    <tr><td>💚 heal</td><td>1</td><td>+30% MaxHP</td></tr>
+    <tr><td>📦 treasure</td><td>3</td><td>10% Mimic, 90% random item</td></tr>
+    <tr><td>💰 gold_chest</td><td>2</td><td>Gold = 15+S×8+rand(S×5)</td></tr>
+    <tr><td>😴 rest</td><td>2</td><td>Full HP restore</td></tr>
+  </table>
+  <div class="info">Hard Mode: 40% Evolved | Hard H11+: 50% Fusion<br>ใช้ <code>isEffectiveHard</code> + <code>effectiveHardStage</code> — replay-aware</div>
+</section>
+
+<!-- DROPS -->
+<section id="s-drops">
+  <div class="sec-header"><span class="sec-icon">💎</span><h2>Drop Rates</h2></div>
+  <div class="info">ทุก section ใช้ <code>isEffHardGold</code> = replayStage&gt;0 ? replayHard : hardMode — replay-aware</div>
+  <h3 style="margin-bottom:8px">👾 Monster</h3>
+  <table>
+    <tr><th>รายการ</th><th>Normal</th><th class="hard">Hard</th></tr>
+    <tr><td>💰 Gold</td><td>5+S×3+rand(6)</td><td class="hard">×2</td></tr>
+    <tr><td>Symbol</td><td class="pct">5%</td><td class="pct">5%</td></tr>
+    <tr><td>Map Scroll</td><td class="pct">5%</td><td class="pct">5%</td></tr>
+    <tr><td>Item drop chance</td><td class="pct">20%</td><td class="hard pct">40%</td></tr>
+    <tr><td>Item pool (Normal)</td><td>hp_potion, max_potion, shards, revive</td><td>—</td></tr>
+    <tr><td>Item pool (Hard)</td><td>—</td><td class="hard">super_potion, max_potion, shards, revive</td></tr>
+    <tr><td>Essence</td><td class="no">❌</td><td class="hard pct">20%</td></tr>
+    <tr><td>Rebirth Stone</td><td class="no">❌</td><td class="hard pct">1%</td></tr>
+    <tr><td>จำนวน items</td><td>1–3 ชิ้น</td><td class="hard">2–4 ชิ้น</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">👹 Mini-Boss</h3>
+  <table>
+    <tr><th>รายการ</th><th>Normal</th><th class="hard">Hard</th></tr>
+    <tr><td>💰 Gold</td><td>10+S×5+rand(S×3)</td><td class="hard">×2</td></tr>
+    <tr><td>Fusion Stone</td><td class="pct">25%</td><td class="hard pct">50%</td></tr>
+    <tr><td>Essence</td><td class="no">❌</td><td class="hard pct">50%</td></tr>
+    <tr><td>Rebirth Stone</td><td class="pct">5%</td><td class="hard pct">20%</td></tr>
+    <tr><td>Item drop chance</td><td class="pct">50%</td><td class="hard pct">80%</td></tr>
+    <tr><td>จำนวน items</td><td>2–4 ชิ้น</td><td class="hard">3–5 ชิ้น</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">💀 Boss</h3>
+  <table>
+    <tr><th>รายการ</th><th>Normal</th><th class="hard">Hard</th></tr>
+    <tr><td>💰 Gold</td><td>20+S×10+rand(S×5)</td><td class="hard">×2</td></tr>
+    <tr><td>Symbol (F/W/S)</td><td class="pct">100%</td><td class="pct">100%</td></tr>
+    <tr><td>Revive</td><td class="pct">25%</td><td class="hard pct">50%</td></tr>
+    <tr><td>Fusion Stone</td><td class="pct">10%</td><td class="hard pct">25%</td></tr>
+    <tr><td>Essence</td><td class="pct">10%</td><td class="hard pct">50%</td></tr>
+    <tr><td>Artifact Box</td><td class="no">❌</td><td class="hard pct">10%</td></tr>
+    <tr><td>Rebirth Stone</td><td class="pct">5%</td><td class="hard pct">25%</td></tr>
+    <tr><td>Mystery Egg</td><td class="pct">10–20% (ตาม stage)</td><td class="hard pct">20%</td></tr>
+    <tr><td>Item drop chance</td><td class="pct">80%</td><td class="pct">80%</td></tr>
+    <tr><td>จำนวน items</td><td>2–5 ชิ้น</td><td class="hard">3–6 ชิ้น</td></tr>
+  </table>
+  <div class="info">Mystery Egg: ครั้งแรก kill = 100% | ต่อจากนั้น Hard=20%, Normal s≤4=10% / s≤7=15% / s8+=20%</div>
+  <h3 style="margin-bottom:8px">🎭 Mimic</h3>
+  <table>
+    <tr><th>รายการ</th><th>Normal</th><th class="hard">Hard</th></tr>
+    <tr><td>Trigger</td><td colspan="2">10% เมื่อเหยียบ treasure cell</td></tr>
+    <tr><td>💰 Gold ×5</td><td>(15+S×8+rand(S×5))×5</td><td class="hard">scale hardStage ×1.5</td></tr>
+    <tr><td>Fusion Stone</td><td class="pct">15%</td><td class="pct">15%</td></tr>
+    <tr><td>Rare item pool</td><td class="pct">35%</td><td class="pct">35%</td></tr>
+    <tr><td>Item drop chance</td><td class="pct">20%</td><td class="hard pct">50%</td></tr>
+    <tr><td>จำนวน items</td><td colspan="2">2–5 ชิ้น</td></tr>
+  </table>
+</section>
+
+<!-- ITEMS -->
+<section id="s-items">
+  <div class="sec-header"><span class="sec-icon">🎒</span><h2>Items</h2></div>
+  <table>
+    <tr><th>Icon</th><th>Item</th><th>คำอธิบาย</th><th>Sell</th></tr>
+    <tr><td>🧪</td><td>hp_potion</td><td>+30 HP</td><td>—</td></tr>
+    <tr><td>💊</td><td>max_potion</td><td>HP เต็ม</td><td>—</td></tr>
+    <tr><td>🧬</td><td>super_potion</td><td>+100 HP</td><td>—</td></tr>
+    <tr><td>🔥</td><td>power_shard</td><td>ATK +20% (30 นาที)</td><td>—</td></tr>
+    <tr><td>💨</td><td>speed_shard</td><td>SPD +20% (30 นาที)</td><td>—</td></tr>
+    <tr><td>🛡</td><td>guard_shard</td><td>DEF +20% (30 นาที)</td><td>—</td></tr>
+    <tr><td>✊</td><td>sym_F</td><td>Symbol FIST — ใช้ evolve</td><td>—</td></tr>
+    <tr><td>🪶</td><td>sym_W</td><td>Symbol WING — ใช้ evolve</td><td>—</td></tr>
+    <tr><td>🛡</td><td>sym_S</td><td>Symbol SHIELD — ใช้ evolve</td><td>—</td></tr>
+    <tr><td>🗺️</td><td>map_scroll</td><td>สุ่ม Scout map ใหม่ | ใช้เข้า Replay Mode</td><td>—</td></tr>
+    <tr><td>✨</td><td>essence</td><td>stat สุ่ม +2ATK / +2SPD / +2DEF / +10HP (ถาวร)</td><td>—</td></tr>
+    <tr><td>🔮</td><td>rebirth_stone</td><td>Rebirth คู่กับ 1000G</td><td>—</td></tr>
+    <tr><td>🥚</td><td>mystery_egg</td><td>pet ใหม่ | 3% shiny | ปาร์ตี้เต็มเก็บใน inventory</td><td>100G</td></tr>
+    <tr><td>✨🥚</td><td>shiny_egg</td><td>ฟักออกมาเป็น Larva Shiny 100% การันตี</td><td>500G</td></tr>
+    <tr><td>🔮</td><td>fusion_stone</td><td>Fusion คู่กับ 300G</td><td>—</td></tr>
+    <tr><td>⚡</td><td>energy_drink</td><td>+15 Stamina</td><td>—</td></tr>
+    <tr><td>💎</td><td>revive</td><td>ฟื้นจากตาย 50% HP อัตโนมัติ</td><td>—</td></tr>
+    <tr><td>📦</td><td>artifact_box</td><td>N 60% / R 35% / E 5%</td><td>—</td></tr>
+    <tr><td>💜📦</td><td>box_R (Artifact Rare Box)</td><td>การันตี Artifact เกรด Rare [R]</td><td>150G</td></tr>
+    <tr><td>✨📦</td><td>box_E (Artifact Epic Box)</td><td>การันตี Artifact เกรด Epic [E]</td><td>400G</td></tr>
+    <tr><td>💢</td><td>perm_atk</td><td>ATK +1 ถาวร</td><td>—</td></tr>
+    <tr><td>🌪️</td><td>perm_spd</td><td>SPD +1 ถาวร</td><td>—</td></tr>
+    <tr><td>🔷</td><td>perm_def</td><td>DEF +1 ถาวร</td><td>—</td></tr>
+    <tr><td>💖</td><td>perm_hp</td><td>MaxHP +5 ถาวร</td><td>—</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">วิธีได้ shiny_egg / box_R / box_E</h3>
+  <table>
+    <tr><th>Item</th><th>แหล่ง</th></tr>
+    <tr><td>✨🥚 shiny_egg</td><td>Tower Floor 50 (first clear), Floor 90 (first clear), Floor 100 (first clear)</td></tr>
+    <tr><td>💜📦 box_R</td><td>Tower Floor 40 (first clear)</td></tr>
+    <tr><td>✨📦 box_E</td><td>Tower Floor 60, 80 (first clear), Floor 100 (first clear)</td></tr>
+  </table>
+</section>
+
+<!-- ARTIFACTS -->
+<section id="s-artifacts">
+  <div class="sec-header"><span class="sec-icon">🏺</span><h2>Artifacts</h2></div>
+  <div class="info">ใส่ได้ 2 slot | Lifesteal artifacts (crimson_fang/blood_pact/soul_reaper/SOVEREIGN) คำนวณ <b>หลัง</b> ATK boosts ทั้งหมด (deferred)</div>
+  <h3 style="margin-bottom:8px"><span class="badge b-n">N</span> Normal Grade (14 ชิ้น)</h3>
+  <table>
+    <tr><th>Artifact</th><th>Effect</th></tr>
+    <tr><td>💚 vitality_core</td><td>MaxHP +20%</td></tr>
+    <tr><td>⚡ shock_bead</td><td>8% stun ศัตรูทุกรอบ</td></tr>
+    <tr><td>🎯 keen_edge</td><td>Crit chance +10%</td></tr>
+    <tr><td>🗡 blade_shard</td><td>ATK +10% in battle</td></tr>
+    <tr><td>🛡 iron_plate</td><td>damage recv -15%</td></tr>
+    <tr><td>💨 swift_ring</td><td>Dodge 10%</td></tr>
+    <tr><td>🌱 life_seed</td><td>Regen 5% MaxHP/รอบ</td></tr>
+    <tr><td>🩸 crimson_fang</td><td>Lifesteal 5% of pd/รอบ (deferred)</td></tr>
+    <tr><td>atk_shard</td><td>ATK +15%</td></tr>
+    <tr><td>def_shard</td><td>DEF +15%</td></tr>
+    <tr><td>spd_shard</td><td>SPD +15%</td></tr>
+    <tr><td>hp_core</td><td>MaxHP +15%</td></tr>
+    <tr><td>🪨 stone_skin</td><td>damage recv -10% เมื่อ HP &gt; 70%</td></tr>
+    <tr><td>lucky_charm</td><td>50% Gold ×2 หลังชนะ</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px"><span class="badge b-r">R</span> Rare Grade (13 ชิ้น)</h3>
+  <table>
+    <tr><th>Artifact</th><th>Effect (จาก code จริง)</th><th>Stack/Reset</th></tr>
+    <tr><td>💀 death_mark</td><td>ATK +100% (×2.0) เมื่อ HP &lt; 30%</td><td>—</td></tr>
+    <tr><td>🔮 precision_stone</td><td>ทุกรอบที่ 3: damage ×2</td><td>—</td></tr>
+    <tr><td>🦷 paralysis_fang</td><td>15% stun ศัตรู | ถ้า stun → ATK +30% รอบถัดไป</td><td>—</td></tr>
+    <tr><td>berserker_claw</td><td>Crit +20% | recv +10% (โดนตีเพิ่ม — trade-off)</td><td>—</td></tr>
+    <tr><td>⛓ victory_chain</td><td>WIN: ATK +20%×stack (max 3) | ไม่ reset เมื่อ LOSE</td><td>stack สะสมถาวร</td></tr>
+    <tr><td>🪞 reflect_coat</td><td>Reflect 15% damage กลับศัตรูทุกรอบ</td><td>—</td></tr>
+    <tr><td>🌀 wind_step</td><td>15% dodge</td><td>—</td></tr>
+    <tr><td>🔥 rage_core</td><td>LOSE/DRAW: ATK +15%×stack (max 3) | WIN: reset stack</td><td>WIN = reset</td></tr>
+    <tr><td>🌑 drain_aura</td><td>LOSE: enemy ATK -10%×stack (max 2) | ไม่ reset</td><td>stack สะสมถาวร</td></tr>
+    <tr><td>🔴 blood_pact</td><td>Lifesteal 15% of pd/รอบ (deferred หลัง ATK boosts)</td><td>—</td></tr>
+    <tr><td>🌊 tide_breaker</td><td>แพ้รอบที่แล้ว: ATK +75% (×1.75)</td><td>—</td></tr>
+    <tr><td>all_stats_r</td><td>All stats ×1.15 (+15%) เมื่อ equip</td><td>—</td></tr>
+    <tr><td>🎯 crit_core</td><td>Crit +25% | crit hit → heal 5% MaxHP</td><td>—</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px"><span class="badge b-e">E</span> Epic Grade (11 ชิ้น)</h3>
+  <table>
+    <tr><th>Artifact</th><th>Effect (จาก code จริง)</th><th>หมายเหตุ</th></tr>
+    <tr><td>💎 iron_will</td><td>รอดจากการโจมตีที่จะทำให้ตาย 1 ครั้ง/battle → ATK×4 รอบถัดไป</td><td>cap หลัง enemy passives ทั้งหมด</td></tr>
+    <tr><td>🔭 true_sight</td><td>ATK +50% (×1.5) ทุกรอบ + ศัตรู dodge ไม่ได้</td><td>—</td></tr>
+    <tr><td>🌙 moon_veil</td><td>Regen 8% MaxHP/รอบ</td><td>—</td></tr>
+    <tr><td>⚔ double_attack</td><td>20% โอกาสตี 2 ครั้ง/รอบ (pd ×2)</td><td>—</td></tr>
+    <tr><td>🎲 wild_card</td><td>25% สุ่ม: heal 30%MaxHP / ATK×1.5 / reflect 50%ed</td><td>—</td></tr>
+    <tr><td>☠ execution</td><td>ATK ×3.0 (+200%) เมื่อ startHp &lt; 20% MaxHP</td><td>ใช้ startHp (HP ต้นเทิร์น)</td></tr>
+    <tr><td>💥 chain_strike</td><td>WIN streak bonus (ใช้ pd หลัง boosts): ×1=65% / ×2=130% / ×3=200% | ไม่ WIN = reset</td><td>synergy กับ artifact อื่น</td></tr>
+    <tr><td>☠️ soul_reaper</td><td>Lifesteal 25% of pd/รอบ (deferred หลัง ATK boosts)</td><td>—</td></tr>
+    <tr><td>all_stats_e</td><td>All stats ×1.25 (+25%) เมื่อ equip</td><td>—</td></tr>
+    <tr><td>deathblow</td><td>Crit chance +15% | crit multiplier ×2.0</td><td>—</td></tr>
+    <tr><td>👁 sniper_eye</td><td>ทุกรอบที่ 3: guaranteed crit ×2.0</td><td>ลดจาก ×2.5 → ×2.0</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">HP Threshold Badges (แสดงใต้ HP bar)</h3>
+  <table>
+    <tr><th>Badge</th><th>เงื่อนไข</th></tr>
+    <tr><td>☠ EXECUTION</td><td>HP &lt; 20% MaxHP</td></tr>
+    <tr><td>💀 DEATH MARK</td><td>HP &lt; 30% MaxHP</td></tr>
+    <tr><td>🪨 STONE SKIN</td><td>HP &gt; 70% MaxHP</td></tr>
+    <tr><td>💎 IRON WILL</td><td>ยังไม่ถูกใช้ (active protection)</td></tr>
+    <tr><td>💎 ATK×4 NEXT</td><td>Iron Will triggered แล้ว — boost รอบถัดไป</td></tr>
+  </table>
+</section>
+
+<!-- ENEMIES -->
+<section id="s-enemies">
+  <div class="sec-header"><span class="sec-icon">👹</span><h2>Enemy Types</h2></div>
+  <div class="three-col">
+    <div class="fcard" style="border-color:#5a2520">
+      <div class="fname" style="color:#ff7755">✊ TYPE F — FIST</div>
+      <div class="fkey">Boss: INFERNO-Ω</div>
+      <div style="font-size:11px;color:#7755aa;margin-bottom:8px">BRUISER / BERSERKER / CRUSHER</div>
+      <div class="fstats"><span class="stat-pill">HP ×1.10</span><span class="stat-pill" style="color:#ff9977">ATK ×1.25</span><span class="stat-pill">SPD ×1.0</span><span class="stat-pill">DEF ×0.75</span></div>
+      <div class="fpassive">AI: STRIKE 60% / RUSH 25% / GUARD 15%<br>Passives: atk_boost, lifesteal, enrage (HP&lt;50% ATK×1.5)</div>
+    </div>
+    <div class="fcard" style="border-color:#1a4a44">
+      <div class="fname" style="color:#44ddcc">🪶 TYPE W — WING</div>
+      <div class="fkey">Boss: TEMPEST-Ω</div>
+      <div style="font-size:11px;color:#7755aa;margin-bottom:8px">SWOOPER / HARPY / STORMWING</div>
+      <div class="fstats"><span class="stat-pill">HP ×0.95</span><span class="stat-pill">ATK ×1.0</span><span class="stat-pill" style="color:#44ddcc">SPD ×1.45</span><span class="stat-pill">DEF ×0.85</span></div>
+      <div class="fpassive">AI: STRIKE 20% / RUSH 60% / GUARD 20%<br>Passives: dodge (25%), counter_rush (GUARD → ตี 2 ครั้ง)</div>
+    </div>
+    <div class="fcard" style="border-color:#1a3060">
+      <div class="fname" style="color:#5599ff">🛡 TYPE S — SHIELD</div>
+      <div class="fkey">Boss: CITADEL-Ω</div>
+      <div style="font-size:11px;color:#7755aa;margin-bottom:8px">TANKARD / IRONWALL / BULWARK</div>
+      <div class="fstats"><span class="stat-pill" style="color:#77aaff">HP ×1.35</span><span class="stat-pill">ATK ×0.75</span><span class="stat-pill">SPD ×0.8</span><span class="stat-pill" style="color:#5599ff">DEF ×1.5</span></div>
+      <div class="fpassive">AI: STRIKE 20% / RUSH 15% / GUARD 65%<br>Passives: reflect (15%), dmg_reduce (50% เมื่อ HP>50%), barrier (round 1), stun_player (15%)</div>
+    </div>
+  </div>
+  <h3 style="margin-bottom:8px;margin-top:16px">Enemy Passives</h3>
+  <table>
+    <tr><th>Passive</th><th>Type</th><th>Effect</th></tr>
+    <tr><td>💢 POWER UP</td><td><span class="badge b-f">F</span></td><td>ATK ×1.25</td></tr>
+    <tr><td>🩸 LIFESTEAL</td><td><span class="badge b-f">F</span></td><td>Drains 15% of damage dealt as HP</td></tr>
+    <tr><td>⚔️ ENRAGE</td><td><span class="badge b-f">F</span></td><td>HP &lt; 50% → ATK +50%</td></tr>
+    <tr><td>👻 EVASION</td><td><span class="badge b-w">W</span></td><td>25% dodge</td></tr>
+    <tr><td>💨 COUNTER RUSH</td><td><span class="badge b-w">W</span></td><td>Player เลือก GUARD → ศัตรูตี 2 ครั้ง</td></tr>
+    <tr><td>🔄 REFLECT</td><td><span class="badge b-s">S</span></td><td>Reflects 15% damage received</td></tr>
+    <tr><td>⬛ IRON BODY</td><td><span class="badge b-s">S</span></td><td>HP > 50% → incoming damage halved</td></tr>
+    <tr><td>🔰 BARRIER</td><td><span class="badge b-s">S</span></td><td>Round 1: damage -50%</td></tr>
+    <tr><td>⚡ PARALYZE</td><td><span class="badge b-s">S</span></td><td>15% stun player — attack misses</td></tr>
+  </table>
+  <div class="info">Passive count: Normal S1–10=0 | Normal S11–19=1 boss | Normal S20+=1–2 | Hard=1–2 | Boss always 1 extra</div>
+</section>
+
+<!-- ENEMY STATS -->
+<section id="s-enemy-stats">
+  <div class="sec-header"><span class="sec-icon">📊</span><h2>Enemy Stats by Stage / Floor</h2></div>
+  <div class="info">สูตร base stats: Normal = lv = stage | ค่าที่แสดงเป็น Type F (×1.10 HP, ×1.25 ATK, ×1.0 SPD, ×0.75 DEF)<br>Type W/S คูณ multiplier ของตัวเองตามตาราง Enemy Types</div>
+
+  <h3 style="margin-bottom:8px">📍 Scout Mode — Normal</h3>
+  <div class="info" style="margin-bottom:8px">lv = stage | baseHp=40+lv×9+lv²×0.4 | baseAtk=8+lv×3+lv²×0.15 | baseDef=3+lv×2+lv²×0.1 | baseSpd=7+lv×1.2<br>Boss: HP×(80+lv×18+lv²×0.8), ATK×1.4 บน mini | Boss HP ×2×et.hp</div>
+  <table>
+    <tr><th>Stage (lv)</th><th>base HP</th><th>base ATK</th><th>base DEF</th><th>base SPD</th><th>F-HP</th><th>F-ATK</th><th>Boss HP (F)</th><th>Boss ATK (F)</th></tr>
+    <tr><td>1</td><td>49</td><td>11</td><td>5</td><td>8</td><td>54</td><td>14</td><td>101</td><td>20</td></tr>
+    <tr><td>3</td><td>67</td><td>18</td><td>9</td><td>11</td><td>74</td><td>23</td><td>137</td><td>31</td></tr>
+    <tr><td>5</td><td>90</td><td>27</td><td>16</td><td>13</td><td>99</td><td>34</td><td>184</td><td>47</td></tr>
+    <tr><td>8</td><td>130</td><td>43</td><td>29</td><td>17</td><td>143</td><td>54</td><td>265</td><td>75</td></tr>
+    <tr><td>10</td><td>160</td><td>58</td><td>43</td><td>19</td><td>176</td><td>73</td><td>326</td><td>102</td></tr>
+    <tr><td>15</td><td>252</td><td>103</td><td>80</td><td>25</td><td>277</td><td>129</td><td>513</td><td>179</td></tr>
+    <tr><td>20</td><td>372</td><td>168</td><td>131</td><td>31</td><td>409</td><td>210</td><td>757</td><td>292</td></tr>
+  </table>
+
+  <h3 style="margin-bottom:8px">📍 Scout Mode — Hard Mode</h3>
+  <div class="info" style="margin-bottom:8px">Hard mode ใช้ hardStage เป็น lv | 40% โอกาสเจอ Evolved form | H11+: 50% โอกาสเจอ Fusion form<br>Evolved: stats scale จาก baseHp/75 × form base | Fusion: scale จาก baseHp/135 × form base</div>
+  <table>
+    <tr><th>Hard Stage (lv)</th><th>base HP</th><th>base ATK</th><th>F Normal HP</th><th>F Normal ATK</th><th>Evolved (ตัวอย่าง RAGNAROK)</th></tr>
+    <tr><td>H1</td><td>49</td><td>11</td><td>54</td><td>14</td><td>HP~85, ATK~29</td></tr>
+    <tr><td>H5</td><td>90</td><td>27</td><td>99</td><td>34</td><td>HP~156, ATK~71</td></tr>
+    <tr><td>H10</td><td>160</td><td>58</td><td>176</td><td>73</td><td>HP~277, ATK~152</td></tr>
+    <tr><td>H15</td><td>252</td><td>103</td><td>277</td><td>129</td><td>HP~436, ATK~271</td></tr>
+    <tr><td>H20</td><td>372</td><td>168</td><td>409</td><td>210</td><td>HP~644, ATK~441</td></tr>
+  </table>
+
+  <h3 style="margin-bottom:8px">🏔️ Tower Mode — Enemy Stats by Floor</h3>
+  <div class="info" style="margin-bottom:8px">slv = min(floor, 60) | baseHp=40+slv×9+slv²×0.4 | baseAtk=8+slv×2.5+slv²×0.10 | baseDef=2+slv×1.5+slv²×0.05 | baseSpd=7+slv×1.2<br>Scale: floor 1–30 ×0.8 | 31–60 ×0.9 | 61–90 ×1.0 | 91+ ×1.2 | Boss floor: HP×2.0, ATK×1.5</div>
+  <table>
+    <tr><th>Floor</th><th>Scale</th><th>base HP</th><th>base ATK</th><th>F-Mon HP</th><th>F-Mon ATK</th><th>F-Boss HP</th><th>F-Boss ATK</th><th>Enemy Type</th></tr>
+    <tr><td>1</td><td>×0.8</td><td>49</td><td>11</td><td>43</td><td>11</td><td>86</td><td>17</td><td>Normal</td></tr>
+    <tr><td>5</td><td>×0.8</td><td>90</td><td>21</td><td>79</td><td>21</td><td>158</td><td>32</td><td>Normal</td></tr>
+    <tr><td>10 (boss)</td><td>×0.8</td><td>160</td><td>38</td><td>—</td><td>—</td><td>282</td><td>51</td><td>Normal</td></tr>
+    <tr><td>20 (boss)</td><td>×0.8</td><td>372</td><td>96</td><td>—</td><td>—</td><td>654</td><td>130</td><td>Evolved (50%)</td></tr>
+    <tr><td>30 (boss)</td><td>×0.8</td><td>652</td><td>189</td><td>—</td><td>—</td><td>1147</td><td>255</td><td>Evolved (50%)</td></tr>
+    <tr><td>40 (boss)</td><td>×0.9</td><td>652</td><td>189</td><td>~587</td><td>~190</td><td>~1304</td><td>~285</td><td>Evolved/Fusion (50%)</td></tr>
+    <tr><td>50 (boss)</td><td>×0.9</td><td>652</td><td>189</td><td>~587</td><td>~190</td><td>~1304</td><td>~285</td><td>Fusion (50%)</td></tr>
+    <tr><td>60 (boss)</td><td>×1.0</td><td>652</td><td>189</td><td>~716</td><td>~210</td><td>~1432</td><td>~315</td><td>Fusion (50%)</td></tr>
+    <tr><td>70 (boss)</td><td>×1.0</td><td>652</td><td>189</td><td>~716</td><td>~210</td><td>~1432</td><td>~315</td><td>Fusion (50%)</td></tr>
+    <tr><td>90 (boss)</td><td>×1.0</td><td>652</td><td>189</td><td>~716</td><td>~210</td><td>~1432</td><td>~315</td><td>ALL Fusion</td></tr>
+    <tr><td>100 (boss)</td><td>×1.2</td><td>652*</td><td>189*</td><td>~860</td><td>~252</td><td>~1719</td><td>~378</td><td>ALL Fusion</td></tr>
+  </table>
+  <div class="info">* Tower stats cap ที่ slv=60 (floor 60+) — floor 61+ stats ไม่โตอีก แต่ scale multiplier ยังเพิ่ม<br>Boss floor: ทุก 10 ชั้น | Passive count: floor 1–19=0 | 20–89=1 mon/2 boss | 90+=2 mon/3 boss</div>
+
+  <h3 style="margin-bottom:8px">Tower — Enemy Pool by Floor</h3>
+  <table>
+    <tr><th>Floor Range</th><th>Normal</th><th>Evolved</th><th>Fusion</th><th>Passive Count (mon/boss)</th></tr>
+    <tr><td>1–19</td><td class="yes">✓ 100%</td><td class="no">—</td><td class="no">—</td><td>0 / 0</td></tr>
+    <tr><td>20–49</td><td>50%</td><td class="pct">50%</td><td class="no">—</td><td>1 / 1</td></tr>
+    <tr><td>50–89</td><td>25%</td><td class="pct">25%</td><td class="pct">50%</td><td>1 / 2</td></tr>
+    <tr><td>90+</td><td class="no">—</td><td class="no">—</td><td class="hard pct">100%</td><td>2 / 3</td></tr>
+  </table>
+  <div class="info">Mimic: 5% chance บน non-boss floor ตั้งแต่ floor 5+</div>
+</section>
+
+<!-- REPLAY -->
+<section id="s-replay">
+  <div class="sec-header"><span class="sec-icon">🔄</span><h2>Replay Mode</h2></div>
+  <div class="info">ย้อนไปเล่นด่านที่ผ่านมาแล้วที่ความยากเดิม เพื่อฟาร์มของ/บอส</div>
+  <div class="card-grid">
+    <div class="card"><h3>วิธีเข้า</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">ปุ่ม 📋 ใน Scout screen<br>เลือก Normal S1–S(n-1)<br>หรือ Hard H1–H(n-1)<br>ราคา: 1 Map Scroll ต่อครั้ง</p></div>
+    <div class="card"><h3>Persistence</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">Clear boss → gen map ใหม่ด่านเดิม<br>กด BACK → กลับ menu แต่ยัง replay mode<br>กลับมาใหม่ → ยังอยู่ด่านเดิม<br>persist หลัง page refresh</p></div>
+    <div class="card"><h3>Drop Rates</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">ตาม difficulty ของ replay stage จริง<br>replay Normal S5 → Normal rates<br>replay Hard H4 → Hard rates<br><code>isEffHardGold</code> ทุก section</p></div>
+    <div class="card"><h3>Enemies</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">Normal → ไม่มี Evo/Fusion<br>Hard → 40% Evolved<br>Hard H11+ → 50% Fusion<br><code>isEffectiveHard + effectiveHardStage</code></p></div>
+  </div>
+</section>
+
+<!-- TOWER -->
+<section id="s-tower">
+  <div class="sec-header"><span class="sec-icon">🏔️</span><h2>Tower Mode</h2></div>
+  <div class="info">เปิดหลัง Scout Stage 10 | ศัตรู scale ตาม floor | Boss ทุก 10 ชั้น | Checkpoint ทุก 5 ชั้น</div>
+  <div class="two-col" style="margin-bottom:14px">
+    <div class="card"><h3>Mechanics</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">Checkpoint ทุก 10 ชั้น (พร้อมกับ Boss — heal ทุก pet)<br>Boss ทุก 10 ชั้น<br>เก็บ Gold + Artifacts ระหว่าง run<br>ตายหรือออก → สรุปผล + ล้าง run<br>Mimic: 5% chance floor 5+</p></div>
+    <div class="card"><h3>Variables</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">towerFloor, towerHighest<br>towerCheckpoint<br>towerPendingGold<br>towerPendingArtifacts[]<br>towerFirstClears (Set)</p></div>
+  </div>
+  <h3 style="margin-bottom:8px">Artifact Drop Rate by Floor</h3>
+  <table>
+    <tr><th>Floor</th><th>Epic (E)</th><th>Rare (R)</th><th>Normal (N)</th></tr>
+    <tr><td>1–20</td><td class="no">0%</td><td class="pct">25%</td><td>75%</td></tr>
+    <tr><td>21–40</td><td class="pct">5%</td><td class="pct">30%</td><td>65%</td></tr>
+    <tr><td>41–60</td><td class="pct">15%</td><td class="pct">55%</td><td>30%</td></tr>
+    <tr><td>61–90</td><td class="pct">30%</td><td class="pct">80%</td><td>10%</td></tr>
+    <tr><td>91+</td><td class="hard pct">70%</td><td class="hard pct">95%</td><td class="no">—</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">First Clear Rewards (ครั้งเดียวเท่านั้น)</h3>
+  <table>
+    <tr><th>Floor</th><th>รางวัล</th></tr>
+    <tr><td>10</td><td>💰 1,000G</td></tr>
+    <tr><td>20</td><td>10× perm stat (ATK/SPD/DEF สุ่ม)</td></tr>
+    <tr><td>30</td><td>💰 5,000G + 10× perm stat</td></tr>
+    <tr><td>40</td><td>💜📦 Artifact Rare Box ×1</td></tr>
+    <tr><td>50</td><td>✨🥚 Shiny Egg ×1</td></tr>
+    <tr><td>60</td><td>✨📦 Artifact Epic Box ×1</td></tr>
+    <tr><td>70</td><td>💰 50,000G + 🔮 Rebirth Stone ×5</td></tr>
+    <tr><td>80</td><td>✨📦 Artifact Epic Box ×1</td></tr>
+    <tr><td>90</td><td>✨🥚 Shiny Egg ×1</td></tr>
+    <tr><td>100</td><td>✨🥚 Shiny Egg ×1 + ✨📦 Artifact Epic Box ×1</td></tr>
+  </table>
+</section>
+
+<!-- SYSTEMS -->
+<section id="s-systems">
+  <div class="sec-header"><span class="sec-icon">⚙️</span><h2>Systems</h2></div>
+  <h3 style="margin-bottom:8px">Party & Pets</h3>
+  <table style="margin-bottom:16px">
+    <tr><th>System</th><th>Details</th></tr>
+    <tr><td>Pet phases</td><td>egg → larva → evolved → final</td></tr>
+    <tr><td>Base stats (Larva)</td><td>HP:60, ATK:12, SPD:10, DEF:4</td></tr>
+    <tr><td>Shiny</td><td>3% chance | all stats ×1.2 | ✨🥚 Shiny Egg = 100% guaranteed</td></tr>
+    <tr><td>Train</td><td>ATK+2/SPD+2/DEF+2/HP+10 per session | trainCount reset เมื่อ evolve/fuse/rebirth</td></tr>
+    <tr><td>Train carry</td><td>25% ของ trainBonuses carry ไปยัง evolved form</td></tr>
+    <tr><td>Train cap</td><td>Normal = stage×10 | Hard = 200+hardStage×20</td></tr>
+    <tr><td>Train cost</td><td>(⌊trainCount/10⌋+1) × 25G</td></tr>
+    <tr><td>Lock</td><td>🔒 badge กันลบผิด</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">Expedition</h3>
+  <table style="margin-bottom:16px">
+    <tr><th>Type</th><th>เวลา</th><th>รางวัล</th></tr>
+    <tr><td>QUICK</td><td>30 นาที</td><td>1–2 items</td></tr>
+    <tr><td>SEARCH</td><td>2 ชั่วโมง</td><td>3–5 items</td></tr>
+    <tr><td>DEEP</td><td>6 ชั่วโมง</td><td>5–8 items + 8% mystery egg</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">Stamina & Regen</h3>
+  <div class="card"><table style="margin:0">
+    <tr><td>Stamina</td><td>MAX 30 | ใช้ 1/ก้าว | regen +1/นาที offline</td></tr>
+    <tr><td>Stat shards</td><td>buff 30 นาที (BUFF_DUR = 30×60×1000ms)</td></tr>
+    <tr><td>HP regen offline</td><td>+1 HP / 10 วินาที</td></tr>
+  </table></div>
+</section>
+
+<!-- BUG LOG -->
+<section id="s-bugs">
+  <div class="sec-header"><span class="sec-icon">🐛</span><h2>Bug Log</h2></div>
+  <h3 style="margin-bottom:8px">Session 2026-06-24</h3>
+  <table style="margin-bottom:16px">
+    <tr><th>Bug</th><th>สาเหตุ</th><th>วิธีแก้</th></tr>
+    <tr><td>Replay map ไม่ refresh</td><td class="bug-cause">if(replayStage===0) หลัง reset</td><td class="bug-fixed">capture isReplay ก่อน replayStage=0</td></tr>
+    <tr><td>Boss เดิมทุกครั้ง</td><td class="bug-cause">boss type ผูกกับ biome ตายตัว</td><td class="bug-fixed">สุ่ม F/W/S อิสระจาก biome</td></tr>
+    <tr><td>Stun ตีหลังตกผลเทิร์นเดียวกัน</td><td class="bug-cause">ไม่มี carry mechanic</td><td class="bug-fixed">carry flag ไปเทิร์นถัดไป (symmetric)</td></tr>
+    <tr><td>Rebirth ใช้แค่ stone</td><td class="bug-cause">ไม่มีระบบ gold cost</td><td class="bug-fixed">ต้องมีทั้ง Rebirth Stone + 1000G</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">Session 2026-06-26</h3>
+  <table>
+    <tr><th>Bug / Change</th><th>สาเหตุ / เหตุผล</th><th>วิธีแก้ / ผล</th></tr>
+    <tr><td>Execution ไม่แสดงใน log เมื่อ HP &lt; 20%</td><td class="bug-cause">Slot 1 regen (life_seed/moon_veil) เพิ่ม HP ก่อน Execution check</td><td class="bug-fixed">startHp = creature.hp ต้นเทิร์น ใช้ startHp แทน hp ปัจจุบัน</td></tr>
+    <tr><td>Iron Will "Survived but Died"</td><td class="bug-cause">Enemy passives บวก ed หลัง Iron Will cap ed ไปแล้ว</td><td class="bug-fixed">ย้าย Iron Will final cap ไปหลัง enemy passives ทั้งหมด</td></tr>
+    <tr><td>SOVEREIGN lifesteal น้อยเกิน (~10) ทั้งที่ damage ~1000+</td><td class="bug-cause">Lifesteal คำนวณก่อน Iron Will ×4 / Execution ×3 บวม pd</td><td class="bug-fixed">Deferred lifesteal: คำนวณหลัง ATK boosts ทั้งหมด (bs._sovereignLs, bs._ls1)</td></tr>
+    <tr><td>Iron Will redesign</td><td class="bug-cause">เดิม: กันตายเฉพาะ HP &lt; 20%</td><td class="bug-fixed">ใหม่: กันตายได้ทุกสถานการณ์ (1 ครั้ง/battle) → ATK×4 รอบถัดไป</td></tr>
+    <tr><td>Execution threshold เปลี่ยน</td><td class="bug-cause">—</td><td class="bug-fixed">เปลี่ยนจาก 25% → 20% MaxHP (ใช้ startHp)</td></tr>
+    <tr><td>Sniper Eye nerf</td><td class="bug-cause">×2.5 แรงเกิน</td><td class="bug-fixed">เปลี่ยน ×2.5 → ×2.0</td></tr>
+    <tr><td>Chain Strike redesign</td><td class="bug-cause">เดิม: WIN → +65% pd (flat)</td><td class="bug-fixed">ใหม่: WIN streak ×1=65%pd / ×2=130%pd / ×3=200%pd | ไม่ WIN = reset (synergy กับ artifact อื่น)</td></tr>
+    <tr><td>Train bonus หายตอน Evolve</td><td class="bug-cause">applyEvolution() เขียนทับ stats ด้วย form base ตรงๆ</td><td class="bug-fixed">track trainBonuses แยก → carry 25% ไปยัง evolved form</td></tr>
+    <tr><td>box_R/box_E แสดงข้อมูลผิด</td><td class="bug-cause">duplicate keys ใน ITEMS object ทำให้ถูก overwrite</td><td class="bug-fixed">ลบ duplicate entries ออก</td></tr>
+    <tr><td>เพิ่ม shiny_egg / box_R / box_E</td><td class="bug-cause">—</td><td class="bug-fixed">items ใหม่ใน inventory, tower rewards, useItem(), emptySlotModal</td></tr>
+    <tr><td>HP threshold badges</td><td class="bug-cause">—</td><td class="bug-fixed">เพิ่ม visual badges ใต้ HP bar: Execution/Death Mark/Stone Skin/Iron Will</td></tr>
+  </table>
+</section>
+
+<script>
+function show(id, el) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

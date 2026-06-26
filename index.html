@@ -471,6 +471,10 @@ body::after {
 @keyframes shiny-glow  { 0%,100%{text-shadow:0 0 4px #ffd700} 50%{text-shadow:0 0 12px #ffd700, 0 0 20px #00cc99} }
 @keyframes sparkle-twinkle { 0%,100%{opacity:0;transform:scale(0.2) rotate(0deg)} 40%{opacity:1;transform:scale(1.4) rotate(160deg)} 60%{opacity:1;transform:scale(1.2) rotate(200deg)} }
 @keyframes sparkle-float { 0%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0) rotate(0deg)} 25%{opacity:1;transform:translate(var(--sx),var(--sy)) scale(1) rotate(60deg)} 75%{opacity:0.7;transform:translate(var(--ex),var(--ey)) scale(0.7) rotate(200deg)} 100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0) rotate(360deg)} }
+@keyframes pulseRed {
+  0%   { opacity:1; box-shadow:0 0 4px currentColor; }
+  100% { opacity:0.55; box-shadow:0 0 10px currentColor; }
+}
 @keyframes odFire {
   0%   { filter:drop-shadow(0 0 4px #ff6600) drop-shadow(0 0 8px #ff3300); transform:scale(1); }
   50%  { filter:drop-shadow(0 0 10px #ffaa00) drop-shadow(0 0 20px #ff6600); transform:scale(1.05); }
@@ -507,6 +511,7 @@ const BGM_FILES = {
   forest:  'BGM/The Whispering Woods(Forest).mp3',
   grass:   'BGM/Meadow of the Silent Wind (Meadow).mp3',
   tower:   'BGM/The Tower of the Fallen King (Tower).mp3',
+  vs:      'BGM/The Colossus Awakens.mp3',
 };
 
 let _bgmAudio = null;
@@ -555,7 +560,9 @@ function bgmPlay(key) {
 }
 
 function bgmForState() {
-  if(state === 'battle') return battleState?.isTowerBattle ? 'tower' : 'battle';
+  if(state === 'title') return 'tower';
+  if(state === 'battle') return battleState?.isTowerBattle ? 'tower' : battleState?.isVsBattle ? 'vs' : 'battle';
+  if(state === 'vs_lobby' || state === 'vs_result') return 'vs';
   if(state === 'tower') return 'tower';
   if(state === 'scout') {
     return currentBiome === 'forest' ? 'forest'
@@ -564,6 +571,26 @@ function bgmForState() {
          : 'main';
   }
   return 'main';
+}
+
+function fadeToState(nextStateFn) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:#000;opacity:0;z-index:9999;pointer-events:none;transition:opacity 0.6s ease';
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  // fade out BGM
+  if(_bgmAudio) {
+    const a = _bgmAudio;
+    let v = a.volume;
+    const step = v / (600 / 30);
+    const fi = setInterval(() => { v = Math.max(0, v-step); a.volume=v; if(v<=0) clearInterval(fi); }, 30);
+  }
+  setTimeout(() => {
+    nextStateFn();
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 400);
+  }, 620);
 }
 
 // ============================================================
@@ -741,6 +768,18 @@ const SFX = {
     _noise(0.2, t+1.1, 0.06, ctx);
   })},
 
+  titleStart() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _noise(0.25, t, 0.1, ctx);
+    _sweep('sine', 40, 20, 0.22, t, 0.6, ctx);
+    _osc('triangle', 196,  0.16, t+0.03, 0.9, ctx);
+    _osc('triangle', 294,  0.13, t+0.05, 0.9, ctx);
+    _osc('triangle', 392,  0.12, t+0.07, 0.9, ctx);
+    _osc('triangle', 523,  0.10, t+0.09, 0.8, ctx);
+    _osc('sine',     1046, 0.07, t+0.11, 0.7, ctx);
+    for(let i=0;i<5;i++) _osc('sine', 1046+i*160, 0.03, t+0.25+i*0.09, 0.4, ctx);
+  })},
+
   evolve() { _sfx(ctx => {
     const t = ctx.currentTime;
     // rising shimmer
@@ -754,6 +793,20 @@ const SFX = {
     _osc('sine',    1320, 0.15, t+1.3, 0.7, ctx);
     // flash impact noise
     _noise(0.3, t+1.0, 0.08, ctx);
+  })},
+
+  vsStart() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    // crack แหลมสั้น — จุดกระแทก
+    _noise(1.0, t, 0.008, ctx);
+    _noise(0.8, t+0.008, 0.012, ctx);
+    // mid-high crunch — เนื้อหิน
+    _sweep('sawtooth', 2000, 300, 0.7, t, 0.06, ctx);
+    _sweep('sawtooth', 1200, 200, 0.5, t+0.005, 0.06, ctx);
+    _sweep('triangle', 800, 150, 0.4, t+0.008, 0.07, ctx);
+    // decay สั้น ไม่ก้อง
+    _sweep('sine', 400, 100, 0.3, t+0.02, 0.1, ctx);
+    _noise(0.3, t+0.02, 0.04, ctx);
   })},
 
   stun() { _sfx(ctx => {
@@ -913,15 +966,19 @@ const ENEMY_TYPES = {
 };
 
 const ENEMY_PASSIVES = [
-  { id:'atk_boost',   icon:'💢', name:'POWER UP',      desc:'ATK ×1.25',                                    type:'F' },
-  { id:'lifesteal',   icon:'🩸', name:'LIFESTEAL',     desc:'Drains 15% of damage dealt as HP',              type:'F' },
-  { id:'reflect',     icon:'🔄', name:'REFLECT',       desc:'Reflects 15% of damage received',               type:'S' },
-  { id:'dodge',       icon:'👻', name:'EVASION',       desc:'25% chance to dodge attacks',                   type:'W' },
-  { id:'dmg_reduce',  icon:'⬛', name:'IRON BODY',     desc:'When HP is above 50%, incoming damage is halved', type:'S' },
-  { id:'enrage',      icon:'⚔️', name:'ENRAGE',        desc:'When HP drops below 50%, ATK +50%',             type:'F' },
-  { id:'barrier',     icon:'🔰', name:'BARRIER',       desc:'Takes 50% less damage on the first round',      type:'S' },
-  { id:'counter_rush',icon:'💨', name:'COUNTER RUSH',  desc:'If you play GUARD, attacks twice that round',   type:'W' },
-  { id:'stun_player', icon:'⚡', name:'PARALYZE',      desc:'15% chance to stun you — your attack misses',   type:'S' },
+  { id:'atk_boost',     icon:'💢', name:'POWER UP',       desc:'ATK ×1.25',                                          type:'F' },
+  { id:'lifesteal',     icon:'🩸', name:'LIFESTEAL',      desc:'Drains 15% of damage dealt as HP',                   type:'F' },
+  { id:'reflect',       icon:'🔄', name:'REFLECT',        desc:'Reflects 15% of damage received',                    type:'S' },
+  { id:'dodge',         icon:'👻', name:'EVASION',        desc:'25% chance to dodge attacks',                        type:'W' },
+  { id:'dmg_reduce',    icon:'⬛', name:'IRON BODY',      desc:'When HP is above 50%, incoming damage is halved',    type:'S' },
+  { id:'enrage',        icon:'⚔️', name:'ENRAGE',         desc:'When HP drops below 50%, ATK +50%',                  type:'F' },
+  { id:'barrier',       icon:'🔰', name:'BARRIER',        desc:'Every 3 rounds, takes 50% less damage',              type:'S' },
+  { id:'counter_rush',  icon:'💨', name:'COUNTER RUSH',   desc:'If you play GUARD, attacks twice that round',        type:'W' },
+  { id:'stun_player',   icon:'⚡', name:'PARALYZE',       desc:'15% chance to stun you — your attack misses',        type:'S' },
+  { id:'crit_boost',    icon:'🎯', name:'CRIT BOOST',     desc:'Critical hit chance +25%',                           type:'F' },
+  { id:'double_strike', icon:'⚔️', name:'DOUBLE STRIKE',  desc:'20% chance to attack twice in one round',            type:'F' },
+  { id:'berserker',     icon:'🔺', name:'BERSERKER',      desc:'Each round, ATK +10% (stacks up to +50%)',           type:'F' },
+  { id:'last_dance',    icon:'💥', name:'LAST DANCE',     desc:'When HP drops below 10%, ATK +150%',                 type:'F' },
 ];
 
 function pickEnemyPassives(typeKey, count) {
@@ -966,12 +1023,12 @@ const ITEMS = {
   revive:        { name:'Revive Stone',   nameTh:'หินฟื้นคืนชีพ',    icon:'💎', color:'#ff80ff', desc:'Revives your beast with 50% HP when it falls in battle', descTh:'ฟื้นคืนชีพสัตว์ด้วย HP 50% เมื่อล้มในการต่อสู้' },
   energy_drink:  { name:'Energy Drink',   nameTh:'เครื่องดื่มพลังงาน', icon:'⚡', color:'#ffe066', desc:'Restores 15 Stamina instantly',          descTh:'ฟื้นฟู Stamina 15 ทันที' },
   mystery_egg:   { name:'Mystery Egg',    nameTh:'ไข่ลึกลับ',         icon:'🥚', color:'#c0ffc0', desc:'Hatches into a new beast',               descTh:'ฟักออกมาเป็นสัตว์ใหม่' },
+  shiny_egg:     { name:'Shiny Egg',      nameTh:'ไข่ชายนี่',          icon:'✨🥚', color:'#ffd700', desc:'Hatches into a guaranteed Shiny beast!', descTh:'ฟักออกมาเป็นสัตว์ Shiny การันตี!' },
   fusion_stone:  { name:'Fusion Stone',  nameTh:'หินหลอมรวม',         icon:'🔮', color:'#ff80ff', desc:'Required to fuse two beasts into a Final Form', descTh:'จำเป็นสำหรับการหลอมรวมสัตว์สองตัวเป็น Final Form' },
   super_potion:  { name:'Super Potion',  nameTh:'ยา Super',            icon:'🧬', color:'#00e5ff', desc:'Restores 100 HP instantly',              descTh:'ฟื้นฟู HP 100 ทันที' },
   artifact_box: { name:'Artifact Box', nameTh:'กล่องอาติแฟค',        icon:'📦', color:'#c0a0ff', desc:'Opens to reveal a random Artifact: Normal (60%), Rare (35%), or Epic (5%)', descTh:'เปิดเพื่อรับ Artifact แบบสุ่ม: Normal (60%), Rare (35%) หรือ Epic (5%)' },
-  box_N: { name:'Artifact Box', nameTh:'กล่องอาติแฟค',        icon:'📦', color:'#c0a0ff', desc:'Opens to reveal a random Artifact: Normal (60%), Rare (35%), or Epic (5%)', descTh:'เปิดเพื่อรับ Artifact แบบสุ่ม: Normal (60%), Rare (35%) หรือ Epic (5%)' },
-  box_R: { name:'Artifact Box', nameTh:'กล่องอาติแฟค',        icon:'📦', color:'#c0a0ff', desc:'Opens to reveal a random Artifact: Normal (60%), Rare (35%), or Epic (5%)', descTh:'เปิดเพื่อรับ Artifact แบบสุ่ม: Normal (60%), Rare (35%) หรือ Epic (5%)' },
-  box_E: { name:'Artifact Box', nameTh:'กล่องอาติแฟค',        icon:'📦', color:'#c0a0ff', desc:'Opens to reveal a random Artifact: Normal (60%), Rare (35%), or Epic (5%)', descTh:'เปิดเพื่อรับ Artifact แบบสุ่ม: Normal (60%), Rare (35%) หรือ Epic (5%)' },
+  box_R:        { name:'Artifact Rare Box', nameTh:'กล่อง Artifact Rare', icon:'💜📦', color:'#4488ff', desc:'Opens to reveal a guaranteed Rare [R] Artifact', descTh:'เปิดเพื่อรับ Artifact เกรด Rare [R] การันตี' },
+  box_E:        { name:'Artifact Epic Box', nameTh:'กล่อง Artifact Epic', icon:'✨📦', color:'#ff9944', desc:'Opens to reveal a guaranteed Epic [E] Artifact', descTh:'เปิดเพื่อรับ Artifact เกรด Epic [E] การันตี' },
 };
 const ARTIFACTS = {
   vitality_core:   { name:'Vitality Core',   nameTh:'แก่นชีวิต',         grade:'N', icon:'💚', desc:'Increases Max HP by 20% when equipped',   descTh:'เพิ่ม HP สูงสุด 20% เมื่อสวมใส่' },
@@ -982,25 +1039,25 @@ const ARTIFACTS = {
   swift_ring:      { name:'Swift Ring',       nameTh:'แหวนฉับพลัน',       grade:'N', icon:'💨', desc:'In battle: 10% chance to dodge attacks',    descTh:'ในการต่อสู้: 10% โอกาสหลบการโจมตี' },
   life_seed:       { name:'Life Seed',        nameTh:'เมล็ดชีวิต',        grade:'N', icon:'🌱', desc:'In battle: Regenerates 5% of Max HP each round', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 5% ทุกรอบ' },
   crimson_fang:    { name:'Crimson Fang',     nameTh:'เขี้ยวเลือด',       grade:'N', icon:'🩸', desc:'In battle: Drains 5% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 5% จากดาเมจที่โจมตีทุกรอบ' },
-  death_mark:      { name:'Death Mark',       nameTh:'ตราแห่งความตาย',    grade:'R', icon:'💀', desc:'In battle: When HP drops below 30%, ATK increases by 60%', descTh:'ในการต่อสู้: เมื่อ HP ต่ำกว่า 30% ATK เพิ่ม 60%' },
+  death_mark:      { name:'Death Mark',       nameTh:'ตราแห่งความตาย',    grade:'R', icon:'💀', desc:'In battle: When HP drops below 30%, ATK increases by 100%', descTh:'ในการต่อสู้: เมื่อ HP ต่ำกว่า 30% ATK เพิ่ม 100%' },
   precision_stone: { name:'Precision Stone',  nameTh:'หินแม่นยำ',         grade:'R', icon:'🔮', desc:'In battle: Every 3 rounds, deal double damage', descTh:'ในการต่อสู้: ทุก 3 รอบ โจมตีด้วยดาเมจสองเท่า' },
   paralysis_fang:  { name:'Paralysis Fang',   nameTh:'เขี้ยวอัมพาต',     grade:'R', icon:'🦷', desc:'In battle: 15% chance to stun the enemy; if stunned, ATK +30% next round', descTh:'ในการต่อสู้: 15% โอกาส Stun ศัตรู หาก Stun ATK +30% รอบถัดไป' },
   berserker_claw:  { name:'Berserker Claw',   nameTh:'กรงเล็บคลั่ง',     grade:'R', icon:'🐾', desc:'In battle: Crit chance +20%, but you take 10% more damage', descTh:'ในการต่อสู้: โอกาสคริติคอล +20% แต่รับดาเมจเพิ่ม 10%' },
-  sniper_eye:      { name:'Sniper Eye',       nameTh:'ตานักแม่น',         grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (×2.5 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ ×2.5)' },
-  victory_chain:   { name:'Victory Chain',    nameTh:'โซ่แห่งชัยชนะ',    grade:'R', icon:'⛓', desc:'In battle: Each WIN increases ATK by 10%, stacking up to 3 times', descTh:'ในการต่อสู้: ทุกครั้งที่ชนะ ATK +10% สะสมสูงสุด 3 ครั้ง' },
+  sniper_eye:      { name:'Sniper Eye',       nameTh:'ตานักแม่น',         grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (×2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ ×2.0)' },
+  victory_chain:   { name:'Victory Chain',    nameTh:'โซ่แห่งชัยชนะ',    grade:'R', icon:'⛓', desc:'In battle: Each WIN increases ATK by 20%, stacking up to 3 times', descTh:'ในการต่อสู้: ทุกครั้งที่ชนะ ATK +20% สะสมสูงสุด 3 ครั้ง' },
   reflect_coat:    { name:'Reflect Coat',     nameTh:'เสื้อสะท้อน',       grade:'R', icon:'🪞', desc:'In battle: Reflects 15% of damage received back to the enemy', descTh:'ในการต่อสู้: สะท้อนดาเมจที่รับ 15% กลับไปยังศัตรู' },
   wind_step:       { name:'Wind Step',        nameTh:'ก้าวลม',            grade:'R', icon:'🌀', desc:'In battle: 15% chance to dodge attacks',    descTh:'ในการต่อสู้: 15% โอกาสหลบการโจมตี' },
   rage_core:       { name:'Rage Core',        nameTh:'แก่นแห่งความโกรธ',  grade:'R', icon:'🔥', desc:'In battle: Each hit received increases ATK by 15%, up to 3 stacks', descTh:'ในการต่อสู้: ทุกครั้งที่โดนตี ATK +15% สะสมสูงสุด 3 ครั้ง' },
   drain_aura:      { name:'Drain Aura',       nameTh:'ออร่าดูดพลัง',      grade:'R', icon:'🌑', desc:'In battle: Each LOSE reduces enemy ATK by 10%, up to 2 stacks', descTh:'ในการต่อสู้: ทุกครั้งที่แพ้ ATK ศัตรู -10% สะสมสูงสุด 2 ครั้ง' },
   blood_pact:      { name:'Blood Pact',       nameTh:'สัญญาเลือด',        grade:'R', icon:'🔴', desc:'In battle: Drains 15% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 15% จากดาเมจที่โจมตีทุกรอบ' },
   soul_reaper:     { name:'Soul Reaper',      nameTh:'เกี่ยวเกลียวจิตวิญญาณ', grade:'E', icon:'☠️', desc:'In battle: Drains 25% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 25% จากดาเมจที่โจมตีทุกรอบ' },
-  iron_will:       { name:'Iron Will',        nameTh:'ใจเหล็ก',           grade:'E', icon:'💎', desc:'In battle: When HP drops below 20%, survive one fatal blow', descTh:'ในการต่อสู้: เมื่อ HP ต่ำกว่า 20% รอดจากการโจมตีที่จะทำให้ตาย 1 ครั้ง' },
-  true_sight:      { name:'True Sight',       nameTh:'สายตาแท้',          grade:'E', icon:'🔭', desc:'In battle: The enemy cannot dodge your attacks', descTh:'ในการต่อสู้: ศัตรูไม่สามารถหลบการโจมตีของคุณได้' },
+  iron_will:       { name:'Iron Will',        nameTh:'ใจเหล็ก',           grade:'E', icon:'💎', desc:'In battle: Survive one fatal blow (once per battle). The next attack deals ATK +300%', descTh:'ในการต่อสู้: รอดจากการโจมตีที่จะทำให้ตาย 1 ครั้ง/การต่อสู้ การโจมตีครั้งถัดไป ATK +300%' },
+  true_sight:      { name:'True Sight',       nameTh:'สายตาแท้',          grade:'E', icon:'🔭', desc:'In battle: The enemy cannot dodge your attacks. ATK +50%', descTh:'ในการต่อสู้: ศัตรูไม่สามารถหลบการโจมตีของคุณได้ และ ATK +50%' },
   moon_veil:       { name:'Moon Veil',        nameTh:'ม่านจันทร์',        grade:'E', icon:'🌙', desc:'In battle: Regenerates 8% of Max HP each round', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 8% ทุกรอบ' },
   double_attack:   { name:'Double Attack',    nameTh:'โจมตีสองครั้ง',     grade:'E', icon:'⚔', desc:'In battle: 20% chance to attack twice in one round', descTh:'ในการต่อสู้: 20% โอกาสโจมตีสองครั้งในรอบเดียว' },
   wild_card:       { name:'Wild Card',        nameTh:'ไพ่มหัศจรรย์',      grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly heal, boost ATK, or reflect damage', descTh:'ในการต่อสู้: 25% โอกาสสุ่มระหว่างฟื้น HP, เพิ่ม ATK หรือสะท้อนดาเมจ' },
-  execution:       { name:'Execution',        nameTh:'ประหาร',            grade:'E', icon:'☠', desc:'In battle: When the enemy HP drops below 25%, deal 80% more damage', descTh:'ในการต่อสู้: เมื่อ HP ศัตรูต่ำกว่า 25% โจมตีเพิ่ม 80%' },
-  chain_strike:    { name:'Chain Strike',     nameTh:'โจมตีลูกโซ่',       grade:'E', icon:'💥', desc:'In battle: After a WIN, follow up with a bonus attack at 65% ATK', descTh:'ในการต่อสู้: หลังจากชนะ โจมตีต่อเนื่องด้วย ATK 65%' },
+  execution:       { name:'Execution',        nameTh:'ประหาร',            grade:'E', icon:'☠', desc:'In battle: When your HP drops below 20%, deal 200% more damage', descTh:'ในการต่อสู้: เมื่อ HP ของคุณต่ำกว่า 20% โจมตีเพิ่ม 200%' },
+  chain_strike:    { name:'Chain Strike',     nameTh:'โจมตีลูกโซ่',       grade:'E', icon:'💥', desc:'In battle: WIN streak bonus — ×1: 65% ATK / ×2: 130% ATK / ×3: 200% ATK. Breaks on non-WIN.', descTh:'ในการต่อสู้: ชนะต่อเนื่อง — ×1: 65% ATK / ×2: 130% ATK / ×3: 200% ATK | ไม่ชนะ = รีเซ็ต' },
   // stat boosts (equip-time)
   atk_shard:       { name:'ATK Shard',        nameTh:'เศษพลังโจมตี',      grade:'N', icon:'🗡', desc:'ATK +15% when equipped',                  descTh:'ATK +15% เมื่อสวมใส่' },
   def_shard:       { name:'DEF Shard',        nameTh:'เศษพลังป้องกัน',    grade:'N', icon:'🛡', desc:'DEF +15% when equipped',                  descTh:'DEF +15% เมื่อสวมใส่' },
@@ -1008,7 +1065,7 @@ const ARTIFACTS = {
   hp_core:         { name:'HP Core',          nameTh:'แก่น HP',           grade:'N', icon:'❤️', desc:'Max HP +15% when equipped',               descTh:'HP สูงสุด +15% เมื่อสวมใส่' },
   stone_skin:      { name:'Stone Skin',       nameTh:'หนังหิน',           grade:'N', icon:'🪨', desc:'In battle: Reduces damage taken by 10% while HP > 70%', descTh:'ในการต่อสู้: ลดดาเมจที่รับ 10% เมื่อ HP > 70%' },
   lucky_charm:     { name:'Lucky Charm',      nameTh:'เครื่องรางโชค',     grade:'N', icon:'🍀', desc:'After winning a battle: 50% chance to double Gold earned', descTh:'หลังชนะการต่อสู้: 50% โอกาสได้ Gold ×2' },
-  tide_breaker:    { name:'Tide Breaker',     nameTh:'ทลายกระแส',         grade:'R', icon:'🌊', desc:'In battle: If you lost last round, ATK +25% this round', descTh:'ในการต่อสู้: ถ้าแพ้รอบที่แล้ว ATK +25% รอบนี้' },
+  tide_breaker:    { name:'Tide Breaker',     nameTh:'ทลายกระแส',         grade:'R', icon:'🌊', desc:'In battle: If you lost last round, ATK +75% this round', descTh:'ในการต่อสู้: ถ้าแพ้รอบที่แล้ว ATK +75% รอบนี้' },
   all_stats_r:     { name:'Power Crest',      nameTh:'ตราพลัง',           grade:'R', icon:'💠', desc:'All stats (ATK/DEF/SPD/HP) +15% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +15% เมื่อสวมใส่' },
   all_stats_e:     { name:'Omega Crest',      nameTh:'ตราโอเมก้า',        grade:'E', icon:'🔷', desc:'All stats (ATK/DEF/SPD/HP) +25% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +25% เมื่อสวมใส่' },
   crit_core:       { name:'Crit Core',        nameTh:'แก่นคริ',            grade:'R', icon:'🎯', desc:'In battle: Crit chance +25%; on crit, heal 5% max HP', descTh:'ในการต่อสู้: โอกาสคริ +25%; เมื่อคริ ฟื้น HP 5% ของ HP สูงสุด' },
@@ -1040,7 +1097,7 @@ const EXPEDITIONS = [
 ];
 const BUFF_DUR = 30 * 60 * 1000;
 const MAX_PETS = 4;
-const MAX_INV  = 20;
+const MAX_INV  = 40;
 
 function beatsOf(n) { return CYCLE[(CYCLE.indexOf(n)+1)%CYCLE.length]; }
 function compareMoves(p, e) {
@@ -1054,6 +1111,7 @@ function compareMoves(p, e) {
 // STATE
 // ============================================================
 let state = 'title';
+let titlePhase = 'start'; // 'start' | 'slots'
 let towerFloor = 0;
 let towerHighest = 0;
 let towerCheckpoint = 0;
@@ -1061,10 +1119,12 @@ let towerActive = false;
 let towerPendingGold = 0;
 let towerPendingArtifacts = [];
 let towerRunSummary = null;
+let towerFirstClears = new Set();
+let scoutFirstClears = new Set();
 let towerToast = '';
 let pets = [];          // max 4 pet objects
 let storage = [];       // max 10 pet objects (storage box)
-const MAX_STORAGE = 10;
+const MAX_STORAGE = 20;
 let partyViewTab = 'party'; // 'party' | 'storage' | 'fusion' | 'rebirth'
 let fusionBaseSource = null;  // {idx, from:'party'|'storage'}
 let fusionSacSource  = null;  // {idx, from:'party'|'storage'}
@@ -1080,9 +1140,20 @@ let gold = 0;
 let stage = 1;
 let hardMode = false;
 let replayStage = 0; // >0 = replay mode (ไม่ advance stage)
+let _scDone = false;
+let _scTimer = null;
 let totalPlayTime = 0;  // ms สะสม
 let _playTimeRef = Date.now(); // จุดอ้างอิงเซสชันปัจจุบัน
 let hardStage = 0; // 1-20 in hard mode
+let hellMode = false;
+let hellStage = 1; // 1-20 in hell mode
+let vsEnemies = [];
+let vsEnemyIdx = 0;
+let vsPlayerDeaths = 0;
+let vsWon = false;
+let vsCurrentStage = 1;
+let vsRewards = null;
+let vsHpSnapshot = [];
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
 let lastScrollDay = '';
@@ -1122,6 +1193,7 @@ const BATTLE_BGS = {
 };
 function getBattleBg() {
   if(battleState?.isTowerBattle) return 'Battle Scene/tower-scene.jpg';
+  if(battleState?.isVsBattle) return 'Battle Scene/BG-VS-Mode.jpg';
   const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
   const h = new Date().getHours();
   return (h>=6&&h<18) ? b.day : b.night;
@@ -1160,7 +1232,7 @@ let slotDeleteConfirm = null;    // slot number
 let gameLang = localStorage.getItem('gameLang') || 'th';
 function T(th, en) { return gameLang === 'en' ? en : th; }
 function P(f) { return f ? (gameLang === 'en' ? f.passive : (f.passiveTh || f.passive)) : ''; }
-function N(it) { return it ? (gameLang === 'en' ? it.name : (it.nameTh || it.name)) : ''; }
+function N(it) { return it ? (it.name || '') : ''; }
 function D(it) { return it ? (gameLang === 'en' ? it.desc : (it.descTh || it.desc)) : ''; }
 function setLang(lang) { gameLang = lang; localStorage.setItem('gameLang', lang); render(); }
 
@@ -1172,7 +1244,7 @@ function newPet() {
            symbols:[], formKey:null,
            hp:60, maxHp:60, atk:12, spd:10, def:4, name:'???',
            buffExpiry:{atk:0,spd:0,def:0}, expedition:null,
-           trainCount:0, resting:false, deadRestUntil:0, locked:false, shiny:false };
+           trainCount:0, trainBonuses:{hp:0,atk:0,spd:0,def:0}, resting:false, deadRestUntil:0, locked:false, shiny:false };
 }
 
 function applyShinyStats(pet) {
@@ -1249,7 +1321,7 @@ function getTrainCount(pet) {
   return tc || 0;
 }
 function trainCost() { return (Math.floor(getTrainCount() / 10) + 1) * 25; }
-function trainCap() { return hardMode ? 200 + hardStage * 20 : stage * 10; }
+function trainCap() { return hellMode ? 400 + hellStage * 20 : hardMode ? 200 + hardStage * 20 : stage * 10; }
 function trainLeft() { return Math.max(0, trainCap() - getTrainCount()); }
 
 function syncCreature() { creature = pets[activePetIdx]; }
@@ -1368,7 +1440,7 @@ function useItem(type, petIdx=activePetIdx) {
   if(type==='energy_drink') {
     if(stamina >= MAX_STAMINA) { SFX.error(); scoutToast=T('⚡ Stamina เต็มแล้ว!','⚡ Stamina full!'); return false; }
   }
-  if(type==='mystery_egg') {
+  if(type==='mystery_egg'||type==='shiny_egg') {
     if(pets.length >= MAX_PETS) { SFX.error(); scoutToast=T('⚠ Party เต็ม! ลบสัตว์เลี้ยงก่อน','⚠ Party full! Remove a beast first'); return false; }
   }
   if(type==='hp_potion' && pet.hp >= pet.maxHp) { SFX.error(); scoutToast=T('⚠ HP เต็มแล้ว!','⚠ HP is already full!'); return false; }
@@ -1397,14 +1469,14 @@ function useItem(type, petIdx=activePetIdx) {
     pet.deadRestUntil = 0;
     scoutToast=T('💎 ฟื้นคืนชีพ! HP 50%','💎 Revived! HP 50%');
   }
-  if(type==='artifact_box') {
-    const r = Math.random();
-    const grade = r<0.05?'E':r<0.40?'R':'N';
+  if(type==='artifact_box'||type==='box_R'||type==='box_E') {
+    const grade = type==='box_E'?'E' : type==='box_R'?(Math.random()<0.15?'E':'R') : (()=>{ const r=Math.random(); return r<0.05?'E':r<0.40?'R':'N'; })();
     const pool = ARTIFACT_POOL[grade];
     const artKey = pool[Math.floor(Math.random()*pool.length)];
     addArtifactToBag(artKey);
     const art = ARTIFACTS[artKey];
-    scoutToast = `📦 ${T('เปิดได้','Got')} ${art?.grade==='E'?'✨':art?.grade==='R'?'💜':''} ${art?.nameTh||art?.name||artKey}!`;
+    const gradeIcon = grade==='E'?'✨':grade==='R'?'💜':'';
+    scoutToast = `📦 ${T('เปิดได้','Got')} ${gradeIcon} ${art?.name||artKey} [${grade}]!`;
     slot.qty--;
     if(slot.qty<=0) inventory.splice(inventory.indexOf(slot),1);
     saveGame(); render(); return true;
@@ -1415,9 +1487,13 @@ function useItem(type, petIdx=activePetIdx) {
   }
   if(type==='mystery_egg') {
     const np = newPet(); if(Math.random()<0.03) { np.shiny=true; applyShinyStats(np); }
-    pets.push(np);
-    syncCreature();
+    pets.push(np); syncCreature();
     scoutToast=T('🥚 Mystery Egg ฟัก! สัตว์เลี้ยงใหม่เข้าปาร์ตี้!','🥚 Mystery Egg hatched! New beast joined party!');
+  }
+  if(type==='shiny_egg') {
+    const np = newPet(); np.shiny=true; applyShinyStats(np);
+    pets.push(np); syncCreature();
+    showHatchAnimation(true, () => { scoutToast=T('✨ SHINY EGG ฟัก! สัตว์ Shiny เข้าปาร์ตี้!','✨ SHINY EGG hatched! Shiny beast joined!'); render(); });
   }
   if(type==='essence') {
     const roll = Math.random();
@@ -1450,7 +1526,11 @@ function startExpedition(petIdx, expType) {
 }
 
 function getExpeditionPools() {
-  return hardMode ? {
+  return hellMode ? {
+    quick:  [{t:'super_potion',w:30},{t:'max_potion',w:20},{t:'power_shard',w:16},{t:'speed_shard',w:12},{t:'guard_shard',w:10},{t:'energy_drink',w:8},{t:'essence',w:4}],
+    search: [{t:'super_potion',w:18},{t:'max_potion',w:15},{t:'power_shard',w:12},{t:'speed_shard',w:12},{t:'guard_shard',w:8},{t:'map_scroll',w:5},{t:'energy_drink',w:6},{t:'fusion_stone',w:8},{t:'essence',w:14},{t:'box_R',w:2}],
+    deep:   [{t:'super_potion',w:10},{t:'max_potion',w:12},{t:'power_shard',w:8},{t:'speed_shard',w:8},{t:'guard_shard',w:6},{t:'map_scroll',w:6},{t:'energy_drink',w:5},{t:'fusion_stone',w:12},{t:'essence',w:22},{t:'revive',w:6},{t:'box_R',w:5}],
+  } : hardMode ? {
     quick:  [{t:'super_potion',w:35},{t:'max_potion',w:15},{t:'power_shard',w:18},{t:'speed_shard',w:14},{t:'guard_shard',w:10},{t:'energy_drink',w:8}],
     search: [{t:'super_potion',w:22},{t:'max_potion',w:15},{t:'power_shard',w:14},{t:'speed_shard',w:14},{t:'guard_shard',w:10},{t:'map_scroll',w:5},{t:'energy_drink',w:6},{t:'fusion_stone',w:6},{t:'essence',w:12}],
     deep:   [{t:'super_potion',w:14},{t:'max_potion',w:12},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:8},{t:'map_scroll',w:8},{t:'energy_drink',w:5},{t:'fusion_stone',w:10},{t:'essence',w:24},{t:'revive',w:5}],
@@ -1733,7 +1813,7 @@ function previewExpeditionReward(expType) {
 }
 
 function expeditionGold(expType) {
-  const eff = hardMode ? 20 + hardStage : stage;
+  const eff = hellMode ? 40 + hellStage : hardMode ? 20 + hardStage : stage;
   const ranges = { quick:[8,15], search:[25,40], deep:[55,85] };
   const [mn, mx] = ranges[expType] || [5,10];
   return Math.round(eff * (mn + Math.random()*(mx-mn)));
@@ -1766,7 +1846,7 @@ function checkExpeditions() {
 // ============================================================
 function exportSave() {
   const raw = localStorage.getItem(SLOT_KEY(currentSlot));
-  if(!raw) { alert('ไม่มีข้อมูล Save'); return; }
+  if(!raw) { alert(T('ไม่มีข้อมูล Save','No save data found')); return; }
   const blob = new Blob([raw], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1782,13 +1862,13 @@ function importSave(file) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      if(!data.pets) { alert('ไฟล์ไม่ถูกต้อง'); return; }
+      if(!data.pets) { alert(T('ไฟล์ไม่ถูกต้อง','Invalid save file')); return; }
       localStorage.setItem(SLOT_KEY(currentSlot), e.target.result);
       loadGame(currentSlot);
       settingsOpen = false;
       render();
-      alert('โหลด Save สำเร็จ!');
-    } catch { alert('ไฟล์เสียหาย'); }
+      alert(T('โหลด Save สำเร็จ!','Save loaded successfully!'));
+    } catch { alert(T('ไฟล์เสียหาย','Save file corrupted')); }
   };
   reader.readAsText(file);
 }
@@ -1796,7 +1876,7 @@ function importSave(file) {
 function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage}));
   } catch(e) {}
 }
 
@@ -1810,7 +1890,7 @@ function getSlotInfo(n) {
     const ms = typeof d.totalPlayTime==='number' ? d.totalPlayTime : 0;
     const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000);
     const timeStr = h>0 ? `${h}h ${m}m` : `${m}m`;
-    const stageStr = d.hardMode ? `Hard ${d.hardStage||1}` : `Stage ${d.stage||1}`;
+    const stageStr = d.hellMode ? `Hell ${d.hellStage||1}` : d.hardMode ? `Hard ${d.hardStage||1}` : `Stage ${d.stage||1}`;
     const pet0 = d.pets?.[0] ? {...newPet(), ...d.pets[0]} : null;
     return { stage: d.stage||1, name: firstName, phase: firstPhase, timeStr, stageStr, pet0 };
   } catch(e) { return null; }
@@ -1853,6 +1933,11 @@ function loadGame(slotNum) {
         if(d.towerRunSummary && typeof d.towerRunSummary==='object') towerRunSummary = d.towerRunSummary;
         if(Array.isArray(d.seenEvolved)) seenEvolved = new Set(d.seenEvolved);
         if(Array.isArray(d.seenFinal))   seenFinal   = new Set(d.seenFinal);
+        if(Array.isArray(d.towerFirstClears)) towerFirstClears = new Set(d.towerFirstClears);
+        if(Array.isArray(d.scoutFirstClears)) scoutFirstClears = new Set(d.scoutFirstClears);
+        if(typeof d.hellMode==='boolean') hellMode = d.hellMode;
+        if(typeof d.hellStage==='number') hellStage = d.hellStage;
+        if(typeof d.vsCurrentStage==='number') vsCurrentStage = d.vsCurrentStage;
         if(typeof d.totalPlayTime==='number') totalPlayTime = d.totalPlayTime;
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
@@ -1873,6 +1958,12 @@ function loadGame(slotNum) {
           if(staminaRegen > 0) stamina = Math.min(MAX_STAMINA, stamina + staminaRegen);
         }
         syncCreature();
+        // ONE-TIME DEV CHEAT — remove after testing
+        if(!localStorage.getItem('_devCheat1')) {
+          ['shiny_egg','box_R','box_E'].forEach(t=>addItemToInventory(t));
+          localStorage.setItem('_devCheat1','1');
+          scoutToast = '🎁 DEV: Shiny Egg + box_R + box_E added!';
+        }
         return true;
       }
     }
@@ -1939,7 +2030,9 @@ function moveScout(dx,dy) {
       startBattle('mimic');
       return;
     }
-    const pool = hardMode
+    const pool = hellMode
+      ? [{t:'super_potion',w:15},{t:'max_potion',w:15},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:4},{t:'energy_drink',w:6},{t:'essence',w:8},{t:'fusion_stone',w:5},{t:'box_R',w:2}]
+      : hardMode
       ? [{t:'super_potion',w:22},{t:'max_potion',w:15},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:4},{t:'energy_drink',w:6},{t:'essence',w:5},{t:'fusion_stone',w:3}]
       : [{t:'hp_potion',w:30},{t:'max_potion',w:12},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:5},{t:'energy_drink',w:8}];
     let r=Math.random()*100, cum=0, item=pool[0].t;
@@ -1986,7 +2079,7 @@ function startBattle(battleType) {
   const isBoss  = battleType === 'boss';
   const isMini  = battleType === 'mini';
   const isMimic = battleType === 'mimic';
-  const effectiveStage = replayStage > 0 ? (replayHard ? 20 + replayStage : replayStage) : hardMode ? 20 + hardStage : stage;
+  const effectiveStage = replayStage > 0 ? (replayHard ? 20 + replayStage : replayStage) : hellMode ? 40 + hellStage : hardMode ? 20 + hardStage : stage;
   const lv = isBoss ? effectiveStage+2 : isMini ? effectiveStage+1 : effectiveStage;
   const cell = scoutGrid[idx(scoutPos.x, scoutPos.y)];
   const typeKey = isMimic ? 'F' : (cell?.enemyType || ['F','W','S'][Math.floor(Math.random()*3)]);
@@ -2026,8 +2119,8 @@ function startBattle(battleType) {
   const spriteFile = isMimic ? 'monster & boss/mimic-mon.png' : spritePool[cell?.spriteIdx ?? Math.floor(Math.random()*spritePool.length)];
 
   // Hard Mode: 40% chance to spawn Evolved/Fusion form instead
-  const isEffectiveHard = replayStage>0 ? replayHard : hardMode;
-  const effectiveHardStage = replayStage>0 ? replayStage : hardStage;
+  const isEffectiveHard = replayStage>0 ? replayHard : (hardMode || hellMode);
+  const effectiveHardStage = replayStage>0 ? replayStage : hellMode ? hellStage : hardStage;
   let scoutHardForm = null;
   if(isEffectiveHard && !isMimic && (cell?.hardSeed??Math.random())<0.4) {
     const scoutEvoScale = baseHp / 75;
@@ -2035,17 +2128,17 @@ function startBattle(battleType) {
     const useFusion = effectiveHardStage>=11 && (cell?.hardTypeSeed??Math.random())<0.5;
     if(useFusion) {
       const fkeys=Object.keys(FINAL_FORMS), fk=fkeys[Math.floor((cell?.hardKeySeed??Math.random())*fkeys.length)], ff=FINAL_FORMS[fk];
-      const bm = isBoss?1.4:isMini?1.2:1, am = isBoss?1.2:isMini?1.1:1;
+      const bm = isBoss?1.4:isMini?1.2:1, am = isBoss?1.2:isMini?1.6:1.7;
       scoutHardForm = { name:`${ff.name}`, typeKey, isBoss, isMini, isMimic, spriteFile:null, isFusionEnemy:true, fusionKey:fk,
         maxHp:Math.round(ff.hp*scoutFusScale*bm), hp:Math.round(ff.hp*scoutFusScale*bm),
-        atk:Math.round(ff.atk*scoutFusScale*am), def:Math.round(ff.def*scoutFusScale), spd:Math.round(ff.spd*scoutFusScale),
+        atk:Math.round(ff.atk*scoutFusScale*am), def:Math.round(ff.def*scoutFusScale*am), spd:Math.round(baseSpd*(ff.spd/14)*1.7),
         passives:[fk, ...pickEnemyPassives(typeKey, isBoss?1:0)], ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
     } else {
       const ekeys=Object.keys(FORMS), ek=ekeys[Math.floor((cell?.hardKeySeed??Math.random())*ekeys.length)], ef=FORMS[ek];
-      const bm = isBoss?1.2:isMini?1.1:1, am = isBoss?1.0:isMini?0.95:0.9;
+      const bm = isBoss?1.2:isMini?1.1:1, am = isBoss?1.0:isMini?1.5:1.4;
       scoutHardForm = { name:`${ef.name}`, typeKey, isBoss, isMini, isMimic, spriteFile:null, isEvolvedEnemy:true, evolvedKey:ek,
         maxHp:Math.round(ef.hp*scoutEvoScale*bm), hp:Math.round(ef.hp*scoutEvoScale*bm),
-        atk:Math.round(ef.atk*scoutEvoScale*am), def:Math.round(ef.def*scoutEvoScale), spd:Math.round(baseSpd*(ef.spd/14)),
+        atk:Math.round(ef.atk*scoutEvoScale*am), def:Math.round(ef.def*scoutEvoScale*am), spd:Math.round(baseSpd*(ef.spd/14)*1.4),
         passives:[ek, ...pickEnemyPassives(typeKey, isBoss?1:0)], ownPassiveDesc:ef.passive, ownPassiveIcon:ef.passiveIcon };
     }
   }
@@ -2064,7 +2157,9 @@ function startBattle(battleType) {
     if(isMimic) {
       enemy.passives = pickEnemyPassives(['F','W','S'][Math.floor(Math.random()*3)], 1);
     } else if(isMini) {
-      enemy.passives = pickEnemyPassives(typeKey, 1);
+      enemy.passives = pickEnemyPassives(typeKey, hellMode ? 2 : 1);
+    } else if(hellMode) {
+      enemy.passives = pickEnemyPassives(typeKey, isBoss ? 3 : 2);
     } else if(hardMode) {
       enemy.passives = pickEnemyPassives(typeKey, isBoss ? 2 : 1);
     } else if(stage >= 20) {
@@ -2156,7 +2251,7 @@ function doOverdriveTurn() {
   } else if(ff==='F+S') {
     pd=Math.max(1,Math.round((atk/3+Math.random()*4)*2.5)); ed=0;
     bs.odBuff={type:'fortressBreak',turnsLeft:3};
-    passives.push({icon:'🛡',text:`FORTRESS BREAK ×2.5 (ignore DEF)→${pd} | ทะลุDEF+Reflect50% (3T)`});
+    passives.push({icon:'🛡',text:`FORTRESS BREAK ×2.5 (ignore DEF)→${pd} | PierceDEF+Reflect50% (3T)`});
   } else if(ff==='F+M') {
     const h1=_hit(1.0),h2=_hit(1.0),h3=_hit(1.0),h4=_hit(1.0); pd=h1.d+h2.d+h3.d+h4.d; ed=_ed(); pdHits=[h1.d,h2.d,h3.d,h4.d];
     bs.odBuff={type:'warlord',turnsLeft:3};
@@ -2237,7 +2332,7 @@ function doTurn(moveIdx) {
   const sniperReady = (artId==='sniper_eye' || artId2==='sniper_eye') && bs.turn % 3 === 0;
   const crit = sniperReady ? true : Math.random() < critChance;
   const hasDeathblow = artId==='deathblow' || artId2==='deathblow';
-  const critMult = sniperReady ? 2.5 : hasDeathblow ? 2.0 : 1.6;
+  const critMult = sniperReady ? 2.0 : hasDeathblow ? 2.0 : 1.6;
   let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, eReflectDmg = 0, enemyStunned = false, playerStunned = false, pdHits = [], extraHits = [];
   const spdBoost = (bs.odBuff?.type==='sovereign' || bs.odBuff?.type==='thunderFang') ? 2.0 : 1.0;
   const playerFirst = Math.round(getEffStat('spd')*spdBoost) >= enemy.spd;
@@ -2249,6 +2344,7 @@ function doTurn(moveIdx) {
   let ed = Math.max(1, Math.round((em.dmg + enemy.atk/3 + Math.random()*4) / mult * (enemyCrit ? 1.5 : 1)) - Math.floor(getEffStat('def')/2));
 
   const passives = [];
+  const startHp = creature.hp; // HP at start of turn (before any heals/modifications)
 
   // Apply stun carried from previous turn
   if(bs.playerStunnedNextTurn) { pd=0; playerStunned=true; bs.playerStunnedNextTurn=false; SFX.stun(); passives.push({icon:'⚡',text:T('STUN! โจมตีพลาด (ค้างจากเทิร์นที่แล้ว)','STUN! Miss (carried from last turn)')}); }
@@ -2290,18 +2386,17 @@ function doTurn(moveIdx) {
     if(type==='soulSurge') { pd=Math.round(pd*2.0); passives.push({icon:'🌫️',text:`SOUL SURGE ATK×2→${pd}`}); }
     if(type==='colossus') { pd=Math.round(pd*2.0); passives.push({icon:'🏔️',text:`EARTHSHATTER ATK×2→${pd}`}); }
     if(type==='aegis') { pd=Math.round(pd*3.0); ed=1; passives.push({icon:'🏰',text:`DIVINE AEGIS ATK×3→${pd} | dmg=1`}); }
-    if(type==='fortressBreak') { pd+=Math.floor(enemy.def/2); passives.push({icon:'🛡',text:`FORTRESS BREAK ทะลุDEF+${Math.floor(enemy.def/2)}→${pd} | Reflect 50%`}); }
+    if(type==='fortressBreak') { pd+=Math.floor(enemy.def/2); passives.push({icon:'🛡',text:`FORTRESS BREAK PierceDEF+${Math.floor(enemy.def/2)}→${pd} | Reflect 50%`}); }
     if(type==='sovereign') {
       pd=Math.round(pd*2.0); ed=Math.round(ed*0.5);
-      const ls=Math.max(1,Math.round(pd*0.35));
-      creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls;
-      passives.push({icon:'👑',text:`BLOOD TRIBUTE ATK×2→${pd} | DEF×2→${ed}↓ | SPD/DEF×2 | 🩸+${ls}`});
+      bs._sovereignLs = true;
+      passives.push({icon:'👑',text:`BLOOD TRIBUTE ATK×2→${pd} | DEF×2→${ed}↓ | SPD/DEF×2`});
     }
     bs.odBuff.turnsLeft--;
     if(bs.odBuff.turnsLeft<=0) bs.odBuff=null;
   }
   // Enemy stun (from THUNDER FANG)
-  if(bs.enemyStunTurns>0) { ed=0; bs.enemyStunTurns--; passives.push({icon:'⚡',text:`STUN! ศัตรูตีไม่ได้ (${bs.enemyStunTurns} left)`}); }
+  if(bs.enemyStunTurns>0) { ed=0; bs.enemyStunTurns--; passives.push({icon:'⚡',text:`STUN! Enemy cannot attack (${bs.enemyStunTurns} left)`}); }
 
   // ===== PRE-DAMAGE: EVOLVED PASSIVES =====
   if(fk==='FFF') { pd=Math.round(pd*1.25); passives.push({icon:'💢',text:`+25% ATK → ${pd}`}); }
@@ -2408,16 +2503,14 @@ function doTurn(moveIdx) {
   if(ff==='M+M') { // SOVEREIGN: ดูดเลือด 3%×(1+stack) ทุก round + WIN→dmg+15%/recv-15% stack ×2
     const curStack=bs.sovereignStack||0;
     const drainRate=0.03*(1+curStack);
-    const ls3=Math.max(1,Math.round(pd*drainRate));
-    creature.hp=Math.min(creature.maxHp,creature.hp+ls3);
-    playerHeal+=ls3;
+    bs._sovereignFormLs = drainRate; // defer — calculate after artifact boosts
     if(cmp==='win') {
       bs.sovereignStack=Math.min(2,curStack+1);
       const s=bs.sovereignStack;
       pd=Math.round(pd*(1+0.15*s)); ed=Math.round(ed*(1-0.15*s));
-      passives.push({icon:'👑',text:T(`ดูดเลือด ${Math.round(drainRate*100)}% +${ls3} | WIN×${s} dmg+${15*s}%/recv-${15*s}%`,`Lifesteal ${Math.round(drainRate*100)}% +${ls3} | WIN×${s} ATK+${15*s}%/dmgRecv-${15*s}%`)});
+      passives.push({icon:'👑',text:T(`ดูดเลือด ${Math.round(drainRate*100)}% | WIN×${s} dmg+${15*s}%/recv-${15*s}%`,`Lifesteal ${Math.round(drainRate*100)}% | WIN×${s} ATK+${15*s}%/dmgRecv-${15*s}%`)});
     } else {
-      passives.push({icon:'👑',text:T(`ดูดเลือด ${Math.round(drainRate*100)}% +${ls3}`,`Lifesteal ${Math.round(drainRate*100)}% +${ls3}`)});
+      passives.push({icon:'👑',text:T(`ดูดเลือด ${Math.round(drainRate*100)}%`,`Lifesteal ${Math.round(drainRate*100)}%`)});
     }
   }
 
@@ -2427,17 +2520,17 @@ function doTurn(moveIdx) {
     // Normal
     if(artId==='swift_ring' && Math.random()<0.10) { ed=0; passives.push({icon:'💨',text:'Swift Ring DODGE!'}); }
     if(artId==='life_seed') { const h=Math.max(1,Math.round(creature.maxHp*0.05)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🌱',text:`Life Seed +${h}`}); }
-    if(artId==='crimson_fang' && pd>0) { const h=Math.max(1,Math.round(pd*0.05)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🩸',text:`Crimson Fang +${h}`}); }
-    if(artId==='blood_pact'   && pd>0) { const h=Math.max(1,Math.round(pd*0.15)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🔴',text:`Blood Pact +${h}`}); }
-    if(artId==='soul_reaper'  && pd>0) { const h=Math.max(1,Math.round(pd*0.25)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'☠️',text:`Soul Reaper +${h}`}); }
+    if(artId==='crimson_fang' && pd>0) bs._ls1 = (bs._ls1||0) + 0.05;
+    if(artId==='blood_pact'   && pd>0) bs._ls1 = (bs._ls1||0) + 0.15;
+    if(artId==='soul_reaper'  && pd>0) bs._ls1 = (bs._ls1||0) + 0.25;
     if(artId==='shock_bead' && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:'Shock Bead STUN! (next turn)'});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:'⚡',text:'Shock Bead STUN!'});} }
     if(artId==='blade_shard') { pd=Math.round(pd*1.10); passives.push({icon:'🗡',text:`Blade Shard ATK×1.1 → ${pd}`}); }
     if(artId==='iron_plate') { ed=Math.round(ed*0.85); passives.push({icon:'🛡',text:`Iron Plate DEF → ${ed}`}); }
     if(artId==='stone_skin' && creature.hp>creature.maxHp*0.70) { ed=Math.round(ed*0.90); passives.push({icon:'🪨',text:`Stone Skin -10% → ${ed}`}); }
-    if(artId==='tide_breaker' && bs.lastCmp==='lose') { pd=Math.round(pd*1.25); passives.push({icon:'🌊',text:`Tide Breaker ATK+25% → ${pd}`}); }
+    if(artId==='tide_breaker' && bs.lastCmp==='lose') { pd=Math.round(pd*1.75); passives.push({icon:'🌊',text:`Tide Breaker ATK+75% → ${pd}`}); }
     if(artId==='vitality_core') { /* HP bonus applied at equip time, passive handled in equip */ }
     // Rare
-    if(artId==='death_mark' && creature.hp<creature.maxHp*0.30) { pd=Math.round(pd*1.60); passives.push({icon:'💀',text:`Death Mark ATK×1.6 → ${pd}`}); }
+    if(artId==='death_mark' && creature.hp<creature.maxHp*0.30) { pd=Math.round(pd*2.00); passives.push({icon:'💀',text:`Death Mark ATK+100% → ${pd}`}); }
     if(artId==='precision_stone' && bs.turn%3===0) { pd=Math.round(pd*2); passives.push({icon:'🔮',text:`Precision Stone ×2 → ${pd}`}); }
     if(artId==='berserker_claw') { ed=Math.round(ed*1.10); } // DEF -10% (take more)
     if(artId==='reflect_coat') { const ref=Math.round(ed*0.15); enemyHeal-=ref; reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🪞',text:`Reflect Coat ${ref} dmg`}); }
@@ -2449,7 +2542,7 @@ function doTurn(moveIdx) {
     }
     if(artId==='victory_chain') {
       if(cmp==='win') as.victoryStack=Math.min(3,(as.victoryStack||0)+1);
-      if((as.victoryStack||0)>0) { pd=Math.round(pd*(1+0.10*as.victoryStack)); passives.push({icon:'⛓',text:`Victory Chain ×${as.victoryStack} → ${pd}`}); }
+      if((as.victoryStack||0)>0) { pd=Math.round(pd*(1+0.20*as.victoryStack)); passives.push({icon:'⛓',text:`Victory Chain ×${as.victoryStack} → ${pd}`}); }
     }
     if(artId==='paralysis_fang') {
       if(as.paralysisProc) { pd=Math.round(pd*1.30); passives.push({icon:'🦷',text:`Paralysis Boost ATK → ${pd}`}); as.paralysisProc=false; }
@@ -2461,13 +2554,14 @@ function doTurn(moveIdx) {
       if((as.drainAuraStack||0)>0) { ed=Math.round(ed*(1-0.10*as.drainAuraStack)); passives.push({icon:'🌑',text:T(`Drain Aura -${10*as.drainAuraStack}% ศัตรู → ${ed}`,`Drain Aura -${10*as.drainAuraStack}% enemy → ${ed}`)}); }
     }
     // Epic
-    if(artId==='iron_will' && !as.ironWillUsed && creature.hp<=creature.maxHp*0.20 && creature.hp-ed<=0) {
-      ed=creature.hp-1; as.ironWillUsed=true; passives.push({icon:'💎',text:T('Iron Will กันตาย!','Iron Will — prevented death!')}); }
-    if(artId==='true_sight') { /* enemy dodge blocked — handled in enemy dodge check */ }
+    if(artId==='iron_will') {
+      if(as.ironWillBoostReady) { pd=Math.round(pd*4); as.ironWillBoostReady=false; passives.push({icon:'💎',text:`Iron Will REVENGE ATK×4 → ${pd}`}); }
+    }
+    if(artId==='true_sight') { pd=Math.round(pd*1.50); passives.push({icon:'🔭',text:`True Sight ATK+50% → ${pd}`}); }
     if(artId==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.08)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🌙',text:`Moon Veil +${h}`}); }
     if(artId==='double_attack' && Math.random()<0.20) { const orig=pd; pd=Math.round(pd*2); pdHits=[orig,orig]; passives.push({icon:'⚔',text:`Double Attack ×2 → ${pd}`}); }
-    if(artId==='execution' && enemy.hp<enemy.maxHp*0.25) { pd=Math.round(pd*1.80); passives.push({icon:'☠',text:`Execution +80% → ${pd}`}); }
-    if(artId==='chain_strike' && cmp==='win') { const bonus=Math.round(pd*0.65); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike +${bonus}`}); }
+    if(artId==='execution' && startHp<creature.maxHp*0.20) { pd=Math.round(pd*3.00); passives.push({icon:'☠',text:`Execution +200% → ${pd}`}); }
+    if(artId==='chain_strike') { if(cmp==='win') { bs.chainStrikeStreak=(bs.chainStrikeStreak||0)+1; const rate=bs.chainStrikeStreak>=3?2.00:bs.chainStrikeStreak>=2?1.30:0.65; const bonus=Math.round(pd*rate); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike${bs.chainStrikeStreak>=3?' ×3':bs.chainStrikeStreak>=2?' ×2':''} ${Math.round(rate*100)}% → +${bonus}`}); } else { bs.chainStrikeStreak=0; } }
     if(artId==='crit_core' && crit) { const h=Math.max(1,Math.round(creature.maxHp*0.05)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🎯',text:`Crit Core Heal +${h}`}); }
     if(artId==='deathblow') { /* crit mult handled above */ }
     if(artId==='wild_card' && Math.random()<0.25) {
@@ -2483,16 +2577,16 @@ function doTurn(moveIdx) {
     const as = bs.artifactStacks2;
     if(artId2==='swift_ring' && Math.random()<0.10) { ed=0; passives.push({icon:'💨',text:'Swift Ring DODGE!'}); }
     if(artId2==='life_seed') { const h=Math.max(1,Math.round(creature.maxHp*0.05)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🌱',text:`Life Seed +${h}`}); }
-    if(artId2==='crimson_fang' && pd>0) { const h=Math.max(1,Math.round(pd*0.05)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🩸',text:`Crimson Fang +${h}`}); }
-    if(artId2==='blood_pact'   && pd>0) { const h=Math.max(1,Math.round(pd*0.15)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🔴',text:`Blood Pact +${h}`}); }
-    if(artId2==='soul_reaper'  && pd>0) { const h=Math.max(1,Math.round(pd*0.25)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'☠️',text:`Soul Reaper +${h}`}); }
+    if(artId2==='crimson_fang' && pd>0) bs._ls1 = (bs._ls1||0) + 0.05;
+    if(artId2==='blood_pact'   && pd>0) bs._ls1 = (bs._ls1||0) + 0.15;
+    if(artId2==='soul_reaper'  && pd>0) bs._ls1 = (bs._ls1||0) + 0.25;
     if(artId2==='shock_bead' && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:'Shock Bead STUN! (next turn)'});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:'⚡',text:'Shock Bead STUN!'});} }
     if(artId2==='blade_shard') { pd=Math.round(pd*1.10); passives.push({icon:'🗡',text:`Blade Shard ATK×1.1 → ${pd}`}); }
     if(artId2==='iron_plate') { ed=Math.round(ed*0.85); passives.push({icon:'🛡',text:`Iron Plate DEF → ${ed}`}); }
     if(artId2==='stone_skin' && creature.hp>creature.maxHp*0.70) { ed=Math.round(ed*0.90); passives.push({icon:'🪨',text:`Stone Skin -10% → ${ed}`}); }
-    if(artId2==='tide_breaker' && bs.lastCmp==='lose') { pd=Math.round(pd*1.25); passives.push({icon:'🌊',text:`Tide Breaker ATK+25% → ${pd}`}); }
+    if(artId2==='tide_breaker' && bs.lastCmp==='lose') { pd=Math.round(pd*1.75); passives.push({icon:'🌊',text:`Tide Breaker ATK+75% → ${pd}`}); }
     if(artId2==='vitality_core') { /* HP bonus applied at equip time */ }
-    if(artId2==='death_mark' && creature.hp<creature.maxHp*0.30) { pd=Math.round(pd*1.60); passives.push({icon:'💀',text:`Death Mark ATK×1.6 → ${pd}`}); }
+    if(artId2==='death_mark' && creature.hp<creature.maxHp*0.30) { pd=Math.round(pd*2.00); passives.push({icon:'💀',text:`Death Mark ATK+100% → ${pd}`}); }
     if(artId2==='precision_stone' && bs.turn%3===0) { pd=Math.round(pd*2); passives.push({icon:'🔮',text:`Precision Stone ×2 → ${pd}`}); }
     if(artId2==='berserker_claw') { ed=Math.round(ed*1.10); }
     if(artId2==='reflect_coat') { const ref=Math.round(ed*0.15); enemyHeal-=ref; reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🪞',text:`Reflect Coat ${ref} dmg`}); }
@@ -2504,7 +2598,7 @@ function doTurn(moveIdx) {
     }
     if(artId2==='victory_chain') {
       if(cmp==='win') as.victoryStack=Math.min(3,(as.victoryStack||0)+1);
-      if((as.victoryStack||0)>0) { pd=Math.round(pd*(1+0.10*as.victoryStack)); passives.push({icon:'⛓',text:`Victory Chain ×${as.victoryStack} → ${pd}`}); }
+      if((as.victoryStack||0)>0) { pd=Math.round(pd*(1+0.20*as.victoryStack)); passives.push({icon:'⛓',text:`Victory Chain ×${as.victoryStack} → ${pd}`}); }
     }
     if(artId2==='paralysis_fang') {
       if(as.paralysisProc) { pd=Math.round(pd*1.30); passives.push({icon:'🦷',text:`Paralysis Boost ATK → ${pd}`}); as.paralysisProc=false; }
@@ -2515,13 +2609,14 @@ function doTurn(moveIdx) {
       if(cmp==='lose') as.drainAuraStack=Math.min(2,(as.drainAuraStack||0)+1);
       if((as.drainAuraStack||0)>0) { ed=Math.round(ed*(1-0.10*as.drainAuraStack)); passives.push({icon:'🌑',text:T(`Drain Aura -${10*as.drainAuraStack}% ศัตรู → ${ed}`,`Drain Aura -${10*as.drainAuraStack}% enemy → ${ed}`)}); }
     }
-    if(artId2==='iron_will' && !as.ironWillUsed && creature.hp<=creature.maxHp*0.20 && creature.hp-ed<=0) {
-      ed=creature.hp-1; as.ironWillUsed=true; passives.push({icon:'💎',text:T('Iron Will กันตาย!','Iron Will — prevented death!')}); }
-    if(artId2==='true_sight') { /* handled in dodge check */ }
+    if(artId2==='iron_will') {
+      if(as.ironWillBoostReady) { pd=Math.round(pd*4); as.ironWillBoostReady=false; passives.push({icon:'💎',text:`Iron Will REVENGE ATK×4 → ${pd}`}); }
+    }
+    if(artId2==='true_sight') { pd=Math.round(pd*1.50); passives.push({icon:'🔭',text:`True Sight ATK+50% → ${pd}`}); }
     if(artId2==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.08)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🌙',text:`Moon Veil +${h}`}); }
     if(artId2==='double_attack' && Math.random()<0.20) { const orig=pd; pd=Math.round(pd*2); pdHits=[orig,orig]; passives.push({icon:'⚔',text:`Double Attack ×2 → ${pd}`}); }
-    if(artId2==='execution' && enemy.hp<enemy.maxHp*0.25) { pd=Math.round(pd*1.80); passives.push({icon:'☠',text:`Execution +80% → ${pd}`}); }
-    if(artId2==='chain_strike' && cmp==='win') { const bonus=Math.round(pd*0.65); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike +${bonus}`}); }
+    if(artId2==='execution' && startHp<creature.maxHp*0.20) { pd=Math.round(pd*3.00); passives.push({icon:'☠',text:`Execution +200% → ${pd}`}); }
+    if(artId2==='chain_strike') { if(cmp==='win') { bs.chainStrikeStreak=(bs.chainStrikeStreak||0)+1; const rate=bs.chainStrikeStreak>=3?2.00:bs.chainStrikeStreak>=2?1.30:0.65; const bonus=Math.round(pd*rate); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike${bs.chainStrikeStreak>=3?' ×3':bs.chainStrikeStreak>=2?' ×2':''} ${Math.round(rate*100)}% → +${bonus}`}); } else { bs.chainStrikeStreak=0; } }
     if(artId2==='crit_core' && crit) { const h=Math.max(1,Math.round(creature.maxHp*0.05)); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🎯',text:`Crit Core Heal +${h}`}); }
     if(artId2==='deathblow') { /* crit mult handled above */ }
     if(artId2==='wild_card' && Math.random()<0.25) {
@@ -2536,11 +2631,15 @@ function doTurn(moveIdx) {
   const ep = enemy.passives || [];
   if(ep.includes('atk_boost'))    { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:T(`ศัตรู ATK×1.25 → ${ed}`,`Enemy ATK×1.25 → ${ed}`)}); }
   if(ep.includes('dodge') && Math.random()<0.25 && artId!=='true_sight' && artId2!=='true_sight') { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }
-  if(ep.includes('dmg_reduce') && Math.random()<0.5) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:T(`ศัตรูลดดาเมจ → ${pd}`,`Enemy reduced dmg → ${pd}`)}); }
+  if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
   if(ep.includes('enrage') && enemy.hp<enemy.maxHp*0.5) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`ENRAGE! ATK×1.5 → ${ed}`}); }
-  if(ep.includes('barrier') && bs.turn===1) { pd=Math.round(pd*0.5); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
+  if(ep.includes('barrier') && bs.turn%3===0) { pd=Math.round(pd*0.5); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
   if(ep.includes('counter_rush') && pm.name==='GUARD') { ed=ed*2; passives.push({icon:'💨',text:`COUNTER RUSH! ×2 → ${ed}`}); }
   if(ep.includes('stun_player') && Math.random()<0.15) { if(!playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาดเทิร์นถัดไป','PARALYZE! Miss next turn')});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาด','PARALYZE! Your attack missed')});} }
+  if(ep.includes('crit_boost') && Math.random()<0.25) { const bon=Math.round(ed*0.6); ed+=bon; passives.push({icon:'🎯',text:`CRIT BOOST! +60% → ${ed}`}); }
+  if(ep.includes('double_strike') && Math.random()<0.25) { const hit2=ed; ed+=hit2; passives.push({icon:'⚔️',text:`DOUBLE STRIKE! ×2 → ${ed}`}); }
+  if(ep.includes('berserker')) { if(!bs.eBerserkerStacks)bs.eBerserkerStacks=0; bs.eBerserkerStacks=Math.min(5,bs.eBerserkerStacks+1); const mult=1+bs.eBerserkerStacks*0.10; ed=Math.round(ed*mult); passives.push({icon:'🔺',text:`BERSERKER ×${bs.eBerserkerStacks} ATK+${bs.eBerserkerStacks*10}% → ${ed}`}); }
+  if(ep.includes('last_dance') && enemy.hp<enemy.maxHp*0.10) { ed=Math.round(ed*2.5); passives.push({icon:'💥',text:`LAST DANCE! ATK×2.5 → ${ed}`}); }
   // ===== EVOLVED ENEMY FORM PASSIVES =====
   if(ep.includes('FFF')) { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:`BLAZEWOLF ATK×1.25→${ed}`}); }
   if(ep.includes('FFW')) { if(Math.random()<0.25) { const bonus=Math.round(ed*0.6); ed+=bonus; passives.push({icon:'🔥',text:`RAZORCLAW CRIT+60%→${ed}`}); } }
@@ -2569,6 +2668,37 @@ function doTurn(moveIdx) {
   if(ep.includes('S+S')) { pd=Math.round(pd*0.65); if(!bs.eColossusHits)bs.eColossusHits=0; if(bs.eColossusBoost){ed=Math.round(ed*1.5);passives.push({icon:'🏔️',text:`COLOSSUS RAGE ATK×1.5→${ed}|dmg×0.65→${pd}`});bs.eColossusBoost=false;}else{passives.push({icon:'🏔️',text:`COLOSSUS dmg×0.65→${pd}`});} if(pd>0){bs.eColossusHits++;if(bs.eColossusHits>=3){bs.eColossusBoost=true;bs.eColossusHits=0;passives.push({icon:'🏔️',text:T('โดน 3 ครั้ง! → ATK×1.5 next','Hit 3! → RAGE next')});}} }
   if(ep.includes('S+M')) { const lowHp=enemy.hp<enemy.maxHp*0.4; pd=Math.round(pd*0.7); if(lowHp){ed=Math.round(ed*1.5);bs.aegisLowHp=true;passives.push({icon:'🏰',text:`AEGIS dmg×0.7→${pd}|HP<40% ATK×1.5→${ed}`});}else{bs.aegisLowHp=false;passives.push({icon:'🏰',text:`AEGIS dmg×0.7→${pd}`});} }
   if(ep.includes('M+M')) { if(!bs.eSovereignStack)bs.eSovereignStack=0; if(cmp==='lose'){bs.eSovereignStack=Math.min(4,(bs.eSovereignStack||0)+1);ed=Math.round(ed*1.15*(1+bs.eSovereignStack*0.10));passives.push({icon:'👑',text:`SOVEREIGN WIN Stk${bs.eSovereignStack} ATK→${ed}`});}else{passives.push({icon:'👑',text:'SOVEREIGN'});} } // drain resolved post-damage
+
+  // ===== DEFERRED LIFESTEAL (all pd-based heals, after all ATK buffs) =====
+  if(bs._sovereignLs) {
+    if(pd>0) { const ls=Math.max(1,Math.round(pd*0.35)); creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls; passives.push({icon:'🩸',text:`BLOOD TRIBUTE Lifesteal 35% → +${ls} HP`}); }
+    bs._sovereignLs = false;
+  }
+  if(bs._sovereignFormLs) {
+    if(pd>0) { const ls=Math.max(1,Math.round(pd*bs._sovereignFormLs)); creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls; passives.push({icon:'👑',text:`Lifesteal ${Math.round(bs._sovereignFormLs*100)}% → +${ls} HP`}); }
+    bs._sovereignFormLs = 0;
+  }
+  if(bs._ls1) {
+    if(pd>0) {
+      const rate=bs._ls1;
+      const lsIcon = rate<=0.05?'🩸':rate<=0.15?'🔴':'☠️';
+      const lsName = rate<=0.05?'Crimson Fang':rate<=0.15?'Blood Pact':'Soul Reaper';
+      const h=Math.max(1,Math.round(pd*rate));
+      creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h;
+      passives.push({icon:lsIcon,text:`${lsName} ${Math.round(rate*100)}% → +${h} HP`});
+    }
+    bs._ls1 = 0;
+  }
+
+  // ===== IRON WILL FINAL CAP (after all enemy passives) =====
+  const hasIronWill = artId==='iron_will' || artId2==='iron_will';
+  const iwStacks = artId==='iron_will' ? bs.artifactStacks : artId2==='iron_will' ? bs.artifactStacks2 : null;
+  if(hasIronWill && iwStacks && !iwStacks.ironWillUsed && creature.hp-ed<=0) {
+    ed = creature.hp - 1;
+    iwStacks.ironWillUsed = true;
+    iwStacks.ironWillBoostReady = true;
+    passives.push({icon:'💎',text:T('Iron Will กันตาย! ATK×4 รอบถัดไป!','Iron Will — survived! ATK×4 next round!')});
+  }
 
   // ===== APPLY DAMAGE =====
   let edApplied = false, pdApplied = false;
@@ -2758,6 +2888,45 @@ function endBattle(won) {
   if(won) { SFX.victory(); } else { SFX.death(); setTimeout(()=>SFX.defeat(), 600); }
   battleState.won = won;
 
+  // ===== VS BATTLE RESULT =====
+  if(battleState.isVsBattle) {
+    if(!won) {
+      vsPlayerDeaths++;
+      const aliveOthers = pets.filter(p => p !== creature && p.phase !== 'egg' && p.hp > 0);
+      if(aliveOthers.length > 0) {
+        battleState.pendingPetSwitch = true;
+        battleState.won = null;
+        state = 'battle';
+        render();
+        return;
+      }
+      vsWon = false;
+      vsRewards = { gold: 0, stagesCleared: vsCurrentStage, artifactBox: false };
+      pets.forEach((p,i)=>{ if(vsHpSnapshot[i]!==undefined) p.hp=vsHpSnapshot[i]; });
+      saveGame(); state = 'vs_result'; render();
+      return;
+    }
+    vsEnemyIdx++;
+    if(vsEnemyIdx < vsEnemies.length) {
+      setTimeout(()=>{ startVsBattle(vsEnemyIdx); }, 800);
+      return;
+    }
+    // All 4 cleared — give rewards and advance stage
+    const stageGold = Math.round(vsCurrentStage * 500 + 1000);
+    gold += stageGold;
+    const ess = ['perm_atk','perm_spd','perm_def'];
+    addItemToInventory(ess[Math.floor(Math.random()*3)]);
+    if(vsCurrentStage % 5 === 0) addItemToInventory(ess[Math.floor(Math.random()*3)]);
+    const gotBox = Math.random() < 0.25 + Math.min(vsCurrentStage*0.005, 0.25);
+    if(gotBox) addItemToInventory('artifact_box');
+    vsRewards = { gold: stageGold, stagesCleared: vsCurrentStage, artifactBox: gotBox };
+    vsCurrentStage++;
+    vsEnemies = generateVsEnemies();
+    vsEnemyIdx = 0; vsPlayerDeaths = 0; vsWon = true;
+    saveGame(); state = 'vs_result'; render();
+    return;
+  }
+
   // ===== TOWER BATTLE RESULT =====
   if(battleState.isTowerBattle) {
     if(!won) {
@@ -2775,6 +2944,24 @@ function endBattle(won) {
       towerHighest = Math.max(towerHighest, towerFloor);
       towerPendingGold += Math.round(towerFloor * 8);
       if(towerFloor % 10 === 0) { towerPendingArtifacts.push('box'); }
+      if(towerFloor % 10 === 0 && !towerFirstClears.has(towerFloor)) {
+        towerFirstClears.add(towerFloor);
+        const fcFloor = towerFloor;
+        const _addShinyPet = () => { const sp=newPet(); sp.shiny=true; applyShinyStats(sp); if(pets.length<MAX_PETS){ pets.push(sp); syncCreature(); } else storage.push(sp); };
+        const fcToasts = {'10':'💰 +1,000G','20':'✨ Essence ×10','30':'💰✨ +5,000G + Essence ×10','40':'📦 Rare Box','50':'✨🥚 Shiny Egg!','60':'📦 Epic Box','70':'💰🔮 +50,000G + Rebirth Stone ×5','80':'📦 Epic Box','90':'✨🥚 Shiny Egg!','100':'✨🥚 Shiny Egg + Epic Box'};
+        if(fcFloor===10)  { gold+=1000; }
+        else if(fcFloor===20) { for(let i=0;i<10;i++) addItemToInventory(['perm_atk','perm_spd','perm_def'][Math.floor(Math.random()*3)]); }
+        else if(fcFloor===30) { gold+=5000; for(let i=0;i<10;i++) addItemToInventory(['perm_atk','perm_spd','perm_def'][Math.floor(Math.random()*3)]); }
+        else if(fcFloor===40) { addItemToInventory('box_R'); }
+        else if(fcFloor===50) { addItemToInventory('shiny_egg'); }
+        else if(fcFloor===60) { addItemToInventory('box_E'); }
+        else if(fcFloor===70) { gold+=50000; for(let i=0;i<5;i++) addItemToInventory('rebirth_stone'); }
+        else if(fcFloor===80) { addItemToInventory('box_E'); }
+        else if(fcFloor===90) { addItemToInventory('shiny_egg'); }
+        else if(fcFloor===100) { addItemToInventory('shiny_egg'); addItemToInventory('box_E'); }
+        towerPendingArtifacts.push(`🏆first_${fcFloor}`);
+        scoutToast = `🏆 FIRST CLEAR! Floor ${fcFloor} — ${fcToasts[String(fcFloor)]||''}`;
+      }
       if(towerFloor % 10 === 0) {
         towerCheckpoint = towerFloor;
         pets.forEach(p => { if(p.phase!=='egg') p.hp = p.maxHp; });
@@ -2800,11 +2987,11 @@ function endBattle(won) {
   let rewards = [];
   if(won) {
     // Gold drop — use effective stage/difficulty (replay-aware)
-    const isEffHardGold = replayStage > 0 ? replayHard : hardMode;
-    const effectiveHardStageGold = replayStage > 0 ? replayStage : hardStage;
+    const isEffHardGold = replayStage > 0 ? replayHard : (hardMode || hellMode);
+    const effectiveHardStageGold = replayStage > 0 ? replayStage : hellMode ? hellStage : hardStage;
     const effectiveNormalStageGold = replayStage > 0 ? replayStage : stage;
-    const goldMult = isEffHardGold ? 2 : 1;
-    const gs = isEffHardGold ? 20+effectiveHardStageGold : effectiveNormalStageGold;
+    const goldMult = hellMode ? 4 : isEffHardGold ? 2 : 1;
+    const gs = hellMode ? 40+hellStage : isEffHardGold ? 20+effectiveHardStageGold : effectiveNormalStageGold;
     const hasLuckyCharm = creature.artifact==='lucky_charm' || creature.artifact2==='lucky_charm';
     const luckyProc = hasLuckyCharm && Math.random()<0.50;
     if(!battleState.isMini) {
@@ -2826,22 +3013,56 @@ function endBattle(won) {
         rewards.push(`🔄 REPLAY ${wasReplayHard?'HARD ':''}STAGE ${replayStage} CLEARED!`);
         genScoutGrid(); scoutPos = {x:0, y:0};
         rewards.push(`🗺️ MAP REFRESHED`);
-      } else if(!hardMode) {
+      } else if(!hardMode && !hellMode) {
+        const clearedNormal = stage;
+        battleState.clearedStageLabel = `STAGE ${clearedNormal}`;
         stage++;
-        if(stage > 20) { hardMode=true; hardStage=1; stage=20; rewards.push(T('🔥 HARD MODE UNLOCKED! ศัตรูแข็งแกร่งขึ้น 2×','🔥 HARD MODE UNLOCKED! Enemies grow stronger!')); }
-      } else {
+        if(stage > 20) { hardMode=true; hardStage=1; stage=20; rewards.push(`⭐ STAGE ${clearedNormal} CLEARED!`); rewards.push(T('🔥 HARD MODE UNLOCKED! ศัตรูแข็งแกร่งขึ้น 2×','🔥 HARD MODE UNLOCKED! Enemies grow stronger!')); }
+        else { rewards.push(`⭐ STAGE ${clearedNormal} CLEARED!`); }
+        if(clearedNormal === 20 && !scoutFirstClears.has('normal_20')) {
+          scoutFirstClears.add('normal_20');
+          for(let i=0;i<5;i++) addItemToInventory('box_R');
+          rewards.push(T('🎁 FIRST CLEAR! 📦💜 ×5 Artifact Rare Box!','🎁 FIRST CLEAR! 📦💜 ×5 Artifact Rare Box!'));
+        }
+      } else if(hardMode && !hellMode) {
         const clearedStage = hardStage;
-        hardStage++;
-        if(hardStage > 20) hardStage = 1;
-        rewards.push(`🔥 HARD STAGE ${clearedStage} CLEARED!`);
+        battleState.clearedStageLabel = `HARD ${clearedStage}`;
+        if(hardStage < 20) {
+          hardStage++;
+          rewards.push(`🔥 HARD STAGE ${clearedStage} CLEARED!`);
+        } else {
+          rewards.push(`🔥 HARD STAGE ${clearedStage} CLEARED!`);
+          if(!scoutFirstClears.has('hard_20')) {
+            scoutFirstClears.add('hard_20');
+            addItemToInventory('box_E');
+            rewards.push(T('🎁 FIRST CLEAR! 📦✨ Artifact Epic Box!','🎁 FIRST CLEAR! 📦✨ Artifact Epic Box!'));
+          }
+          hardMode=false; hellMode=true; hellStage=1;
+          rewards.push(T('💀 HELL MODE UNLOCKED! ศัตรูโหดสุดขีด!','💀 HELL MODE UNLOCKED! Enemies are merciless!'));
+        }
+      } else {
+        const clearedStage = hellStage;
+        battleState.clearedStageLabel = `HELL ${clearedStage}`;
+        if(hellStage < 20) {
+          hellStage++;
+          rewards.push(`💀 HELL STAGE ${clearedStage} CLEARED!`);
+        } else {
+          rewards.push(`💀 HELL STAGE ${clearedStage} CLEARED!`);
+          if(!scoutFirstClears.has('hell_20')) {
+            scoutFirstClears.add('hell_20');
+            for(let i=0;i<3;i++) addItemToInventory('box_E');
+            rewards.push(T('🎁 FIRST CLEAR! 📦✨ ×3 Artifact Epic Box!','🎁 FIRST CLEAR! 📦✨ ×3 Artifact Epic Box!'));
+          }
+          rewards.push(T('🏆 HELL 20 CLEARED! คุณคือผู้พิชิตนรก!','🏆 HELL 20 CLEARED! You have conquered HELL!'));
+        }
       }
       if(!isReplay) {
         genScoutGrid();
         scoutPos = {x:0, y:0};
-        rewards.push(hardMode ? `➡ HARD STAGE ${hardStage}! MAP REFRESHED!` : `STAGE ${stage}! MAP REFRESHED!`);
+        rewards.push(hellMode ? `➡ HELL STAGE ${hellStage}! MAP REFRESHED!` : hardMode ? `➡ HARD STAGE ${hardStage}! MAP REFRESHED!` : `➡ STAGE ${stage}! MAP REFRESHED!`);
       }
       // Boss: drops (replay mode = ลด drop rate)
-      const isEffHard = isReplay ? wasReplayHard : hardMode;
+      const isEffHard = isReplay ? wasReplayHard : (hardMode || hellMode);
       // Boss: Symbol 100%
       const symKey = ['sym_F','sym_W','sym_S'][Math.floor(Math.random()*3)];
       addItemToInventory(symKey); rewards.push(`${ITEMS[symKey].icon} ${ITEMS[symKey].name}`);
@@ -2851,8 +3072,9 @@ function endBattle(won) {
       if(Math.random() < (isEffHard?0.25:0.10)) { addItemToInventory('fusion_stone'); rewards.push(`${ITEMS.fusion_stone.icon} Fusion Stone!`); }
       // Boss: Essence 10% Normal / 50% Hard
       if(Math.random() < (isEffHard?0.50:0.10)) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
-      // Boss: Artifact Box ❌ Normal / 10% Hard
+      // Boss: Artifact Box ❌ Normal / 10% Hard / 10% Hard + 5% box_R Hell
       if(isEffHard && Math.random() < 0.10) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
+      if(hellMode && Math.random() < 0.05) { addItemToInventory('box_R'); rewards.push(`📦💜 Artifact Rare Box!`); }
       // Boss: Rebirth Stone 5% Normal / 25% Hard
       if(Math.random() < (isEffHard?0.25:0.05)) { addItemToInventory('rebirth_stone'); rewards.push(`🔮 Rebirth Stone!`); }
       // Boss: Mystery Egg
@@ -2864,7 +3086,7 @@ function endBattle(won) {
       firstBossKilled = true;
     } else if(battleState.isMimic) {
       // Mimic: ×5 gold (Normal) / ×5×1.5 (Hard, scale by hardStage)
-      const mimicGs = hardMode ? 20+hardStage : gs;
+      const mimicGs = hellMode ? 40+hellStage : hardMode ? 20+hardStage : gs;
       const mimicMult = isEffHardGold ? 1.5 : 1;
       const mimicGold = Math.round((15 + mimicGs*8 + Math.floor(Math.random()*mimicGs*5)) * 5 * mimicMult);
       gold += mimicGold;
@@ -2923,11 +3145,20 @@ function endBattle(won) {
     SFX.stageClear();
     state = 'stageclear';
     render();
-    setTimeout(() => {
+    _scDone = false;
+    _scTimer = setTimeout(() => {
+      if(_scDone) return;
+      _scDone = true;
       const ov = document.querySelector('.sc-overlay');
       if(ov) ov.classList.add('sc-fadeout');
       setTimeout(() => { state = 'result'; render(); }, 500);
     }, 2500);
+    document.getElementById('scOverlay')?.addEventListener('click', () => {
+      if(_scDone) return;
+      _scDone = true;
+      clearTimeout(_scTimer); _scTimer = null;
+      state = 'result'; render();
+    }, { once: true });
   } else {
     state = 'result';
     render();
@@ -2960,13 +3191,17 @@ function applyEvolution() {
   creature.phase = 'evolved';
   seenEvolved.add(key);
   creature.name = form.name;
-  creature.maxHp = form.hp;
-  creature.hp = form.hp;
-  creature.atk = form.atk;
-  creature.spd = form.spd;
-  creature.def = form.def;
+  const bonusHp  = Math.floor(creature.maxHp * 0.25);
+  const bonusAtk = Math.floor(creature.atk   * 0.25);
+  const bonusSpd = Math.floor(creature.spd   * 0.25);
+  const bonusDef = Math.floor(creature.def   * 0.25);
+  creature.maxHp = form.hp  + bonusHp;
+  creature.hp    = creature.maxHp;
+  creature.atk   = form.atk + bonusAtk;
+  creature.spd   = form.spd + bonusSpd;
+  creature.def   = form.def + bonusDef;
   if(creature.shiny) applyShinyStats(creature);
-  creature.symbols = []; creature.trainCount = 0;
+  creature.symbols = []; creature.trainCount = 0; creature.trainBonuses = {hp:0,atk:0,spd:0,def:0};
   saveGame();
   state='menu';
   render();
@@ -3014,7 +3249,7 @@ function buildEvolvedSvg(formKey, size=80, glow=false, shiny=false) {
   const name = form ? form.name : formKey;
   const color = form ? form.color : '#a0a0ff';
   const glowStyle = glow ? `filter:drop-shadow(0 0 4px ${color});` : '';
-  return `<img src="${name}.png" width="${size}" height="${size}" class="anim-bob" style="image-rendering:pixelated;object-fit:contain;${glowStyle}">`;
+  return `<img src="${name}.png" width="${size}" height="${size}" class="anim-bob" style="image-rendering:pixelated;object-fit:contain;object-position:bottom center;display:block;${glowStyle}">`;
 }
 
 function playShinySound() {
@@ -3150,6 +3385,8 @@ function render() {
   else if(state==='status') renderStatus();
   else if(state==='train') renderTrain();
   else if(state==='tower') renderTower();
+  else if(state==='vs_lobby') renderVsLobby();
+  else if(state==='vs_result') renderVsResult();
   else if(state==='shop') renderShop();
   else if(state==='title') renderTitle();
 }
@@ -3208,11 +3445,14 @@ function doTrain(type) {
   if(left <= 0) { scoutToast = T(`⛔ Train ครบ ${trainCap()} ครั้งแล้ว ชนะบอสเพื่อ Train เพิ่ม`,`⛔ Train limit ${trainCap()} reached! Beat the boss for more`); render(); return; }
   gold -= cost;
   pet.trainCount = getTrainCount(pet) + 1;
+  if(!pet.trainBonuses) pet.trainBonuses = {hp:0,atk:0,spd:0,def:0};
   if(type==='hp') {
     pet.maxHp += t.gain;
     pet.hp = Math.min(pet.hp + t.gain, pet.maxHp);
+    pet.trainBonuses.hp += t.gain;
   } else {
     pet[t.stat] += t.gain;
+    pet.trainBonuses[t.stat] = (pet.trainBonuses[t.stat]||0) + t.gain;
   }
   scoutToast = `${t.icon} ${t.desc}! (-${cost}G)`;
   saveGame(); render();
@@ -3220,41 +3460,49 @@ function doTrain(type) {
 
 function renderTitle() {
   labelStrip.textContent = '✦ SYMBEAST ✦';
+
+  if(titlePhase === 'start') {
+    screenContent.innerHTML = `
+      <div style="width:100%;height:100%;position:relative;overflow:hidden;background:url('Battle Scene/Title-symbeast.jpg') center/cover no-repeat">
+        <div id="title-start-btn" style="position:absolute;left:50%;transform:translateX(-50%);top:83%;width:58%;height:9%;cursor:pointer;border-radius:8px;background:transparent"></div>
+      </div>`;
+    document.getElementById('title-start-btn')?.addEventListener('click', () => {
+      SFX.titleStart();
+      setTimeout(() => { titlePhase = 'slots'; render(); }, 300);
+    });
+    return;
+  }
+
   const slotsHtml = [1,2,3].map(n => {
     const info = getSlotInfo(n);
     const phaseIcon = !info ? '🥚' : info.phase==='egg'?'🥚':info.phase==='larva'?'🐛':'✨';
     const hasData = !!info;
     return `
-      <div style="display:flex;align-items:center;gap:6px">
-        <div data-loadslot="${n}" style="flex:1;padding:10px 14px;border-radius:12px;cursor:pointer;
-          background:${hasData?'linear-gradient(135deg,#1a0a3a,#2a1a5a)':'#0a0a1a'};
-          border:2px solid ${hasData?'#8060d0':'#2a2a5a'};
-          ${hasData?'box-shadow:0 0 10px rgba(128,96,208,0.2);':''}">
-          <div style="font-family:Orbitron,monospace;font-size:10px;color:#8878b8;margin-bottom:3px">SLOT ${n}</div>
-          ${hasData ? `
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center">${info.pet0 ? buildPetSvg(info.pet0, 32) : phaseIcon}</div>
-              <div style="flex:1;min-width:0">
-                <span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:#c0a0ff">${info.name}</span>
-                <span style="font-size:10px;color:#7060a0;margin-left:8px">📍${info.stageStr} · ⏱${info.timeStr}</span>
-              </div>
-            </div>` :
-            `<div style="font-family:Orbitron,monospace;font-size:13px;color:#3a3a6a">🥚 EMPTY</div>`}
-        </div>
-        ${hasData?`<div data-deleteslot="${n}" style="padding:10px;border-radius:10px;background:#1a0808;border:1px solid #4a2020;color:#ff4444;font-size:13px;cursor:pointer" title="${T('Delete Slot ','Delete Slot ')+n}">✕</div>`:''}
+      <div data-loadslot="${n}" style="position:relative;padding:10px 14px;border-radius:6px;cursor:pointer;
+          background:${hasData?'linear-gradient(135deg,rgba(20,8,40,0.92),rgba(40,18,70,0.92))':'rgba(8,4,18,0.82)'};
+          border:1px solid ${hasData?'#8060d0':'#2a2050'};
+          box-shadow:${hasData?'0 0 10px rgba(128,96,208,0.3),inset 0 1px 0 rgba(192,160,255,0.08)':'inset 0 1px 0 rgba(192,160,255,0.03)'};
+          backdrop-filter:blur(2px)">
+        ${hasData?`<div data-deleteslot="${n}" style="position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:4px;background:rgba(30,5,5,0.9);border:1px solid #4a2040;color:#cc44aa;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2" title="${T('Delete Slot ','Delete Slot ')+n}">🗑</div>`:''}
+        <div style="font-family:Orbitron,monospace;font-size:9px;color:${hasData?'#8878b8':'#2a2050'};letter-spacing:2px;margin-bottom:4px">— SLOT ${n} —</div>
+        ${hasData ? `
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(0,0,0,0.4);border:1px solid #4a3080">${info.pet0 ? buildPetSvg(info.pet0, 32) : phaseIcon}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:#c0a0ff;text-shadow:0 0 8px rgba(192,160,255,0.5)">${info.name}</div>
+              <div style="font-size:10px;color:#7060a0;margin-top:1px">📍${info.stageStr} · ⏱${info.timeStr}</div>
+            </div>
+          </div>` :
+          `<div style="font-family:Orbitron,monospace;font-size:11px;color:#2a2050;letter-spacing:1px">— EMPTY —</div>`}
       </div>`;
   }).join('');
   screenContent.innerHTML = `
-    <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-      <div style="font-family:Orbitron,monospace;font-size:30px;font-weight:900;color:#c0a0ff;letter-spacing:4px;text-shadow:0 0 20px rgba(192,160,255,0.5)">SYMBEAST</div>
-      <div style="font-size:13px;color:#7060aa;letter-spacing:2px">HATCH ● COLLECT ● EVOLVE</div>
-      <svg viewBox="0 0 80 100" width="60" height="75">
-        <defs><radialGradient id="tg" cx="40%" cy="35%"><stop offset="0%" stop-color="#5a3a9a"/><stop offset="100%" stop-color="#1a0a3a"/></radialGradient></defs>
-        <ellipse cx="40" cy="55" rx="28" ry="35" fill="url(#tg)" stroke="#8060d0" stroke-width="2"/>
-        <ellipse cx="30" cy="40" rx="7" ry="10" fill="rgba(180,140,255,0.15)" transform="rotate(-10,30,40)"/>
-        <circle cx="40" cy="55" r="6" fill="rgba(192,160,255,0.1)" stroke="#c0a0ff" stroke-width="1" opacity="0.6"/>
-      </svg>
-      <div style="display:flex;flex-direction:column;gap:8px;width:85%">${slotsHtml}</div>
+    <div style="width:100%;height:100%;position:relative;overflow:hidden;background:url('Battle Scene/Load-save-slot.jpg') center/cover no-repeat">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.05) 45%,rgba(0,0,0,0.5) 60%,rgba(0,0,0,0.72) 100%);pointer-events:none"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;">
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:#8878b8;letter-spacing:4px;text-shadow:0 0 10px rgba(128,96,208,0.5);margin-bottom:2px">⚔ SELECT SAVE SLOT ⚔</div>
+        <div style="display:flex;flex-direction:column;gap:7px;width:92%">${slotsHtml}</div>
+      </div>
     </div>
     ${slotDeleteConfirm!==null?`
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99;border-radius:16px">
@@ -3306,6 +3554,133 @@ function renderShop() {
     </div>`;
 }
 
+// ============================================================
+// VS MODE
+// ============================================================
+function generateVsEnemy(vsStage) {
+  const lv = vsStage; // 1-60 direct mapping
+  const baseHp  = Math.round(40+lv*9+lv*lv*0.4);
+  const typeKeys = ['F','W','S'];
+  const typeKey = typeKeys[Math.floor(Math.random()*3)];
+  const extraPassives = vsStage > 40 ? 2 : vsStage > 20 ? 1 : 0;
+  const useFusion = vsStage > 60 ? true : vsStage > 40 ? true : vsStage > 20 ? Math.random() < 0.5 : false;
+  if(useFusion) {
+    const fkeys = Object.keys(FINAL_FORMS);
+    const key = fkeys[Math.floor(Math.random()*fkeys.length)];
+    const ff = FINAL_FORMS[key];
+    const sc = baseHp / 135;
+    return { name:ff.name, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:null,
+             isFusionEnemy:true, fusionKey:key,
+             maxHp:Math.round(ff.hp*sc*1.1), hp:Math.round(ff.hp*sc*1.1),
+             atk:Math.round(ff.atk*sc*1.5), def:Math.round(ff.def*sc),
+             spd:Math.round((7+lv*1.2)*sc),
+             passives:[key, ...pickEnemyPassives(typeKey, extraPassives)],
+             ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
+  } else {
+    const ekeys = Object.keys(FORMS);
+    const key = ekeys[Math.floor(Math.random()*ekeys.length)];
+    const ef = FORMS[key];
+    const sc = baseHp / 75;
+    return { name:ef.name, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:null,
+             isEvolvedEnemy:true, evolvedKey:key,
+             maxHp:Math.round(ef.hp*sc), hp:Math.round(ef.hp*sc),
+             atk:Math.round(ef.atk*sc*1.4), def:Math.round(ef.def*sc),
+             spd:Math.round((7+lv*1.2)*sc),
+             passives:[key, ...pickEnemyPassives(typeKey, extraPassives)],
+             ownPassiveDesc:ef.passive, ownPassiveIcon:ef.passiveIcon };
+  }
+}
+function generateVsEnemies() {
+  return Array.from({length:4}, (_,i) => generateVsEnemy(vsCurrentStage + i));
+}
+
+function startVsBattle(idx) {
+  if(idx === 0) saveGame();
+  const enemy = vsEnemies[idx];
+  battleState = {
+    enemy, isBoss:false, isMini:false,
+    turn:1, log:[], passivesLog:[], lastResult:null,
+    animPhase:null, waiting:false,
+    phantasmStack:0, vanguardStack:0, sovereignStack:0,
+    warlordConsec:0, ironcladStack:0, stormfangStun:false,
+    wraithDodged:false, colossusHits:0, colossusBoost:false,
+    overdriveUsed:false, odBuff:null, enemyStunTurns:0,
+    isVsBattle:true, artifactStacks:{},
+  };
+  state = 'battle';
+  render();
+}
+
+function enterVs() {
+  const alive = pets.filter(p=>p.phase!=='egg'&&p.hp>0);
+  if(alive.length < 1) { scoutToast = T('⚠ ต้องมี pet ที่ยังมีชีวิตอยู่!','⚠ Need at least 1 alive beast!'); render(); return; }
+  vsEnemies = generateVsEnemies();
+  vsEnemyIdx = 0; vsPlayerDeaths = 0; vsWon = false; vsRewards = null;
+  vsHpSnapshot = pets.map(p=>p.hp);
+  state = 'vs_lobby'; render();
+}
+
+function renderVsLobby() {
+  const stageCol = vsCurrentStage > 40 ? '#ff4444' : vsCurrentStage > 20 ? '#ffaa00' : '#a080ff';
+  labelStrip.textContent = `⚔️ VS STAGE ${vsCurrentStage} ⚔️`;
+  screenContent.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
+      <div style="text-align:center;padding:6px 0">
+        <div style="font-family:Orbitron,monospace;font-size:11px;color:#5050a0;letter-spacing:3px">VS MODE</div>
+        <div style="font-family:Orbitron,monospace;font-size:28px;color:${stageCol};letter-spacing:4px;text-shadow:0 0 12px ${stageCol}88">STAGE ${vsCurrentStage}</div>
+      </div>
+      <div style="background:#0a0a1a;border:1px solid #3a2a5a;border-radius:10px;padding:10px">
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:#ff4444;letter-spacing:1px;margin-bottom:6px">⚔️ ${T('ทีมศัตรู','ENEMY TEAM')}</div>
+        <div style="display:flex;gap:6px">
+          ${vsEnemies.map(()=>`<div style="flex:1;text-align:center;background:#0e0e22;border:1px solid #2a2a4a;border-radius:8px;padding:6px 2px">
+              <div style="width:44px;height:44px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:28px;color:#2a2a5a">?</div>
+              <div style="font-family:Orbitron,monospace;font-size:8px;color:#2a2a5a;margin-top:2px">??????</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="background:#0a0a1a;border:1px solid #2a3a5a;border-radius:10px;padding:10px">
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:#4ecdc4;letter-spacing:1px;margin-bottom:6px">🐾 ${T('ทีมของคุณ','YOUR TEAM')}</div>
+        <div style="display:flex;gap:6px">
+          ${pets.filter(p=>p.phase!=='egg').map(p=>{
+            const dead = p.hp<=0;
+            return `<div style="flex:1;text-align:center;background:#0e0e22;border:1px solid ${dead?'#2a1a1a':'#2a3a4a'};border-radius:8px;padding:6px 2px;opacity:${dead?0.4:1}">
+              <div style="width:44px;height:44px;margin:0 auto;${dead?'filter:grayscale(1)':''}">${buildPetSvg(p,44,false)}</div>
+              <div style="font-family:Orbitron,monospace;font-size:8px;color:${dead?'#3a2a2a':'#c0a0ff'};margin-top:2px">${p.name}</div>
+              <div style="height:4px;background:#0a0a20;border-radius:2px;margin-top:3px;overflow:hidden"><div style="width:${Math.max(0,Math.round(p.hp/p.maxHp*100))}%;height:100%;background:${dead?'#3a1a1a':'#2ecc71'}"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div id="vsStartBtn" style="padding:14px;text-align:center;background:linear-gradient(135deg,#3a0a0a,#1a0a2a);border:2px solid #ff4444;border-radius:10px;font-family:Orbitron,monospace;font-size:14px;color:#ff6666;cursor:pointer;letter-spacing:2px">⚔️ START BATTLE</div>
+    </div>`;
+}
+
+function renderVsResult() {
+  const r = vsRewards || {};
+  const stageNum = r.stagesCleared || 0;
+  const stageCol = stageNum > 40 ? '#ff4444' : stageNum > 20 ? '#ffaa00' : '#a080ff';
+  labelStrip.textContent = vsWon ? `⚔️ VS STAGE ${stageNum} CLEAR ⚔️` : '⚔️ VS DEFEAT ⚔️';
+  screenContent.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px;padding:16px;text-align:center">
+      <div style="font-size:36px">${vsWon?'🏆':'💀'}</div>
+      <div style="font-family:Orbitron,monospace;font-size:14px;color:${vsWon?'#ffaa00':'#cc6666'}">${vsWon?`STAGE ${stageNum} ${T('ผ่านแล้ว!','CLEAR!')}`:`${T('พ่ายแพ้','DEFEATED')}`}</div>
+      ${vsWon ? `
+      <div style="font-family:Orbitron,monospace;font-size:11px;color:#5050a0">${T('ถัดไป:','NEXT:')} STAGE ${vsCurrentStage}</div>` : `
+      <div style="font-family:Orbitron,monospace;font-size:11px;color:#5050a0">STAGE ${stageNum} — ${T('HP ถูกคืนแล้ว','HP restored')}</div>`}
+      ${r.gold > 0 ? `
+      <div style="background:#0a0a1a;border:1px solid #3a3a1a;border-radius:10px;padding:10px;text-align:left">
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:#aaaa44;margin-bottom:6px">🎁 ${T('รางวัล','REWARDS')}</div>
+        <div style="font-size:13px;color:#ffe066">💰 +${r.gold.toLocaleString()}G</div>
+        <div style="font-size:12px;color:#c0a0ff;margin-top:4px">✨ Essence ×1${stageNum%10===0?` ×2 (${T('milestone','milestone')})`:''}</div>
+        ${r.artifactBox?`<div style="font-size:12px;color:#c0a0ff;margin-top:4px">📦 Artifact Box</div>`:''}
+      </div>` : ''}
+      <div style="display:flex;gap:8px">
+        ${vsWon?`<div id="vsNextBtn" style="flex:1;padding:12px;text-align:center;background:linear-gradient(135deg,#0a2a0a,#0a0a2a);border:2px solid #44aa44;border-radius:10px;font-family:Orbitron,monospace;font-size:12px;color:#88ff88;cursor:pointer">▶ STAGE ${vsCurrentStage}</div>`:''}
+        <div id="vsResultBackBtn" style="flex:1;padding:12px;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:10px;font-family:Orbitron,monospace;font-size:12px;color:#a080ff;cursor:pointer">${T('เมนู','MENU')}</div>
+      </div>
+    </div>`;
+}
+
 function renderTower() {
   labelStrip.textContent = `🏯 TOWER — FLOOR ${towerFloor}`;
   const nextFloor = towerFloor + 1;
@@ -3324,7 +3699,7 @@ function renderTower() {
           </div>
           ${s.artifacts.length>0?`
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-            ${s.artifacts.map(()=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#0e0e22;border:1px solid #5040a060">
+            ${s.artifacts.filter(a=>a==='box').map(()=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#0e0e22;border:1px solid #5040a060">
                 <span style="font-size:24px">📦</span>
                 <div>
                   <div style="font-family:Orbitron,monospace;font-size:12px;color:#c0a0ff">Artifact Box</div>
@@ -3416,7 +3791,12 @@ function renderTower() {
       <div style="padding:8px 12px;border-radius:10px;background:#0a0a0f;border:1px solid #2a2a3a;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div style="font-family:Orbitron,monospace;font-size:11px;color:#8878b8">${T('สะสมอยู่','Pending')}</div>
         <div style="font-size:12px;color:#ffcc44">💰 ${towerPendingGold.toLocaleString()} G</div>
-        ${towerPendingArtifacts.map(()=>`<span style="font-size:16px;color:#c0a0ff">📦</span>`).join('')}
+        ${towerPendingArtifacts.filter(a=>a==='box').map(()=>`<span style="font-size:16px;color:#c0a0ff">📦</span>`).join('')}
+        ${towerPendingArtifacts.filter(a=>a.startsWith('🏆')).map(a=>{
+          const fl=a.replace('🏆first_','');
+          const labels={'10':'💰 First Clear Bonus! +1,000G','20':'✨ First Clear Bonus! Essence ×10','30':'💰✨ First Clear Bonus! +5,000G + Essence ×10','40':'📦 First Clear Bonus! Rare Box','50':'✨ First Clear Bonus! Shiny Egg!','60':'📦 First Clear Bonus! Epic Box','70':'💰🔮 First Clear Bonus! +50,000G + Rebirth Stone ×5','80':'📦 First Clear Bonus! Epic Box','90':'✨ First Clear Bonus! Shiny Egg!','100':'✨📦 First Clear Bonus! Shiny Egg + Epic Box'};
+          return `<div style="font-size:11px;color:#ffd700;background:#1a1400;border:1px solid #ffd700;border-radius:6px;padding:2px 8px">🏆 Floor ${fl} ${labels[fl]||''}</div>`;
+        }).join('')}
       </div>`:''}
       ${towerFloor>0?`
         <div style="font-size:11px;color:#6858a0;text-align:center">${T('ตายแล้วเริ่มใหม่จากชั้น 1','If you die, run restarts from Floor 1')}</div>
@@ -3440,7 +3820,7 @@ function renderTower() {
           const canEnter = !isNewRun || stamina >= 10;
           return `<div data-tower-start style="padding:12px;border-radius:12px;background:linear-gradient(135deg,${canEnter?'#3a2000,#6a3800':'#1a1a1a,#2a2a2a'});border:2px solid ${canEnter?'#ffaa00':'#444'};font-family:Orbitron,monospace;font-size:15px;color:${canEnter?'#ffcc44':'#666'};text-align:center;cursor:pointer;letter-spacing:1px">
             ${T('⚔ เข้าสู่ชั้น','⚔ Enter Floor ')} ${nextFloor}
-            ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/30 AP (AP (-10)}</div>`:''}
+            ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/${MAX_STAMINA} AP (-10)</div>`:''}
           </div>`;
         })()}
         ${towerFloor>0?`<div data-tower-abandon style="padding:8px;border-radius:10px;background:#0a0808;border:1px solid #3a2020;font-family:Orbitron,monospace;font-size:12px;color:#aa4444;text-align:center;cursor:pointer">${T('✕ ยอมแพ้ (รับรางวัลตามชั้นที่ถึง)','✕ Give Up (collect rewards so far)')}</div>`:''}
@@ -3467,7 +3847,7 @@ function startTowerBattle() {
   const baseSpd = Math.round(7+slv*1.2);
 
   // Tower passive counts by floor tier
-  const monPassiveCount = floor>=90?2:floor>=20?1:0;
+  const monPassiveCount = floor>=50?2:floor>=20?1:0;
   const bossPassiveCount = floor>=90?3:floor>=50?2:floor>=20?1:0;
 
   // Decide enemy pool: normal / evolved / fusion
@@ -3535,7 +3915,7 @@ function startTowerBattle() {
         hp:    Math.round(ef.hp * evoScale * bm),
         atk:   Math.round(ef.atk * evoScale * am),
         def:   Math.round(ef.def * evoScale),
-        spd:   Math.round(ef.spd * evoScale),
+        spd:   Math.round(ef.spd * evoScale * 0.7),
         passives: [ek, ...extraPassives],
         ownPassiveDesc: ef.passive, ownPassiveIcon: ef.passiveIcon,
       };
@@ -3723,8 +4103,9 @@ function renderMenu() {
             const expBlocked = pets.filter(p=>p.phase!=='egg').every(p=>p.expedition||p.resting);
             const items = [
               { action:'scout',      icon:'🗺',  label:'SCOUT',  blocked: false },
-              { action:'tower',      icon:'🏯',  label:'TOWER',  blocked: !!towerBlocked, reason: towerBlocked?(towerBlocked.resting?'มี pet กำลัง Rest':'มี pet อยู่ใน Expedition'):'' },
-              { action:'expedition', icon:'🌑',  label:'SEND',   blocked: expBlocked, reason:'pet ทุกตัวออกไปแล้ว' },
+              { action:'tower',      icon:'🏯',  label:'TOWER',  blocked: !!towerBlocked, reason: towerBlocked?(towerBlocked.resting?T('มี pet กำลัง Rest','A pet is Resting'):T('มี pet อยู่ใน Expedition','A pet is on Expedition')):'' },
+              { action:'vs',         icon:'⚔️',  label:'VS',     blocked: pets.some(p=>p.expedition), reason:T('มี pet อยู่ใน Expedition','A pet is on Expedition') },
+              { action:'expedition', icon:'🌑',  label:'SEND',   blocked: expBlocked, reason:T('pet ทุกตัวออกไปแล้ว','All pets are away') },
               { action:'train',      icon:'🏋️', label:'TRAIN',  blocked: false },
             ];
             return `<div style="display:flex;gap:8px;justify-content:center">
@@ -3741,7 +4122,35 @@ function renderMenu() {
       </div>` : ''}
       <div style="display:flex;gap:8px;justify-content:center">
         <div id="settingsBtn" style="padding:6px 18px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Orbitron,monospace;font-size:11px;color:#8878b8;cursor:pointer">⚙️ SETTINGS</div>
+        <div id="helpBtn" style="padding:6px 14px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Orbitron,monospace;font-size:11px;color:#8878b8;cursor:pointer">❓ GUIDE</div>
       </div>
+      ${helpOpen ? `
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;z-index:30;border-radius:16px;overflow:hidden">
+        <div style="background:linear-gradient(135deg,#0a0520,#120a30);border-bottom:1px solid #3a2a6a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div style="font-family:Orbitron,monospace;font-size:13px;color:#c0a0ff;letter-spacing:2px">📖 HOW TO PLAY</div>
+          <div id="helpClose" style="color:#8878b8;font-size:16px;cursor:pointer;padding:2px 6px">✕</div>
+        </div>
+        <div style="overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+          ${[
+            ['🥚','HATCH',T('แตะไข่ซ้ำๆ เพื่อฟักออกมา — สัตว์ของคุณจะออกมาในรูปแบบ Larva','Tap the egg repeatedly to hatch — your creature starts as a Larva')],
+            ['🧬','SYMBOLS & EVOLVE',T('เมื่อชนะการต่อสู้จะได้รับ Symbol (F🔥 / W💨 / S🛡) เก็บให้ครบ 3 ชิ้น แล้วกด EVOLVE — สัตว์จะเปลี่ยนรูปร่างตามคอมโบสัญลักษณ์ที่เลือก โบนัสพิเศษจากสเตตัสปัจจุบัน x0.25 จะถูกเพิ่มเข้าไปด้วย','Win battles to earn Symbols (F🔥 / W💨 / S🛡). Collect 3 and tap EVOLVE — your creature transforms based on the symbol combo. A bonus of 25% of current stats is added on top of the new form\'s base stats')],
+            ['⚡','FUSION',T('เมื่อมี Pet ที่ Evolve แล้ว 2 ตัวใน Party พร้อม Fusion Stone และ Gold — ไปที่ PARTY → FUSION เพื่อรวมร่าง ตัวที่ถูกเลือกเป็น Sacrifice จะหายไป แต่ผลลัพธ์ขึ้นอยู่กับคอมโบของทั้งสองตัว รูปร่างสุดท้ายแข็งแกร่งกว่า Evolve มาก','When you have 2 Evolved pets in your Party plus a Fusion Stone and Gold — go to PARTY → FUSION to merge them. The sacrificed pet is consumed, and the result depends on both pets\' types. The final form is far stronger than a regular Evolve')],
+            ['🗺','SCOUT',T('สำรวจแผนที่ ต่อสู้กับมอนสเตอร์ เก็บของ และสะสม Symbol — ยิ่ง Stage สูง ของรางวัลยิ่งดี มี HARD MODE และ HELL MODE ให้ท้าทายเพิ่มเติม','Explore the map, battle monsters, collect loot and Symbols — higher Stages yield better rewards. HARD MODE and HELL MODE offer additional challenges')],
+            ['🏯','TOWER',T('ปีนหอคอยทีละชั้น ยิ่งขึ้นสูง ศัตรูยิ่งโหด — เคลียร์ชั้นพิเศษ (ทุก 10 ชั้น) ครั้งแรกจะได้รางวัลพิเศษ!','Climb the Tower floor by floor — enemies get tougher the higher you go. First clear of every 10th floor earns a special one-time reward!')],
+            ['⚔️','VS MODE',T('โหมดประลองไม่จำกัดครั้ง — ต่อสู้กับศัตรูในรูปแบบ Ladder ยิ่ง Stage สูง ศัตรูยิ่งแข็งแกร่ง ชนะเพื่อเลื่อน Stage และรับรางวัล','Unlimited PvE Ladder — battle increasingly powerful enemies as you climb the Stages. Win to advance and earn rewards')],
+            ['💀','HELL MODE',T('โหมดสุดท้าทาย ปลดล็อคหลังผ่าน Hard Mode ครบ 20 ด่าน — ศัตรูแข็งแกร่งกว่า Hard Mode มาก ผลตอบแทนสูงตามความยากที่สูงขึ้น','Unlocked after completing all 20 Hard Mode stages — enemies are significantly stronger. Rewards scale with the increased difficulty')],
+            ['🌑','EXPEDITION',T('ส่ง Pet ออกสำรวจเพื่อหาทรัพยากรอัตโนมัติ ไม่ต้องเล่น — แต่ Pet ที่ออกไปจะใช้งานในหอคอยและ VS ไม่ได้ชั่วคราว','Send pets out to gather resources automatically while you play — but pets on Expedition cannot be used in Tower or VS battles')],
+            ['🏋️','TRAIN',T('อัปเกรด ATK / DEF / SPD แบบถาวร ใช้ Gold ที่หามาได้จากการต่อสู้','Permanently upgrade ATK / DEF / SPD using Gold earned from battles')],
+            ['🎒','ITEMS & ARTIFACTS',T('ไอเทมใช้ในระหว่างต่อสู้ — Artifact ใส่ให้ Pet เพื่อเพิ่ม Passive พิเศษ','Items can be used during battle — Artifacts are equipped to pets to grant special passive bonuses')],
+            ['🐾','PARTY',T('มี Pet ได้สูงสุด 4 ตัว พร้อม Storage อีก 20 ช่อง เลือก Pet ที่ Active เพื่อนำไปต่อสู้ — เปลี่ยน Pet ระหว่างสู้ได้ในโหมด Tower และ VS','Hold up to 4 active pets plus 20 in Storage. Switch pets mid-battle in Tower and VS modes')],
+          ].map(([icon,title,desc])=>`
+            <div style="background:rgba(20,10,40,0.8);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
+              <div style="font-family:Orbitron,monospace;font-size:10px;color:#c0a0ff;letter-spacing:1px;margin-bottom:4px">${icon} ${title}</div>
+              <div style="font-size:11px;color:#9080b0;line-height:1.5;white-space:pre-line">${desc}</div>
+            </div>`).join('')}
+          <div style="text-align:center;font-size:10px;color:#4a3a6a;font-family:Orbitron,monospace;padding:4px 0">${T('— ค้นพบส่วนที่เหลือด้วยตัวเอง! —','— Discover the rest for yourself! —')}</div>
+        </div>
+      </div>` : ''}
       ${settingsOpen ? `
       <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:20;border-radius:16px">
         <div style="background:#0a0a1e;border:2px solid #6040c0;border-radius:16px;padding:24px;width:260px;display:flex;flex-direction:column;gap:16px">
@@ -3807,7 +4216,7 @@ function renderMenu() {
 }
 
 function renderScout() {
-  labelStrip.textContent = replayStage>0 ? `🔄 REPLAY STAGE ${replayStage} ✦ ${BIOMES[currentBiome].label}` : hardMode ? `🔥 HARD MODE ✦ STAGE ${hardStage}/20 ✦ ${BIOMES[currentBiome].label}` : `SCOUT ✦ STAGE ${stage} ✦ ${BIOMES[currentBiome].label}`;
+  labelStrip.textContent = replayStage>0 ? `🔄 REPLAY STAGE ${replayStage} ✦ ${BIOMES[currentBiome].label}` : hellMode ? `💀 HELL MODE ✦ STAGE ${hellStage}/20 ✦ ${BIOMES[currentBiome].label}` : hardMode ? `🔥 HARD MODE ✦ STAGE ${hardStage}/20 ✦ ${BIOMES[currentBiome].label}` : `SCOUT ✦ STAGE ${stage} ✦ ${BIOMES[currentBiome].label}`;
   let cellsHtml = '';
   for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) {
     const cell = scoutGrid[idx(x,y)];
@@ -3864,7 +4273,7 @@ function renderScout() {
       <div data-quickitem="${slot.type}" title="${N(it)}" style="position:relative;width:36px;height:36px;
         border-radius:8px;border:1px solid #1a1a3a;background:#08080f;
         cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <span style="font-size:20px;display:flex;align-items:center;justify-content:center">${slot.type==='sym_W'?symSvg('W',22):slot.type==='sym_S'?symSvg('S',22):it.icon}</span>
+        ${slot.type==='sym_W'?`<span style="font-size:20px">${symSvg('W',22)}</span>`:slot.type==='sym_S'?`<span style="font-size:20px">${symSvg('S',22)}</span>`:slot.type==='shiny_egg'?`<span style="position:relative;display:inline-block;width:22px;height:22px"><span style="font-size:18px;line-height:22px">🥚</span><span style="position:absolute;top:-2px;right:-3px;font-size:9px">✨</span></span>`:slot.type==='box_R'?`<span style="position:relative;display:inline-block;width:22px;height:22px"><span style="font-size:18px;line-height:22px">📦</span><span style="position:absolute;top:-2px;right:-3px;font-size:9px">💜</span></span>`:slot.type==='box_E'?`<span style="position:relative;display:inline-block;width:22px;height:22px"><span style="font-size:18px;line-height:22px">📦</span><span style="position:absolute;top:-2px;right:-3px;font-size:9px">✨</span></span>`:`<span style="font-size:20px;display:flex;align-items:center;justify-content:center">${it.icon}</span>`}
         <span style="position:absolute;bottom:1px;right:3px;font-size:9px;color:${it.color};font-family:Orbitron,monospace;line-height:1">${slot.qty}</span>
       </div>`;
   }).join('') : `<div style="font-size:10px;color:#2a2a4a;font-family:Orbitron,monospace">NO ITEMS</div>`;
@@ -3889,14 +4298,14 @@ function renderScout() {
           </div>
         </div>
         <span>SYMBOLS ${symHtml}</span>
-        ${(()=>{ const sl = hardMode?`H${hardStage}`:`S${stage}`; return inventory.some(s=>s.type==='map_scroll')
-          ? `<span id="rerollBtn" style="cursor:pointer;border:1px solid ${hardMode?'#ff6644':'#c0a0ff'};border-radius:5px;padding:1px 6px;color:${hardMode?'#ff8866':'#c0a0ff'}">🗺️ ${sl}</span>`
+        ${(()=>{ const sl = hellMode?`💀${hellStage}`:hardMode?`H${hardStage}`:`S${stage}`; return inventory.some(s=>s.type==='map_scroll')
+          ? `<span id="rerollBtn" style="cursor:pointer;border:1px solid ${hellMode?'#ff2222':hardMode?'#ff6644':'#c0a0ff'};border-radius:5px;padding:1px 6px;color:${hellMode?'#ff4444':hardMode?'#ff8866':'#c0a0ff'}">🗺️ ${sl}</span>`
           : `<span style="border:1px solid #2a2a4a;border-radius:5px;padding:1px 6px;color:#2a2a4a">🗺️ ${sl}</span>`; })()}
       </div>
       ${buffBadges ? `<div style="display:flex;gap:4px;flex-wrap:wrap">${buffBadges}</div>` : ''}
       <div style="position:relative">
         <div class="scout-grid" style="background-image:url('${getBiomeBg()}');background-size:cover;background-position:center">${cellsHtml}</div>
-        ${(stage>1||hardMode) && !replayStage ? `<div id="stageSelectBtn" style="position:absolute;bottom:6px;right:6px;cursor:pointer;background:rgba(10,10,30,0.85);border:1px solid ${hardMode?'rgba(255,100,50,0.6)':'rgba(100,80,200,0.6)'};border-radius:8px;padding:3px 8px;font-family:Orbitron,monospace;font-size:10px;color:${hardMode?'#ff8866':'#a080ff'};z-index:5">📋 ${hardMode?`H${hardStage}`:`S${stage}`}</div>` : ''}
+        ${(stage>1||hardMode||hellMode) && !replayStage ? `<div id="stageSelectBtn" style="position:absolute;bottom:6px;right:6px;cursor:pointer;background:rgba(10,10,30,0.85);border:1px solid ${hellMode?'rgba(255,30,30,0.6)':hardMode?'rgba(255,100,50,0.6)':'rgba(100,80,200,0.6)'};border-radius:8px;padding:3px 8px;font-family:Orbitron,monospace;font-size:10px;color:${hellMode?'#ff4444':hardMode?'#ff8866':'#a080ff'};z-index:5">📋 ${hellMode?`💀${hellStage}`:hardMode?`H${hardStage}`:`S${stage}`}</div>` : ''}
         ${replayStage ? `<div id="stageSelectBtn" style="position:absolute;bottom:6px;right:6px;cursor:pointer;background:rgba(10,10,30,0.85);border:1px solid #ff8800;border-radius:6px;padding:2px 7px;font-family:Orbitron,monospace;font-size:9px;color:#ff8800;z-index:5">🔄 ${replayHard?'H':'S'}${replayStage}</div>` : ''}
         ${stageSelectOpen ? `
         <div id="stageSelectOverlay" style="position:absolute;inset:0;background:rgba(5,5,20,0.95);border-radius:8px;z-index:10;display:flex;flex-direction:column;gap:6px;padding:10px;overflow-y:auto">
@@ -3904,17 +4313,25 @@ function renderScout() {
           <div style="text-align:center;font-family:Orbitron,monospace;font-size:10px;color:${inventory.find(s=>s.type==='map_scroll')?'#c0a0ff':'#ff4444'}">🗺️ Map Scroll: ${inventory.find(s=>s.type==='map_scroll')?.qty||0} (ใช้ 1 ต่อครั้ง)</div>
           <div style="font-family:Orbitron,monospace;font-size:9px;color:#5a4a8a;letter-spacing:1px">NORMAL</div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
-            ${Array.from({length:hardMode?20:stage-1},(_,i)=>i+1).map(s=>{
+            ${Array.from({length:(hardMode||hellMode)?20:stage-1},(_,i)=>i+1).map(s=>{
               const active=replayStage===s&&!replayHard;
               return `<div data-sel-stage="${s}" data-sel-hard="0" style="cursor:pointer;background:${active?'rgba(100,60,200,0.4)':'rgba(20,15,40,0.8)'};border:1px solid ${active?'#a080ff':'rgba(80,60,150,0.5)'};border-radius:8px;padding:6px 2px;text-align:center;font-family:Orbitron,monospace;font-size:11px;color:${active?'#e0c0ff':'#7060a0'}">S${s}</div>`;
             }).join('')}
           </div>
-          ${hardMode&&hardStage>1 ? `
+          ${(hardMode||hellMode)&&(hardMode?hardStage:20)>1 ? `
           <div style="font-family:Orbitron,monospace;font-size:9px;color:#8a4a2a;letter-spacing:1px">🔥 HARD</div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
-            ${Array.from({length:hardStage-1},(_,i)=>i+1).map(s=>{
+            ${Array.from({length:hellMode?20:hardStage-1},(_,i)=>i+1).map(s=>{
               const active=replayStage===s&&replayHard;
               return `<div data-sel-stage="${s}" data-sel-hard="1" style="cursor:pointer;background:${active?'rgba(200,80,30,0.3)':'rgba(20,10,5,0.8)'};border:1px solid ${active?'#ff8844':'rgba(150,60,30,0.5)'};border-radius:8px;padding:6px 2px;text-align:center;font-family:Orbitron,monospace;font-size:11px;color:${active?'#ffcc88':'#8a5030'}">H${s}</div>`;
+            }).join('')}
+          </div>` : ''}
+          ${hellMode&&hellStage>1 ? `
+          <div style="font-family:Orbitron,monospace;font-size:9px;color:#aa2222;letter-spacing:1px">💀 HELL</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
+            ${Array.from({length:hellStage-1},(_,i)=>i+1).map(s=>{
+              const active=replayStage===s&&replayHard;
+              return `<div data-sel-stage="${s}" data-sel-hard="1" style="cursor:pointer;background:${active?'rgba(200,20,20,0.3)':'rgba(20,5,5,0.8)'};border:1px solid ${active?'#ff3333':'rgba(150,20,20,0.5)'};border-radius:8px;padding:6px 2px;text-align:center;font-family:Orbitron,monospace;font-size:11px;color:${active?'#ff8888':'#8a2020'}">💀${s}</div>`;
             }).join('')}
           </div>` : ''}
           <div data-sel-stage="0" data-sel-hard="0" style="cursor:pointer;background:rgba(20,40,20,0.8);border:1px solid rgba(80,150,80,0.5);border-radius:8px;padding:6px;text-align:center;font-family:Orbitron,monospace;font-size:10px;color:#60a060">✓ CURRENT STAGE</div>
@@ -3983,7 +4400,8 @@ function renderScout() {
             {type:'essence',      price:350,  limit:5},
             {type:'fusion_stone', price:500,  limit:1},
             {type:'mystery_egg',  price:1000, limit:1},
-            ...(hardMode ? [{type:'rebirth_stone', price:1000, limit:1}] : []),
+            ...(hardMode||hellMode ? [{type:'rebirth_stone', price:1000, limit:1}] : []),
+            ...(hellMode ? [{type:'box_R', price:1500, limit:2}] : []),
           ].map(item => {
             const it = ITEMS[item.type];
             const bought = secretShopBought[item.type] || 0;
@@ -4160,16 +4578,59 @@ function renderBattleScreen() {
           <div style="font-family:Orbitron,monospace;font-size:11px;color:#c0a0ff">${petName(creature)}</div>
           <div style="font-size:10px;color:#8878b8">HP ${creature.hp}/${creature.maxHp}</div>
           <div style="height:6px;background:#0a0a20;border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid #1a1a3a">
-            <div style="width:${pHpPct}%;height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);border-radius:3px;transition:width 0.4s"></div>
+            <div style="width:${pHpPct}%;height:100%;background:linear-gradient(90deg,${pHpPct<=20?'#ff3333,#cc0000':pHpPct<=30?'#ff8800,#cc5500':'#2ecc71,#27ae60'});border-radius:3px;transition:width 0.4s"></div>
           </div>
+          ${(()=>{
+            const a1=creature.artifact, a2=creature.artifact2;
+            const hp=creature.hp, mhp=creature.maxHp;
+            const stacks1=battleState.artifactStacks||{}, stacks2=battleState.artifactStacks2||{};
+            const iwS = a1==='iron_will'?stacks1 : a2==='iron_will'?stacks2 : null;
+            const badges=[];
+            const badge=(txt,col,bg,sec)=>`<span style="font-size:10px;font-family:Orbitron,monospace;color:${col};background:${bg};border:1px solid ${col};border-radius:4px;padding:1px 5px;animation:pulseRed ${sec}s ease-in-out infinite alternate">${txt}</span>`;
+            if((a1==='execution'||a2==='execution') && hp<mhp*0.20)
+              badges.push(badge('☠ EXECUTION','#ff2222','rgba(80,0,0,0.7)','0.7'));
+            if((a1==='death_mark'||a2==='death_mark') && hp<mhp*0.30)
+              badges.push(badge('💀 DEATH MARK','#ff6600','rgba(60,20,0,0.7)','0.9'));
+            if((a1==='stone_skin'||a2==='stone_skin') && hp>mhp*0.70)
+              badges.push(badge('🪨 STONE SKIN','#aaaaaa','rgba(30,30,30,0.7)','1.2'));
+            if(iwS) {
+              if(iwS.ironWillBoostReady)
+                badges.push(badge('💎 ATK×4 NEXT','#ffd700','rgba(60,50,0,0.7)','0.6'));
+              else if(!iwS.ironWillUsed)
+                badges.push(badge('💎 IRON WILL','#8888ff','rgba(10,10,50,0.7)','1.5'));
+            }
+            return badges.length?`<div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap">${badges.join('')}</div>`:'';
+          })()}
         </div>
-        <div style="font-family:Orbitron,monospace;font-size:10px;color:#6858a0;padding:0 4px">T${turn}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 4px">
+          ${battleState.isVsBattle ? `<div style="display:flex;gap:4px">${vsEnemies.map((e,i)=>{
+            const dead=e.hp<=0, isActive=i===vsEnemyIdx;
+            return `<div style="width:9px;height:9px;border-radius:50%;background:${dead?'#2a2a2a':isActive?'#e0d0ff':'#7060a0'};border:1px solid ${dead?'#3a3a3a':isActive?'#c0a0ff':'#5040a0'};box-shadow:${isActive?'0 0 5px #c0a0ff':'none'};transition:all 0.3s"></div>`;
+          }).join('')}</div>` : ''}
+          <div style="font-family:Orbitron,monospace;font-size:10px;color:#6858a0">T${turn}</div>
+        </div>
         <div style="flex:1;text-align:right">
           <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px">
             <span style="font-size:12px" title="${et.desc}">${et.icon}</span>
             <div style="font-family:Orbitron,monospace;font-size:11px;color:${eColor}">${enemy.name}</div>
           </div>
           <div style="font-size:10px;color:#8878b8;text-align:right">HP ${enemy.hp}/${enemy.maxHp}</div>
+          ${(()=>{
+            const ep = enemy.passives||[];
+            const ebadges=[];
+            const ebadge=(txt,col,bg,sec)=>`<span style="font-size:10px;font-family:Orbitron,monospace;color:${col};background:${bg};border:1px solid ${col};border-radius:4px;padding:1px 5px;animation:pulseRed ${sec}s ease-in-out infinite alternate">${txt}</span>`;
+            if(ep.includes('dmg_reduce') && enemy.hp > enemy.maxHp*0.50)
+              ebadges.push(ebadge('⬛ IRON BODY','#aaaaaa','rgba(20,20,20,0.8)','1.2'));
+            if(ep.includes('barrier') && turn%3===0)
+              ebadges.push(ebadge('🔰 BARRIER','#44ccff','rgba(0,40,60,0.8)','0.8'));
+            if(ep.includes('enrage') && enemy.hp < enemy.maxHp*0.50)
+              ebadges.push(ebadge('⚔️ ENRAGE','#ff8800','rgba(60,20,0,0.7)','0.9'));
+            if(ep.includes('last_dance') && enemy.hp < enemy.maxHp*0.10)
+              ebadges.push(ebadge('💥 LAST DANCE','#ff2222','rgba(80,0,0,0.7)','0.7'));
+            if(ep.includes('berserker') && battleState.eBerserkerStacks>0)
+              ebadges.push(ebadge(`🔺 ATK+${battleState.eBerserkerStacks*10}%`,'#ff6600','rgba(60,20,0,0.7)','1.2'));
+            return ebadges.length?`<div style="display:flex;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap">${ebadges.join('')}</div>`:'';
+          })()}
           ${(enemy.passives||[]).length ? `<div style="display:flex;gap:3px;justify-content:flex-end;margin-top:2px">${(enemy.passives).map(id=>{
             const ep=ENEMY_PASSIVES.find(x=>x.id===id);
             if(ep) return `<span title="${ep.desc}" style="font-size:11px;background:rgba(80,20,20,0.5);border:1px solid #5a2a2a;border-radius:4px;padding:1px 4px">${ep.icon}</span>`;
@@ -4213,7 +4674,7 @@ function renderBattleScreen() {
           }
         }
         return `
-        <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;min-height:0;border-radius:10px;overflow:hidden;background-image:url('${getBattleBg()}');background-size:cover;background-position:center bottom;position:relative">
+        <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;min-height:130px;border-radius:10px;overflow:hidden;background-image:url('${getBattleBg()}');background-size:cover;background-position:center bottom;position:relative">
           <div class="${playerCls}" style="position:relative;z-index:1;${lr&&lr.playerStunned&&ap==='p-atk'?'filter:brightness(1.4) saturate(0.3);':''}${odBuff?`filter:drop-shadow(0 0 8px #ff6600) drop-shadow(0 0 16px #ff440066);animation:odFire 0.6s ease-in-out infinite alternate`:''}">
             ${lr&&lr.playerStunned&&ap==='p-atk'?`<div style="position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:flex;gap:2px;z-index:10;pointer-events:none">${['⚡','💫','⚡'].map((s,i)=>`<span style="font-size:18px;animation:stun-float 0.8s ease-out ${i*0.15}s both">${s}</span>`).join('')}</div>`:''}
             ${buildPetSvg(creature, creature.phase==='final'?180:130, true)}
@@ -4238,7 +4699,7 @@ function renderBattleScreen() {
       </div>
 
 
-      ${battleState.isTowerBattle ? `
+      ${(battleState.isTowerBattle || battleState.isVsBattle) ? `
       <div style="display:flex;gap:4px;padding:4px 0">
         ${pets.filter(p=>p.phase!=='egg').map((p,i)=>{
           const realIdx = pets.indexOf(p);
@@ -4255,10 +4716,13 @@ function renderBattleScreen() {
       <div style="display:flex;gap:4px;align-items:flex-end">
         <div style="flex:1;display:flex;gap:3px">${moveBtns}</div>
         <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
-          <div id="battleItemBtn" style="padding:5px 6px;border-radius:8px;cursor:pointer;user-select:none;background:${hasHealItem?'#0e2218':'#080810'};border:1px solid ${hasHealItem?'#2ecc71':'#1a1a2a'};text-align:center;width:44px">
+          ${battleState.isVsBattle ? `<div style="padding:5px 6px;border-radius:8px;background:#080808;border:1px solid #1a1a1a;text-align:center;width:44px;opacity:0.3">
+            <div style="font-size:16px">🧪</div>
+            <div style="font-size:8px;color:#2a2a2a;font-family:Orbitron,monospace">NO ITEM</div>
+          </div>` : `<div id="battleItemBtn" style="padding:5px 6px;border-radius:8px;cursor:pointer;user-select:none;background:${hasHealItem?'#0e2218':'#080810'};border:1px solid ${hasHealItem?'#2ecc71':'#1a1a2a'};text-align:center;width:44px">
             <div style="font-size:16px">🧪</div>
             <div style="font-size:8px;color:${hasHealItem?'#2ecc71':'#2a2a4a'};font-family:Orbitron,monospace">ITEM</div>
-          </div>
+          </div>`}
           ${buildOdCircle()}
         </div>
       </div>
@@ -4267,7 +4731,7 @@ function renderBattleScreen() {
 
 function renderStageClear() {
   const isBoss = battleState.isBoss;
-  const sl = replayStage>0 ? `REPLAY ${replayHard?'HARD ':''}${replayStage}` : hardMode ? `HARD ${hardStage}` : `STAGE ${stage}`;
+  const sl = replayStage>0 ? `REPLAY ${replayHard?'HARD ':''}${replayStage}` : (battleState.clearedStageLabel || (hellMode ? `HELL ${hellStage}` : hardMode ? `HARD ${hardStage}` : `STAGE ${stage}`));
   const subText = isBoss ? `${sl} CLEAR!` : 'MINI-BOSS DEFEATED!';
   const starEmojis = ['⭐','✨','💫','🌟','⚡'];
   const starsHtml = Array.from({length:18}, (_,i) => {
@@ -4285,7 +4749,7 @@ function renderStageClear() {
       <div class="sc-sub">${subText}</div>
       <div style="position:absolute;bottom:24px;font-family:Orbitron,monospace;font-size:10px;color:#6040a0;letter-spacing:2px;animation:scBannerIn 0.4s ease 1.5s both">TAP TO CONTINUE</div>
     </div>`;
-  document.getElementById('scOverlay')?.addEventListener('click', () => { state='result'; render(); });
+  // click handler managed in resolveBattle to avoid double-render
 }
 
 function renderResult() {
@@ -4323,12 +4787,19 @@ function renderEvolve() {
         </div>`).join('')
     : `<div style="font-size:12px;color:#6858a0">${T('— ยังไม่มี symbol —','— no symbols yet —')}</div>`;
 
+  const bonusHp  = Math.floor(creature.maxHp  * 0.25);
+  const bonusAtk = Math.floor(creature.atk    * 0.25);
+  const bonusSpd = Math.floor(creature.spd    * 0.25);
+  const bonusDef = Math.floor(creature.def    * 0.25);
+  const hasBonuses = bonusHp||bonusAtk||bonusSpd||bonusDef;
+  const bonusTag = (val) => val > 0 ? `<span style="color:#88ff88;font-size:10px"> +${val}</span>` : '';
   const formCard = form ? `
     ${buildEvolvedSvg(key, 80, true)}
     <div class="form-card" style="border-color:${form.color}">
       <div class="form-card-name" style="color:${form.color}">${form.name}</div>
       <div class="form-card-desc">${form.desc}</div>
-      <div class="form-card-stats">HP ${form.hp} ● ATK ${form.atk} ● SPD ${form.spd} ● DEF ${form.def}</div>
+      <div class="form-card-stats">HP ${form.hp+bonusHp} ● ATK ${form.atk+bonusAtk} ● SPD ${form.spd+bonusSpd} ● DEF ${form.def+bonusDef}</div>
+      ${hasBonuses ? `<div style="font-size:10px;color:#66cc66;margin-top:4px">✨ รวม Train bonus แล้ว</div>` : ''}
     </div>
     <div style="font-size:12px;color:#8878b8;font-family:Orbitron,monospace">OK = EVOLVE ● ✕ = ${T('ทิ้ง','Discard')} symbol</div>` : `
     <div style="font-size:12px;color:#7060aa;text-align:center">${T('เก็บ symbol ให้ครบ 3 อัน','Collect 3 symbols to evolve')}</div>`;
@@ -4356,7 +4827,7 @@ document.addEventListener('input', e => {
 });
 
 document.getElementById('btnOk').addEventListener('click', ()=>{ SFX.click();
-  if(state==='stageclear') { state='result'; render(); return; }
+  if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); return; }
   if(state==='menu') { enterScout(); }
   else if(state==='scout') { state='menu'; render(); }
   else if(state==='result') {
@@ -4396,13 +4867,15 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   if(state==='menu' && actionMenuOpen) { actionMenuOpen=false; render(); return; }
   if(state==='status')         { state='menu'; render(); }
   else if(state==='tower')     { towerActive=false; state='menu'; render(); }
+  else if(state==='vs_lobby') { state='menu'; render(); }
+  else if(state==='vs_result'){ state='menu'; render(); }
   else if(state==='train')     { state='menu'; render(); }
   else if(state==='party')     { if(rebirthConfirm!==null){rebirthConfirm=null;render();}else if(partyDetailIdx!==null){partyDetailIdx=null;render();}else{partyViewTab='party';rebirthConfirm=null;state='menu';render();} }
   else if(state==='expedition'){ state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
-  else if(state==='battle')    { if(battleState?.isTowerBattle){battleState=null;state='tower';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
-  else if(state==='stageclear') { state='result'; render(); }
+  else if(state==='battle')    { if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isVsBattle){battleState=null;state='menu';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
+  else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }
   else if(state==='evolve')    { state='menu'; render(); }
   else if(state==='rest')      { state='menu'; render(); }
@@ -4470,16 +4943,16 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       if(towerRunSummary) {
         const claimedGold = towerRunSummary.gold;
-        const claimedBoxes = towerRunSummary.artifacts.length;
+        const claimedBoxes = towerRunSummary.artifacts.filter(a=>a==='box').length;
         gold += claimedGold;
-        towerRunSummary.artifacts.forEach(() => addItemToInventory('artifact_box'));
+        towerRunSummary.artifacts.filter(a=>a==='box').forEach(() => addItemToInventory('artifact_box'));
         towerRunSummary = null;
         const parts = [];
         if(claimedGold > 0) parts.push(`💰 +${claimedGold.toLocaleString()} G`);
         if(claimedBoxes > 0) parts.push(`📦 ×${claimedBoxes} Artifact Box`);
-        towerToast = parts.length ? `✅ รับแล้ว: ${parts.join('  ')}` : '✅ รับรางวัลแล้ว';
+        scoutToast = parts.length ? `✅ Tower Run Rewards: ${parts.join('  ')}` : '✅ Tower Run Rewards Collected!';
       }
-      saveGame(); render(); return;
+      saveGame(); state='menu'; render(); return;
     }
     const equipEl = el.closest('[data-equip-artifact]');
     if(equipEl) {
@@ -4525,6 +4998,17 @@ screenContent.addEventListener('click', e=>{
   }
 
   if(state==='title') {
+    const delBtn = el.closest('[data-deleteslot]');
+    if(delBtn) {
+      const n = Number(delBtn.dataset.deleteslot);
+      slotDeleteConfirm = n; render();
+      return;
+    }
+    if(el.closest('#slotDelCancel'))  { slotDeleteConfirm=null; render(); return; }
+    if(el.closest('#slotDelConfirm')) {
+      localStorage.removeItem(SLOT_KEY(slotDeleteConfirm));
+      slotDeleteConfirm=null; render(); return;
+    }
     const loadBtn = el.closest('[data-loadslot]');
     if(loadBtn) {
       const n = Number(loadBtn.dataset.loadslot);
@@ -4537,19 +5021,10 @@ screenContent.addEventListener('click', e=>{
       }
       if(!pets.length) { pets.push(newPet()); syncCreature(); }
       checkDailyScrolls();
-      state = creature.phase === 'egg' ? 'egg' : 'menu';
-      render(); return;
-    }
-    const delBtn = el.closest('[data-deleteslot]');
-    if(delBtn) {
-      const n = Number(delBtn.dataset.deleteslot);
-      slotDeleteConfirm = n; render();
+      SFX.titleStart();
+      const nextState = creature.phase === 'egg' ? 'egg' : 'menu';
+      fadeToState(() => { state = nextState; _bgmCurrent = null; render(); });
       return;
-    }
-    if(el.closest('#slotDelCancel'))  { slotDeleteConfirm=null; render(); return; }
-    if(el.closest('#slotDelConfirm')) {
-      localStorage.removeItem(SLOT_KEY(slotDeleteConfirm));
-      slotDeleteConfirm=null; render(); return;
     }
     return;
   }
@@ -4557,6 +5032,8 @@ screenContent.addEventListener('click', e=>{
   if(state==='menu') {
     if(el.closest('#settingsBtn'))   { SFX.click(); settingsOpen=true; render(); return; }
     if(el.closest('#settingsClose')) { SFX.click(); settingsOpen=false; render(); return; }
+    if(el.closest('#helpBtn'))       { SFX.click(); helpOpen=true; render(); return; }
+    if(el.closest('#helpClose'))     { SFX.click(); helpOpen=false; render(); return; }
     if(el.closest('#exportSaveBtn')) { SFX.click(); exportSave(); return; }
     if(el.closest('#exitBtn'))      { SFX.click(); exitConfirm=true; render(); return; }
     if(el.closest('#exitConfirmYes')){ SFX.click(); exitConfirm=false; state='title'; render(); return; }
@@ -4584,6 +5061,7 @@ screenContent.addEventListener('click', e=>{
     else if(action==='expedition') { actionMenuOpen=false; state='expedition'; render(); }
     else if(action==='train')      { actionMenuOpen=false; state='train'; render(); }
     else if(action==='shop')       { state='shop'; render(); }
+    else if(action==='vs')         { actionMenuOpen=false; enterVs(); return; }
     else if(action==='tower')      { actionMenuOpen=false;
       if(towerFloor > towerCheckpoint) {
         towerFloor = towerCheckpoint;
@@ -4758,19 +5236,23 @@ screenContent.addEventListener('click', e=>{
     }
     const addPet = el.closest('[data-addpet]');
     if(addPet) {
-      const hasEgg = inventory.some(s=>s.type==='mystery_egg');
+      const hasEgg = inventory.some(s=>s.type==='mystery_egg'||s.type==='shiny_egg');
       const hasStorage = storage.length > 0;
       if(!hasEgg && !hasStorage) return;
       emptySlotModal = {phase:'choose', slotIdx: parseInt(addPet.dataset.addpet)};
       render(); return;
     }
-    if(el.closest('#emSlotHatch')) { emptySlotModal = {...emptySlotModal, phase:'hatch_confirm'}; render(); return; }
+    if(el.closest('#emSlotShinyHatch')) { emptySlotModal = {...emptySlotModal, phase:'hatch_confirm', eggType:'shiny_egg'}; render(); return; }
+    if(el.closest('#emSlotHatch')) { emptySlotModal = {...emptySlotModal, phase:'hatch_confirm', eggType:'mystery_egg'}; render(); return; }
     if(el.closest('#emSlotStorage')) { emptySlotModal = {...emptySlotModal, phase:'storage_pick'}; render(); return; }
     if(el.closest('#emSlotCancel')) { emptySlotModal = null; render(); return; }
     if(el.closest('#emSlotHatchOk')) {
-      const eggSlot = inventory.find(s=>s.type==='mystery_egg');
+      const eggType = emptySlotModal?.eggType || 'mystery_egg';
+      const eggSlot = inventory.find(s=>s.type===eggType);
       if(eggSlot) { eggSlot.qty--; if(eggSlot.qty<=0) inventory.splice(inventory.indexOf(eggSlot),1); }
-      const np2 = newPet(); if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
+      const np2 = newPet();
+      if(eggType==='shiny_egg') { np2.shiny=true; applyShinyStats(np2); }
+      else if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
       pets.push(np2); emptySlotModal=null; saveGame();
       showHatchAnimation(np2.shiny, () => { scoutToast = np2.shiny ? T('✨ SHINY HATCHED!','✨ SHINY HATCHED!') : '🥚 HATCHED!'; render(); });
       return;
@@ -5046,7 +5528,7 @@ screenContent.addEventListener('click', e=>{
     const useBtn = el.closest('[data-useitem]');
     if(useBtn && !invSellMode) {
       const ut = useBtn.dataset.useitem;
-      if(ut==='artifact_box'||ut==='map_scroll'||ut==='energy_drink'||ut==='mystery_egg'||ut==='fusion_stone') {
+      if(ut==='artifact_box'||ut==='box_R'||ut==='box_E'||ut==='map_scroll'||ut==='energy_drink'||ut==='mystery_egg'||ut==='shiny_egg'||ut==='fusion_stone') {
         useItem(ut); invToast=scoutToast; scoutToast=''; saveGame(); render(); return;
       }
       itemUseConfirm = {type: ut}; itemUseTargetIdx=activePetIdx; render(); return;
@@ -5125,7 +5607,7 @@ screenContent.addEventListener('click', e=>{
       return;
     }
     const switchEl = el.closest('[data-tower-switch]');
-    if(switchEl && battleState?.isTowerBattle && !battleState.waiting) {
+    if(switchEl && (battleState?.isTowerBattle || battleState?.isVsBattle) && !battleState.waiting) {
       const idx = parseInt(switchEl.dataset.towerSwitch);
       const target = pets[idx];
       if(target && target !== creature && target.phase !== 'egg' && target.hp > 0) {
@@ -5156,6 +5638,10 @@ screenContent.addEventListener('click', e=>{
     const btn = el.closest('[data-moveidx]');
     if(btn) doTurn(Number(btn.dataset.moveidx));
   }
+
+  if(el.closest('#vsStartBtn'))      { SFX.vsStart(); startVsBattle(0); return; }
+  if(el.closest('#vsNextBtn'))       { SFX.click(); state='vs_lobby'; render(); return; }
+  if(el.closest('#vsResultBackBtn')) { SFX.click(); state='menu'; render(); return; }
 
   if(state==='scout') {
     if(el.closest('#itemUseCancel')) { itemUseConfirm=null; render(); return; }
@@ -5223,7 +5709,7 @@ screenContent.addEventListener('click', e=>{
     const quickItem = el.closest('[data-quickitem]');
     if(quickItem) {
       const qt = quickItem.dataset.quickitem;
-      if(qt==='energy_drink'||qt==='map_scroll'||qt==='artifact_box'||qt==='mystery_egg'||qt==='fusion_stone'||qt==='power_shard'||qt==='speed_shard'||qt==='guard_shard') {
+      if(qt==='energy_drink'||qt==='map_scroll'||qt==='artifact_box'||qt==='box_R'||qt==='box_E'||qt==='mystery_egg'||qt==='shiny_egg'||qt==='fusion_stone'||qt==='power_shard'||qt==='speed_shard'||qt==='guard_shard') {
         useItem(qt); scoutToast = scoutToast||''; render(); return;
       }
       itemUseConfirm = {type: qt, fromScout: true}; itemUseTargetIdx=activePetIdx; render(); return;
@@ -5544,16 +6030,18 @@ function renderParty() {
 
   const slotHtml = slots.map((pet, i) => {
     if(!pet) {
-      const hasEgg = inventory.some(s=>s.type==='mystery_egg');
+      const hasEgg = inventory.some(s=>s.type==='mystery_egg'||s.type==='shiny_egg');
+      const hasShinyEggSlot = inventory.some(s=>s.type==='shiny_egg');
       const hasStorage = storage.length > 0;
       const canAdd = hasEgg || hasStorage;
-      const hint = hasEgg && hasStorage ? T('🥚 ฟักไข่ / 📦 จาก Storage','🥚 Hatch / 📦 From Storage')
+      const hint = hasShinyEggSlot ? T('✨🥚 Shiny Egg พร้อมฟัก!','✨🥚 Shiny Egg ready to hatch!')
+                 : hasEgg && hasStorage ? T('🥚 ฟักไข่ / 📦 จาก Storage','🥚 Hatch / 📦 From Storage')
                  : hasEgg ? T('🥚 ใช้ Mystery Egg ฟักเลย!','🥚 Use Mystery Egg to hatch now!')
                  : hasStorage ? T('📦 เลือก Pet จาก Storage','📦 Pick Pet from Storage')
                  : T('— ว่าง —','— empty —');
       return `
-      <div data-addpet="${i}" style="padding:14px;border-radius:12px;border:2px dashed ${canAdd?'#6050a0':'#2a2a5a'};display:flex;align-items:center;justify-content:center;gap:8px;cursor:${canAdd?'pointer':'default'};min-height:70px;opacity:${canAdd?1:0.4}">
-        <span style="font-size:20px">${hasEgg?'🥚':hasStorage?'📦':'⬜'}</span>
+      <div data-addpet="${i}" style="padding:14px;border-radius:12px;border:2px dashed ${hasShinyEggSlot?'#ffd700':canAdd?'#6050a0':'#2a2a5a'};display:flex;align-items:center;justify-content:center;gap:8px;cursor:${canAdd?'pointer':'default'};min-height:70px;opacity:${canAdd?1:0.4}">
+        <span style="font-size:20px">${hasShinyEggSlot?'✨🥚':hasEgg?'🥚':hasStorage?'📦':'⬜'}</span>
         <div style="font-family:Orbitron,monospace;font-size:11px;color:${canAdd?'#9080c0':'#2a2a5a'}">${hint}</div>
       </div>`;
     }
@@ -6013,29 +6501,35 @@ function renderParty() {
       </div>`:''}
       ${emptySlotModal ? (() => {
         const em = emptySlotModal;
-        const hasEgg = inventory.some(s=>s.type==='mystery_egg');
-        const eggQty = inventory.find(s=>s.type==='mystery_egg')?.qty || 0;
+        const hasMysteryEgg2 = inventory.some(s=>s.type==='mystery_egg');
+        const hasShinyEgg2   = inventory.some(s=>s.type==='shiny_egg');
+        const eggQty       = inventory.find(s=>s.type==='mystery_egg')?.qty || 0;
+        const shinyEggQty2 = inventory.find(s=>s.type==='shiny_egg')?.qty || 0;
         if(em.phase==='choose') return `
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:99;border-radius:16px">
           <div style="background:#0d0d1e;border:2px solid #5040a0;border-radius:16px;padding:20px;width:230px;display:flex;flex-direction:column;gap:10px">
             <div style="font-family:Orbitron,monospace;font-size:12px;color:#a090e0;text-align:center">➕ ${T('เพิ่ม Pet ลงปาร์ตี้','Add Pet to Party')}</div>
-            ${hasEgg?`<div id="emSlotHatch" style="padding:12px;border-radius:10px;background:#0a1a0a;border:2px solid #50a050;font-family:Orbitron,monospace;font-size:12px;color:#80d080;cursor:pointer;text-align:center">🥚 ${T('ฟัก Mystery Egg','Hatch Mystery Egg')} (${eggQty})</div>`:''}
+            ${hasShinyEgg2?`<div id="emSlotShinyHatch" style="padding:12px;border-radius:10px;background:#1a1500;border:2px solid #ffd700;font-family:Orbitron,monospace;font-size:12px;color:#ffd700;cursor:pointer;text-align:center">✨🥚 ${T('ฟัก Shiny Egg','Hatch Shiny Egg')} (${shinyEggQty2})</div>`:''}
+            ${hasMysteryEgg2?`<div id="emSlotHatch" style="padding:12px;border-radius:10px;background:#0a1a0a;border:2px solid #50a050;font-family:Orbitron,monospace;font-size:12px;color:#80d080;cursor:pointer;text-align:center">🥚 ${T('ฟัก Mystery Egg','Hatch Mystery Egg')} (${eggQty})</div>`:''}
             ${storage.length>0?`<div id="emSlotStorage" style="padding:12px;border-radius:10px;background:#0a0a1a;border:2px solid #5040a0;font-family:Orbitron,monospace;font-size:12px;color:#a090e0;cursor:pointer;text-align:center">📦 ${T('เลือกจาก Storage','Pick from Storage')} (${storage.length})</div>`:''}
             <div id="emSlotCancel" style="padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer;text-align:center">${T('ยกเลิก','CANCEL')}</div>
           </div>
         </div>`;
-        if(em.phase==='hatch_confirm') return `
+        if(em.phase==='hatch_confirm') {
+          const isSh = em.eggType==='shiny_egg';
+          return `
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:99;border-radius:16px">
-          <div style="background:#0d0d1e;border:2px solid #50a050;border-radius:16px;padding:20px;width:230px;display:flex;flex-direction:column;gap:12px;text-align:center">
-            <div style="font-size:36px">🥚</div>
-            <div style="font-family:Orbitron,monospace;font-size:12px;color:#80d080">${T('ฟัก Mystery Egg?','Hatch Mystery Egg?')}</div>
-            <div style="font-size:10px;color:#507050">${T('สัตว์ใหม่จะเข้าปาร์ตี้ทันที','A new beast will join your party')}</div>
+          <div style="background:#0d0d1e;border:2px solid ${isSh?'#ffd700':'#50a050'};border-radius:16px;padding:20px;width:230px;display:flex;flex-direction:column;gap:12px;text-align:center">
+            <div style="font-size:36px">${isSh?'✨🥚':'🥚'}</div>
+            <div style="font-family:Orbitron,monospace;font-size:12px;color:${isSh?'#ffd700':'#80d080'}">${isSh?T('ฟัก Shiny Egg?','Hatch Shiny Egg?'):T('ฟัก Mystery Egg?','Hatch Mystery Egg?')}</div>
+            <div style="font-size:10px;color:${isSh?'#a07800':'#507050'}">${isSh?T('การันตี ✨ Shiny!','Guaranteed ✨ Shiny!'):T('สัตว์ใหม่จะเข้าปาร์ตี้ทันที','A new beast will join your party')}</div>
             <div style="display:flex;gap:8px">
               <div id="emSlotCancel" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
-              <div id="emSlotHatchOk" style="flex:1;padding:9px;border-radius:8px;background:#0a2a0a;border:2px solid #50a050;font-family:Orbitron,monospace;font-size:11px;color:#80d080;cursor:pointer;font-weight:bold">🥚 ${T('ฟักเลย!','HATCH!')}</div>
+              <div id="emSlotHatchOk" style="flex:1;padding:9px;border-radius:8px;background:${isSh?'#1a1200':'#0a2a0a'};border:2px solid ${isSh?'#ffd700':'#50a050'};font-family:Orbitron,monospace;font-size:11px;color:${isSh?'#ffd700':'#80d080'};cursor:pointer;font-weight:bold">${isSh?'✨':'🥚'} ${T('ฟักเลย!','HATCH!')}</div>
             </div>
           </div>
         </div>`;
+        }
         if(em.phase==='storage_pick') return `
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;z-index:99;border-radius:16px">
           <div style="padding:12px 14px;border-bottom:1px solid #2a2a4a;display:flex;align-items:center;justify-content:space-between">
@@ -6218,6 +6712,7 @@ let invArtSort = 'grade'; // 'grade' | 'name'
 let invToast = '';
 let bagArtifactPending = null; // artKey รอเลือก pet ใส่
 let settingsOpen = false;
+let helpOpen = false;
 let actionMenuOpen = false;
 let exitConfirm = false;
 let secretShopOpen = false;
@@ -6247,7 +6742,7 @@ function renderInventory() {
     hp_potion:5, super_potion:10, max_potion:15, power_shard:15, speed_shard:15, guard_shard:15,
     map_scroll:20, energy_drink:25, revive:50,
     perm_atk:80, perm_spd:80, perm_def:80, perm_hp:80,
-    mystery_egg:100, sym_F:10, sym_W:10, sym_S:10,
+    mystery_egg:100, shiny_egg:500, box_R:150, box_E:400, sym_F:10, sym_W:10, sym_S:10,
     fusion_stone:30, artifact_box:40, essence:25,
   };
 
@@ -6301,19 +6796,22 @@ function renderInventory() {
     }
     if(slot.type.startsWith('box_')) {
       return `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#0e0e22;border:1px solid #3a3a2a">
-          <span style="font-size:24px">📦</span>
+        <div data-useitem="${slot.type}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#0e0e22;border:1px solid #3a3a2a;cursor:pointer">
+          <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;font-size:24px">${slot.type==='box_R'?`📦<span style="position:absolute;top:-2px;right:-4px;font-size:12px">💜</span>`:slot.type==='box_E'?`📦<span style="position:absolute;top:-2px;right:-4px;font-size:12px">✨</span>`:it.icon}</span>
           <div style="flex:1">
             <div style="font-family:Orbitron,monospace;font-size:13px;color:${it.color}">${N(it)}</div>
             <div style="font-size:11px;color:#7060aa;margin-top:2px">${D(it)}</div>
           </div>
-          ${slot.qty>1?`<div style="font-family:Orbitron,monospace;font-size:15px;color:#c0a0ff;min-width:24px;text-align:center">×${slot.qty}</div>`:''}
-          <div data-open-box="${slot.type}" style="padding:6px 10px;border-radius:8px;background:#1a1a0a;border:1px solid #aaaa44;font-family:Orbitron,monospace;font-size:11px;color:#ffee44;cursor:pointer;white-space:nowrap">${T('เปิด ▶','Open ▶')}</div>
+          <div style="font-family:Orbitron,monospace;font-size:15px;color:#c0a0ff;min-width:24px;text-align:center">×${slot.qty}</div>
         </div>`;
     }
+    const iconHtml = slot.type==='sym_W' ? symSvg('W',28)
+      : slot.type==='sym_S' ? symSvg('S',28)
+      : slot.type==='shiny_egg' ? `<span style="position:relative;display:inline-block;width:28px;height:28px"><span style="font-size:22px;line-height:28px">🥚</span><span style="position:absolute;top:-2px;right:-2px;font-size:12px">✨</span></span>`
+      : it.icon;
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#0e0e22;border:1px solid #2a2a5a">
-        <span style="font-size:24px;display:flex;align-items:center;justify-content:center;width:28px">${slot.type==='sym_W'?symSvg('W',28):slot.type==='sym_S'?symSvg('S',28):it.icon}</span>
+        <span style="font-size:24px;display:flex;align-items:center;justify-content:center;width:28px">${iconHtml}</span>
         <div data-useitem="${slot.type}" style="flex:1;cursor:pointer">
           <div style="font-family:Orbitron,monospace;font-size:13px;color:${it.color}">${N(it)}</div>
           <div style="font-size:11px;color:#7060aa;margin-top:2px">${D(it)}</div>

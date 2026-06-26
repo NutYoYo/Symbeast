@@ -6422,10 +6422,10 @@ function renderParty() {
     <div style="display:flex;flex-direction:column;gap:8px">
       <div style="background:#0d0d20;border:1px solid #6633aa;border-radius:10px;padding:10px 12px">
         <div style="font-family:Orbitron,monospace;font-size:11px;color:#cc88ff;margin-bottom:4px">🔮 REBIRTH SYSTEM</div>
-        <div style="font-size:10px;color:#9060c0;line-height:1.6">Pet ที่ Evolved หรือ Fusion จุติได้ 3 ครั้ง<br>แต่ละครั้งรับ <b style="color:#dd99ff">25% ของ stat ปัจจุบัน</b> เป็น bonus ถาวร<br>Stat กลับสู่ base form + bonus (Essence ที่เทรนไปจะหายไป)</div>
+        <div style="font-size:10px;color:#9060c0;line-height:1.6">${T('Pet ที่ Evolved หรือ Fusion จุติได้ 3 ครั้ง<br>แต่ละครั้งรับ <b style="color:#dd99ff">25% ของ stat ปัจจุบัน</b> เป็น bonus ถาวร<br>Stat กลับสู่ base form + bonus (Essence ที่เทรนไปจะหายไป)','Evolved or Fusion pets can rebirth up to 3 times<br>Each rebirth grants <b style="color:#dd99ff">25% of current stats</b> as permanent bonus<br>Stats reset to base form + bonus (trained Essences are lost)')}</div>
         <div style="margin-top:6px;font-family:Orbitron,monospace;font-size:11px;color:${stoneCount>0?'#dd99ff':'#664488'}">🔮 Rebirth Stone: ${stoneCount}</div>
       </div>
-      ${eligible.length===0?`<div style="text-align:center;font-family:Orbitron,monospace;font-size:11px;color:#443366;padding:20px">ยังไม่มี Pet ที่ Evolve หรือ Fusion</div>`
+      ${eligible.length===0?`<div style="text-align:center;font-family:Orbitron,monospace;font-size:11px;color:#443366;padding:20px">${T('ยังไม่มี Pet ที่ Evolve หรือ Fusion','No Evolved or Fusion pets yet')}</div>`
       :eligible.map(({p,i,from})=>{
         const f = p.phase==='final'?FINAL_FORMS[p.finalKey]:FORMS[p.formKey];
         const col = f?.color||'#9060c0';
@@ -6448,15 +6448,15 @@ function renderParty() {
               ATK ${p.atk} DEF ${p.def}<br>SPD ${p.spd} HP ${p.maxHp}
             </div>
           </div>
-          ${rank>0?`<div style="font-size:10px;color:#aa77dd;background:#0d0820;border-radius:6px;padding:4px 8px">Bonus สะสม: ATK +${bonus.atk} DEF +${bonus.def} SPD +${bonus.spd} HP +${bonus.maxHp}</div>`:''}
-          <div style="font-size:10px;color:#7755aa">จุติครั้งนี้จะได้: ATK <b style="color:#dd99ff">+${preview25atk}</b>  HP <b style="color:#dd99ff">+${preview25hp}</b> ...</div>
+          ${rank>0?`<div style="font-size:10px;color:#aa77dd;background:#0d0820;border-radius:6px;padding:4px 8px">${T('Bonus สะสม','Accumulated Bonus')}: ATK +${bonus.atk} DEF +${bonus.def} SPD +${bonus.spd} HP +${bonus.maxHp}</div>`:''}
+          <div style="font-size:10px;color:#7755aa">${T('จุติครั้งนี้จะได้','This rebirth gains')}: ATK <b style="color:#dd99ff">+${preview25atk}</b>  HP <b style="color:#dd99ff">+${preview25hp}</b> ...</div>
           ${rank>=3
             ? `<div style="padding:8px;border-radius:8px;background:#0a0a18;border:1px solid #2a2a4a;font-family:Orbitron,monospace;font-size:11px;color:#3a2a5a;text-align:center">✦✦✦ MAX RANK</div>`
             : hasArtifact
-              ? `<div style="padding:8px;border-radius:8px;background:#1a0a0a;border:1px solid #4a2222;font-family:Orbitron,monospace;font-size:11px;color:#aa4444;text-align:center">⚠ ถอด Artifact ออกก่อนจุติ</div>`
+              ? `<div style="padding:8px;border-radius:8px;background:#1a0a0a;border:1px solid #4a2222;font-family:Orbitron,monospace;font-size:11px;color:#aa4444;text-align:center">⚠ ${T('ถอด Artifact ออกก่อนจุติ','Remove Artifact before rebirth')}</div>`
               : stoneCount>0
-                ? `<div data-rebirthconfirm="${from}:${i}" style="padding:8px;border-radius:8px;background:linear-gradient(135deg,#2a0050,#550080);border:2px solid #cc88ff;font-family:Orbitron,monospace;font-size:12px;color:#dd99ff;text-align:center;cursor:pointer">🔮 ${T('REINCARNATE (ใช้ 1 Rebirth Stone)','REINCARNATE (costs 1 Rebirth Stone)')}</div>`
-                : `<div style="padding:8px;border-radius:8px;background:#0a0a18;border:1px solid #2a2a4a;font-family:Orbitron,monospace;font-size:11px;color:#443355;text-align:center">ไม่มี Rebirth Stone</div>`
+                ? `<div data-rebirthconfirm="${from}:${i}" style="padding:8px;border-radius:8px;background:linear-gradient(135deg,#2a0050,#550080);border:2px solid #cc88ff;font-family:Orbitron,monospace;font-size:12px;color:#dd99ff;text-align:center;cursor:pointer">🔮 ${T('จุติ (ใช้ 1 Rebirth Stone)','REBIRTH (costs 1 Rebirth Stone)')}</div>`
+                : `<div style="padding:8px;border-radius:8px;background:#0a0a18;border:1px solid #2a2a4a;font-family:Orbitron,monospace;font-size:11px;color:#443355;text-align:center">${T('ไม่มี Rebirth Stone','No Rebirth Stone')}</div>`
           }
         </div>`;
       }).join('')}

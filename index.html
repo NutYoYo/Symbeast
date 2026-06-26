@@ -64,17 +64,21 @@ body::after {
 }
 
 .device {
-  width:min(96vw,420px); height:min(94vh,860px);
+  width:100vw; height:100dvh;
   background:linear-gradient(160deg,#1c1a42 0%,#0d0d24 55%,#160b2e 100%);
-  border-radius:28px;
-  border:1px solid rgba(120,80,220,0.4);
-  box-shadow:0 0 80px rgba(100,60,200,0.3), 0 0 20px rgba(80,40,180,0.2), inset 0 0 30px rgba(0,0,0,0.6);
+  border-radius:0; border:none; box-shadow:none;
   display:flex; flex-direction:column;
-  padding:14px; gap:10px;
+  padding:10px; gap:10px;
   position:relative;
 }
-@media (display-mode: standalone) {
-  .device { width:100vw; height:100dvh; border-radius:0; border:none; box-shadow:none; padding:10px; }
+@media (min-width:500px) {
+  .device {
+    width:min(96vw,420px); height:min(94vh,860px);
+    border-radius:28px;
+    border:1px solid rgba(120,80,220,0.4);
+    box-shadow:0 0 80px rgba(100,60,200,0.3), 0 0 20px rgba(80,40,180,0.2), inset 0 0 30px rgba(0,0,0,0.6);
+    padding:14px;
+  }
 }
 
 .label-strip {

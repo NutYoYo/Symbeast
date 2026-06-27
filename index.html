@@ -5107,6 +5107,7 @@ function renderBattleScreen() {
             const ep = enemy.passives||[];
             const ebadges=[];
             const ebadge=(txt,col,bg,sec)=>`<span style="font-size:10px;font-family:Orbitron,monospace;color:${col};background:${bg};border:1px solid ${col};border-radius:4px;padding:1px 5px;animation:pulseRed ${sec}s ease-in-out infinite alternate">${txt}</span>`;
+            // passive badges
             if(ep.includes('dmg_reduce') && enemy.hp > enemy.maxHp*0.50)
               ebadges.push(ebadge('⬛ IRON BODY','#aaaaaa','rgba(20,20,20,0.8)','1.2'));
             if(ep.includes('barrier') && turn%3===0)
@@ -5117,6 +5118,33 @@ function renderBattleScreen() {
               ebadges.push(ebadge('💥 LAST DANCE','#ff2222','rgba(80,0,0,0.7)','0.7'));
             if(ep.includes('berserker') && battleState.eBerserkerStacks>0)
               ebadges.push(ebadge(`🔺 ATK+${battleState.eBerserkerStacks*10}%`,'#ff6600','rgba(60,20,0,0.7)','1.2'));
+            // artifact badges (mirror player side)
+            const ea1=enemy.artifact, ea2=enemy.artifact2;
+            const eas=battleState.eArtStacks||{};
+            const eHp=enemy.hp, eMhp=enemy.maxHp;
+            const eHasArt=k=>ea1===k||ea2===k;
+            if(battleState.eIronWillBoostReady)
+              ebadges.push(ebadge('💎 ATK×4 NEXT','#ffd700','rgba(60,50,0,0.7)','0.6'));
+            else if(eHasArt('iron_will') && !battleState.eIronWillUsed)
+              ebadges.push(ebadge('💎 IRON WILL','#8888ff','rgba(10,10,50,0.7)','1.5'));
+            if(eHasArt('execution') && eHp < eMhp*0.20)
+              ebadges.push(ebadge('☠ EXECUTION','#ff2222','rgba(80,0,0,0.7)','0.7'));
+            if(eHasArt('death_mark') && eHp < eMhp*0.30)
+              ebadges.push(ebadge('💀 DEATH MARK','#ff6600','rgba(60,20,0,0.7)','0.9'));
+            if(eHasArt('stone_skin') && eHp > eMhp*0.70)
+              ebadges.push(ebadge('🪨 STONE SKIN','#aaaaaa','rgba(30,30,30,0.7)','1.2'));
+            if(eHasArt('life_seed'))
+              ebadges.push(ebadge('🌱 REGEN','#44ff88','rgba(0,40,20,0.7)','1.5'));
+            if(eHasArt('moon_veil'))
+              ebadges.push(ebadge('🌙 REGEN','#aaaaff','rgba(10,10,40,0.7)','1.5'));
+            if(eHasArt('rage_core') && (eas.rageCoreStack||0)>0)
+              ebadges.push(ebadge(`🔥 RAGE ×${eas.rageCoreStack}`,'#ff6600','rgba(60,20,0,0.7)','1.0'));
+            if(eHasArt('victory_chain') && (eas.victoryStack||0)>0)
+              ebadges.push(ebadge(`⛓ WIN×${eas.victoryStack}`,'#ffcc44','rgba(50,40,0,0.7)','1.2'));
+            if(eHasArt('chain_strike') && (eas.chainStreak||0)>0)
+              ebadges.push(ebadge(`💥 CHAIN×${eas.chainStreak}`,'#ff4488','rgba(60,0,30,0.7)','0.9'));
+            if(eHasArt('tide_breaker') && battleState.lastCmp==='win')
+              ebadges.push(ebadge('🌊 TIDE','#44ccff','rgba(0,30,50,0.7)','0.8'));
             return ebadges.length?`<div style="display:flex;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap">${ebadges.join('')}</div>`:'';
           })()}
           ${(enemy.passives||[]).length ? `<div style="display:flex;gap:3px;justify-content:flex-end;margin-top:2px">${(enemy.passives).map(id=>{

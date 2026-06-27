@@ -4030,14 +4030,17 @@ function stopScanCamera() {
 }
 
 function startScanCamera() {
-  const video = document.getElementById('duelScanVideo');
-  if(!video) return;
+  if(!navigator.mediaDevices) {
+    const el = document.getElementById('duelScanStatus');
+    if(el) el.textContent = T('กล้องไม่รองรับบนเบราว์เซอร์นี้','Camera not supported on this browser');
+    return;
+  }
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
     .then(stream => {
       _scanStream = stream;
-      video.srcObject = stream;
-      video.play();
-      scanFrame();
+      const video = document.getElementById('duelScanVideo');
+      if(video) { video.srcObject = stream; video.play().catch(()=>{}); }
+      requestAnimationFrame(scanFrame);
     })
     .catch(() => {
       const el = document.getElementById('duelScanStatus');
@@ -4046,10 +4049,16 @@ function startScanCamera() {
 }
 
 function scanFrame() {
-  const video = document.getElementById('duelScanVideo');
+  if(!duelScanOpen) return;
+  let video = document.getElementById('duelScanVideo');
   const canvas = document.getElementById('duelScanCanvas');
-  if(!video || !canvas || !duelScanOpen) return;
-  if(video.readyState === video.HAVE_ENOUGH_DATA) {
+  if(!video || !canvas) return;
+  // reattach stream if video element was recreated by render()
+  if(_scanStream && !video.srcObject) {
+    video.srcObject = _scanStream;
+    video.play().catch(()=>{});
+  }
+  if(video.videoWidth > 0 && video.videoHeight > 0) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');

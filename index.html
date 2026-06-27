@@ -2826,6 +2826,7 @@ function doTurn(moveIdx) {
     ed = creature.hp - 1;
     iwStacks.ironWillUsed = true;
     iwStacks.ironWillBoostReady = true;
+    bs.playerIronWillThisTurn = true; // block reflect/counter from finishing player this turn
     passives.push({icon:'💎',text:T('Iron Will กันตาย! ATK×4 รอบถัดไป!','Iron Will — survived! ATK×4 next round!')});
   }
   // Enemy Iron Will
@@ -2833,6 +2834,7 @@ function doTurn(moveIdx) {
     pd = enemy.hp - 1;
     bs.eIronWillUsed = true;
     bs.eIronWillBoostReady = true;
+    bs.eIronWillThisTurn = true; // block reflect/counter from finishing enemy this turn
     passives.push({icon:'💎',text:T('ศัตรู Iron Will กันตาย! ATK×4 รอบถัดไป!','Enemy Iron Will — survived! ATK×4 next round!')});
   }
 
@@ -2858,7 +2860,9 @@ function doTurn(moveIdx) {
     }
     // Enemy passive reflect (ep.includes('reflect')): reflects player's pd back
     if(ep.includes('reflect') && pd>0) {
-      const ref=Math.max(1,Math.round(pd*0.15)); creature.hp=Math.max(0,creature.hp-ref); eReflectDmg+=ref;
+      const ref=Math.max(1,Math.round(pd*0.15));
+      // Iron Will protects player from dying to reflect this turn
+      creature.hp=Math.max(bs.playerIronWillThisTurn?1:0, creature.hp-ref); eReflectDmg+=ref;
       passives.push({icon:'🔄',text:T(`ศัตรูสะท้อน ${ref} dmg`,`Enemy Reflect ${ref} dmg`)});
     }
   };
@@ -2867,26 +2871,28 @@ function doTurn(moveIdx) {
   const _whenEnemyHitsPlayer = () => {
     const _iwForce = bs.eIronWillRevengeThisTurn; bs.eIronWillRevengeThisTurn = false;
     if(enemy.hp > 0 || _iwForce) { creature.hp = Math.max(0, creature.hp - ed); edApplied = true; }
+    // Iron Will protection: enemy cannot die from reflect/counter this turn
+    const _eIWMin = bs.eIronWillThisTurn ? 1 : 0;
     // FORTRESS: reflect 25%
     if(fk==='FSS' && edApplied && ed>0) {
-      const ref=Math.max(1,Math.round(ed*0.25)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
+      const ref=Math.max(1,Math.round(ed*0.25)); reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref);
       passives.push({icon:'🔄',text:T(`สะท้อน ${ref} dmg`,`Reflect ${ref} dmg`)});
     }
     // FORTRESS BREAK buff: reflect 50% + Counter 50%
     if(hasFortressBreak && edApplied && ed>0) {
-      const ref=Math.max(1,Math.round(ed*0.5)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
+      const ref=Math.max(1,Math.round(ed*0.5)); reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref);
       passives.push({icon:'🛡',text:`FORTRESS Reflect 50% → -${ref}`});
       if(Math.random()<0.50) {
         const counter=Math.max(1,Math.round(getEffStat('atk')*0.8));
-        const counterCapped=isBoss?Math.min(counter,Math.max(0,enemy.hp-1)):counter;
-        reflectDmg+=counterCapped; enemy.hp=Math.max(isBoss?1:0,enemy.hp-counterCapped);
+        const counterCapped=Math.min(counter,Math.max(_eIWMin,enemy.hp-1));
+        reflectDmg+=counterCapped; enemy.hp=Math.max(_eIWMin,enemy.hp-counterCapped);
         passives.push({icon:'⚔️',text:`IRONCLAD Counter! -${counterCapped}`});
       }
     }
     // EARTHSHATTER OD: reflect 100%
     if(hasColossusOD && edApplied && ed>0) {
-      let ref=Math.max(1,ed); if(isBoss) ref=Math.min(ref,Math.max(0,enemy.hp-1));
-      reflectDmg+=ref; enemy.hp=Math.max(isBoss?1:0,enemy.hp-ref);
+      let ref=Math.max(1,ed); ref=Math.min(ref,Math.max(0,enemy.hp-_eIWMin));
+      reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref);
       passives.push({icon:'🏔️',text:`EARTHSHATTER Reflect 100% → -${ref}`});
     }
     // DIVINE AEGIS OD: heal 5%
@@ -2897,7 +2903,7 @@ function doTurn(moveIdx) {
     // IRONCLAD: reflect 20%+5%/stack
     if(ff==='F+S' && edApplied && ed>0) {
       const refPct=0.20+bs.ironcladStack*0.05; const ref=Math.max(1,Math.round(ed*refPct));
-      reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); bs.ironcladStack=Math.min(3,bs.ironcladStack+1);
+      reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref); bs.ironcladStack=Math.min(3,bs.ironcladStack+1);
       passives.push({icon:'🛡',text:`reflect ${ref} (${Math.round(refPct*100)}%) → Stack${bs.ironcladStack}`});
     }
     // PHANTASM: heal 20% on dodge
@@ -2908,7 +2914,7 @@ function doTurn(moveIdx) {
     // COLOSSUS: reflect 20%/40%
     if(ff==='S+S' && edApplied && ed>0) {
       const refPct=creature.hp>creature.maxHp*0.6?0.40:0.20; let ref=Math.max(1,Math.round(ed*refPct));
-      if(isBoss) ref=Math.min(ref,Math.max(0,enemy.hp-1)); reflectDmg+=ref; enemy.hp=Math.max(isBoss?1:0,enemy.hp-ref);
+      ref=Math.min(ref,Math.max(0,enemy.hp-_eIWMin)); reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref);
       if(ref>0) passives.push({icon:'🏔️',text:`reflect ${ref} (${Math.round(refPct*100)}%)`});
     }
     // Enemy lifesteal after hitting player
@@ -2947,6 +2953,8 @@ function doTurn(moveIdx) {
     if(_eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.08)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`}); }
     if(_eHasArt('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🎯',text:`[E] Crit Core +${h}`}); }
     if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) { overdriveCharge++; saveGame(); }
+    bs.playerIronWillThisTurn = false;
+    bs.eIronWillThisTurn = false;
   };
 
   const turnNum = battleState.turn;

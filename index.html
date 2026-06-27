@@ -3879,29 +3879,46 @@ function encodeDuelTeam(teamPets) {
   const data = teamPets.map(p => {
     const isFusion = p.phase==='final';
     const isEvolved = p.phase==='evolved';
-    const form = isEvolved ? FORMS[p.formKey] : isFusion ? FINAL_FORMS[p.finalKey] : null;
-    return {
-      name: p.name, phase: p.phase,
-      isEvolvedEnemy: isEvolved, evolvedKey: p.formKey||null,
-      isFusionEnemy: isFusion, fusionKey: p.finalKey||null,
-      hp: p.maxHp, maxHp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
-      shiny: p.shiny||false,
-      artifact: p.artifact||null,
-      artifact2: p.artifact2||null,
-      passives: p.formKey ? [p.formKey] : p.finalKey ? [p.finalKey] : [],
-      ownPassiveDesc: form?.passive||null,
-      ownPassiveIcon: form?.passiveIcon||null,
-      typeKey: 'F',
+    // only encode essential fields; receiver derives passives/desc from keys
+    const obj = {
+      n: p.name, ph: p.phase,
+      ek: p.formKey||null, fk: p.finalKey||null,
+      hp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
     };
+    if(p.shiny) obj.sh = 1;
+    if(p.artifact)  obj.a1 = p.artifact;
+    if(p.artifact2) obj.a2 = p.artifact2;
+    return obj;
   });
-  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({mode:duelMode, team:data}))));
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({m:duelMode, t:data}))));
   return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 
 function decodeDuelB64(str) {
   str = str.replace(/-/g,'+').replace(/_/g,'/');
   while(str.length%4) str+='=';
-  return JSON.parse(decodeURIComponent(escape(atob(str))));
+  const raw = JSON.parse(decodeURIComponent(escape(atob(str))));
+  // support both compact format {m,t} and legacy format {mode,team}
+  const mode = raw.m !== undefined ? raw.m : raw.mode;
+  const team = (raw.t || raw.team).map(p => {
+    if(p.phase !== undefined) return p; // legacy format already expanded
+    const isFusion = p.ph==='final';
+    const isEvolved = p.ph==='evolved';
+    const form = isEvolved ? FORMS[p.ek] : isFusion ? FINAL_FORMS[p.fk] : null;
+    return {
+      name: p.n, phase: p.ph,
+      isEvolvedEnemy: isEvolved, evolvedKey: p.ek||null,
+      isFusionEnemy: isFusion, fusionKey: p.fk||null,
+      hp: p.hp, maxHp: p.hp, atk: p.atk, spd: p.spd, def: p.def,
+      shiny: p.sh===1,
+      artifact: p.a1||null, artifact2: p.a2||null,
+      passives: p.ek ? [p.ek] : p.fk ? [p.fk] : [],
+      ownPassiveDesc: form?.passive||null,
+      ownPassiveIcon: form?.passiveIcon||null,
+      typeKey: 'F',
+    };
+  });
+  return { mode, team };
 }
 
 function buildDuelShareUrl(teamPets) {

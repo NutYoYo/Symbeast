@@ -1231,6 +1231,7 @@ const BATTLE_BGS = {
   forest: { day:'Battle Scene/Battle-scene-forest-day.jpg',  night:'Battle Scene/Battle-scene-forest-night.jpg' },
   grass:  { day:'Battle Scene/Battle-scene-meadowt-day.jpg', night:'Battle Scene/Battle-scene-meadow-night.jpg' },
 };
+const _initBg = () => { const b = BATTLE_BGS[currentBiome]||BATTLE_BGS.desert; const h=new Date().getHours(); return (h>=6&&h<18)?b.day:b.night; };
 let _lastBg = null;
 function getBattleBg() {
   const isBattleActive = state === 'battle' && battleState;
@@ -1246,7 +1247,7 @@ function getBattleBg() {
   }
   if(bg) _lastBg = bg;
   // หน้า menu/party/etc ใช้ bg ล่าสุดที่เคยเล่น
-  return bg ?? _lastBg;
+  return bg ?? _lastBg ?? _initBg();
 }
 function pickBiomeEnemyType(isBoss) {
   const b = BIOMES[currentBiome];

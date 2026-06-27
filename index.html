@@ -6629,8 +6629,11 @@ function renderParty() {
       ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid ${ff.color}44;font-size:11px;color:${ff.color}">${ff.passiveIcon||''} ${P(ff)}</div>`
       : f ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid #2a2a4a;font-size:11px;color:#c0a0ff">${f.passiveIcon||''} ${P(f)}</div>` : '';
     const _prevVid = screenContent.querySelector('#pet-detail-video');
-    const _savedTime = (_prevVid && !_prevVid.paused) ? _prevVid.currentTime : null;
     const _savedSrc = _prevVid?.querySelector('source')?.src || '';
+    const _petName = (FORMS[pet.formKey]||FINAL_FORMS[pet.finalKey||''])?.name||pet.name;
+    const _expectSrc = new URL(_petName+'.webm', location.href).href;
+    const _reuseVid = (_prevVid && _savedSrc === _expectSrc) ? _prevVid : null;
+    if(_reuseVid) _reuseVid.remove(); // detach so innerHTML doesn't destroy it
     screenContent.innerHTML = `
       ${(()=>{const preloads=[];[-1,1].forEach(d=>{const ni=partyDetailIdx+d;if(ni>=0&&ni<pets.length){const np=pets[ni];const nf=FORMS[np.formKey]||FINAL_FORMS[np.finalKey||''];const nn=nf?nf.name:np.name;preloads.push(`<video style="display:none" preload="auto"><source src="${nn}.webm" type="video/webm"></video>`);}});return preloads.join('');})()}
       <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;background:#000;border-radius:12px;padding:0 0 4px 0;overflow-y:auto">
@@ -6762,14 +6765,10 @@ function renderParty() {
           </div>
         </div>`;
       })() : ''}`;
-    // Restore video time so loop doesn't restart on re-render
-    if(_savedTime !== null) {
+    // Put the detached video back to avoid recreating it (prevents blank flash)
+    if(_reuseVid) {
       const _newVid = screenContent.querySelector('#pet-detail-video');
-      const _newSrc = _newVid?.querySelector('source')?.src || '';
-      if(_newVid && _newSrc === _savedSrc) {
-        _newVid.addEventListener('loadedmetadata', () => { _newVid.currentTime = _savedTime; }, {once:true});
-        if(_newVid.readyState >= 1) _newVid.currentTime = _savedTime;
-      }
+      if(_newVid) _newVid.replaceWith(_reuseVid);
     }
     return;
   }

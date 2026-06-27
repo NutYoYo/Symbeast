@@ -5024,7 +5024,10 @@ function renderBattleScreen() {
 
   // Pet switch overlay (tower — pet died)
   if(battleState.pendingPetSwitch) {
-    const alive = pets.filter(p => p.phase !== 'egg' && p.hp > 0 && !p.resting);
+    // In duel: only show pets selected for this duel that are still alive
+    const alive = battleState.isDuelBattle
+      ? duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx]).filter(p=>p&&p.hp>0&&p!==creature)
+      : pets.filter(p => p.phase !== 'egg' && p.hp > 0 && !p.resting);
     screenContent.innerHTML = `
       <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;padding:16px;background:#0a0008">
         <div style="font-family:Orbitron,monospace;font-size:13px;color:#ff4444;text-align:center">💀 ${petName(creature)} ${T('倒れた','fell!')}</div>

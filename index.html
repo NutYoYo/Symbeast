@@ -1185,6 +1185,7 @@ let duelMyWins = 0;
 let duelEnemyWins = 0;
 let duelWon = null;         // true/false/null
 let duelHpSnapshot = [];    // HP snapshot ก่อนเข้า duel
+let duelBattleLogs = [];    // log สะสมทุก round ใน duel
 let duelUrlData = null;     // enemy data จาก URL (ถ้ามี)
 let duelSelectStep = 'mode'; // 'mode'|'team'|'lobby'
 let vsTab = 'ladder'; // 'ladder' | 'duel'
@@ -3033,6 +3034,12 @@ function endBattle(won) {
 
   // ===== DUEL BATTLE RESULT =====
   if(battleState.isDuelBattle) {
+    // Save round log
+    const _roundEnemy = battleState.enemy;
+    duelBattleLogs.push({
+      myName: creature.name, enemyName: _roundEnemy.name,
+      won, log: [...battleState.log]
+    });
     if(won) {
       duelMyWins++;
     } else {
@@ -4028,12 +4035,28 @@ function renderDuelLobby() {
 
 function renderDuelResult() {
   labelStrip.textContent = duelWon ? '🏆 DUEL WIN!' : '💀 DUEL LOST';
+  const logsHtml = duelBattleLogs.map((r, i) => {
+    const roundColor = r.won ? '#40c060' : '#c04040';
+    const roundLabel = r.won ? '✔ WIN' : '✘ LOSE';
+    const lines = r.log.map(l => `<div style="color:#6060a0;font-size:9px;line-height:1.5">${l}</div>`).join('');
+    return `
+      <div style="background:#07070f;border:1px solid ${roundColor}33;border-radius:8px;padding:8px;text-align:left">
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:${roundColor};margin-bottom:4px">
+          Round ${i+1}: ${r.myName} vs ${r.enemyName} — <span style="color:${roundColor}">${roundLabel}</span>
+        </div>
+        ${lines}
+      </div>`;
+  }).join('');
+
   screenContent.innerHTML = `
-  <div style="display:flex;flex-direction:column;gap:14px;padding:16px;text-align:center">
-    <div style="font-size:48px">${duelWon?'🏆':'💀'}</div>
-    <div style="font-family:Orbitron,monospace;font-size:16px;color:${duelWon?'#ffaa00':'#cc6666'}">${duelWon?T('ชนะ DUEL!','DUEL WIN!'):T('แพ้ DUEL','DUEL LOST')}</div>
-    ${duelMode==='3v3'?`<div style="font-family:Orbitron,monospace;font-size:12px;color:#6060a0">${T('ผล','Score')}: ${duelMyWins} - ${duelEnemyWins}</div>`:''}
-    <div style="font-size:11px;color:#5050a0">${T('ไม่มีรางวัล — เล่นเพื่อความสนุก!','No rewards — just for fun!')}</div>
+  <div style="display:flex;flex-direction:column;gap:12px;padding:14px">
+    <div style="text-align:center">
+      <div style="font-size:40px">${duelWon?'🏆':'💀'}</div>
+      <div style="font-family:Orbitron,monospace;font-size:16px;color:${duelWon?'#ffaa00':'#cc6666'}">${duelWon?T('ชนะ DUEL!','DUEL WIN!'):T('แพ้ DUEL','DUEL LOST')}</div>
+      ${duelMode==='3v3'?`<div style="font-family:Orbitron,monospace;font-size:12px;color:#6060a0">${T('ผล','Score')}: ${duelMyWins} - ${duelEnemyWins}</div>`:''}
+      <div style="font-size:11px;color:#5050a0">${T('ไม่มีรางวัล — เล่นเพื่อความสนุก!','No rewards — just for fun!')}</div>
+    </div>
+    ${logsHtml ? `<div style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;padding-right:2px">${logsHtml}</div>` : ''}
     <div id="duelRetryBtn" style="padding:12px;text-align:center;background:#0a1a0a;border:1px solid #224422;border-radius:10px;font-family:Orbitron,monospace;font-size:12px;color:#60aa60;cursor:pointer">🔄 ${T('รีแมตช์','REMATCH')}</div>
     <div id="duelResultBackBtn" style="padding:12px;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:10px;font-family:Orbitron,monospace;font-size:12px;color:#a080ff;cursor:pointer">${T('กลับเมนู','MENU')}</div>
   </div>`;
@@ -4166,7 +4189,7 @@ function loadDuelFromUrl(url) {
 }
 
 function startDuelFight() {
-  duelEnemyIdx = 0; duelMyIdx = 0; duelMyWins = 0; duelEnemyWins = 0; duelWon = null;
+  duelEnemyIdx = 0; duelMyIdx = 0; duelMyWins = 0; duelEnemyWins = 0; duelWon = null; duelBattleLogs = [];
   duelHpSnapshot = pets.map(p=>p.hp);
   // set active pet to first selected
   const first = duelMyTeam[0];

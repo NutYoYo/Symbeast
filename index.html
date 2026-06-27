@@ -1231,17 +1231,22 @@ const BATTLE_BGS = {
   forest: { day:'Battle Scene/Battle-scene-forest-day.jpg',  night:'Battle Scene/Battle-scene-forest-night.jpg' },
   grass:  { day:'Battle Scene/Battle-scene-meadowt-day.jpg', night:'Battle Scene/Battle-scene-meadow-night.jpg' },
 };
+let _lastBg = null;
 function getBattleBg() {
-  const vsDuelStates = ['vs_lobby','vs_result','duel_result','battle','result'];
   const isBattleActive = state === 'battle' && battleState;
-  if(state === 'tower' || (isBattleActive && battleState.isTowerBattle)) return 'Battle Scene/tower-scene.jpg';
-  if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result') return 'Battle Scene/BG-VS-Mode.jpg';
-  if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle)) return 'Battle Scene/BG-VS-Mode.jpg';
-  if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) return 'Battle Scene/BG-VS-Mode.jpg';
-  if(!['battle','result','scout'].includes(state)) return null;
-  const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
-  const h = new Date().getHours();
-  return (h>=6&&h<18) ? b.day : b.night;
+  let bg = null;
+  if(state === 'tower' || (isBattleActive && battleState.isTowerBattle)) bg = 'Battle Scene/tower-scene.jpg';
+  else if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result') bg = 'Battle Scene/BG-VS-Mode.jpg';
+  else if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
+  else if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
+  else if(['battle','result','scout'].includes(state)) {
+    const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
+    const h = new Date().getHours();
+    bg = (h>=6&&h<18) ? b.day : b.night;
+  }
+  if(bg) _lastBg = bg;
+  // หน้า menu/party/etc ใช้ bg ล่าสุดที่เคยเล่น
+  return bg ?? _lastBg;
 }
 function pickBiomeEnemyType(isBoss) {
   const b = BIOMES[currentBiome];

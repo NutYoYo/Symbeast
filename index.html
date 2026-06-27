@@ -5407,7 +5407,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='expedition'){ state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
-  else if(state==='battle')    { if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isVsBattle){battleState=null;state='menu';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
+  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isVsBattle){battleState=null;state='menu';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
   else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }
   else if(state==='evolve')    { state='menu'; render(); }

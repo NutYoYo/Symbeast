@@ -3063,7 +3063,7 @@ function endBattle(won) {
       }
     }
     // check if duel over
-    const maxWins = duelMode==='1v1' ? 1 : 2;
+    const maxWins = duelMode==='1v1' ? 1 : 3;
     if(duelMyWins >= maxWins || duelEnemyWins >= maxWins) {
       duelWon = duelMyWins >= maxWins;
       pets.forEach((p,i) => { if(duelHpSnapshot[i]!==undefined) p.hp=duelHpSnapshot[i]; });
@@ -3885,20 +3885,19 @@ function renderVsResult() {
 // ============================================================
 function encodeDuelTeam(teamPets) {
   const data = teamPets.map(p => {
-    const isFusion = p.phase==='final';
-    const isEvolved = p.phase==='evolved';
-    // only encode essential fields; receiver derives passives/desc from keys
+    // ph: 'e'=evolved, 'f'=final; skip null keys; name derived at decode
     const obj = {
-      n: p.name, ph: p.phase,
-      ek: p.formKey||null, fk: p.finalKey||null,
+      ph: p.phase==='final'?'f':'e',
       hp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
     };
-    if(p.shiny) obj.sh = 1;
+    if(p.formKey)   obj.ek = p.formKey;
+    if(p.finalKey)  obj.fk = p.finalKey;
+    if(p.shiny)     obj.sh = 1;
     if(p.artifact)  obj.a1 = p.artifact;
     if(p.artifact2) obj.a2 = p.artifact2;
     return obj;
   });
-  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({m:duelMode, t:data}))));
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({m:duelMode,t:data}))));
   return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 
@@ -3906,15 +3905,17 @@ function decodeDuelB64(str) {
   str = str.replace(/-/g,'+').replace(/_/g,'/');
   while(str.length%4) str+='=';
   const raw = JSON.parse(decodeURIComponent(escape(atob(str))));
-  // support both compact format {m,t} and legacy format {mode,team}
   const mode = raw.m !== undefined ? raw.m : raw.mode;
   const team = (raw.t || raw.team).map(p => {
-    if(p.phase !== undefined) return p; // legacy format already expanded
-    const isFusion = p.ph==='final';
-    const isEvolved = p.ph==='evolved';
+    if(p.phase !== undefined) return p; // legacy expanded format
+    // compact format: ph='f'=final, 'e'=evolved
+    const isFusion = p.ph==='f';
+    const isEvolved = p.ph==='e';
+    const phase = isFusion ? 'final' : 'evolved';
     const form = isEvolved ? FORMS[p.ek] : isFusion ? FINAL_FORMS[p.fk] : null;
+    const name = form?.name || (isFusion ? p.fk : p.ek) || 'Beast';
     return {
-      name: p.n, phase: p.ph,
+      name, phase,
       isEvolvedEnemy: isEvolved, evolvedKey: p.ek||null,
       isFusionEnemy: isFusion, fusionKey: p.fk||null,
       hp: p.hp, maxHp: p.hp, atk: p.atk, spd: p.spd, def: p.def,

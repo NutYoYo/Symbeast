@@ -3831,7 +3831,7 @@ function encodeDuelTeam(teamPets) {
 
 function buildDuelShareUrl(teamPets) {
   const enc = encodeDuelTeam(teamPets);
-  return `${location.origin}${location.pathname}?duel=${enc}`;
+  return `${location.origin}${location.pathname}?duel=${encodeURIComponent(enc)}`;
 }
 
 function parseDuelUrl() {

@@ -2455,8 +2455,8 @@ function doTurn(moveIdx) {
     // death_mark: ed +100% when player HP < 30%
     if(eHasA('death_mark') && creature.hp < creature.maxHp*0.30 && !enemyStunned)
       { ed=Math.round(ed*2.00); passives.push({icon:'💀',text:`[E] Death Mark ×2 →${ed}`}); }
-    // execution: ed +200% when player HP < 20%
-    if(eHasA('execution') && creature.hp < creature.maxHp*0.20 && !enemyStunned)
+    // execution: ed +200% when enemy HP < 20%
+    if(eHasA('execution') && enemy.hp < enemy.maxHp*0.20 && !enemyStunned)
       { ed=Math.round(ed*3.00); passives.push({icon:'☠',text:`[E] Execution ×3 →${ed}`}); }
     // wild_card: 25% random effect
     if(eHasA('wild_card') && Math.random()<0.25) {
@@ -2674,7 +2674,7 @@ function doTurn(moveIdx) {
       if((as.drainAuraStack||0)>0) { ed=Math.round(ed*(1-0.10*as.drainAuraStack)); passives.push({icon:'🌑',text:T(`Drain Aura -${10*as.drainAuraStack}% ศัตรู → ${ed}`,`Drain Aura -${10*as.drainAuraStack}% enemy → ${ed}`)}); }
     }
     // Epic
-    if(eHasIronWill && bs.eIronWillBoostReady) { ed=Math.round(ed*4); bs.eIronWillBoostReady=false; passives.push({icon:'💎',text:`Enemy Iron Will REVENGE ATK×4 → ${ed}`}); }
+    if(eHasIronWill && bs.eIronWillBoostReady) { ed=Math.round(ed*4); bs.eIronWillBoostReady=false; bs.eIronWillRevengeThisTurn=true; passives.push({icon:'💎',text:`Enemy Iron Will REVENGE ATK×4 → ${ed}`}); }
     if(artId==='iron_will') {
       if(as.ironWillBoostReady) { pd=Math.round(pd*4); as.ironWillBoostReady=false; passives.push({icon:'💎',text:`Iron Will REVENGE ATK×4 → ${pd}`}); }
     }
@@ -2832,7 +2832,8 @@ function doTurn(moveIdx) {
   let edApplied = false, pdApplied = false;
   if(playerFirst) {
     enemy.hp = Math.max(0, enemy.hp-pd); pdApplied = true;
-    if(enemy.hp>0) { creature.hp = Math.max(0, creature.hp-ed); edApplied = true; }
+    if(enemy.hp>0 || bs.eIronWillRevengeThisTurn) { creature.hp = Math.max(0, creature.hp-ed); edApplied = true; }
+    bs.eIronWillRevengeThisTurn = false;
   } else {
     creature.hp = Math.max(0, creature.hp-ed); edApplied = true;
     if(creature.hp>0) { enemy.hp = Math.max(0, enemy.hp-pd); pdApplied = true; }

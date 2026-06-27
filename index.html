@@ -3826,20 +3826,25 @@ function encodeDuelTeam(teamPets) {
       typeKey: 'F',
     };
   });
-  return btoa(unescape(encodeURIComponent(JSON.stringify({mode:duelMode, team:data}))));
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({mode:duelMode, team:data}))));
+  return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+function decodeDuelB64(str) {
+  str = str.replace(/-/g,'+').replace(/_/g,'/');
+  while(str.length%4) str+='=';
+  return JSON.parse(decodeURIComponent(escape(atob(str))));
 }
 
 function buildDuelShareUrl(teamPets) {
-  const enc = encodeDuelTeam(teamPets);
-  return `${location.origin}${location.pathname}?duel=${encodeURIComponent(enc)}`;
+  return `${location.origin}${location.pathname}?duel=${encodeDuelTeam(teamPets)}`;
 }
 
 function parseDuelUrl() {
   try {
-    const p = new URLSearchParams(location.search);
-    const raw = p.get('duel');
+    const raw = new URLSearchParams(location.search).get('duel');
     if(!raw) return null;
-    return JSON.parse(decodeURIComponent(escape(atob(raw))));
+    return decodeDuelB64(raw);
   } catch(e) { return null; }
 }
 
@@ -4080,7 +4085,7 @@ function scanFrame() {
 function loadDuelFromUrl(url) {
   try {
     const param = new URL(url).searchParams.get('duel');
-    const parsed = JSON.parse(decodeURIComponent(escape(atob(param))));
+    const parsed = decodeDuelB64(param);
     duelUrlData = parsed;
     duelMode = parsed.mode;
     duelEnemyTeam = parsed.team.map(p=>({...p,hp:p.maxHp}));

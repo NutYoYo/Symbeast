@@ -2400,33 +2400,72 @@ function doTurn(moveIdx) {
 
   // ===== ENEMY ARTIFACT EFFECTS =====
   if(eArtId || eArtId2) {
-    // stone_skin: reduce player dmg when enemy > 70% HP
-    if((eArtId==='stone_skin'||eArtId2==='stone_skin') && enemy.hp > enemy.maxHp*0.70)
-      { pd=Math.round(pd*0.7); passives.push({icon:'🪨',text:`STONE SKIN -30% dmg→${pd}`}); }
-    // reflect_coat: reflect 20% of player dmg back (applied to creature.hp)
-    if((eArtId==='reflect_coat'||eArtId2==='reflect_coat') && pd>0)
-      { const ref=Math.round(pd*0.20); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🛡',text:`REFLECT COAT→${ref}`}); }
+    const eas = bs.eArtStacks || (bs.eArtStacks = {});
+    const eHasA = k => eArtId===k || eArtId2===k;
+    // blade_shard: ed +10%
+    if(eHasA('blade_shard') && !enemyStunned) { ed=Math.round(ed*1.10); passives.push({icon:'🗡',text:`[E] Blade Shard →${ed}`}); }
+    // iron_plate: reduce pd by 15%
+    if(eHasA('iron_plate')) { pd=Math.round(pd*0.85); passives.push({icon:'🛡',text:`[E] Iron Plate →${pd}`}); }
+    // stone_skin: reduce pd 10% when HP > 70%
+    if(eHasA('stone_skin') && enemy.hp > enemy.maxHp*0.70) { pd=Math.round(pd*0.90); passives.push({icon:'🪨',text:`[E] Stone Skin →${pd}`}); }
+    // swift_ring: 10% dodge player attack
+    if(eHasA('swift_ring') && Math.random()<0.10) { pd=0; passives.push({icon:'💨',text:'[E] Swift Ring DODGE!'}); }
+    // wind_step: 15% dodge player attack
+    if(eHasA('wind_step') && Math.random()<0.15) { pd=0; passives.push({icon:'🌀',text:'[E] Wind Step DODGE!'}); }
+    // true_sight: ed +50%, player can't dodge
+    if(eHasA('true_sight') && !enemyStunned) { ed=Math.round(ed*1.50); passives.push({icon:'🔭',text:`[E] True Sight →${ed}`}); }
+    // tide_breaker: if enemy lost last round, ed +75%
+    if(eHasA('tide_breaker') && bs.lastCmp==='win' && !enemyStunned) { ed=Math.round(ed*1.75); passives.push({icon:'🌊',text:`[E] Tide Breaker →${ed}`}); }
+    // precision_stone: every 3 turns, ed ×2
+    if(eHasA('precision_stone') && bs.turn%3===0 && !enemyStunned) { ed=Math.round(ed*2); passives.push({icon:'🔮',text:`[E] Precision Stone ×2 →${ed}`}); }
+    // rage_core: stack ed +15% on each WIN (from player's perspective = enemy lost = cmp==='win')
+    if(eHasA('rage_core')) {
+      if(cmp==='win') eas.rageCoreStack=Math.min(3,(eas.rageCoreStack||0)+1); else eas.rageCoreStack=0;
+      if((eas.rageCoreStack||0)>0 && !enemyStunned) { ed=Math.round(ed*(1+0.15*eas.rageCoreStack)); passives.push({icon:'🔥',text:`[E] Rage Core ×${eas.rageCoreStack} →${ed}`}); }
+    }
+    // victory_chain: stack ed +20% each time enemy wins (cmp==='lose')
+    if(eHasA('victory_chain')) {
+      if(cmp==='lose') eas.victoryStack=Math.min(3,(eas.victoryStack||0)+1);
+      if((eas.victoryStack||0)>0 && !enemyStunned) { ed=Math.round(ed*(1+0.20*eas.victoryStack)); passives.push({icon:'⛓',text:`[E] Victory Chain ×${eas.victoryStack} →${ed}`}); }
+    }
+    // reflect_coat: reflect 15% of player dmg back
+    if(eHasA('reflect_coat') && pd>0) { const ref=Math.round(pd*0.15); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🪞',text:`[E] Reflect Coat ${ref}`}); }
     // shock_bead: 8% stun player next turn
-    if(!playerStunned && (eArtId==='shock_bead'||eArtId2==='shock_bead') && Math.random()<0.08)
-      { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'⚡',text:T('SHOCK BEAD! STUN ต่อไป','SHOCK BEAD! STUN next turn')}); }
-    // paralysis_fang: 15% stun player next turn
-    if(!playerStunned && (eArtId==='paralysis_fang'||eArtId2==='paralysis_fang') && Math.random()<0.15)
-      { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'🦷',text:T('PARALYSIS FANG! STUN ต่อไป','PARALYSIS FANG! STUN next turn')}); }
-    // blood_pact: enemy heals when player crits
-    if(crit && (eArtId==='blood_pact'||eArtId2==='blood_pact'))
-      { const h=Math.round(pd*0.20); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); passives.push({icon:'🩸',text:`BLOOD PACT heal ${h}`}); }
-    // double_attack: enemy attacks twice
-    if(!enemyStunned && (eArtId==='double_attack'||eArtId2==='double_attack') && Math.random()<0.30)
-      { const ed2=Math.max(1,Math.round(ed*0.6)); ed+=ed2; passives.push({icon:'⚔️⚔️',text:`DOUBLE ATTACK +${ed2}→${ed}`}); }
-    // execution: deal extra dmg when player HP < 20%
-    if((eArtId==='execution'||eArtId2==='execution') && creature.hp < creature.maxHp*0.20)
-      { ed=Math.round(ed*1.5); passives.push({icon:'☠️',text:`EXECUTION ×1.5→${ed}`}); }
-    // death_mark: extra dmg when player HP < 30%
-    if((eArtId==='death_mark'||eArtId2==='death_mark') && creature.hp < creature.maxHp*0.30)
-      { ed=Math.round(ed*1.3); passives.push({icon:'💀',text:`DEATH MARK ×1.3→${ed}`}); }
-    // sniper_eye log
-    if(eSniperReady) passives.push({icon:'🎯',text:`SNIPER EYE ×${eCritMult}→${ed}`});
-    else if(enemyCrit && eCritBonus>0) passives.push({icon:'🎯',text:`CRIT ART ×${eCritMult}→${ed}`});
+    if(!playerStunned && eHasA('shock_bead') && Math.random()<0.08)
+      { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'⚡',text:T('[E] Shock Bead STUN! ต่อไป','[E] Shock Bead STUN! next')}); }
+    // paralysis_fang: 15% stun player, +30% ed next turn if stun
+    if(!playerStunned && eHasA('paralysis_fang')) {
+      if(eas.paralysisProc) { ed=Math.round(ed*1.30); passives.push({icon:'🦷',text:`[E] Paralysis Boost →${ed}`}); eas.paralysisProc=false; }
+      if(Math.random()<0.15) { bs.playerStunnedNextTurn=true; eas.paralysisProc=true; SFX.stun(); passives.push({icon:'🦷',text:T('[E] Paralysis Fang STUN! ต่อไป','[E] Paralysis Fang STUN! next')}); }
+    }
+    // berserker_claw: player takes extra 10% dmg (pd reduced against enemy)
+    if(eHasA('berserker_claw') && !enemyStunned) { ed=Math.round(ed*1.10); passives.push({icon:'🐾',text:`[E] Berserker →${ed}`}); }
+    // blood_pact: enemy heals 15% of pd when player crits
+    if(crit && eHasA('blood_pact')) { const h=Math.round(pd*0.15); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🔴',text:`[E] Blood Pact +${h}`}); }
+    // double_attack: 20% attack twice
+    if(!enemyStunned && eHasA('double_attack') && Math.random()<0.20)
+      { const ed2=Math.max(1,Math.round(ed)); ed+=ed2; passives.push({icon:'⚔',text:`[E] Double Attack +${ed2}→${ed}`}); }
+    // chain_strike: WIN streak bonus on ed
+    if(eHasA('chain_strike')) {
+      if(cmp==='lose') { eas.chainStreak=(eas.chainStreak||0)+1; const rate=eas.chainStreak>=3?2.00:eas.chainStreak>=2?1.30:0.65; const bonus=Math.round(ed*rate); if(!enemyStunned){creature.hp=Math.max(0,creature.hp-bonus); eReflectDmg+=bonus;} passives.push({icon:'💥',text:`[E] Chain Strike ×${eas.chainStreak} +${bonus}`}); }
+      else eas.chainStreak=0;
+    }
+    // death_mark: ed +100% when player HP < 30%
+    if(eHasA('death_mark') && creature.hp < creature.maxHp*0.30 && !enemyStunned)
+      { ed=Math.round(ed*2.00); passives.push({icon:'💀',text:`[E] Death Mark ×2 →${ed}`}); }
+    // execution: ed +200% when player HP < 20%
+    if(eHasA('execution') && creature.hp < creature.maxHp*0.20 && !enemyStunned)
+      { ed=Math.round(ed*3.00); passives.push({icon:'☠',text:`[E] Execution ×3 →${ed}`}); }
+    // wild_card: 25% random effect
+    if(eHasA('wild_card') && Math.random()<0.25) {
+      const roll=Math.random();
+      if(roll<0.333) { const h=Math.round(enemy.maxHp*0.30); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🎲',text:`[E] Wild Card Heal +${h}`}); }
+      else if(roll<0.667 && !enemyStunned) { ed=Math.round(ed*1.50); passives.push({icon:'🎲',text:`[E] Wild Card ATK×1.5 →${ed}`}); }
+      else { const ref=Math.round(pd*0.50); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🎲',text:`[E] Wild Card Reflect ${ref}`}); }
+    }
+    // sniper_eye / crit log
+    if(eSniperReady) passives.push({icon:'👁',text:`[E] Sniper Eye ×${eCritMult}→${ed}`});
+    else if(enemyCrit && eCritBonus>0) passives.push({icon:'🎯',text:`[E] Crit Art ×${eCritMult}→${ed}`});
   }
 
   // ===== OVERDRIVE BUFF (multi-turn effects) =====
@@ -2908,11 +2947,22 @@ function doTurn(moveIdx) {
     eReflectDmg+=ref;
     passives.push({icon:'🔄',text:T(`ศัตรูสะท้อน ${ref} dmg`,`Enemy Reflect ${ref} dmg`)});
   }
-  // drain_aura / crimson_fang: enemy heals after actually dealing damage
-  if((eArtId==='drain_aura'||eArtId2==='drain_aura') && edApplied && ed>0 && enemy.hp>0)
-    { const h=Math.round(ed*0.25); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🩸',text:`DRAIN AURA +${h}`}); }
-  if((eArtId==='crimson_fang'||eArtId2==='crimson_fang') && edApplied && ed>0 && enemy.hp>0)
-    { const h=Math.round(ed*0.20); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🔴',text:`CRIMSON FANG +${h}`}); }
+  // enemy lifesteal / regen artifacts (post-damage)
+  const eHasA2 = k => eArtId===k || eArtId2===k;
+  if(eHasA2('crimson_fang') && edApplied && ed>0 && enemy.hp>0)
+    { const h=Math.round(ed*0.05); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🩸',text:`[E] Crimson Fang +${h}`}); }
+  if(eHasA2('blood_pact') && edApplied && ed>0 && enemy.hp>0)
+    { const h=Math.round(ed*0.15); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🔴',text:`[E] Blood Pact +${h}`}); }
+  if(eHasA2('soul_reaper') && edApplied && ed>0 && enemy.hp>0)
+    { const h=Math.round(ed*0.25); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'☠️',text:`[E] Soul Reaper +${h}`}); }
+  if(eHasA2('drain_aura') && edApplied && ed>0 && enemy.hp>0) {
+    const eas2 = bs.eArtStacks || (bs.eArtStacks = {});
+    if(cmp==='win') eas2.drainAuraStack=Math.min(2,(eas2.drainAuraStack||0)+1);
+    if((eas2.drainAuraStack||0)>0) { pd=Math.round(pd*(1-0.10*eas2.drainAuraStack)); passives.push({icon:'🌑',text:`[E] Drain Aura -${10*eas2.drainAuraStack}% pd →${pd}`}); }
+  }
+  if(eHasA2('life_seed')) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌱',text:`[E] Life Seed +${h}`}); }
+  if(eHasA2('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.08)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`}); }
+  if(eHasA2('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🎯',text:`[E] Crit Core +${h}`}); }
 
   // สะสม overdrive charge เมื่อ LOSE (เฉพาะ final form)
   if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) {

@@ -5215,9 +5215,9 @@ function renderBattleScreen() {
         // enemy anim: atk-l when enemy attacks, hit+flash when player attacks
         const enemyCls  = ap==='e-atk' ? 'atk-l' : ap==='p-atk' ? 'hit flash' : (lr?(lr.cmp==='lose'?'atk-l':lr.cmp==='win'?'hit flash':''):'');
 
-        // Damage numbers
+        // Damage numbers — only show at impact moment (preAnimCleared), not at animation start
         let dmgNums = '';
-        if(lr) {
+        if(lr && _cleared) {
           if(ap==='p-atk') {
             const hits = lr.pdHits&&lr.pdHits.length>1 ? lr.pdHits : (lr.pd>0?[lr.pd]:[]);
             if(hits.length===0) {

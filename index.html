@@ -2241,6 +2241,8 @@ function doEnemyOnlyTurn() {
   const et = ENEMY_TYPES[enemy.typeKey] || ENEMY_TYPES.F;
   const em = pickEnemyMove(et.ai);
   let ed = Math.max(1, Math.round((em.dmg + enemy.atk/3 + Math.random()*4)) - Math.floor(getEffStat('def')/2));
+  battleState.preAnimPlayerHp = creature.hp;
+  battleState.preAnimEnemyHp  = enemy.hp;
   creature.hp = Math.max(0, creature.hp - ed);
   battleState.lastResult = { pm:{name:'—',icon:'🔄',desc:''}, em, cmp:'lose', crit:false, pd:0, ed, playerFirst:false, passives:[], playerHeal:0, enemyHeal:0 };
   battleState.log.push(`T${battleState.turn} [SWITCH/ITEM] foe -0  you -${ed}`);
@@ -2321,6 +2323,8 @@ function doOverdriveTurn() {
     passives.push({icon:'👑',text:`BLOOD TRIBUTE DEF-50% | ATK×2+Lifesteal35%+SPD/DEF×2 (3T)`});
   }
   // apply damage
+  bs.preAnimPlayerHp = creature.hp;
+  bs.preAnimEnemyHp  = enemy.hp;
   enemy.hp=Math.max(0,enemy.hp-pd);
   const playerAlive=creature.hp>0;
   if(ed>0&&playerAlive) creature.hp=Math.max(0,creature.hp-ed);

@@ -581,7 +581,7 @@ function bgmForState() {
   if(state === 'title') return 'tower';
   if(state === 'battle') return battleState?.isTowerBattle ? 'tower' : battleState?.isVsBattle ? 'vs' : 'battle';
   if(state === 'vs_lobby' || state === 'vs_result') return 'vs';
-  if(state === 'duel_setup' || state === 'duel_lobby' || state === 'duel_result') return 'vs';
+  if(state === 'duel_result') return 'vs';
   if(state === 'battle' && battleState?.isDuelBattle) return 'vs';
   if(state === 'tower') return 'tower';
   if(state === 'scout') {
@@ -1187,6 +1187,7 @@ let duelWon = null;         // true/false/null
 let duelHpSnapshot = [];    // HP snapshot ก่อนเข้า duel
 let duelUrlData = null;     // enemy data จาก URL (ถ้ามี)
 let duelSelectStep = 'mode'; // 'mode'|'team'|'lobby'
+let vsTab = 'ladder'; // 'ladder' | 'duel'
 let duelQrOpen = false;      // แสดง QR modal
 let duelScanOpen = false;    // แสดง scanner modal
 let duelPasteOpen = false;   // แสดง paste link input
@@ -3457,8 +3458,6 @@ function render() {
   else if(state==='tower') renderTower();
   else if(state==='vs_lobby') renderVsLobby();
   else if(state==='vs_result') renderVsResult();
-  else if(state==='duel_setup') renderDuelSetup();
-  else if(state==='duel_lobby') renderDuelLobby();
   else if(state==='duel_result') renderDuelResult();
   else if(state==='shop') renderShop();
   else if(state==='title') renderTitle();
@@ -3694,10 +3693,16 @@ function enterVs() {
 }
 
 function renderVsLobby() {
+  if(vsTab === 'duel') { renderDuelSetup(); return; }
   const stageCol = vsCurrentStage > 40 ? '#ff4444' : vsCurrentStage > 20 ? '#ffaa00' : '#a080ff';
   labelStrip.textContent = `⚔️ VS STAGE ${vsCurrentStage} ⚔️`;
+  const tabBar = `<div style="display:flex;gap:6px;margin-bottom:4px">
+    <div data-vstab="ladder" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Orbitron,monospace;font-size:10px;cursor:pointer;background:${vsTab==='ladder'?'rgba(80,40,160,0.3)':'#08080f'};border:1px solid ${vsTab==='ladder'?'#8060d0':'#2a2a4a'};color:${vsTab==='ladder'?'#c0a0ff':'#4a4a7a'}">🏆 LADDER</div>
+    <div data-vstab="duel" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Orbitron,monospace;font-size:10px;cursor:pointer;background:${vsTab==='duel'?'rgba(160,40,80,0.3)':'#08080f'};border:1px solid ${vsTab==='duel'?'#d06080':'#2a2a4a'};color:${vsTab==='duel'?'#ff90a0':'#4a4a7a'}">🤝 DUEL</div>
+  </div>`;
   screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
+    ${tabBar}
       <div style="text-align:center;padding:6px 0">
         <div style="font-family:Orbitron,monospace;font-size:11px;color:#5050a0;letter-spacing:3px">VS MODE</div>
         <div style="font-family:Orbitron,monospace;font-size:28px;color:${stageCol};letter-spacing:4px;text-shadow:0 0 12px ${stageCol}88">STAGE ${vsCurrentStage}</div>
@@ -3803,7 +3808,8 @@ function enterDuel() {
     duelEnemyTeam = duelUrlData.team.map(p => ({...p, hp:p.maxHp}));
     duelSelectStep = 'team';
   }
-  state = 'duel_setup'; render();
+  vsTab = 'duel';
+  state = 'vs_lobby'; render();
 }
 
 function renderDuelSetup() {
@@ -3812,6 +3818,9 @@ function renderDuelSetup() {
   const selPets = duelMyTeam.map(t => t.from==='party' ? pets[t.idx] : storage[t.idx]);
   const allPets = pets.map((p,i)=>({p,i,from:'party'})).filter(({p})=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
 
+  if(duelSelectStep==='lobby') {
+    screenContent.innerHTML = renderDuelLobby(); return;
+  }
   if(duelSelectStep==='mode' && !duelUrlData) {
     screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:14px">
@@ -3876,10 +3885,9 @@ function renderDuelSetup() {
 }
 
 function renderDuelLobby() {
-  labelStrip.textContent = `🤝 DUEL — ${duelMode==='1v1'?'1v1':'3v3'}`;
   const maxSel = duelMode==='1v1'?1:3;
   const myPets = duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx]);
-  screenContent.innerHTML = `
+  return `
   <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
     <div style="text-align:center">
       <div style="font-family:Orbitron,monospace;font-size:11px;color:#5050a0;letter-spacing:3px">🤝 DUEL ${duelMode==='1v1'?'1v1':'3v3'}</div>
@@ -4467,7 +4475,6 @@ function renderMenu() {
               { action:'scout',      icon:'🗺',  label:'SCOUT',  blocked: false },
               { action:'tower',      icon:'🏯',  label:'TOWER',  blocked: !!towerBlocked, reason: towerBlocked?(towerBlocked.resting?T('มี pet กำลัง Rest','A pet is Resting'):T('มี pet อยู่ใน Expedition','A pet is on Expedition')):'' },
               { action:'vs',         icon:'⚔️',  label:'VS',     blocked: pets.some(p=>p.expedition), reason:T('มี pet อยู่ใน Expedition','A pet is on Expedition') },
-              { action:'duel',       icon:'🤝',  label:'DUEL',   blocked: pets.some(p=>p.expedition), reason:T('มี pet อยู่ใน Expedition','A pet is on Expedition') },
               { action:'expedition', icon:'🌑',  label:'SEND',   blocked: expBlocked, reason:T('pet ทุกตัวออกไปแล้ว','All pets are away') },
               { action:'train',      icon:'🏋️', label:'TRAIN',  blocked: false },
             ];
@@ -5232,8 +5239,6 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='tower')     { towerActive=false; state='menu'; render(); }
   else if(state==='vs_lobby') { state='menu'; render(); }
   else if(state==='vs_result'){ state='menu'; render(); }
-  else if(state==='duel_setup'){ state='menu'; render(); }
-  else if(state==='duel_lobby'){ state='menu'; render(); }
   else if(state==='duel_result'){ state='menu'; render(); }
   else if(state==='train')     { state='menu'; render(); }
   else if(state==='party')     { if(rebirthConfirm!==null){rebirthConfirm=null;render();}else if(partyDetailIdx!==null){partyDetailIdx=null;render();}else{partyViewTab='party';rebirthConfirm=null;state='menu';render();} }
@@ -6011,6 +6016,9 @@ screenContent.addEventListener('click', e=>{
   if(el.closest('#vsResultBackBtn')) { SFX.click(); state='menu'; render(); return; }
 
   // ── DUEL ──
+  const vsTabEl = el.closest('[data-vstab]');
+  if(vsTabEl) { SFX.click(); vsTab=vsTabEl.dataset.vstab; if(vsTab==='duel'){duelSelectStep='mode';duelUrlData=null;duelMyTeam=[];duelMode=null;} render(); return; }
+
   if(el.closest('#duel1v1Btn')) { SFX.click(); duelMode='1v1'; duelSelectStep='team'; render(); return; }
   if(el.closest('#duel3v3Btn')) { SFX.click(); duelMode='3v3'; duelSelectStep='team'; render(); return; }
   if(el.closest('#duelScanBtn')) { SFX.click(); duelScanOpen=true; render(); setTimeout(startScanCamera,100); return; }
@@ -6031,12 +6039,12 @@ screenContent.addEventListener('click', e=>{
     scoutToast = T('✅ คัดลอก Link แล้ว!','✅ Link copied!');
     render(); return;
   }
-  if(el.closest('#duelBackBtn')) { SFX.click(); if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{state='menu';} render(); return; }
+  if(el.closest('#duelBackBtn')) { SFX.click(); if(duelSelectStep==='lobby'){duelSelectStep='team';}else if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{vsTab='ladder';} render(); return; }
   if(el.closest('#duelFightBtn')) { SFX.vsStart(); startDuelFight(); return; }
   if(el.closest('#duelRetryBtn')) { SFX.click();
     duelEnemyTeam = duelUrlData?duelUrlData.team.map(p=>({...p,hp:p.maxHp})):duelEnemyTeam.map(p=>({...p,hp:p.maxHp}));
-    state='duel_lobby'; render(); return; }
-  if(el.closest('#duelResultBackBtn')) { SFX.click(); state='menu'; render(); return; }
+    duelMyTeam=[]; duelSelectStep='team'; vsTab='duel'; state='vs_lobby'; render(); return; }
+  if(el.closest('#duelResultBackBtn')) { SFX.click(); vsTab='duel'; duelSelectStep='mode'; duelUrlData=null; duelMyTeam=[]; duelMode=null; state='vs_lobby'; render(); return; }
   if(el.closest('#duelShareBtn')) {
     SFX.click(); duelQrOpen=true; render();
     setTimeout(()=>{
@@ -6049,7 +6057,7 @@ screenContent.addEventListener('click', e=>{
     return;
   }
   const duelSelEl = el.closest('[data-duelsel]');
-  if(duelSelEl && state==='duel_setup') {
+  if(duelSelEl && state==='vs_lobby') {
     SFX.click();
     const [from,idxStr] = duelSelEl.dataset.duelsel.split(':');
     const idx = parseInt(idxStr);
@@ -6058,7 +6066,7 @@ screenContent.addEventListener('click', e=>{
     if(existing >= 0) { duelMyTeam.splice(existing,1); }
     else if(duelMyTeam.length < maxSel) { duelMyTeam.push({idx,from}); }
     // if challenger (has enemy data) and team full → go to lobby
-    if(duelUrlData && duelMyTeam.length===maxSel) { state='duel_lobby'; }
+    if(duelUrlData && duelMyTeam.length===maxSel) { duelSelectStep='lobby'; }
     render(); return;
   }
 
@@ -7475,7 +7483,8 @@ function checkDailyScrolls() {
     duelMode = duelData.mode;
     duelEnemyTeam = duelData.team.map(p=>({...p,hp:p.maxHp}));
     duelSelectStep = 'team';
-    state = 'duel_setup';
+    vsTab = 'duel';
+    state = 'vs_lobby';
   } else {
     state = 'title';
   }

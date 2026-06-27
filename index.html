@@ -3029,6 +3029,9 @@ function doTurn(moveIdx) {
       _whenEnemyHitsPlayer();
       battleState.preAnimEnemyHp = enemy.hp;     // refresh for phase 2 display
     }
+    // Sync heal values (primitives copied before closures ran)
+    battleState.lastResult.playerHeal = playerHeal;
+    battleState.lastResult.enemyHeal  = enemyHeal;
     battleState.preAnimCleared = true;
     render();
   }, 350);
@@ -3050,6 +3053,9 @@ function doTurn(moveIdx) {
     setTimeout(() => {
       if(!battleState) return;
       if(playerFirst) _whenEnemyHitsPlayer(); else _whenPlayerHitsEnemy();
+      // Sync heal values after phase 2 closures
+      battleState.lastResult.playerHeal = playerHeal;
+      battleState.lastResult.enemyHeal  = enemyHeal;
       battleState.preAnimCleared = true;
       render();
     }, 350);

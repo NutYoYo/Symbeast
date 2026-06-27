@@ -3907,7 +3907,7 @@ function encodeDuelTeam(teamPets) {
   const data = teamPets.map(p => {
     // ph: 'e'=evolved, 'f'=final; skip null keys; name derived at decode
     const obj = {
-      ph: p.phase==='final'?'f':'e',
+      ph: p.phase==='final'?'f':p.phase==='larva'?'l':'e',
       hp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
     };
     if(p.formKey)   obj.ek = p.formKey;
@@ -3930,14 +3930,16 @@ function decodeDuelB64(str) {
     if(p.phase !== undefined) return p; // legacy expanded format
     // compact format: ph='f'=final, 'e'=evolved
     const isFusion = p.ph==='f';
+    const isLarva = p.ph==='l';
     const isEvolved = p.ph==='e';
-    const phase = isFusion ? 'final' : 'evolved';
+    const phase = isFusion ? 'final' : isLarva ? 'larva' : 'evolved';
     const form = isEvolved ? FORMS[p.ek] : isFusion ? FINAL_FORMS[p.fk] : null;
-    const name = form?.name || (isFusion ? p.fk : p.ek) || 'Beast';
+    const name = form?.name || (isFusion ? p.fk : p.ek) || (isLarva ? 'LARVA' : 'Beast');
     return {
       name, phase,
       isEvolvedEnemy: isEvolved, evolvedKey: p.ek||null,
       isFusionEnemy: isFusion, fusionKey: p.fk||null,
+      isLarvaEnemy: isLarva,
       hp: p.hp, maxHp: p.hp, atk: p.atk, spd: p.spd, def: p.def,
       shiny: p.sh===1,
       artifact: p.a1||null, artifact2: p.a2||null,
@@ -5311,6 +5313,7 @@ function renderBattleScreen() {
             <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;${(enemy.isFusionEnemy||enemy.isEvolvedEnemy)?'transform:scaleX(-1)':''}">
               ${enemy.isFusionEnemy ? buildPetSvg({phase:'final',finalKey:enemy.fusionKey,shiny:enemy.shiny||false,symbols:[]},isBoss?200:180,false)
                 : enemy.isEvolvedEnemy ? buildPetSvg({phase:'evolved',formKey:enemy.evolvedKey,shiny:enemy.shiny||false,symbols:[]},isBoss?170:130,false)
+                : enemy.isLarvaEnemy ? buildPetSvg({phase:'larva',shiny:enemy.shiny||false,symbols:[]},isBoss?170:130,false)
                 : buildMonsterSvg(isBoss, enemy.typeKey, enemy.spriteFile)}
               ${(enemy.shiny&&(enemy.isFusionEnemy||enemy.isEvolvedEnemy)) ? buildShinySparkles(8, isBoss?90:70) : ''}
             </div>

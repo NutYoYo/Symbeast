@@ -2403,21 +2403,16 @@ function doTurn(moveIdx) {
     // stone_skin: reduce player dmg when enemy > 70% HP
     if((eArtId==='stone_skin'||eArtId2==='stone_skin') && enemy.hp > enemy.maxHp*0.70)
       { pd=Math.round(pd*0.7); passives.push({icon:'🪨',text:`STONE SKIN -30% dmg→${pd}`}); }
-    // reflect_coat: reflect 20% of player dmg back
+    // reflect_coat: reflect 20% of player dmg back (applied to creature.hp)
     if((eArtId==='reflect_coat'||eArtId2==='reflect_coat') && pd>0)
-      { const ref=Math.round(pd*0.20); eReflectDmg+=ref; passives.push({icon:'🛡',text:`REFLECT COAT→${ref}`}); }
-    // shock_bead: 8% stun player
+      { const ref=Math.round(pd*0.20); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🛡',text:`REFLECT COAT→${ref}`}); }
+    // shock_bead: 8% stun player next turn
     if(!playerStunned && (eArtId==='shock_bead'||eArtId2==='shock_bead') && Math.random()<0.08)
       { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'⚡',text:T('SHOCK BEAD! STUN ต่อไป','SHOCK BEAD! STUN next turn')}); }
-    // paralysis_fang: 15% stun player
+    // paralysis_fang: 15% stun player next turn
     if(!playerStunned && (eArtId==='paralysis_fang'||eArtId2==='paralysis_fang') && Math.random()<0.15)
       { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'🦷',text:T('PARALYSIS FANG! STUN ต่อไป','PARALYSIS FANG! STUN next turn')}); }
-    // drain_aura / crimson_fang: enemy heals on hit
-    if((eArtId==='drain_aura'||eArtId2==='drain_aura') && ed>0)
-      { const h=Math.round(ed*0.25); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); passives.push({icon:'🩸',text:`DRAIN AURA heal ${h}`}); }
-    if((eArtId==='crimson_fang'||eArtId2==='crimson_fang') && ed>0)
-      { const h=Math.round(ed*0.20); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); passives.push({icon:'🔴',text:`CRIMSON FANG heal ${h}`}); }
-    // blood_pact: enemy heals when player crits (50% of crit dmg)
+    // blood_pact: enemy heals when player crits
     if(crit && (eArtId==='blood_pact'||eArtId2==='blood_pact'))
       { const h=Math.round(pd*0.20); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); passives.push({icon:'🩸',text:`BLOOD PACT heal ${h}`}); }
     // double_attack: enemy attacks twice
@@ -2904,6 +2899,11 @@ function doTurn(moveIdx) {
     eReflectDmg+=ref;
     passives.push({icon:'🔄',text:T(`ศัตรูสะท้อน ${ref} dmg`,`Enemy Reflect ${ref} dmg`)});
   }
+  // drain_aura / crimson_fang: enemy heals after actually dealing damage
+  if((eArtId==='drain_aura'||eArtId2==='drain_aura') && edApplied && ed>0 && enemy.hp>0)
+    { const h=Math.round(ed*0.25); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🩸',text:`DRAIN AURA +${h}`}); }
+  if((eArtId==='crimson_fang'||eArtId2==='crimson_fang') && edApplied && ed>0 && enemy.hp>0)
+    { const h=Math.round(ed*0.20); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🔴',text:`CRIMSON FANG +${h}`}); }
 
   // สะสม overdrive charge เมื่อ LOSE (เฉพาะ final form)
   if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) {

@@ -14,6 +14,8 @@
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
 
@@ -1185,6 +1187,10 @@ let duelWon = null;         // true/false/null
 let duelHpSnapshot = [];    // HP snapshot ก่อนเข้า duel
 let duelUrlData = null;     // enemy data จาก URL (ถ้ามี)
 let duelSelectStep = 'mode'; // 'mode'|'team'|'lobby'
+let duelQrOpen = false;      // แสดง QR modal
+let duelScanOpen = false;    // แสดง scanner modal
+let duelPasteOpen = false;   // แสดง paste link input
+let _scanStream = null;      // camera stream
 
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
@@ -3799,20 +3805,33 @@ function renderDuelSetup() {
 
   if(duelSelectStep==='mode' && !duelUrlData) {
     screenContent.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:14px;padding:14px;align-items:center">
-      <div style="text-align:center">
+    <div style="display:flex;flex-direction:column;gap:10px;padding:14px">
+      <div style="text-align:center;margin-bottom:4px">
         <div style="font-family:Orbitron,monospace;font-size:11px;color:#5050a0;letter-spacing:3px">🤝 DUEL MODE</div>
-        <div style="font-size:11px;color:#6050a0;margin-top:4px">${T('ท้าทายเพื่อนผ่าน Link','Challenge friends via Link')}</div>
       </div>
-      <div id="duel1v1Btn" style="width:100%;padding:16px;text-align:center;background:linear-gradient(135deg,#1a0a2a,#2a0a1a);border:2px solid #c080ff;border-radius:12px;cursor:pointer">
-        <div style="font-family:Orbitron,monospace;font-size:14px;color:#c080ff">👤 1v1 DUEL</div>
-        <div style="font-size:10px;color:#6040a0;margin-top:4px">${T('ส่ง pet 1 ตัว — สู้เดี่ยว','Send 1 pet — solo fight')}</div>
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#4040a0;letter-spacing:2px;margin-top:2px">${T('ตั้งทีม / ท้าทาย','SET TEAM / CHALLENGE')}</div>
+      <div id="duel1v1Btn" style="width:100%;padding:14px;text-align:center;background:linear-gradient(135deg,#1a0a2a,#2a0a1a);border:2px solid #c080ff;border-radius:12px;cursor:pointer">
+        <div style="font-family:Orbitron,monospace;font-size:13px;color:#c080ff">👤 1v1 DUEL</div>
+        <div style="font-size:10px;color:#6040a0;margin-top:3px">${T('ส่ง pet 1 ตัว — สู้เดี่ยว','Send 1 pet — solo fight')}</div>
       </div>
-      <div id="duel3v3Btn" style="width:100%;padding:16px;text-align:center;background:linear-gradient(135deg,#1a0a1a,#0a1a2a);border:2px solid #ff8040;border-radius:12px;cursor:pointer">
-        <div style="font-family:Orbitron,monospace;font-size:14px;color:#ff8040">👥 3v3 DUEL</div>
-        <div style="font-size:10px;color:#804020;margin-top:4px">${T('ส่ง pet 3 ตัว — สู้ทีละตัว ใครหมดก่อนแพ้','Send 3 pets — last team standing wins')}</div>
+      <div id="duel3v3Btn" style="width:100%;padding:14px;text-align:center;background:linear-gradient(135deg,#1a0a1a,#0a1a2a);border:2px solid #ff8040;border-radius:12px;cursor:pointer">
+        <div style="font-family:Orbitron,monospace;font-size:13px;color:#ff8040">👥 3v3 DUEL</div>
+        <div style="font-size:10px;color:#804020;margin-top:3px">${T('ส่ง pet 3 ตัว — สู้ทีละตัว ใครหมดก่อนแพ้','Send 3 pets — last team standing wins')}</div>
       </div>
-    </div>`;
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#4040a0;letter-spacing:2px;margin-top:4px">${T('รับ Duel จากเพื่อน','RECEIVE DUEL FROM FRIEND')}</div>
+      <div style="display:flex;gap:8px">
+        <div id="duelScanBtn" style="flex:1;padding:12px;text-align:center;background:#0a0a1a;border:1px solid #4080ff;border-radius:10px;cursor:pointer">
+          <div style="font-size:20px">📷</div>
+          <div style="font-family:Orbitron,monospace;font-size:10px;color:#4080ff;margin-top:3px">SCAN QR</div>
+        </div>
+        <div id="duelPasteBtn" style="flex:1;padding:12px;text-align:center;background:#0a0a1a;border:1px solid #40a080;border-radius:10px;cursor:pointer">
+          <div style="font-size:20px">🔗</div>
+          <div style="font-family:Orbitron,monospace;font-size:10px;color:#40a080;margin-top:3px">PASTE LINK</div>
+        </div>
+      </div>
+    </div>
+    ${duelScanOpen ? renderDuelScanModal() : ''}
+    ${duelPasteOpen ? renderDuelPasteModal() : ''}`;
     return;
   }
 
@@ -3838,10 +3857,13 @@ function renderDuelSetup() {
       }).join('')}
     </div>
     ${selPets.length===maxSel ? `
-    <div id="duelShareBtn" style="padding:12px;text-align:center;background:linear-gradient(135deg,#0a2a0a,#0a0a2a);border:2px solid #44cc44;border-radius:10px;font-family:Orbitron,monospace;font-size:13px;color:#88ff88;cursor:pointer">🔗 ${T('คัดลอก Share Link','Copy Share Link')}</div>
+    <div id="duelShareBtn" style="padding:12px;text-align:center;background:linear-gradient(135deg,#0a2a0a,#0a0a2a);border:2px solid #44cc44;border-radius:10px;font-family:Orbitron,monospace;font-size:13px;color:#88ff88;cursor:pointer">📱 ${T('แสดง QR + Link','Show QR + Link')}</div>
     ` : ''}
     <div id="duelBackBtn" style="padding:8px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('← กลับ','← BACK')}</div>
-  </div>`;
+  </div>
+  ${duelQrOpen ? renderDuelQrModal(duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx])) : ''}
+  ${duelPasteOpen ? renderDuelPasteModal() : ''}
+  ${duelScanOpen ? renderDuelScanModal() : ''}`;
 }
 
 function renderDuelLobby() {
@@ -3902,6 +3924,103 @@ function startDuelBattle(enemyIdx) {
     isDuelBattle:true, artifactStacks:{},
   };
   state = 'battle'; render();
+}
+
+function renderDuelQrModal(myPets) {
+  const url = buildDuelShareUrl(myPets);
+  return `
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;gap:12px;padding:16px">
+    <div style="font-family:Orbitron,monospace;font-size:13px;color:#c0a0ff">📱 ${T('แชร์ให้เพื่อน','Share with friend')}</div>
+    <canvas id="duelQrCanvas" style="border-radius:8px;background:#fff;padding:8px"></canvas>
+    <div style="width:100%;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;padding:8px;font-size:9px;color:#4040a0;word-break:break-all;text-align:center">${url}</div>
+    <div id="duelCopyLinkBtn" style="width:100%;padding:10px;text-align:center;background:#0a1a0a;border:1px solid #2a5a2a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#60cc60;cursor:pointer">📋 ${T('คัดลอก Link','Copy Link')}</div>
+    <div id="duelQrCloseBtn" style="width:100%;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('ปิด','CLOSE')}</div>
+  </div>`;
+}
+
+function renderDuelPasteModal() {
+  return `
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;gap:12px;padding:20px">
+    <div style="font-family:Orbitron,monospace;font-size:13px;color:#40a080">🔗 ${T('วาง Duel Link','Paste Duel Link')}</div>
+    <textarea id="duelLinkInput" placeholder="${T('วาง link ที่ได้รับจากเพื่อนที่นี่...','Paste the link received from your friend here...')}"
+      style="width:100%;height:80px;background:#08080f;border:1px solid #2a4a3a;border-radius:8px;color:#80d0b0;font-size:11px;padding:8px;resize:none;outline:none"></textarea>
+    <div id="duelPasteGoBtn" style="width:100%;padding:12px;text-align:center;background:linear-gradient(135deg,#0a2a1a,#0a0a2a);border:2px solid #40c080;border-radius:10px;font-family:Orbitron,monospace;font-size:13px;color:#60ff80;cursor:pointer">✓ ${T('ยืนยัน','CONFIRM')}</div>
+    <div id="duelPasteCloseBtn" style="width:100%;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
+  </div>`;
+}
+
+function renderDuelScanModal() {
+  return `
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;gap:10px;padding:16px">
+    <div style="font-family:Orbitron,monospace;font-size:13px;color:#4080ff">📷 ${T('สแกน QR Code','Scan QR Code')}</div>
+    <div style="position:relative;width:240px;height:240px;border-radius:12px;overflow:hidden;border:2px solid #4080ff">
+      <video id="duelScanVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video>
+      <canvas id="duelScanCanvas" style="display:none"></canvas>
+      <div style="position:absolute;inset:0;border:3px solid rgba(64,128,255,0.5);border-radius:12px;pointer-events:none"></div>
+    </div>
+    <div id="duelScanStatus" style="font-size:11px;color:#4060a0">${T('กำลังเปิดกล้อง...','Opening camera...')}</div>
+    <div id="duelScanCloseBtn" style="width:100%;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
+  </div>`;
+}
+
+function stopScanCamera() {
+  if(_scanStream) { _scanStream.getTracks().forEach(t=>t.stop()); _scanStream=null; }
+}
+
+function startScanCamera() {
+  const video = document.getElementById('duelScanVideo');
+  if(!video) return;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(stream => {
+      _scanStream = stream;
+      video.srcObject = stream;
+      video.play();
+      scanFrame();
+    })
+    .catch(() => {
+      const el = document.getElementById('duelScanStatus');
+      if(el) el.textContent = T('ไม่สามารถเปิดกล้องได้','Cannot access camera');
+    });
+}
+
+function scanFrame() {
+  const video = document.getElementById('duelScanVideo');
+  const canvas = document.getElementById('duelScanCanvas');
+  if(!video || !canvas || !duelScanOpen) return;
+  if(video.readyState === video.HAVE_ENOUGH_DATA) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if(typeof jsQR !== 'undefined') {
+      const code = jsQR(img.data, img.width, img.height);
+      if(code && code.data.includes('?duel=')) {
+        stopScanCamera();
+        duelScanOpen = false;
+        loadDuelFromUrl(code.data);
+        return;
+      }
+    }
+  }
+  requestAnimationFrame(scanFrame);
+}
+
+function loadDuelFromUrl(url) {
+  try {
+    const param = new URL(url).searchParams.get('duel');
+    const parsed = JSON.parse(decodeURIComponent(escape(atob(param))));
+    duelUrlData = parsed;
+    duelMode = parsed.mode;
+    duelEnemyTeam = parsed.team.map(p=>({...p,hp:p.maxHp}));
+    duelMyTeam = [];
+    duelSelectStep = 'team';
+    scoutToast = T('✅ โหลดทีมศัตรูแล้ว! เลือก pet ของคุณ','✅ Enemy team loaded! Select your pets');
+    render();
+  } catch(e) {
+    scoutToast = T('❌ Link ไม่ถูกต้อง','❌ Invalid link');
+    render();
+  }
 }
 
 function startDuelFight() {
@@ -5885,6 +6004,24 @@ screenContent.addEventListener('click', e=>{
   // ── DUEL ──
   if(el.closest('#duel1v1Btn')) { SFX.click(); duelMode='1v1'; duelSelectStep='team'; render(); return; }
   if(el.closest('#duel3v3Btn')) { SFX.click(); duelMode='3v3'; duelSelectStep='team'; render(); return; }
+  if(el.closest('#duelScanBtn')) { SFX.click(); duelScanOpen=true; render(); setTimeout(startScanCamera,100); return; }
+  if(el.closest('#duelPasteBtn')) { SFX.click(); duelPasteOpen=true; render(); return; }
+  if(el.closest('#duelScanCloseBtn')) { SFX.click(); stopScanCamera(); duelScanOpen=false; render(); return; }
+  if(el.closest('#duelPasteCloseBtn')) { SFX.click(); duelPasteOpen=false; render(); return; }
+  if(el.closest('#duelPasteGoBtn')) {
+    SFX.click();
+    const inp = document.getElementById('duelLinkInput');
+    if(inp) { duelPasteOpen=false; loadDuelFromUrl(inp.value.trim()); }
+    return;
+  }
+  if(el.closest('#duelQrCloseBtn')) { SFX.click(); duelQrOpen=false; render(); return; }
+  if(el.closest('#duelCopyLinkBtn')) {
+    SFX.click();
+    const myPets = duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx]);
+    navigator.clipboard.writeText(buildDuelShareUrl(myPets)).catch(()=>{});
+    scoutToast = T('✅ คัดลอก Link แล้ว!','✅ Link copied!');
+    render(); return;
+  }
   if(el.closest('#duelBackBtn')) { SFX.click(); if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{state='menu';} render(); return; }
   if(el.closest('#duelFightBtn')) { SFX.vsStart(); startDuelFight(); return; }
   if(el.closest('#duelRetryBtn')) { SFX.click();
@@ -5892,12 +6029,15 @@ screenContent.addEventListener('click', e=>{
     state='duel_lobby'; render(); return; }
   if(el.closest('#duelResultBackBtn')) { SFX.click(); state='menu'; render(); return; }
   if(el.closest('#duelShareBtn')) {
-    SFX.click();
-    const myPets = duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx]);
-    const url = buildDuelShareUrl(myPets);
-    navigator.clipboard.writeText(url).catch(()=>{});
-    scoutToast = T('✅ คัดลอก Link แล้ว! ส่งให้เพื่อนได้เลย','✅ Link copied! Send it to your friend');
-    render(); return;
+    SFX.click(); duelQrOpen=true; render();
+    setTimeout(()=>{
+      const canvas = document.getElementById('duelQrCanvas');
+      if(canvas && typeof QRCode !== 'undefined') {
+        const myPets = duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx]);
+        QRCode.toCanvas(canvas, buildDuelShareUrl(myPets), {width:200,margin:1}, ()=>{});
+      }
+    }, 100);
+    return;
   }
   const duelSelEl = el.closest('[data-duelsel]');
   if(duelSelEl && state==='duel_setup') {

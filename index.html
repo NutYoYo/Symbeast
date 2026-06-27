@@ -2633,6 +2633,7 @@ function doTurn(moveIdx) {
       if((as.drainAuraStack||0)>0) { ed=Math.round(ed*(1-0.10*as.drainAuraStack)); passives.push({icon:'🌑',text:T(`Drain Aura -${10*as.drainAuraStack}% ศัตรู → ${ed}`,`Drain Aura -${10*as.drainAuraStack}% enemy → ${ed}`)}); }
     }
     // Epic
+    if(eHasIronWill && bs.eIronWillBoostReady) { ed=Math.round(ed*4); bs.eIronWillBoostReady=false; passives.push({icon:'💎',text:`Enemy Iron Will REVENGE ATK×4 → ${ed}`}); }
     if(artId==='iron_will') {
       if(as.ironWillBoostReady) { pd=Math.round(pd*4); as.ironWillBoostReady=false; passives.push({icon:'💎',text:`Iron Will REVENGE ATK×4 → ${pd}`}); }
     }
@@ -2777,6 +2778,14 @@ function doTurn(moveIdx) {
     iwStacks.ironWillUsed = true;
     iwStacks.ironWillBoostReady = true;
     passives.push({icon:'💎',text:T('Iron Will กันตาย! ATK×4 รอบถัดไป!','Iron Will — survived! ATK×4 next round!')});
+  }
+  // Enemy Iron Will
+  const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
+  if(eHasIronWill && !bs.eIronWillUsed && enemy.hp-pd<=0) {
+    pd = enemy.hp - 1;
+    bs.eIronWillUsed = true;
+    bs.eIronWillBoostReady = true;
+    passives.push({icon:'💎',text:T('ศัตรู Iron Will กันตาย! ATK×4 รอบถัดไป!','Enemy Iron Will — survived! ATK×4 next round!')});
   }
 
   // ===== APPLY DAMAGE =====

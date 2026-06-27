@@ -3706,6 +3706,7 @@ function renderTitle() {
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;">
         <div style="font-family:Orbitron,monospace;font-size:10px;color:#8878b8;letter-spacing:4px;text-shadow:0 0 10px rgba(128,96,208,0.5);margin-bottom:2px">⚔ SELECT SAVE SLOT ⚔</div>
         <div style="display:flex;flex-direction:column;gap:7px;width:92%">${slotsHtml}</div>
+        <div id="titleBackBtn" style="margin-top:4px;width:92%;padding:9px;text-align:center;background:rgba(10,8,20,0.7);border:1px solid #2a2a4a;border-radius:10px;font-family:Orbitron,monospace;font-size:11px;color:#4a4a7a;cursor:pointer;letter-spacing:1px">← ${T('กลับ','BACK')}</div>
       </div>
     </div>
     ${slotDeleteConfirm!==null?`
@@ -5625,6 +5626,7 @@ screenContent.addEventListener('click', e=>{
       slotDeleteConfirm = n; render();
       return;
     }
+    if(el.closest('#titleBackBtn'))   { SFX.click(); state='title'; render(); return; }
     if(el.closest('#slotDelCancel'))  { slotDeleteConfirm=null; render(); return; }
     if(el.closest('#slotDelConfirm')) {
       localStorage.removeItem(SLOT_KEY(slotDeleteConfirm));

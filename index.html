@@ -6643,7 +6643,7 @@ function renderParty() {
               : pet.phase==='larva'
                 ? `<div style="position:relative;width:100%"><img src="LARVA.png" class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated">${pet.shiny?buildShinySparkles(8,60):''}</div>`
                 : (()=>{const _n=(FORMS[pet.formKey]||FINAL_FORMS[pet.finalKey||''])?.name||pet.name; return `<div style="position:relative;width:100%">
-                    <video id="pet-detail-video" autoplay loop muted playsinline class="anim-bob" poster="${_n}.png" style="width:100%;height:auto;image-rendering:pixelated;object-fit:contain;">
+                    <video id="pet-detail-video" autoplay loop muted playsinline class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated;object-fit:contain;">
                       <source src="${_n}.webm" type="video/webm" onerror="const v=this.parentElement;v.outerHTML='<img src=\\'${_n}.png\\' class=\\'anim-bob\\' style=\\'width:100%;height:auto;image-rendering:pixelated;object-fit:contain\\'>'">
                     </video>
                     ${pet.shiny?buildShinySparkles(10,90):''}

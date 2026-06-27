@@ -5457,6 +5457,11 @@ document.addEventListener('input', e => {
     importSave(e.target.files[0]);
   }
 });
+document.addEventListener('change', e => {
+  if(e.target.id === 'importFileInput') {
+    importSave(e.target.files[0]);
+  }
+});
 
 document.getElementById('btnOk').addEventListener('click', ()=>{ SFX.click();
   if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); return; }

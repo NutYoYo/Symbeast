@@ -3758,15 +3758,24 @@ function renderVsResult() {
 // DUEL MODE
 // ============================================================
 function encodeDuelTeam(teamPets) {
-  const data = teamPets.map(p => ({
-    name: p.name, phase: p.phase, formKey: p.formKey||null, finalKey: p.finalKey||null,
-    hp: p.maxHp, maxHp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
-    shiny: p.shiny||false,
-    artifact: p.artifact ? {key:p.artifact.key} : null,
-    artifact2: p.artifact2 ? {key:p.artifact2.key} : null,
-    passives: [],
-    rebirthBonus: p.rebirthBonus||null,
-  }));
+  const data = teamPets.map(p => {
+    const isFusion = p.phase==='final';
+    const isEvolved = p.phase==='evolved';
+    const form = isEvolved ? FORMS[p.formKey] : isFusion ? FINAL_FORMS[p.finalKey] : null;
+    return {
+      name: p.name, phase: p.phase,
+      isEvolvedEnemy: isEvolved, evolvedKey: p.formKey||null,
+      isFusionEnemy: isFusion, fusionKey: p.finalKey||null,
+      hp: p.maxHp, maxHp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
+      shiny: p.shiny||false,
+      artifact: p.artifact||null,
+      artifact2: p.artifact2||null,
+      passives: p.formKey ? [p.formKey] : p.finalKey ? [p.finalKey] : [],
+      ownPassiveDesc: form?.passive||null,
+      ownPassiveIcon: form?.passiveIcon||null,
+      typeKey: 'F',
+    };
+  });
   return btoa(unescape(encodeURIComponent(JSON.stringify({mode:duelMode, team:data}))));
 }
 

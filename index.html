@@ -2829,6 +2829,8 @@ function doTurn(moveIdx) {
   }
 
   // ===== APPLY DAMAGE =====
+  bs.preAnimPlayerHp = creature.hp;
+  bs.preAnimEnemyHp  = enemy.hp;
   let edApplied = false, pdApplied = false;
   if(playerFirst) {
     enemy.hp = Math.max(0, enemy.hp-pd); pdApplied = true;
@@ -4946,8 +4948,16 @@ function renderBattleScreen() {
   const {enemy, lastResult, turn, isBoss, isMini, isMimic} = battleState;
   labelStrip.textContent = isBoss ? '⚠ BOSS BATTLE' : isMimic ? '🎭 MIMIC!' : isMini ? '⚡ MINI-BOSS' : '⚔ BATTLE';
 
-  const pHpPct = Math.round(Math.max(0, creature.hp) / creature.maxHp * 100);
-  const eHpPct = Math.round(Math.max(0, enemy.hp) / enemy.maxHp * 100);
+  // During phase-1 animation, show pre-damage HP for the defender so HP bar
+  // only drops when the attack visually lands (phase-2 render shows actual HP)
+  const _ap = battleState.animPhase;
+  const _pfirst = battleState.lastResult?.playerFirst;
+  const _preP = battleState.preAnimPlayerHp;
+  const _preE = battleState.preAnimEnemyHp;
+  const displayPlayerHp = (_ap==='e-atk' && _pfirst===false && _preP!==undefined) ? _preP : creature.hp;
+  const displayEnemyHp  = (_ap==='p-atk' && _pfirst===true  && _preE!==undefined) ? _preE : enemy.hp;
+  const pHpPct = Math.round(Math.max(0, displayPlayerHp) / creature.maxHp * 100);
+  const eHpPct = Math.round(Math.max(0, displayEnemyHp)  / enemy.maxHp   * 100);
   const et = ENEMY_TYPES[enemy.typeKey] || ENEMY_TYPES.F;
   const eColor = isBoss ? '#ffaa00' : et.color;
 
@@ -5095,7 +5105,7 @@ function renderBattleScreen() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div style="flex:1">
           <div style="font-family:Orbitron,monospace;font-size:11px;color:#c0a0ff">${petName(creature)}</div>
-          <div style="font-size:10px;color:#8878b8">HP ${creature.hp}/${creature.maxHp}</div>
+          <div style="font-size:10px;color:#8878b8">HP ${displayPlayerHp}/${creature.maxHp}</div>
           <div style="height:6px;background:#0a0a20;border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid #1a1a3a">
             <div style="width:${pHpPct}%;height:100%;background:linear-gradient(90deg,${pHpPct<=20?'#ff3333,#cc0000':pHpPct<=30?'#ff8800,#cc5500':'#2ecc71,#27ae60'});border-radius:3px;transition:width 0.4s"></div>
           </div>
@@ -5133,7 +5143,7 @@ function renderBattleScreen() {
             <span style="font-size:12px" title="${et.desc}">${et.icon}</span>
             <div style="font-family:Orbitron,monospace;font-size:11px;color:${enemy.shiny?'#ffd700':eColor}${enemy.shiny?';animation:shiny-glow 1.5s ease-in-out infinite':''}">${enemy.shiny?'✨ ':''}${enemy.name}</div>
           </div>
-          <div style="font-size:10px;color:#8878b8;text-align:right">HP ${enemy.hp}/${enemy.maxHp}</div>
+          <div style="font-size:10px;color:#8878b8;text-align:right">HP ${displayEnemyHp}/${enemy.maxHp}</div>
           ${(()=>{
             const ep = enemy.passives||[];
             const ebadges=[];

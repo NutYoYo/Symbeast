@@ -2380,6 +2380,7 @@ function doTurn(moveIdx) {
   let pd = Math.max(minPd, Math.round((pm.dmg + getEffStat('atk')/3 + Math.random()*4) * mult * (crit?critMult:1)) - Math.floor(enemy.def/2));
   const eArtId  = enemy.artifact  || null;
   const eArtId2 = enemy.artifact2 || null;
+  const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
   let eCritBonus = 0;
   if(eArtId==='keen_edge'      || eArtId2==='keen_edge')      eCritBonus += 0.10;
   if(eArtId==='berserker_claw' || eArtId2==='berserker_claw') eCritBonus += 0.20;
@@ -2819,7 +2820,6 @@ function doTurn(moveIdx) {
     passives.push({icon:'💎',text:T('Iron Will กันตาย! ATK×4 รอบถัดไป!','Iron Will — survived! ATK×4 next round!')});
   }
   // Enemy Iron Will
-  const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
   if(eHasIronWill && !bs.eIronWillUsed && enemy.hp-pd<=0) {
     pd = enemy.hp - 1;
     bs.eIronWillUsed = true;

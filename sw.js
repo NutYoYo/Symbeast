@@ -1,4 +1,4 @@
-const CACHE = 'symbeast-v2';
+const CACHE = 'symbeast-v3';
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -18,8 +18,11 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
+        // Only cache full responses (status 200), not partial (206)
+        if(res.ok && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone)).catch(()=>{});
+        }
         return res;
       })
       .catch(() => caches.match(e.request))

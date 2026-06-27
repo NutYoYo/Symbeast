@@ -4958,8 +4958,8 @@ function renderBattleScreen() {
   const _pfirst = battleState.lastResult?.playerFirst;
   const _preP = battleState.preAnimPlayerHp;
   const _preE = battleState.preAnimEnemyHp;
-  const displayPlayerHp = (_ap==='e-atk' && _pfirst===false && _preP!==undefined) ? _preP : creature.hp;
-  const displayEnemyHp  = (_ap==='p-atk' && _pfirst===true  && _preE!==undefined) ? _preE : enemy.hp;
+  const displayPlayerHp = (_ap==='e-atk' && _preP!==undefined) ? _preP : creature.hp;
+  const displayEnemyHp  = (_ap==='p-atk' && _preE!==undefined) ? _preE : enemy.hp;
   const pHpPct = Math.round(Math.max(0, displayPlayerHp) / creature.maxHp * 100);
   const eHpPct = Math.round(Math.max(0, displayEnemyHp)  / enemy.maxHp   * 100);
   const et = ENEMY_TYPES[enemy.typeKey] || ENEMY_TYPES.F;

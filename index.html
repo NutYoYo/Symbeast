@@ -5107,7 +5107,7 @@ function renderBattleScreen() {
         <div style="flex:1;text-align:right">
           <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px">
             <span style="font-size:12px" title="${et.desc}">${et.icon}</span>
-            <div style="font-family:Orbitron,monospace;font-size:11px;color:${eColor}">${enemy.name}</div>
+            <div style="font-family:Orbitron,monospace;font-size:11px;color:${enemy.shiny?'#ffd700':eColor}${enemy.shiny?';animation:shiny-glow 1.5s ease-in-out infinite':''}">${enemy.shiny?'✨ ':''}${enemy.name}</div>
           </div>
           <div style="font-size:10px;color:#8878b8;text-align:right">HP ${enemy.hp}/${enemy.maxHp}</div>
           ${(()=>{
@@ -5211,9 +5211,12 @@ function renderBattleScreen() {
           ${dmgNums}
           <div class="${enemyCls}" style="position:relative;z-index:1;${lr&&lr.enemyStunned&&ap==='e-atk'?'filter:brightness(1.4) saturate(0.3);':(!bs.isDuelBattle&&(enemy.isFusionEnemy||enemy.isEvolvedEnemy))?`filter:hue-rotate(${enemy.isFusionEnemy?'180deg':'0deg'}) brightness(0.85) saturate(1.4) drop-shadow(0 0 8px ${(enemy.isFusionEnemy?FINAL_FORMS[enemy.fusionKey]:FORMS[enemy.evolvedKey])?.color||'#aa44ff'})`:``}">
             ${lr&&lr.enemyStunned&&ap==='e-atk'?`<div style="position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:flex;gap:2px;z-index:10;pointer-events:none">${['⚡','💫','⚡'].map((s,i)=>`<span style="font-size:18px;animation:stun-float 0.8s ease-out ${i*0.15}s both">${s}</span>`).join('')}</div>`:''}
-            ${enemy.isFusionEnemy ? buildPetSvg({phase:'final',finalKey:enemy.fusionKey,shiny:enemy.shiny||false,symbols:[]},isBoss?200:180,false)
-              : enemy.isEvolvedEnemy ? buildPetSvg({phase:'evolved',formKey:enemy.evolvedKey,shiny:enemy.shiny||false,symbols:[]},isBoss?170:130,false)
-              : buildMonsterSvg(isBoss, enemy.typeKey, enemy.spriteFile)}
+            <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;${(enemy.isFusionEnemy||enemy.isEvolvedEnemy)?'transform:scaleX(-1)':''}">
+              ${enemy.isFusionEnemy ? buildPetSvg({phase:'final',finalKey:enemy.fusionKey,shiny:enemy.shiny||false,symbols:[]},isBoss?200:180,false)
+                : enemy.isEvolvedEnemy ? buildPetSvg({phase:'evolved',formKey:enemy.evolvedKey,shiny:enemy.shiny||false,symbols:[]},isBoss?170:130,false)
+                : buildMonsterSvg(isBoss, enemy.typeKey, enemy.spriteFile)}
+              ${(enemy.shiny&&(enemy.isFusionEnemy||enemy.isEvolvedEnemy)) ? buildShinySparkles(8, isBoss?90:70) : ''}
+            </div>
           </div>
         </div>`;
       })()}

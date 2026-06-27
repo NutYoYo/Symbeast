@@ -6629,7 +6629,7 @@ function renderParty() {
               : pet.phase==='larva'
                 ? `<div style="position:relative;width:100%"><img src="LARVA.png" class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated">${pet.shiny?buildShinySparkles(8,60):''}</div>`
                 : (()=>{const _n=(FORMS[pet.formKey]||FINAL_FORMS[pet.finalKey||''])?.name||pet.name; return `<div style="position:relative;width:100%">
-                    <video id="pet-detail-video" autoplay loop muted playsinline class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated;object-fit:contain;">
+                    <video id="pet-detail-video" autoplay loop muted playsinline class="anim-bob" poster="${_n}.png" style="width:100%;height:auto;image-rendering:pixelated;object-fit:contain;">
                       <source src="${_n}.webm" type="video/webm" onerror="const v=this.parentElement;v.outerHTML='<img src=\\'${_n}.png\\' class=\\'anim-bob\\' style=\\'width:100%;height:auto;image-rendering:pixelated;object-fit:contain\\'>'">
                     </video>
                     ${pet.shiny?buildShinySparkles(10,90):''}
@@ -6748,6 +6748,19 @@ function renderParty() {
           </div>
         </div>`;
       })() : ''}`;
+    // Transplant preloaded video to avoid flicker on re-render
+    const _vSlot = screenContent.querySelector('#pet-detail-video');
+    if(_vSlot) {
+      const _pn = (FORMS[pet.formKey]||FINAL_FORMS[pet.finalKey||''])?.name||pet.name;
+      const _cached = window._preloadedVideos?.[_pn];
+      if(_cached && _cached.readyState >= 2) {
+        _cached.className = _vSlot.className; _cached.id = 'pet-detail-video';
+        Object.assign(_cached.style, {width:'100%',height:'auto',imageRendering:'pixelated',objectFit:'contain'});
+        _cached.loop = true; _cached.muted = true; _cached.autoplay = true; _cached.playsInline = true;
+        _vSlot.parentNode.replaceChild(_cached, _vSlot);
+        _cached.play().catch(()=>{});
+      }
+    }
     return;
   }
 

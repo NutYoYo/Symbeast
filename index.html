@@ -1232,8 +1232,13 @@ const BATTLE_BGS = {
   grass:  { day:'Battle Scene/Battle-scene-meadowt-day.jpg', night:'Battle Scene/Battle-scene-meadow-night.jpg' },
 };
 function getBattleBg() {
-  if(battleState?.isTowerBattle) return 'Battle Scene/tower-scene.jpg';
-  if(battleState?.isVsBattle || battleState?.isDuelBattle) return 'Battle Scene/BG-VS-Mode.jpg';
+  const vsDuelStates = ['vs_lobby','vs_result','duel_result','battle','result'];
+  const isBattleActive = state === 'battle' && battleState;
+  if(state === 'tower' || (isBattleActive && battleState.isTowerBattle)) return 'Battle Scene/tower-scene.jpg';
+  if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result') return 'Battle Scene/BG-VS-Mode.jpg';
+  if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle)) return 'Battle Scene/BG-VS-Mode.jpg';
+  if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) return 'Battle Scene/BG-VS-Mode.jpg';
+  if(!['battle','result','scout'].includes(state)) return null;
   const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
   const h = new Date().getHours();
   return (h>=6&&h<18) ? b.day : b.night;
@@ -4112,7 +4117,10 @@ function renderDuelQrModal(myPets) {
     <div style="font-family:Orbitron,monospace;font-size:13px;color:#c0a0ff">📱 ${T('แชร์ให้เพื่อน','Share with friend')}</div>
     <canvas id="duelQrCanvas" style="border-radius:8px;background:#fff;padding:8px"></canvas>
     <div style="width:100%;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;padding:8px;font-size:9px;color:#4040a0;word-break:break-all;text-align:center">${url}</div>
-    <div id="duelCopyLinkBtn" style="width:100%;padding:10px;text-align:center;background:#0a1a0a;border:1px solid #2a5a2a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#60cc60;cursor:pointer">📋 ${T('คัดลอก Link','Copy Link')}</div>
+    <div style="width:100%;display:flex;gap:8px">
+      <div id="duelCopyLinkBtn" style="flex:1;padding:10px;text-align:center;background:#0a1a0a;border:1px solid #2a5a2a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#60cc60;cursor:pointer">📋 ${T('คัดลอก','Copy')}</div>
+      <div id="duelDownloadQrBtn" style="flex:1;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #4060c0;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#80a0ff;cursor:pointer">💾 ${T('บันทึกรูป','Save Image')}</div>
+    </div>
     <div id="duelQrCloseBtn" style="width:100%;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('ปิด','CLOSE')}</div>
   </div>`;
 }
@@ -4138,6 +4146,10 @@ function renderDuelScanModal() {
       <div style="position:absolute;inset:0;border:3px solid rgba(64,128,255,0.5);border-radius:12px;pointer-events:none"></div>
     </div>
     <div id="duelScanStatus" style="font-size:11px;color:#4060a0">${T('กำลังเปิดกล้อง...','Opening camera...')}</div>
+    <label id="duelScanImageBtn" style="width:100%;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #4060c0;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#80a0ff;cursor:pointer;display:block;box-sizing:border-box">
+      🖼️ ${T('เลือกรูป QR','Select QR Image')}
+      <input type="file" id="duelScanFileInput" accept="image/*" style="display:none">
+    </label>
     <div id="duelScanCloseBtn" style="width:100%;padding:10px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
   </div>`;
 }
@@ -4684,6 +4696,10 @@ function renderMenu() {
             ['🗺','SCOUT',T('สำรวจแผนที่ ต่อสู้กับมอนสเตอร์ เก็บของ และสะสม Symbol — ยิ่ง Stage สูง ของรางวัลยิ่งดี มี HARD MODE และ HELL MODE ให้ท้าทายเพิ่มเติม','Explore the map, battle monsters, collect loot and Symbols — higher Stages yield better rewards. HARD MODE and HELL MODE offer additional challenges')],
             ['🏯','TOWER',T('ปีนหอคอยทีละชั้น ยิ่งขึ้นสูง ศัตรูยิ่งโหด — เคลียร์ชั้นพิเศษ (ทุก 10 ชั้น) ครั้งแรกจะได้รางวัลพิเศษ!','Climb the Tower floor by floor — enemies get tougher the higher you go. First clear of every 10th floor earns a special one-time reward!')],
             ['⚔️','VS MODE',T('โหมดประลองไม่จำกัดครั้ง — ต่อสู้กับศัตรูในรูปแบบ Ladder ยิ่ง Stage สูง ศัตรูยิ่งแข็งแกร่ง ชนะเพื่อเลื่อน Stage และรับรางวัล','Unlimited PvE Ladder — battle increasingly powerful enemies as you climb the Stages. Win to advance and earn rewards')],
+            ['🤝','DUEL MODE',T(
+`เล่นกับเพื่อนแบบตัวต่อตัวได้ทุกที่ ไม่ต้องออนไลน์!\n\n📌 วิธีเล่น:\n1. ไปที่ VS MODE → แท็บ DUEL\n2. เลือกโหมด 1v1 (pet 1 ตัว) หรือ 3v3 (pet 3 ตัว)\n3. เลือก pet แล้วกด "แสดง QR + Link"\n4. ให้เพื่อน Scan QR หรือส่ง Link ให้เพื่อน\n5. เพื่อนเลือก pet ฝั่งตัวเองแล้วกด "สู้เลย!" ได้เลย\n\n💡 สแกน QR ได้จากกล้อง หรือเลือกรูปภาพจาก Gallery ก็ได้`,
+`Play against a friend anywhere — no internet required!\n\n📌 How to play:\n1. Go to VS MODE → DUEL tab\n2. Choose 1v1 (1 pet each) or 3v3 (3 pets each)\n3. Pick your pets and tap "Show QR + Link"\n4. Have your friend scan your QR, or send them the link\n5. They pick their team and tap FIGHT!\n\n💡 Scan QR via camera or pick an image from Gallery`
+            )],
             ['💀','HELL MODE',T('โหมดสุดท้าทาย ปลดล็อคหลังผ่าน Hard Mode ครบ 20 ด่าน — ศัตรูแข็งแกร่งกว่า Hard Mode มาก ผลตอบแทนสูงตามความยากที่สูงขึ้น','Unlocked after completing all 20 Hard Mode stages — enemies are significantly stronger. Rewards scale with the increased difficulty')],
             ['🌑','EXPEDITION',T('ส่ง Pet ออกสำรวจเพื่อหาทรัพยากรอัตโนมัติ ไม่ต้องเล่น — แต่ Pet ที่ออกไปจะใช้งานในหอคอยและ VS ไม่ได้ชั่วคราว','Send pets out to gather resources automatically while you play — but pets on Expedition cannot be used in Tower or VS battles')],
             ['🏋️','TRAIN',T('อัปเกรด ATK / DEF / SPD แบบถาวร ใช้ Gold ที่หามาได้จากการต่อสู้','Permanently upgrade ATK / DEF / SPD using Gold earned from battles')],
@@ -6249,7 +6265,41 @@ screenContent.addEventListener('click', e=>{
 
   if(el.closest('#duel1v1Btn')) { SFX.click(); duelMode='1v1'; duelSelectStep='team'; render(); return; }
   if(el.closest('#duel3v3Btn')) { SFX.click(); duelMode='3v3'; duelSelectStep='team'; render(); return; }
-  if(el.closest('#duelScanBtn')) { SFX.click(); duelScanOpen=true; render(); setTimeout(startScanCamera,100); return; }
+  if(el.closest('#duelScanBtn')) {
+    SFX.click(); duelScanOpen=true; render();
+    setTimeout(() => {
+      startScanCamera();
+      const fi = document.getElementById('duelScanFileInput');
+      if(fi) fi.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = new Image();
+          img.onload = () => {
+            const cv = document.createElement('canvas');
+            cv.width = img.width; cv.height = img.height;
+            const ctx = cv.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, cv.width, cv.height);
+            if(typeof jsQR !== 'undefined') {
+              const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts:'attemptBoth'});
+              if(code && code.data.includes('duel=')) {
+                stopScanCamera(); duelScanOpen=false;
+                loadDuelFromUrl(code.data);
+              } else {
+                const st = document.getElementById('duelScanStatus');
+                if(st) st.textContent = T('❌ ไม่พบ QR Code ในรูปนี้','❌ No QR Code found in image');
+              }
+            }
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }, 100);
+    return;
+  }
   if(el.closest('#duelPasteBtn')) { SFX.click(); duelPasteOpen=true; render(); return; }
   if(el.closest('#duelScanCloseBtn')) { SFX.click(); stopScanCamera(); duelScanOpen=false; render(); return; }
   if(el.closest('#duelPasteCloseBtn')) { SFX.click(); duelPasteOpen=false; render(); return; }
@@ -6267,6 +6317,18 @@ screenContent.addEventListener('click', e=>{
     scoutToast = T('✅ คัดลอก Link แล้ว!','✅ Link copied!');
     render(); return;
   }
+  if(el.closest('#duelDownloadQrBtn')) {
+    SFX.click();
+    const canvas = document.getElementById('duelQrCanvas');
+    if(canvas) {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'symbeast-duel-qr.png';
+      a.click();
+    }
+    return;
+  }
+  if(el.closest('#duelScanImageBtn')) { return; } // let label handle file input naturally
   if(el.closest('#duelBackBtn')) { SFX.click(); if(duelSelectStep==='lobby'){duelSelectStep='team';}else if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{vsTab='ladder';} render(); return; }
   if(el.closest('#duelFightBtn')) { SFX.vsStart(); startDuelFight(); return; }
   if(el.closest('#duelRetryBtn')) { SFX.click();

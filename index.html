@@ -5626,7 +5626,7 @@ screenContent.addEventListener('click', e=>{
       slotDeleteConfirm = n; render();
       return;
     }
-    if(el.closest('#titleBackBtn'))   { SFX.click(); state='title'; render(); return; }
+    if(el.closest('#titleBackBtn'))   { SFX.click(); titlePhase='start'; render(); return; }
     if(el.closest('#slotDelCancel'))  { slotDeleteConfirm=null; render(); return; }
     if(el.closest('#slotDelConfirm')) {
       localStorage.removeItem(SLOT_KEY(slotDeleteConfirm));

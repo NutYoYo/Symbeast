@@ -2463,13 +2463,18 @@ function doTurn(moveIdx) {
     }
     // reflect_coat: reflect 15% of player dmg back
     if(eHasA('reflect_coat') && pd>0) { const ref=Math.round(pd*0.15); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🪞',text:`[E] Reflect Coat ${ref}`}); }
-    // shock_bead: 8% stun player next turn
-    if(!playerStunned && eHasA('shock_bead') && Math.random()<0.08)
-      { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'⚡',text:T('[E] Shock Bead STUN! ต่อไป','[E] Shock Bead STUN! next')}); }
+    // shock_bead: 8% stun player (immediate if enemy first, deferred if player first)
+    if(!playerStunned && eHasA('shock_bead') && Math.random()<0.08) {
+      if(playerFirst) { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon:'⚡',text:T('[E] Shock Bead STUN! เทิร์นถัดไป','[E] Shock Bead STUN! next turn')}); }
+      else { pd=0; playerStunned=true; SFX.stun(); passives.push({icon:'⚡',text:T('[E] Shock Bead STUN! โจมตีพลาด','[E] Shock Bead STUN! Miss')}); }
+    }
     // paralysis_fang: 15% stun player, +30% ed next turn if stun
     if(!playerStunned && eHasA('paralysis_fang')) {
       if(eas.paralysisProc) { ed=Math.round(ed*1.30); passives.push({icon:'🦷',text:`[E] Paralysis Boost →${ed}`}); eas.paralysisProc=false; }
-      if(Math.random()<0.15) { bs.playerStunnedNextTurn=true; eas.paralysisProc=true; SFX.stun(); passives.push({icon:'🦷',text:T('[E] Paralysis Fang STUN! ต่อไป','[E] Paralysis Fang STUN! next')}); }
+      if(Math.random()<0.15) {
+        if(playerFirst) { bs.playerStunnedNextTurn=true; SFX.stun(); eas.paralysisProc=true; passives.push({icon:'🦷',text:T('[E] Paralysis Fang STUN! เทิร์นถัดไป','[E] Paralysis Fang STUN! next turn')}); }
+        else { pd=0; playerStunned=true; SFX.stun(); eas.paralysisProc=true; passives.push({icon:'🦷',text:T('[E] Paralysis Fang STUN! โจมตีพลาด','[E] Paralysis Fang STUN! Miss')}); }
+      }
     }
     // berserker_claw: player takes extra 10% dmg (pd reduced against enemy)
     if(eHasA('berserker_claw') && !enemyStunned) { ed=Math.round(ed*1.10); passives.push({icon:'🐾',text:`[E] Berserker →${ed}`}); }
@@ -2787,7 +2792,7 @@ function doTurn(moveIdx) {
   if(ep.includes('enrage') && enemy.hp<enemy.maxHp*0.5) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`ENRAGE! ATK×1.5 → ${ed}`}); }
   if(ep.includes('barrier') && bs.turn%3===0) { pd=Math.round(pd*0.5); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
   if(ep.includes('counter_rush') && pm.name==='GUARD') { ed=ed*2; passives.push({icon:'💨',text:`COUNTER RUSH! ×2 → ${ed}`}); }
-  if(ep.includes('stun_player') && Math.random()<0.15) { if(!playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาดเทิร์นถัดไป','PARALYZE! Miss next turn')});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาด','PARALYZE! Your attack missed')});} }
+  if(ep.includes('stun_player') && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาดเทิร์นถัดไป','PARALYZE! Miss next turn')});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาด','PARALYZE! Your attack missed')});} }
   if(ep.includes('crit_boost') && Math.random()<0.25) { const bon=Math.round(ed*0.6); ed+=bon; passives.push({icon:'🎯',text:`CRIT BOOST! +60% → ${ed}`}); }
   if(ep.includes('double_strike') && Math.random()<0.25) { const hit2=ed; ed+=hit2; passives.push({icon:'⚔️',text:`DOUBLE STRIKE! ×2 → ${ed}`}); }
   if(ep.includes('berserker')) { if(!bs.eBerserkerStacks)bs.eBerserkerStacks=0; bs.eBerserkerStacks=Math.min(5,bs.eBerserkerStacks+1); const mult=1+bs.eBerserkerStacks*0.10; ed=Math.round(ed*mult); passives.push({icon:'🔺',text:`BERSERKER ×${bs.eBerserkerStacks} ATK+${bs.eBerserkerStacks*10}% → ${ed}`}); }
@@ -2796,7 +2801,7 @@ function doTurn(moveIdx) {
   if(ep.includes('FFF')) { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:`BLAZEWOLF ATK×1.25→${ed}`}); }
   if(ep.includes('FFW')) { if(Math.random()<0.25) { const bonus=Math.round(ed*0.6); ed+=bonus; passives.push({icon:'🔥',text:`RAZORCLAW CRIT+60%→${ed}`}); } }
   if(ep.includes('FFS') && ed>0) { bs.ironjawEd=ed; } // lifesteal resolved post-damage
-  if(ep.includes('FWW') && Math.random()<0.25 && !playerStunned) { if(!playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN! (next turn)'});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN!'});} }
+  if(ep.includes('FWW') && Math.random()<0.25 && !playerStunned) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN! (next turn)'});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN!'});} }
   if(ep.includes('FWS') && cmp==='lose') { ed=Math.round(ed*1.2); pd=Math.round(pd*0.8); passives.push({icon:'🏆',text:`CHAMPION WIN ed+20%→${ed}`}); }
   if(ep.includes('FSS') && pd>0) { const ref=Math.max(1,Math.round(pd*0.25)); creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🔄',text:`FORTRESS Reflect${ref}`}); }
   if(ep.includes('WWW') && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:'GHOSTCLAW DODGE!'}); }
@@ -2809,7 +2814,7 @@ function doTurn(moveIdx) {
   if(ep.includes('F+W')) {
     if(bs.eStormfangStun){ed=Math.round(ed*1.5);passives.push({icon:'⚡',text:`STUN BOOST ATK×1.5→${ed}`});}
     ed=Math.round(ed*1.15); bs.eStormfangStun=false;
-    if(Math.random()<0.20&&!playerStunned){if(!playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:`STORMFANG ATK×1.15→${ed} + STUN! (next turn)`});}else{pd=0;playerStunned=true;SFX.stun();bs.eStormfangStun=true;passives.push({icon:'⚡',text:`STORMFANG ATK×1.15→${ed} + STUN!`});}}
+    if(Math.random()<0.20&&!playerStunned){if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:`STORMFANG ATK×1.15→${ed} + STUN! (next turn)`});}else{pd=0;playerStunned=true;SFX.stun();bs.eStormfangStun=true;passives.push({icon:'⚡',text:`STORMFANG ATK×1.15→${ed} + STUN!`});}}
     else{passives.push({icon:'⚡',text:`STORMFANG ATK×1.15→${ed}`});}
   }
   if(ep.includes('F+S')) { if(!bs.eIroncladStack)bs.eIroncladStack=0; ed=Math.round(ed*1.15*(1+bs.eIroncladStack*0.05)); passives.push({icon:'🛡',text:`IRONCLAD ATK→${ed}${bs.eIroncladStack?` Stk${bs.eIroncladStack}`:''}`}); if(pd>0)bs.eIroncladStack=Math.min(3,(bs.eIroncladStack||0)+1); }

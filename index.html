@@ -618,12 +618,16 @@ function fadeToState(nextStateFn) {
 // ============================================================
 const _AC = new (window.AudioContext || window.webkitAudioContext)();
 let _sfxOn = true;
+let _sfxVol = 0.7;
+const _sfxGain = _AC.createGain();
+_sfxGain.gain.value = _sfxVol;
+_sfxGain.connect(_AC.destination);
 
 function _sfx(fn) {
   if(!_sfxOn) return;
   try {
     if(_AC.state === 'suspended') _AC.resume();
-    fn(_AC);
+    fn(_AC, _sfxGain);
   } catch(e) {}
 }
 
@@ -634,7 +638,7 @@ function _osc(type, freq, vol, start, dur, ctx, dest) {
   o.type = type; o.frequency.setValueAtTime(freq, start);
   g.gain.setValueAtTime(vol, start);
   g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-  o.connect(g); g.connect(dest || ctx.destination);
+  o.connect(g); g.connect(dest || _sfxGain);
   o.start(start); o.stop(start + dur);
 }
 function _sweep(type, f0, f1, vol, start, dur, ctx, dest) {
@@ -645,7 +649,7 @@ function _sweep(type, f0, f1, vol, start, dur, ctx, dest) {
   o.frequency.exponentialRampToValueAtTime(f1, start + dur);
   g.gain.setValueAtTime(vol, start);
   g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-  o.connect(g); g.connect(dest || ctx.destination);
+  o.connect(g); g.connect(dest || _sfxGain);
   o.start(start); o.stop(start + dur);
 }
 function _noise(vol, start, dur, ctx, dest) {
@@ -657,7 +661,7 @@ function _noise(vol, start, dur, ctx, dest) {
   src.buffer = buf;
   g.gain.setValueAtTime(vol, start);
   g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-  src.connect(g); g.connect(dest || ctx.destination);
+  src.connect(g); g.connect(dest || _sfxGain);
   src.start(start); src.stop(start + dur);
 }
 
@@ -4742,6 +4746,12 @@ function renderMenu() {
               style="width:100%;accent-color:#8040ff;cursor:pointer">
             <div style="text-align:right;font-family:Orbitron,monospace;font-size:10px;color:#6858a0">${Math.round(_bgmVol*100)}%</div>
           </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-family:Orbitron,monospace;font-size:11px;color:#8878b8">SFX VOLUME</div>
+            <input id="sfxVolSlider" type="range" min="0" max="100" value="${Math.round(_sfxVol*100)}"
+              style="width:100%;accent-color:#8040ff;cursor:pointer">
+            <div style="text-align:right;font-family:Orbitron,monospace;font-size:10px;color:#6858a0">${Math.round(_sfxVol*100)}%</div>
+          </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="font-family:Orbitron,monospace;font-size:11px;color:#8878b8">BGM</div>
@@ -5452,6 +5462,11 @@ document.addEventListener('input', e => {
   if(e.target.id === 'bgmVolSlider') {
     _bgmVol = e.target.value / 100;
     if(_bgmAudio && _bgmOn) _bgmAudio.volume = _bgmVol;
+    render();
+  }
+  if(e.target.id === 'sfxVolSlider') {
+    _sfxVol = e.target.value / 100;
+    _sfxGain.gain.value = _sfxVol;
     render();
   }
   if(e.target.id === 'renameInput' && renamePetPopup !== null) {

@@ -4089,22 +4089,28 @@ function renderDuelScanModal() {
   </div>`;
 }
 
+let _scanInterval = null;
+
 function stopScanCamera() {
+  if(_scanInterval) { clearInterval(_scanInterval); _scanInterval = null; }
   if(_scanStream) { _scanStream.getTracks().forEach(t=>t.stop()); _scanStream=null; }
 }
 
 function startScanCamera() {
   if(!navigator.mediaDevices) {
     const el = document.getElementById('duelScanStatus');
-    if(el) el.textContent = T('กล้องไม่รองรับบนเบราว์เซอร์นี้','Camera not supported on this browser');
+    if(el) el.textContent = T('กล้องไม่รองรับบนเบราว์เซอร์นี้','Camera not supported');
     return;
   }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
     .then(stream => {
       _scanStream = stream;
       const video = document.getElementById('duelScanVideo');
       if(video) { video.srcObject = stream; video.play().catch(()=>{}); }
-      requestAnimationFrame(scanFrame);
+      const st = document.getElementById('duelScanStatus');
+      if(st) st.textContent = T('🔍 กำลังสแกน...','🔍 Scanning...');
+      if(_scanInterval) clearInterval(_scanInterval);
+      _scanInterval = setInterval(scanFrame, 200);
     })
     .catch(() => {
       const el = document.getElementById('duelScanStatus');
@@ -4113,14 +4119,14 @@ function startScanCamera() {
 }
 
 function scanFrame() {
-  if(!duelScanOpen) return;
-  let video = document.getElementById('duelScanVideo');
+  if(!duelScanOpen) { stopScanCamera(); return; }
+  const video = document.getElementById('duelScanVideo');
   const canvas = document.getElementById('duelScanCanvas');
   if(!video || !canvas) return;
-  // reattach stream if video element was recreated by render()
   if(_scanStream && !video.srcObject) {
     video.srcObject = _scanStream;
     video.play().catch(()=>{});
+    return;
   }
   if(video.videoWidth > 0 && video.videoHeight > 0) {
     canvas.width = video.videoWidth;
@@ -4129,8 +4135,8 @@ function scanFrame() {
     ctx.drawImage(video, 0, 0);
     const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
     if(typeof jsQR !== 'undefined') {
-      const code = jsQR(img.data, img.width, img.height);
-      if(code && code.data.includes('?duel=')) {
+      const code = jsQR(img.data, img.width, img.height, {inversionAttempts:'dontInvert'});
+      if(code && code.data.includes('duel=')) {
         stopScanCamera();
         duelScanOpen = false;
         loadDuelFromUrl(code.data);
@@ -4138,7 +4144,6 @@ function scanFrame() {
       }
     }
   }
-  requestAnimationFrame(scanFrame);
 }
 
 function loadDuelFromUrl(url) {

@@ -6655,7 +6655,7 @@ function renderParty() {
     const canEvolve = pet.symbols.length === 3 && pet.phase !== 'evolved' && pet.phase !== 'final';
     const hasSyms = pet.symbols.length > 0;
     const symHtml = pet.symbols.map(s=>
-      `<span style="background:#1a1a3a;border:1px solid #3a3a6a;border-radius:6px;padding:2px 8px;font-size:14px">${{F:'✊',W:'🪶',S:'🛡'}[s]||s}</span>`
+      `<span style="background:#1a1a3a;border:1px solid #3a3a6a;border-radius:6px;padding:4px 8px;display:inline-flex;align-items:center;justify-content:center">${(s==='W'||s==='S')?symSvg(s,16):`<span style="font-size:14px">${{F:'✊'}[s]||s}</span>`}</span>`
     ).join('');
     const passiveInfo = ff
       ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid ${ff.color}44;font-size:11px;color:${ff.color}">${ff.passiveIcon||''} ${P(ff)}</div>`

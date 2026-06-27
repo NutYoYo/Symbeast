@@ -3983,9 +3983,11 @@ function renderDuelSetup() {
         </div>`;
       }).join('')}
     </div>
-    ${selPets.length===maxSel ? `
+    ${selPets.length===maxSel ? (duelUrlData ? `
+    <div id="duelFightBtn" style="padding:14px;text-align:center;background:linear-gradient(135deg,#3a0a0a,#1a0a2a);border:2px solid #ff4444;border-radius:10px;font-family:Orbitron,monospace;font-size:14px;color:#ff6666;cursor:pointer;letter-spacing:2px">⚔️ ${T('สู้เลย!','FIGHT!')}</div>
+    ` : `
     <div id="duelShareBtn" style="padding:12px;text-align:center;background:linear-gradient(135deg,#0a2a0a,#0a0a2a);border:2px solid #44cc44;border-radius:10px;font-family:Orbitron,monospace;font-size:13px;color:#88ff88;cursor:pointer">📱 ${T('แสดง QR + Link','Show QR + Link')}</div>
-    ` : ''}
+    `) : ''}
     <div id="duelBackBtn" style="padding:8px;text-align:center;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;color:#6060a0;cursor:pointer">${T('← กลับ','← BACK')}</div>
   </div>
   ${duelQrOpen ? renderDuelQrModal(duelMyTeam.map(t=>t.from==='party'?pets[t.idx]:storage[t.idx])) : ''}

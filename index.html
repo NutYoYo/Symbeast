@@ -2836,151 +2836,118 @@ function doTurn(moveIdx) {
     passives.push({icon:'💎',text:T('ศัตรู Iron Will กันตาย! ATK×4 รอบถัดไป!','Enemy Iron Will — survived! ATK×4 next round!')});
   }
 
-  // ===== APPLY DAMAGE =====
+  // ===== DAMAGE: sequential closures called from animation callbacks =====
   bs.preAnimPlayerHp = creature.hp;
   bs.preAnimEnemyHp  = enemy.hp;
   let edApplied = false, pdApplied = false;
-  if(playerFirst) {
-    enemy.hp = Math.max(0, enemy.hp-pd); pdApplied = true;
-    if(enemy.hp>0 || bs.eIronWillRevengeThisTurn) { creature.hp = Math.max(0, creature.hp-ed); edApplied = true; }
-    bs.eIronWillRevengeThisTurn = false;
-  } else {
-    creature.hp = Math.max(0, creature.hp-ed); edApplied = true;
-    if(creature.hp>0) { enemy.hp = Math.max(0, enemy.hp-pd); pdApplied = true; }
-  }
+  const _eHasArt = k => eArtId===k || eArtId2===k;
 
-  // ===== POST-DAMAGE: LIFESTEAL & REFLECT =====
-  const playerAlive = creature.hp > 0; // snapshot after damage — heals must not revive from 0
-  // IRONJAW: lifesteal 25%
-  if(fk==='FFS' && pd>0 && playerAlive) {
-    const steal=Math.max(1,Math.round(pd*0.25));
-    creature.hp=Math.min(creature.maxHp,creature.hp+steal);
-    playerHeal+=steal;
-    passives.push({icon:'🩸',text:T(`ดูดเลือด +${steal} HP`,`Lifesteal +${steal} HP`)});
-  }
-  // FORTRESS: reflect 25%
-  if(fk==='FSS' && edApplied && ed>0) {
-    const ref=Math.max(1,Math.round(ed*0.25));
-    reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
-    passives.push({icon:'🔄',text:T(`สะท้อน ${ref} dmg`,`Reflect ${ref} dmg`)});
-  }
-  // RAGNAROK: lifesteal 15% (HP<50%→35%)
-  if(ff==='F+F' && pdApplied && pd>0 && playerAlive) {
-    const lsPct=creature.hp<creature.maxHp*0.5?0.35:0.15;
-    const ls=Math.max(1,Math.round(pd*lsPct));
-    creature.hp=Math.min(creature.maxHp,creature.hp+ls);
-    playerHeal+=ls;
-    passives.push({icon:'💥',text:T(`ดูดเลือด ${Math.round(lsPct*100)}% +${ls} HP`,`Lifesteal ${Math.round(lsPct*100)}% +${ls} HP`)});
-  }
-  // FORTRESS BREAK buff: reflect 50% + Counter 50% chance
-  if(hasFortressBreak && edApplied && ed>0) {
-    const ref=Math.max(1,Math.round(ed*0.5));
-    reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
-    passives.push({icon:'🛡',text:`FORTRESS Reflect 50% → -${ref}`});
-    if(Math.random()<0.50) {
-      const counter=Math.max(1,Math.round(getEffStat('atk')*0.8));
-      const counterCapped=isBoss?Math.min(counter,Math.max(0,enemy.hp-1)):counter;
-      reflectDmg+=counterCapped; enemy.hp=Math.max(isBoss?1:0,enemy.hp-counterCapped);
-      passives.push({icon:'⚔️',text:`IRONCLAD Counter! -${counterCapped}`});
+  // Called when PLAYER's attack lands on enemy (phase 1 if playerFirst, phase 2 if !playerFirst)
+  const _whenPlayerHitsEnemy = () => {
+    enemy.hp = Math.max(0, enemy.hp - pd); pdApplied = true;
+    // IRONJAW: lifesteal 25%
+    if(fk==='FFS' && pd>0 && creature.hp>0) {
+      const steal=Math.max(1,Math.round(pd*0.25)); creature.hp=Math.min(creature.maxHp,creature.hp+steal); playerHeal+=steal;
+      passives.push({icon:'🩸',text:T(`ดูดเลือด +${steal} HP`,`Lifesteal +${steal} HP`)});
     }
-  }
-  // EARTHSHATTER OD buff: reflect 100%
-  if(hasColossusOD && edApplied && ed>0) {
-    let ref=Math.max(1,ed);
-    if(isBoss) ref=Math.min(ref,Math.max(0,enemy.hp-1));
-    reflectDmg+=ref; enemy.hp=Math.max(isBoss?1:0,enemy.hp-ref);
-    passives.push({icon:'🏔️',text:`EARTHSHATTER Reflect 100% → -${ref}`});
-  }
-  // DIVINE AEGIS OD buff: heal 5% MaxHP/turn
-  if(hasAegisOD && creature.hp>0) {
-    const heal=Math.round(creature.maxHp*0.05);
-    creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
-    passives.push({icon:'🏰',text:`AEGIS Regen +${heal}HP`});
-  }
-  // IRONCLAD: reflect 20%+5%/stack + สะสม stack เมื่อโดนตี (max 3)
-  if(ff==='F+S' && edApplied && ed>0) {
-    const refPct=0.20+bs.ironcladStack*0.05;
-    const ref=Math.max(1,Math.round(ed*refPct));
-    reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
-    bs.ironcladStack=Math.min(3,bs.ironcladStack+1);
-    passives.push({icon:'🛡',text:`reflect ${ref} (${Math.round(refPct*100)}%) → Stack${bs.ironcladStack}`});
-  }
-  // PHANTASM: heal 20% maxHP on dodge
-  if(ff==='W+W' && bs.phantasmStack>0 && !edApplied && playerAlive) {
-    const heal=Math.round(creature.maxHp*0.20);
-    creature.hp=Math.min(creature.maxHp,creature.hp+heal);
-    playerHeal+=heal;
-    passives.push({icon:'👁️',text:`+${heal} HP`});
-  }
-  // COLOSSUS: reflect 20% (HP>60%→40%), can't kill boss
-  if(ff==='S+S' && edApplied && ed>0) {
-    const refPct=creature.hp>creature.maxHp*0.6?0.40:0.20;
-    let ref=Math.max(1,Math.round(ed*refPct));
-    if(isBoss) ref=Math.min(ref,Math.max(0,enemy.hp-1));
-    reflectDmg+=ref; enemy.hp=Math.max(isBoss?1:0,enemy.hp-ref);
-    if(ref>0) passives.push({icon:'🏔️',text:`reflect ${ref} (${Math.round(refPct*100)}%)`});
-  }
-  // Enemy lifesteal & reflect (post-damage)
-  // AEGIS heal: post-damage so it can't save from a killing blow
-  if(ep.includes('S+M') && bs.aegisLowHp && enemy.hp>0) {
-    const rg=Math.round(enemy.maxHp*0.05);
-    enemy.hp=Math.min(enemy.maxHp,enemy.hp+rg);
-    enemyHeal+=rg;
-    passives.push({icon:'🏰',text:`AEGIS Heal +${rg}`});
-  }
-  // IRONJAW lifesteal (post-damage)
-  if(ep.includes('FFS') && bs.ironjawEd>0 && enemy.hp>0) {
-    const steal=Math.max(1,Math.round(bs.ironjawEd*0.25));
-    enemy.hp=Math.min(enemy.maxHp,enemy.hp+steal); enemyHeal+=steal;
-    passives.push({icon:'🩸',text:`IRONJAW Lifesteal+${steal}`});
-  }
-  // RAGNAROK lifesteal (post-damage)
-  if(ep.includes('F+F') && edApplied && ed>0 && enemy.hp>0) {
-    const ls=Math.max(1,Math.round(ed*(enemy.hp<enemy.maxHp*0.5?0.35:0.15)));
-    enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
-    passives.push({icon:'🩸',text:`RAGNAROK Lifesteal+${ls}`});
-  }
-  // SOVEREIGN drain (post-damage)
-  if(ep.includes('M+M') && edApplied && enemy.hp>0) {
-    const dr=0.03*(1+(bs.eSovereignStack||0));
-    const ls=Math.max(1,Math.round(ed*dr));
-    enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
-    passives.push({icon:'👑',text:`SOVEREIGN Drain+${ls}`});
-  }
-  if(ep.includes('lifesteal') && edApplied && ed>0 && enemy.hp>0) {
-    const steal=Math.max(1,Math.round(ed*0.15));
-    enemy.hp=Math.min(enemy.maxHp,enemy.hp+steal);
-    enemyHeal+=steal;
-    passives.push({icon:'🩸',text:T(`ศัตรูดูดเลือด +${steal}`,`Enemy Lifesteal +${steal}`)});
-  }
-  if(ep.includes('reflect') && pdApplied && pd>0) {
-    const ref=Math.max(1,Math.round(pd*0.15));
-    creature.hp=Math.max(0,creature.hp-ref);
-    eReflectDmg+=ref;
-    passives.push({icon:'🔄',text:T(`ศัตรูสะท้อน ${ref} dmg`,`Enemy Reflect ${ref} dmg`)});
-  }
-  // enemy lifesteal / regen artifacts (post-damage)
-  const eHasA2 = k => eArtId===k || eArtId2===k;
-  if(eHasA2('crimson_fang') && edApplied && ed>0 && enemy.hp>0)
-    { const h=Math.round(ed*0.05); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🩸',text:`[E] Crimson Fang +${h}`}); }
-  if(eHasA2('blood_pact') && edApplied && ed>0 && enemy.hp>0)
-    { const h=Math.round(ed*0.15); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🔴',text:`[E] Blood Pact +${h}`}); }
-  if(eHasA2('soul_reaper') && edApplied && ed>0 && enemy.hp>0)
-    { const h=Math.round(ed*0.25); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'☠️',text:`[E] Soul Reaper +${h}`}); }
-  if(eHasA2('drain_aura') && edApplied && ed>0 && enemy.hp>0) {
-    const eas2 = bs.eArtStacks || (bs.eArtStacks = {});
-    if(cmp==='win') eas2.drainAuraStack=Math.min(2,(eas2.drainAuraStack||0)+1);
-    if((eas2.drainAuraStack||0)>0) { pd=Math.round(pd*(1-0.10*eas2.drainAuraStack)); passives.push({icon:'🌑',text:`[E] Drain Aura -${10*eas2.drainAuraStack}% pd →${pd}`}); }
-  }
-  if(eHasA2('life_seed')) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌱',text:`[E] Life Seed +${h}`}); }
-  if(eHasA2('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.08)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`}); }
-  if(eHasA2('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🎯',text:`[E] Crit Core +${h}`}); }
+    // RAGNAROK: lifesteal 15%/35%
+    if(ff==='F+F' && pd>0 && creature.hp>0) {
+      const lsPct=creature.hp<creature.maxHp*0.5?0.35:0.15; const ls=Math.max(1,Math.round(pd*lsPct));
+      creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls;
+      passives.push({icon:'💥',text:T(`ดูดเลือด ${Math.round(lsPct*100)}% +${ls} HP`,`Lifesteal ${Math.round(lsPct*100)}% +${ls} HP`)});
+    }
+    // Enemy passive reflect (ep.includes('reflect')): reflects player's pd back
+    if(ep.includes('reflect') && pd>0) {
+      const ref=Math.max(1,Math.round(pd*0.15)); creature.hp=Math.max(0,creature.hp-ref); eReflectDmg+=ref;
+      passives.push({icon:'🔄',text:T(`ศัตรูสะท้อน ${ref} dmg`,`Enemy Reflect ${ref} dmg`)});
+    }
+  };
 
-  // สะสม overdrive charge เมื่อ LOSE (เฉพาะ final form)
-  if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) {
-    overdriveCharge++;
-    saveGame();
-  }
+  // Called when ENEMY's attack lands on player (phase 1 if !playerFirst, phase 2 if playerFirst)
+  const _whenEnemyHitsPlayer = () => {
+    const _iwForce = bs.eIronWillRevengeThisTurn; bs.eIronWillRevengeThisTurn = false;
+    if(enemy.hp > 0 || _iwForce) { creature.hp = Math.max(0, creature.hp - ed); edApplied = true; }
+    // FORTRESS: reflect 25%
+    if(fk==='FSS' && edApplied && ed>0) {
+      const ref=Math.max(1,Math.round(ed*0.25)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
+      passives.push({icon:'🔄',text:T(`สะท้อน ${ref} dmg`,`Reflect ${ref} dmg`)});
+    }
+    // FORTRESS BREAK buff: reflect 50% + Counter 50%
+    if(hasFortressBreak && edApplied && ed>0) {
+      const ref=Math.max(1,Math.round(ed*0.5)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref);
+      passives.push({icon:'🛡',text:`FORTRESS Reflect 50% → -${ref}`});
+      if(Math.random()<0.50) {
+        const counter=Math.max(1,Math.round(getEffStat('atk')*0.8));
+        const counterCapped=isBoss?Math.min(counter,Math.max(0,enemy.hp-1)):counter;
+        reflectDmg+=counterCapped; enemy.hp=Math.max(isBoss?1:0,enemy.hp-counterCapped);
+        passives.push({icon:'⚔️',text:`IRONCLAD Counter! -${counterCapped}`});
+      }
+    }
+    // EARTHSHATTER OD: reflect 100%
+    if(hasColossusOD && edApplied && ed>0) {
+      let ref=Math.max(1,ed); if(isBoss) ref=Math.min(ref,Math.max(0,enemy.hp-1));
+      reflectDmg+=ref; enemy.hp=Math.max(isBoss?1:0,enemy.hp-ref);
+      passives.push({icon:'🏔️',text:`EARTHSHATTER Reflect 100% → -${ref}`});
+    }
+    // DIVINE AEGIS OD: heal 5%
+    if(hasAegisOD && creature.hp>0) {
+      const heal=Math.round(creature.maxHp*0.05); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
+      passives.push({icon:'🏰',text:`AEGIS Regen +${heal}HP`});
+    }
+    // IRONCLAD: reflect 20%+5%/stack
+    if(ff==='F+S' && edApplied && ed>0) {
+      const refPct=0.20+bs.ironcladStack*0.05; const ref=Math.max(1,Math.round(ed*refPct));
+      reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); bs.ironcladStack=Math.min(3,bs.ironcladStack+1);
+      passives.push({icon:'🛡',text:`reflect ${ref} (${Math.round(refPct*100)}%) → Stack${bs.ironcladStack}`});
+    }
+    // PHANTASM: heal 20% on dodge
+    if(ff==='W+W' && bs.phantasmStack>0 && !edApplied && creature.hp>0) {
+      const heal=Math.round(creature.maxHp*0.20); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
+      passives.push({icon:'👁️',text:`+${heal} HP`});
+    }
+    // COLOSSUS: reflect 20%/40%
+    if(ff==='S+S' && edApplied && ed>0) {
+      const refPct=creature.hp>creature.maxHp*0.6?0.40:0.20; let ref=Math.max(1,Math.round(ed*refPct));
+      if(isBoss) ref=Math.min(ref,Math.max(0,enemy.hp-1)); reflectDmg+=ref; enemy.hp=Math.max(isBoss?1:0,enemy.hp-ref);
+      if(ref>0) passives.push({icon:'🏔️',text:`reflect ${ref} (${Math.round(refPct*100)}%)`});
+    }
+    // Enemy lifesteal after hitting player
+    if(ep.includes('FFS') && bs.ironjawEd>0 && enemy.hp>0) {
+      const steal=Math.max(1,Math.round(bs.ironjawEd*0.25)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+steal); enemyHeal+=steal;
+      passives.push({icon:'🩸',text:`IRONJAW Lifesteal+${steal}`});
+    }
+    if(ep.includes('F+F') && edApplied && ed>0 && enemy.hp>0) {
+      const ls=Math.max(1,Math.round(ed*(enemy.hp<enemy.maxHp*0.5?0.35:0.15))); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
+      passives.push({icon:'🩸',text:`RAGNAROK Lifesteal+${ls}`});
+    }
+    if(ep.includes('M+M') && edApplied && enemy.hp>0) {
+      const dr=0.03*(1+(bs.eSovereignStack||0)); const ls=Math.max(1,Math.round(ed*dr));
+      enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls; passives.push({icon:'👑',text:`SOVEREIGN Drain+${ls}`});
+    }
+    if(ep.includes('lifesteal') && edApplied && ed>0 && enemy.hp>0) {
+      const steal=Math.max(1,Math.round(ed*0.15)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+steal); enemyHeal+=steal;
+      passives.push({icon:'🩸',text:T(`ศัตรูดูดเลือด +${steal}`,`Enemy Lifesteal +${steal}`)});
+    }
+    if(_eHasArt('crimson_fang') && edApplied && ed>0 && enemy.hp>0) { const h=Math.round(ed*0.05); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🩸',text:`[E] Crimson Fang +${h}`}); }
+    if(_eHasArt('blood_pact') && edApplied && ed>0 && enemy.hp>0) { const h=Math.round(ed*0.15); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🔴',text:`[E] Blood Pact +${h}`}); }
+    if(_eHasArt('soul_reaper') && edApplied && ed>0 && enemy.hp>0) { const h=Math.round(ed*0.25); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'☠️',text:`[E] Soul Reaper +${h}`}); }
+    if(_eHasArt('drain_aura') && edApplied && ed>0 && enemy.hp>0) {
+      const eas2=bs.eArtStacks||(bs.eArtStacks={}); if(cmp==='win') eas2.drainAuraStack=Math.min(2,(eas2.drainAuraStack||0)+1);
+      if((eas2.drainAuraStack||0)>0) { passives.push({icon:'🌑',text:`[E] Drain Aura -${10*eas2.drainAuraStack}% pd →${pd}`}); }
+    }
+  };
+
+  // Called at end of turn (after both phases) — regen, overdrive charge
+  const _endOfTurn = () => {
+    if(ep.includes('S+M') && bs.aegisLowHp && enemy.hp>0) {
+      const rg=Math.round(enemy.maxHp*0.05); enemy.hp=Math.min(enemy.maxHp,enemy.hp+rg); enemyHeal+=rg;
+      passives.push({icon:'🏰',text:`AEGIS Heal +${rg}`});
+    }
+    if(_eHasArt('life_seed')) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌱',text:`[E] Life Seed +${h}`}); }
+    if(_eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.08)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`}); }
+    if(_eHasArt('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; passives.push({icon:'🎯',text:`[E] Crit Core +${h}`}); }
+    if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) { overdriveCharge++; saveGame(); }
+  };
 
   const turnNum = battleState.turn;
   battleState.lastCmp = cmp;
@@ -3021,12 +2988,24 @@ function doTurn(moveIdx) {
   battleState.preAnimCleared = false;
   _playMoveSound(playerFirst);
   render();
-  // Phase 1 impact: drop HP bar mid-animation (350ms into 750ms anim)
-  setTimeout(() => { if(battleState) { battleState.preAnimCleared = true; render(); } }, 350);
+  // Phase 1 impact: apply phase-1 damage at the hit moment (350ms into 750ms anim)
+  setTimeout(() => {
+    if(!battleState) return;
+    if(playerFirst) {
+      _whenPlayerHitsEnemy();
+      battleState.preAnimPlayerHp = creature.hp; // refresh for phase 2 display
+    } else {
+      _whenEnemyHitsPlayer();
+      battleState.preAnimEnemyHp = enemy.hp;     // refresh for phase 2 display
+    }
+    battleState.preAnimCleared = true;
+    render();
+  }, 350);
   setTimeout(() => {
     // Skip phase 2 only if the phase-1 attacker already killed the defender
     const phase1DefenderDead = playerFirst ? enemy.hp <= 0 : creature.hp <= 0;
     if(phase1DefenderDead) {
+      _endOfTurn();
       battleState.waiting = false;
       finish();
       return;
@@ -3036,9 +3015,15 @@ function doTurn(moveIdx) {
     battleState.preAnimCleared = false;
     _playMoveSound(!playerFirst);
     render();
-    // Phase 2 impact: drop HP bar mid-animation
-    setTimeout(() => { if(battleState) { battleState.preAnimCleared = true; render(); } }, 350);
+    // Phase 2 impact: apply phase-2 damage at hit moment
     setTimeout(() => {
+      if(!battleState) return;
+      if(playerFirst) _whenEnemyHitsPlayer(); else _whenPlayerHitsEnemy();
+      battleState.preAnimCleared = true;
+      render();
+    }, 350);
+    setTimeout(() => {
+      _endOfTurn();
       battleState.waiting = false;
       finish();
     }, 750);

@@ -3593,6 +3593,14 @@ function render() {
   else if(state==='duel_result') renderDuelResult();
   else if(state==='shop') renderShop();
   else if(state==='title') renderTitle();
+  // Restore rename input focus/cursor after re-render
+  if(renamePetPopup !== null) {
+    const ri = document.getElementById('renameInput');
+    if(ri && document.activeElement !== ri) {
+      const len = ri.value.length;
+      ri.focus(); ri.setSelectionRange(len, len);
+    }
+  }
 }
 
 function renderStatus() {
@@ -5441,6 +5449,9 @@ document.addEventListener('input', e => {
     _bgmVol = e.target.value / 100;
     if(_bgmAudio && _bgmOn) _bgmAudio.volume = _bgmVol;
     render();
+  }
+  if(e.target.id === 'renameInput' && renamePetPopup !== null) {
+    renamePetPopup.value = e.target.value;
   }
   if(e.target.id === 'importFileInput') {
     importSave(e.target.files[0]);

@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Kanit:wght@300;400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#050510;display:flex;justify-content:center;padding:20px;}
+  .card{width:720px;background:linear-gradient(160deg,#0d0d2b 0%,#050510 40%,#0a0520 100%);border:1.5px solid #2a1a5a;border-radius:24px;overflow:hidden;font-family:'Kanit',sans-serif;}
+
+  .header{background:linear-gradient(135deg,#12063a 0%,#0a0428 40%,#1a0848 100%);border-bottom:2px solid #5a2aaa;padding:24px 32px;position:relative;overflow:hidden;display:flex;align-items:center;gap:28px;}
+  .header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(120,40,220,0.25) 0%,transparent 60%),radial-gradient(ellipse at 80% 50%,rgba(60,10,140,0.2) 0%,transparent 60%);}
+  .header-logo-img{width:110px;height:110px;object-fit:contain;border-radius:20px;border:2px solid rgba(160,80,255,0.5);box-shadow:0 0 20px rgba(120,40,255,0.5),0 0 40px rgba(80,20,180,0.3);flex-shrink:0;position:relative;z-index:1;}
+  .header-text{position:relative;z-index:1;flex:1;}
+  .header-tag{display:inline-block;background:rgba(100,30,200,0.5);border:1px solid #8844cc;border-radius:20px;padding:4px 13px;font-size:11px;color:#e0c0ff;font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;}
+  .header-logo{font-family:'Orbitron',monospace;font-size:46px;font-weight:900;color:#fff;letter-spacing:6px;text-shadow:0 0 30px rgba(160,80,255,0.9),0 0 60px rgba(100,40,200,0.5);line-height:1;}
+  .header-sub{font-size:13px;color:#c090ff;letter-spacing:4px;margin-top:5px;font-weight:300;}
+  .header-icons{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;}
+  .hbadge{background:rgba(255,255,255,0.08);border:1px solid rgba(180,100,255,0.35);border-radius:12px;padding:3px 11px;font-size:11px;color:#e0c0ff;}
+
+  .hook{background:linear-gradient(90deg,#2a0060,#100030,#2a0060);border-bottom:1px solid #3a1a7a;padding:13px 32px;text-align:center;font-size:15px;color:#f0d0ff;font-weight:600;}
+  .hook span{color:#cc88ff;}
+
+  .body{padding:22px 26px;}
+  .sec-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:#8855cc;margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+  .sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#3a1a6a,transparent);}
+
+  .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px;}
+  .feat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(120,60,200,0.3);border-radius:13px;padding:13px 15px;position:relative;overflow:hidden;}
+  .feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);}
+  .feat-icon{font-size:22px;margin-bottom:5px;display:block;}
+  .feat-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:#e0b0ff;letter-spacing:1px;margin-bottom:3px;}
+  .feat-desc{font-size:11.5px;color:#a080c0;line-height:1.5;font-weight:300;}
+  .feat-desc b{color:#d0a0ff;font-weight:600;}
+
+  .sym-flow{display:flex;align-items:center;gap:8px;margin-bottom:18px;background:rgba(0,0,0,0.3);border:1px solid #2a1a5a;border-radius:13px;padding:14px 16px;}
+  .sym-item{text-align:center;background:rgba(120,60,200,0.12);border:1px solid rgba(160,80,255,0.25);border-radius:11px;padding:8px 10px;flex:1;}
+  .sym-emoji{font-size:20px;display:block;}
+  .sym-name{font-family:'Orbitron',monospace;font-size:8px;color:#cc88ff;letter-spacing:1px;margin-top:3px;display:block;}
+  .sym-role{font-size:10px;color:#9060c0;margin-top:1px;display:block;}
+  .sym-arrow{font-size:18px;color:#5a3a8a;flex-shrink:0;}
+  .sym-result{text-align:center;border-radius:11px;padding:8px 10px;flex:1.3;}
+
+  .forms-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:18px;}
+  .form-card{background:rgba(255,255,255,0.04);border:1px solid rgba(100,50,180,0.35);border-radius:11px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .form-name{font-family:'Orbitron',monospace;font-size:7px;color:#c090ff;letter-spacing:0.3px;line-height:1.3;margin-top:2px;}
+  .form-passive{font-size:9px;color:#6050a0;margin-top:1px;}
+  .myst{position:relative;display:inline-block;border-radius:8px;box-shadow:0 0 12px rgba(160,80,255,0.7),0 0 28px rgba(100,40,200,0.45);}
+  .myst img{display:block;filter:blur(2px) brightness(0.6);}
+  .myst .mq{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;color:rgba(255,255,255,0.9);text-shadow:0 0 8px rgba(200,100,255,1),0 0 20px rgba(160,60,255,0.8);}
+  .myst.sm img{width:52px;height:52px;object-fit:contain;}
+  .myst.sm .mq{font-size:20px;}
+  .myst.lg img{width:70px;height:70px;object-fit:contain;}
+  .myst.lg .mq{font-size:26px;}
+
+  .why-list{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+  .why-item{display:flex;align-items:flex-start;gap:11px;background:rgba(255,255,255,0.03);border-left:3px solid var(--lc);border-radius:0 9px 9px 0;padding:9px 13px;}
+  .why-num{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:var(--lc);opacity:0.45;line-height:1;flex-shrink:0;width:20px;}
+  .why-text{font-size:12.5px;color:#d0b0f0;line-height:1.5;}
+  .why-text b{color:#f0d8ff;}
+
+  .cta{background:linear-gradient(135deg,#1e0850,#3a1088,#1e0850);border:1px solid #6633cc;border-radius:13px;padding:15px 20px;text-align:center;margin-bottom:4px;}
+  .cta-main{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:5px;}
+  .cta-url{font-size:13px;color:#aa77ff;}
+  .cta-badges{display:flex;justify-content:center;gap:7px;margin-top:9px;}
+  .cta-badge{background:rgba(255,255,255,0.08);border:1px solid rgba(180,120,255,0.3);border-radius:20px;padding:3px 11px;font-size:11px;color:#c090ff;}
+  .footer{border-top:1px solid #1a0a3a;padding:9px 26px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#4a3a7a;}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="header">
+    <img class="header-logo-img" src="https://nutyoyo.github.io/Symbeast/icon-512.png" alt="SYMBEAST Logo">
+    <div class="header-text">
+      <div class="header-tag">🎮 GAME REVIEW</div>
+      <div class="header-logo">SYMBEAST</div>
+      <div class="header-sub">HATCH · COLLECT · EVOLVE</div>
+      <div class="header-icons">
+        <span class="hbadge">🌐 Browser Game</span>
+        <span class="hbadge">📱 PWA Install</span>
+        <span class="hbadge">🆓 Free to Play</span>
+        <span class="hbadge">⚔️ PvP Duel</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hook">
+    เกมฟักไข่เลี้ยงสัตว์ที่ <span>ลึกกว่าที่เห็น</span> — ผสมสัญลักษณ์ วิวัฒนาการ แล้วพิสูจน์ฝีมือในสนาม
+  </div>
+
+  <div class="body">
+
+    <div class="sec-title">✦ จุดเด่นของเกม</div>
+    <div class="feature-grid">
+      <div class="feat-card" style="--accent:linear-gradient(90deg,#ff6600,#ff9900)">
+        <span class="feat-icon">🥚</span>
+        <div class="feat-title">HATCH & EVOLVE</div>
+        <div class="feat-desc">ฟักไข่ รวมสัญลักษณ์ วิวัฒนาการจาก Larva → Evolved → <b>10 Final Forms</b> แต่ละตัว passive ต่างกัน</div>
+      </div>
+      <div class="feat-card" style="--accent:linear-gradient(90deg,#0088ff,#00ccff)">
+        <span class="feat-icon">⚔️</span>
+        <div class="feat-title">BATTLE SYSTEM</div>
+        <div class="feat-desc">Rock-Paper-Scissors แต่มี <b>Moves, Crit, Stun, Lifesteal</b> และ Overdrive ระเบิดพลัง</div>
+      </div>
+      <div class="feat-card" style="--accent:linear-gradient(90deg,#ffaa00,#ffdd00)">
+        <span class="feat-icon">🗼</span>
+        <div class="feat-title">TOWER MODE</div>
+        <div class="feat-desc">ปีนหอ 100+ ชั้น ยากขึ้นเรื่อยๆ <b>Boss ทุก 10 ชั้น</b> เก็บ Artifact หายาก</div>
+      </div>
+      <div class="feat-card" style="--accent:linear-gradient(90deg,#cc00ff,#ff44cc)">
+        <span class="feat-icon">🆚</span>
+        <div class="feat-title">DUEL MODE</div>
+        <div class="feat-desc">ส่ง <b>QR Code</b> ให้เพื่อน สแกนแล้วต่อสู้กันได้เลย ไม่ต้องมี server กลาง</div>
+      </div>
+    </div>
+
+    <div class="sec-title">✦ ระบบสัญลักษณ์ → Evolved Form → Final Form</div>
+    <div class="sym-flow">
+      <div class="sym-item">
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:26px;">✊</span>
+          <span style="font-size:26px;">🪶</span>
+          <span style="font-size:26px;">🛡️</span>
+        </div>
+        <span class="sym-name">3 SYMBOLS</span>
+        <span class="sym-role">ผสมสัญลักษณ์ 3 ดวง</span>
+      </div>
+      <div class="sym-arrow">→</div>
+      <div class="sym-result" style="background:rgba(80,40,160,0.2);border:1px solid rgba(140,80,255,0.4);border-radius:11px;">
+        <div class="myst sm" style="margin:0 auto 3px;"><img src="https://nutyoyo.github.io/Symbeast/BRAWLER.png"><span class="mq">?</span></div>
+        <span class="sym-name" style="color:#bb88ff;font-size:8px;">EVOLVED FORM</span>
+        <span class="sym-role">10 ตัวที่แตกต่าง</span>
+      </div>
+      <div class="sym-arrow">+</div>
+      <div class="sym-result" style="background:rgba(80,40,160,0.2);border:1px solid rgba(140,80,255,0.4);border-radius:11px;">
+        <div class="myst sm" style="margin:0 auto 3px;"><img src="RAZORCLAW.png"><span class="mq">?</span></div>
+        <span class="sym-name" style="color:#bb88ff;font-size:8px;">EVOLVED FORM</span>
+        <span class="sym-role">คนละสายพันธุ์</span>
+      </div>
+      <div class="sym-arrow">→</div>
+      <div class="sym-result" style="background:rgba(180,60,255,0.15);border:1px solid rgba(200,80,255,0.5);border-radius:11px;">
+        <div class="myst sm" style="margin:0 auto 3px;"><img src="https://nutyoyo.github.io/Symbeast/RAGNAROK.png"><span class="mq">?</span></div>
+        <span class="sym-name" style="color:#ffaaff;font-size:8px;">FINAL FORM</span>
+        <span class="sym-role" style="color:#a060dd;">10 รูปแบบสุดยอด</span>
+      </div>
+    </div>
+
+    <div class="sec-title">✦ Final Forms ทั้ง 10</div>
+    <div class="forms-grid">
+      <div class="form-card"><div class="myst lg"><img src="https://nutyoyo.github.io/Symbeast/RAGNAROK.png"><span class="mq">?</span></div><div class="form-name">RAGNAROK</div><div class="form-passive">🔥 Lifesteal ATK</div></div>
+      <div class="form-card"><div class="myst lg"><img src="https://nutyoyo.github.io/Symbeast/STORMFANG.png"><span class="mq">?</span></div><div class="form-name">STORMFANG</div><div class="form-passive">⚡ Stun + Speed</div></div>
+      <div class="form-card"><div class="myst lg"><img src="https://nutyoyo.github.io/Symbeast/IRONCLAD.png"><span class="mq">?</span></div><div class="form-name">IRONCLAD</div><div class="form-passive">🛡 Reflect Counter</div></div>
+      <div class="form-card"><div class="myst lg"><img src="WARLORD.png"><span class="mq">?</span></div><div class="form-name">WARLORD</div><div class="form-passive">💀 Combo King</div></div>
+      <div class="form-card"><div class="myst lg"><img src="PHANTASM.png"><span class="mq">?</span></div><div class="form-name">PHANTASM</div><div class="form-passive">👁️ Dodge + Heal</div></div>
+      <div class="form-card"><div class="myst lg"><img src="VANGUARD.png"><span class="mq">?</span></div><div class="form-name">VANGUARD</div><div class="form-passive">🌀 Swift Guard</div></div>
+      <div class="form-card"><div class="myst lg"><img src="WRAITH.png"><span class="mq">?</span></div><div class="form-name">WRAITH</div><div class="form-passive">🌫️ Soul Drain</div></div>
+      <div class="form-card"><div class="myst lg"><img src="COLOSSUS.png"><span class="mq">?</span></div><div class="form-name">COLOSSUS</div><div class="form-passive">🏔️ Titan Reflect</div></div>
+      <div class="form-card"><div class="myst lg"><img src="AEGIS.png"><span class="mq">?</span></div><div class="form-name">AEGIS</div><div class="form-passive">🏰 Guardian Regen</div></div>
+      <div class="form-card"><div class="myst lg"><img src="SOVEREIGN.png"><span class="mq">?</span></div><div class="form-name">SOVEREIGN</div><div class="form-passive">👑 Drain Stacker</div></div>
+    </div>
+
+    <div class="sec-title">✦ ทำไมถึงน่าเล่น?</div>
+    <div class="why-list">
+      <div class="why-item" style="--lc:#ff6600">
+        <div class="why-num">01</div>
+        <div class="why-text"><b>ลึกกว่าที่เห็น</b> — ภายนอกดูเรียบง่าย แต่ซ่อนระบบ Artifact, Stun, Overdrive, Lifesteal ที่ต้องวางแผนทุก Build</div>
+      </div>
+      <div class="why-item" style="--lc:#00aaff">
+        <div class="why-num">02</div>
+        <div class="why-text"><b>เล่นกับเพื่อนได้ทันที</b> — Duel ผ่าน QR Code ไม่ต้อง log in ไม่ต้อง server ส่งรูปก็สู้กันได้เลย</div>
+      </div>
+      <div class="why-item" style="--lc:#cc44ff">
+        <div class="why-num">03</div>
+        <div class="why-text"><b>Collection ที่มีความหมาย</b> — ทุก Final Form มีบุคลิกต่างกัน RAGNAROK ดูดเลือด · PHANTASM หลบหลีก · COLOSSUS สะท้อนดาเมจ</div>
+      </div>
+      <div class="why-item" style="--lc:#ffcc00">
+        <div class="why-num">04</div>
+        <div class="why-text"><b>ติดตั้งเป็น App ได้เลย</b> — รองรับ PWA เล่น offline บนมือถือและ PC ไม่ต้อง download จาก store</div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <div class="cta-main">🎮 เล่นได้เลยฟรี!</div>
+      <div class="cta-url">nutyoyo.github.io/Symbeast</div>
+      <div class="cta-badges">
+        <span class="cta-badge">📱 Android</span>
+        <span class="cta-badge">💻 PC</span>
+        <span class="cta-badge">🍎 iOS</span>
+        <span class="cta-badge">🌐 Browser</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>SYMBEAST © 2025</span>
+    <span>Hatch · Collect · Evolve · Conquer</span>
+    <span>#SYMBEAST #IndieGame</span>
+  </div>
+
+</div>
+</body>
+</html>
+

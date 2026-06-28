@@ -1011,6 +1011,7 @@ const ENEMY_PASSIVES = [
   { id:'double_strike', icon:'⚔️', name:'DOUBLE STRIKE',  desc:'20% chance to attack twice in one round',            type:'F' },
   { id:'berserker',     icon:'🔺', name:'BERSERKER',      desc:'Each round, ATK +10% (stacks up to +50%)',           type:'F' },
   { id:'last_dance',    icon:'💥', name:'LAST DANCE',     desc:'When HP drops below 10%, ATK +150%',                 type:'F' },
+  { id:'true_strike',  icon:'🎯', name:'TRUE STRIKE',    desc:'Attacks cannot be dodged',                           type:'F' },
 ];
 
 function pickEnemyPassives(typeKey, count) {
@@ -1148,6 +1149,9 @@ let towerFloor = 0;
 let towerHighest = 0;
 let towerCheckpoint = 0;
 let towerActive = false;
+let towerRunsToday = 0;
+let towerRunsDate = '';
+const TOWER_DAILY_MAX = 5;
 let towerPendingGold = 0;
 let towerPendingArtifacts = [];
 let towerRunSummary = null;
@@ -1492,6 +1496,7 @@ function useItem(type, petIdx=activePetIdx) {
   const slot = inventory.find(s=>s.type===type);
   if(!slot || slot.qty<=0) return false;
   if(type==='fusion_stone') { SFX.error(); scoutToast=T('🔮 ใช้ใน Party เพื่อ Fusion','🔮 Use in Party screen to Fusion'); return false; }
+  if(type==='rebirth_stone') { SFX.error(); scoutToast=T('🔮 ใช้ใน Party เพื่อ Rebirth','🔮 Use in Party screen to Rebirth'); return false; }
   const pet = pets[petIdx];
   if(!pet) return false;
   if(!pet.buffExpiry) pet.buffExpiry = {atk:0,spd:0,def:0};
@@ -1943,7 +1948,7 @@ function importSave(file) {
 function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate}));
   } catch(e) {}
 }
 
@@ -2005,6 +2010,8 @@ function loadGame(slotNum) {
         if(typeof d.hellMode==='boolean') hellMode = d.hellMode;
         if(typeof d.hellStage==='number') hellStage = d.hellStage;
         if(typeof d.vsCurrentStage==='number') vsCurrentStage = d.vsCurrentStage;
+        if(typeof d.towerRunsToday==='number') towerRunsToday = d.towerRunsToday;
+        if(typeof d.towerRunsDate==='string') towerRunsDate = d.towerRunsDate;
         if(typeof d.totalPlayTime==='number') totalPlayTime = d.totalPlayTime;
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
@@ -2446,9 +2453,9 @@ function doTurn(moveIdx) {
     // stone_skin: reduce pd 10% when HP > 70%
     if(eHasA('stone_skin') && enemy.hp > enemy.maxHp*0.70) { pd=Math.round(pd*0.90); passives.push({icon:'🪨',text:`[E] Stone Skin →${pd}`}); }
     // swift_ring: 10% dodge player attack
-    if(eHasA('swift_ring') && Math.random()<0.10) { pd=0; passives.push({icon:'💨',text:'[E] Swift Ring DODGE!'}); }
+    if(eHasA('swift_ring') && !ep.includes('true_strike') && Math.random()<0.10) { pd=0; passives.push({icon:'💨',text:'[E] Swift Ring DODGE!'}); }
     // wind_step: 15% dodge player attack
-    if(eHasA('wind_step') && Math.random()<0.15) { pd=0; passives.push({icon:'🌀',text:'[E] Wind Step DODGE!'}); }
+    if(eHasA('wind_step') && !ep.includes('true_strike') && Math.random()<0.15) { pd=0; passives.push({icon:'🌀',text:'[E] Wind Step DODGE!'}); }
     // true_sight: ed +50%, player can't dodge
     if(eHasA('true_sight') && !enemyStunned) { ed=Math.round(ed*1.50); passives.push({icon:'🔭',text:`[E] True Sight →${ed}`}); }
     // tide_breaker: if enemy lost last round, ed +75%
@@ -2601,16 +2608,20 @@ function doTurn(moveIdx) {
     if(Math.random()<0.20) { const extra=pd; pd+=extra; passives.push({icon:'⚔️',text:T(`โจมตี 2 ครั้ง! →${pd}`,`DOUBLE ATTACK! →${pd}`)}); }
   }
 
+  const enemyTrueStrike = ep.includes('true_strike');
+
   if(ff==='W+W') { // PHANTASM: dodge 20%+ (stack), heal post-damage
     const dodgeChance=[0.20,0.20,0.30,0.40][Math.min(bs.phantasmStack,3)];
-    if(Math.random()<dodgeChance) {
+    if(!enemyTrueStrike && Math.random()<dodgeChance) {
       ed=0; bs.phantasmStack=Math.min(3,bs.phantasmStack+1);
       passives.push({icon:'👁️',text:`DODGE! Stack${bs.phantasmStack}`});
+    } else if(enemyTrueStrike) {
+      passives.push({icon:'🎯',text:T('TRUE STRIKE — หลบไม่ได้!','TRUE STRIKE — undodgeable!')});
     }
   }
 
   if(ff==='W+S') { // VANGUARD: dodge 25% + Shield Stack (max 3, 15%/stack)
-    if(Math.random()<0.25) {
+    if(!enemyTrueStrike && Math.random()<0.25) {
       ed=0; bs.vanguardStack=Math.min(3,bs.vanguardStack+1);
       passives.push({icon:'🌀',text:`DODGE! Shield×${bs.vanguardStack}`});
     } else if(bs.vanguardStack>0 && ed>0) {
@@ -2618,12 +2629,14 @@ function doTurn(moveIdx) {
       ed=Math.round(ed*(1-reduce));
       passives.push({icon:'🌀',text:`Shield×${bs.vanguardStack} -${Math.round(reduce*100)}%→${ed}`});
     }
+    if(enemyTrueStrike) passives.push({icon:'🎯',text:T('TRUE STRIKE — หลบไม่ได้!','TRUE STRIKE — undodgeable!')});
   }
 
   if(ff==='W+M') { // WRAITH: dodge 25% (+50% during soulSurge OD buff) + หลบสำเร็จ→ATK+50% next round
     const dodgeChance = bs.odBuff?.type==='soulSurge' ? 0.75 : 0.25;
     let dodged=false;
-    if(Math.random()<dodgeChance) { ed=0; dodged=true; passives.push({icon:'🌫️',text:`DODGE! (${Math.round(dodgeChance*100)}%) → ATK+50% next round`}); }
+    if(!enemyTrueStrike && Math.random()<dodgeChance) { ed=0; dodged=true; passives.push({icon:'🌫️',text:`DODGE! (${Math.round(dodgeChance*100)}%) → ATK+50% next round`}); }
+    if(enemyTrueStrike) passives.push({icon:'🎯',text:T('TRUE STRIKE — หลบไม่ได้!','TRUE STRIKE — undodgeable!')});
     if(bs.wraithDodged) {
       pd=Math.round(pd*1.5);
       passives.push({icon:'🌫️',text:`DODGE BOOST ATK×1.5→${pd}`});
@@ -2791,7 +2804,7 @@ function doTurn(moveIdx) {
   // ===== PRE-DAMAGE: ENEMY PASSIVES =====
   const ep = enemy.passives || [];
   if(ep.includes('atk_boost'))    { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:T(`ศัตรู ATK×1.25 → ${ed}`,`Enemy ATK×1.25 → ${ed}`)}); }
-  if(ep.includes('dodge') && Math.random()<0.25 && artId!=='true_sight' && artId2!=='true_sight') { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }
+  if(ep.includes('dodge') && !ep.includes('true_strike') && Math.random()<0.25 && artId!=='true_sight' && artId2!=='true_sight') { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }
   if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
   if(ep.includes('enrage') && enemy.hp<enemy.maxHp*0.5) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`ENRAGE! ATK×1.5 → ${ed}`}); }
   if(ep.includes('barrier') && bs.turn%3===0) { pd=Math.round(pd*0.5); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
@@ -2808,7 +2821,7 @@ function doTurn(moveIdx) {
   if(ep.includes('FWW') && Math.random()<0.25 && !playerStunned) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN! (next turn)'});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN!'});} }
   if(ep.includes('FWS') && cmp==='lose') { ed=Math.round(ed*1.2); pd=Math.round(pd*0.8); passives.push({icon:'🏆',text:`CHAMPION WIN ed+20%→${ed}`}); }
   if(ep.includes('FSS') && pd>0) { const ref=Math.max(1,Math.round(pd*0.25)); creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🔄',text:`FORTRESS Reflect${ref}`}); }
-  if(ep.includes('WWW') && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:'GHOSTCLAW DODGE!'}); }
+  if(ep.includes('WWW') && !ep.includes('true_strike') && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:'GHOSTCLAW DODGE!'}); }
   if(ep.includes('WWS')) { if(Math.random()<0.15) { const h=Math.round(enemy.maxHp*0.2); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; pd=0; if(!bs.eSwiftguardDodged)bs.eSwiftguardDodged=false; bs.eSwiftguardDodged=true; passives.push({icon:'🌀',text:`SWIFTGUARD DODGE+Heal+${h}`}); } else { if(bs.eSwiftguardDodged){ed=Math.round(ed*1.3);passives.push({icon:'🌀',text:`SWIFTGUARD COUNTER ATK+30%→${ed}`});}bs.eSwiftguardDodged=false; } }
   if(ep.includes('WSS')) { if(cmp==='lose'){pd=Math.round(pd*0.5);passives.push({icon:'🛡',text:`SHIELDWING WIN dmg×0.5→${pd}`});}else if(cmp==='win'){pd=Math.round(pd*0.85);passives.push({icon:'🛡',text:`SHIELDWING LOSE dmg×0.85→${pd}`});} }
   if(ep.includes('SSS') && Math.random()<0.35) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:`IRONHIDE dmg×0.5→${pd}`}); }
@@ -4420,10 +4433,12 @@ function renderTower() {
             </div>`;
           }
           const isNewRun = towerFloor === 0;
-          const canEnter = !isNewRun || stamina >= 30;
+          const todayStr2 = new Date().toISOString().slice(0,10);
+          const runsLeft = towerRunsDate===todayStr2 ? Math.max(0,TOWER_DAILY_MAX-towerRunsToday) : TOWER_DAILY_MAX;
+          const canEnter = !isNewRun || (stamina >= 30 && runsLeft > 0);
           return `<div data-tower-start style="padding:12px;border-radius:12px;background:linear-gradient(135deg,${canEnter?'#3a2000,#6a3800':'#1a1a1a,#2a2a2a'});border:2px solid ${canEnter?'#ffaa00':'#444'};font-family:Orbitron,monospace;font-size:15px;color:${canEnter?'#ffcc44':'#666'};text-align:center;cursor:pointer;letter-spacing:1px">
             ${T('⚔ เข้าสู่ชั้น','⚔ Enter Floor ')} ${nextFloor}
-            ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/${MAX_STAMINA} AP (-30)</div>`:''}
+            ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/${MAX_STAMINA} AP (-30) &nbsp;|&nbsp; 🏯 ${runsLeft}/${TOWER_DAILY_MAX}</div>`:''}
           </div>`;
         })()}
         ${towerFloor>0?`<div data-tower-abandon style="padding:8px;border-radius:10px;background:#0a0808;border:1px solid #3a2020;font-family:Orbitron,monospace;font-size:12px;color:#aa4444;text-align:center;cursor:pointer">${T('✕ ยอมแพ้ (รับรางวัลตามชั้นที่ถึง)','✕ Give Up (collect rewards so far)')}</div>`:''}
@@ -5585,8 +5600,11 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
       if(towerFloor === 0) {
+        const todayStr = new Date().toISOString().slice(0,10);
+        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; }
+        if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
         if(stamina < 30) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 30 AP','⚡ Not enough Stamina! Need 30 AP'); render(); return; }
-        stamina -= 30; saveGame();
+        towerRunsToday++; stamina -= 30; saveGame();
       }
       startTowerBattle(); return;
     }

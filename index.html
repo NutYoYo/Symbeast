@@ -2309,9 +2309,9 @@ function doOverdriveTurn() {
     return Math.max(1, Math.round((em.dmg+enemy.atk/3+Math.random()*4)*(ec?1.5:1)) - Math.floor(getEffStat('def')/2));
   };
   if(ff==='F+F') {
-    const h1=_hit(2.0,0.25), h2=_hit(2.0,0.25); pd=h1.d+h2.d; ed=0; pdHits=[h1.d,h2.d];
+    const h1=_hit(2.5,0.25), h2=_hit(2.5,0.25); pd=h1.d+h2.d; ed=_ed(); pdHits=[h1.d,h2.d];
     bs.odBuff={type:'apocalypse',turnsLeft:3};
-    passives.push({icon:'💥',text:`APOCALYPSE ×2.0 [${h1.d}${h1.c?' ✦':''}+${h2.d}${h2.c?' ✦':''}]→${pd} | Crit+25% ×2.0 (3T)`});
+    passives.push({icon:'💥',text:`APOCALYPSE ×2.5×2 [${h1.d}${h1.c?' ✦':''}+${h2.d}${h2.c?' ✦':''}]→${pd} | Crit+25% ×2.0 (3T)`});
   } else if(ff==='F+W') {
     const h=_hit(2.5); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:'thunderFang',turnsLeft:3};
     passives.push({icon:'⚡',text:`THUNDER FANG ×2.5→${pd}${h.c?' ✦':''} + STUN | ATK/SPD×2+Stun25% (3T)`});
@@ -2326,7 +2326,7 @@ function doOverdriveTurn() {
   } else if(ff==='W+W') {
     const h=_hit(5.0); pd=h.d; ed=_ed();
     bs.odBuff={type:'deathScythe',turnsLeft:3};
-    passives.push({icon:'💀',text:`DEATH SCYTHE ×5→${pd}${h.c?' ✦':''} | Crit+50% ATK×2 (3T)`});
+    passives.push({icon:'💀',text:`DEATH SCYTHE ×5→${pd}${h.c?' ✦':''} | ATK×2 Crit+50% (3T)`});
   } else if(ff==='W+S') {
     pd=0; ed=0; bs.vanguardStack=3; bs.odBuff={type:'ironCurtain',turnsLeft:3};
     passives.push({icon:'🌀',text:`IRON CURTAIN Shield MAX | ATK×2+Heal15%MaxHP (3T)`});
@@ -2343,9 +2343,9 @@ function doOverdriveTurn() {
     pd=0; ed=1; bs.odBuff={type:'aegis',turnsLeft:3};
     passives.push({icon:'🏰',text:`DIVINE AEGIS dmg=1 | ATK×3+Heal5%MaxHP (3T)`});
   } else if(ff==='M+M') {
-    pd=0; ed=Math.round(_ed()*0.5);
+    const hSov=_hit(2.0); pd=hSov.d; ed=Math.round(_ed()*0.5);
     bs.odBuff={type:'sovereign',turnsLeft:3};
-    passives.push({icon:'👑',text:`BLOOD TRIBUTE DEF-50% | ATK×2+Lifesteal35%+SPD/DEF×2 (3T)`});
+    passives.push({icon:'👑',text:`BLOOD TRIBUTE ×2.0→${pd}${hSov.c?' ✦':''} | ed×0.5 | ATK×2+Lifesteal35%+SPD/DEF×2 (3T)`});
   }
   // apply damage
   bs.preAnimPlayerHp = creature.hp;
@@ -2529,7 +2529,6 @@ function doTurn(moveIdx) {
     }
     if(type==='deathScythe') {
       pd=Math.round(pd*2.0);
-      if(crit && critMult < 2.0) pd = Math.round(pd / critMult * 2.0);
       passives.push({icon:'💀',text:`DEATH SCYTHE ATK×2→${pd}`});
     }
     if(type==='ironCurtain') {
@@ -2539,7 +2538,7 @@ function doTurn(moveIdx) {
       creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
       passives.push({icon:'🌀',text:`IRON CURTAIN ATK×2+Shield→${pd} | +${heal}HP`});
     }
-    if(type==='soulSurge') { pd=Math.round(pd*2.0); passives.push({icon:'🌫️',text:`SOUL SURGE ATK×2→${pd}`}); }
+    if(type==='soulSurge') { pd=Math.round(pd*2.0); if(Math.random()<0.25){ed=0;passives.push({icon:'🌫️',text:`SOUL SURGE DODGE! ATK×2→${pd}`});}else{passives.push({icon:'🌫️',text:`SOUL SURGE ATK×2→${pd}`});} }
     if(type==='colossus') { pd=Math.round(pd*2.0); passives.push({icon:'🏔️',text:`EARTHSHATTER ATK×2→${pd}`}); }
     if(type==='aegis') { pd=Math.round(pd*3.0); ed=1; passives.push({icon:'🏰',text:`DIVINE AEGIS ATK×3→${pd} | dmg=1`}); }
     if(type==='fortressBreak') { pd+=Math.floor(enemy.def/2); passives.push({icon:'🛡',text:`FORTRESS BREAK PierceDEF+${Math.floor(enemy.def/2)}→${pd} | Reflect 50%`}); }

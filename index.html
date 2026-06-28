@@ -2442,6 +2442,8 @@ function doTurn(moveIdx) {
   if(bs.playerStunnedNextTurn) { pd=0; playerStunned=true; bs.playerStunnedNextTurn=false; SFX.stun(); passives.push({icon:'⚡',text:T('STUN! โจมตีพลาด (ค้างจากเทิร์นที่แล้ว)','STUN! Miss (carried from last turn)')}); }
   if(bs.enemyStunnedNextTurn)  { ed=0; enemyStunned=true;  bs.enemyStunnedNextTurn=false;  SFX.stun(); passives.push({icon:'⚡',text:T('STUN! ศัตรูยังขยับไม่ได้ (ค้างจากเทิร์นที่แล้ว)','STUN! Enemy still cannot act (carried)')}); }
 
+  const ep = enemy.passives || [];
+
   // ===== ENEMY ARTIFACT EFFECTS =====
   if(eArtId || eArtId2) {
     const eas = bs.eArtStacks || (bs.eArtStacks = {});
@@ -2800,7 +2802,6 @@ function doTurn(moveIdx) {
   }
 
   // ===== PRE-DAMAGE: ENEMY PASSIVES =====
-  const ep = enemy.passives || [];
   const enemyTrueStrike = ep.includes('true_strike');
   if(ep.includes('atk_boost'))    { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:T(`ศัตรู ATK×1.25 → ${ed}`,`Enemy ATK×1.25 → ${ed}`)}); }
   if(ep.includes('dodge') && !ep.includes('true_strike') && Math.random()<0.25 && artId!=='true_sight' && artId2!=='true_sight') { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }

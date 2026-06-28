@@ -1331,6 +1331,10 @@ function doFusion(baseIdx, sacrificeIdx) {
   const fk = getFusionKey(gBase, gSac);
   const ff = FINAL_FORMS[fk];
   if(!ff) return;
+  if(base.artifact || base.artifact2 || sac.artifact || sac.artifact2) {
+    scoutToast = T('⚠️ ถอด Artifact ออกก่อน Fusion!','⚠️ Unequip Artifacts before Fusion!');
+    saveGame(); render(); return;
+  }
   const stoneSlot = inventory.find(s=>s.type==='fusion_stone');
   if(!stoneSlot || stoneSlot.qty <= 0) { scoutToast=T('🔮 ต้องมี Fusion Stone!','🔮 Fusion Stone required!'); saveGame(); render(); return; }
   if(gold < FUSION_GOLD_COST) { scoutToast=T(`💰 ต้องมี Gold ${FUSION_GOLD_COST}G!`,`💰 Need ${FUSION_GOLD_COST}G to fuse!`); saveGame(); render(); return; }

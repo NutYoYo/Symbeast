@@ -2608,8 +2608,6 @@ function doTurn(moveIdx) {
     if(Math.random()<0.20) { const extra=pd; pd+=extra; passives.push({icon:'⚔️',text:T(`โจมตี 2 ครั้ง! →${pd}`,`DOUBLE ATTACK! →${pd}`)}); }
   }
 
-  const enemyTrueStrike = ep.includes('true_strike');
-
   if(ff==='W+W') { // PHANTASM: dodge 20%+ (stack), heal post-damage
     const dodgeChance=[0.20,0.20,0.30,0.40][Math.min(bs.phantasmStack,3)];
     if(!enemyTrueStrike && Math.random()<dodgeChance) {
@@ -2803,6 +2801,7 @@ function doTurn(moveIdx) {
 
   // ===== PRE-DAMAGE: ENEMY PASSIVES =====
   const ep = enemy.passives || [];
+  const enemyTrueStrike = ep.includes('true_strike');
   if(ep.includes('atk_boost'))    { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:T(`ศัตรู ATK×1.25 → ${ed}`,`Enemy ATK×1.25 → ${ed}`)}); }
   if(ep.includes('dodge') && !ep.includes('true_strike') && Math.random()<0.25 && artId!=='true_sight' && artId2!=='true_sight') { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }
   if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }

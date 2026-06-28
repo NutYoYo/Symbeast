@@ -3155,7 +3155,7 @@ function endBattle(won) {
       return;
     }
     // All 4 cleared — give rewards and advance stage
-    const stageGold = Math.round(vsCurrentStage * 500 + 1000);
+    const stageGold = Math.round(vsCurrentStage * 300 + 500);
     gold += stageGold;
     const ess = ['perm_atk','perm_spd','perm_def'];
     addItemToInventory(ess[Math.floor(Math.random()*3)]);
@@ -3185,7 +3185,7 @@ function endBattle(won) {
     if(won) {
       towerFloor++;
       towerHighest = Math.max(towerHighest, towerFloor);
-      towerPendingGold += Math.round(towerFloor * 8);
+      towerPendingGold += Math.round(towerFloor * 6);
       if(towerFloor % 10 === 0) { towerPendingArtifacts.push('box'); }
       if(towerFloor % 10 === 0 && !towerFirstClears.has(towerFloor)) {
         towerFirstClears.add(towerFloor);

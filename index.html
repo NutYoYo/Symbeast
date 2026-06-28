@@ -2934,9 +2934,9 @@ function doTurn(moveIdx) {
       reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref); bs.ironcladStack=Math.min(3,bs.ironcladStack+1);
       passives.push({icon:'🛡',text:`reflect ${ref} (${Math.round(refPct*100)}%) → Stack${bs.ironcladStack}`});
     }
-    // PHANTASM: heal 20% on dodge
+    // PHANTASM: heal 10% on dodge
     if(ff==='W+W' && bs.phantasmStack>0 && !edApplied && creature.hp>0) {
-      const heal=Math.round(creature.maxHp*0.20); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
+      const heal=Math.round(creature.maxHp*0.10); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
       passives.push({icon:'👁️',text:`+${heal} HP`});
     }
     // COLOSSUS: reflect 20%/40%

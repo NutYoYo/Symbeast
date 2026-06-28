@@ -914,9 +914,9 @@ const FORMS = {
   WWW: { name:'SPECTER',    color:'#1abc9c', hp:60,  atk:12, spd:22, def:4,  desc:'Cannot be caught.',
          passive:'25% chance to completely dodge the enemy\'s attack', passiveTh:'25% โอกาสหลบการโจมตีของศัตรูได้สมบูรณ์', passiveIcon:'👻' },
   WWS: { name:'SWIFTGUARD', color:'#16a085', hp:75,  atk:12, spd:18, def:8,  desc:'Agile and resilient.',
-         passive:'10% chance to dodge and instantly recover 50% of Max HP', passiveTh:'10% โอกาสหลบ และฟื้น HP สูงสุด 50% ทันที', passiveIcon:'🌀' },
+         passive:'15% chance to dodge and instantly recover 50% of Max HP', passiveTh:'15% โอกาสหลบ และฟื้น HP สูงสุด 50% ทันที', passiveIcon:'🌀' },
   WSS: { name:'SHIELDWING', color:'#2980b9', hp:90,  atk:12, spd:14, def:12, desc:'Flying fortress.',
-         passive:'On WIN: Reduces damage received that round by 60%', passiveTh:'เมื่อชนะ: ลดดาเมจที่รับในรอบนั้น 60%', passiveIcon:'🛡' },
+         passive:'On WIN: Reduces damage received by 50%. On LOSS: Reduces damage received by 15%', passiveTh:'เมื่อชนะ: ลดดาเมจที่รับ 50% เมื่อแพ้: ลดดาเมจที่รับ 15%', passiveIcon:'🛡' },
   SSS: { name:'BASTION',    color:'#2c3e50', hp:105, atk:12, spd:10, def:16, desc:'Immovable. Unbreakable.',
          passive:'35% chance to halve all incoming damage', passiveTh:'35% โอกาสลดดาเมจที่รับครึ่งหนึ่ง', passiveIcon:'⬛' },
 };
@@ -935,13 +935,13 @@ function getFusionKey(gA, gB) {
 
 const FINAL_FORMS = {
   'F+F': { name:'RAGNAROK',  color:'#ff2200', hp:130, atk:40, spd:12, def:8,
-            passive:'ATK grows by 20% each round + drains 15% of damage dealt as HP (increases to 35% when HP is below 50%)', passiveTh:'ATK เพิ่ม 20% ต่อรอบ + ดูดเลือด 15% จากดาเมจ (เพิ่มเป็น 35% เมื่อ HP ต่ำกว่า 50%)', passiveIcon:'💥' },
+            passive:'ATK grows by 20% each round + drains 15% of damage dealt as HP (increases to 35% when HP is below 25%)', passiveTh:'ATK เพิ่ม 20% ต่อรอบ + ดูดเลือด 15% จากดาเมจ (เพิ่มเป็น 35% เมื่อ HP ต่ำกว่า 25%)', passiveIcon:'💥' },
   'F+W': { name:'STORMFANG', color:'#0088ff', hp:120, atk:36, spd:22, def:8,
             passive:'ATK grows by 15% each round + 20% chance to stun the enemy (if stunned, ATK +50% next round)', passiveTh:'ATK เพิ่ม 15% ต่อรอบ + 20% โอกาส Stun ศัตรู (ถ้า Stun, ATK +50% รอบถัดไป)', passiveIcon:'⚡' },
   'F+S': { name:'IRONCLAD',  color:'#aaaa44', hp:140, atk:34, spd:12, def:18,
             passive:'ATK grows by 15% each round + reflects 20% damage. Each hit received adds a Stack (max 3): +5% ATK and +5% reflection per Stack', passiveTh:'ATK เพิ่ม 15% ต่อรอบ + สะท้อนดาเมจ 20% ทุกครั้งที่โดนโจมตีเพิ่ม Stack (สูงสุด 3): +5% ATK และ +5% สะท้อนต่อ Stack', passiveIcon:'🛡' },
   'F+M': { name:'WARLORD',   color:'#cc6600', hp:130, atk:36, spd:16, def:12,
-            passive:'ATK grows by 20% each round + each WIN adds +15% ATK (2 consecutive WINs grants +35% instead)', passiveTh:'ATK เพิ่ม 20% ต่อรอบ + ทุกครั้งที่ชนะ +15% ATK (ชนะ 2 ครั้งติดได้ +35% แทน)', passiveIcon:'⚔️' },
+            passive:'ATK grows by 20% each round + each WIN adds +15% ATK (2 consecutive WINs grants +35% instead) + 20% chance to attack twice', passiveTh:'ATK เพิ่ม 20% ต่อรอบ + ทุกครั้งที่ชนะ +15% ATK (ชนะ 2 ครั้งติดได้ +35% แทน) + 20% โอกาสโจมตี 2 ครั้ง', passiveIcon:'⚔️' },
   'W+W': { name:'PHANTASM',  color:'#8800cc', hp:110, atk:28, spd:32, def:8,
             passive:'Starts at 20% dodge chance. Each successful dodge builds a Stack (max 3): raises dodge chance to 20%/30%/40%, and restores 10% Max HP on each dodge', passiveTh:'เริ่มต้น 20% โอกาสหลบ ทุกครั้งที่หลบได้เพิ่ม Stack (สูงสุด 3): โอกาสหลบ 20%/30%/40% และฟื้น HP สูงสุด 10% ทุกครั้งที่หลบ', passiveIcon:'👁️' },
   'W+S': { name:'VANGUARD',  color:'#4488aa', hp:140, atk:24, spd:24, def:16,
@@ -2557,10 +2557,10 @@ function doTurn(moveIdx) {
   // ===== PRE-DAMAGE: EVOLVED PASSIVES =====
   if(fk==='FFF') { pd=Math.round(pd*1.25); passives.push({icon:'💢',text:`+25% ATK → ${pd}`}); }
   if(fk==='FWS' && cmp==='win') { pd=Math.round(pd*1.2); ed=Math.round(ed*0.8); passives.push({icon:'🏆',text:'WIN +20%/-20%'}); }
-  if(fk==='WSS' && cmp==='win') { ed=Math.round(ed*0.4); passives.push({icon:'🛡',text:T(`WIN: ลดดาเมจ 60% → ${ed}`,`WIN: -60% dmg → ${ed}`)}); }
+  if(fk==='WSS') { if(cmp==='win'){ed=Math.round(ed*0.5);passives.push({icon:'🛡',text:T(`WIN: ลดดาเมจ 50% → ${ed}`,`WIN: -50% dmg → ${ed}`)});}else if(cmp==='lose'){ed=Math.round(ed*0.85);passives.push({icon:'🛡',text:T(`LOSE: ลดดาเมจ 15% → ${ed}`,`LOSE: -15% dmg → ${ed}`)});} }
   if(fk==='FWW' && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้เทิร์นถัดไป','STUN! Enemy cannot act next turn')});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้','STUN! Enemy cannot act')});} }
   if(fk==='WWW' && Math.random()<0.25) { ed=0; passives.push({icon:'👻',text:'DODGE!'}); }
-  if(fk==='WWS' && Math.random()<0.10) {
+  if(fk==='WWS' && Math.random()<0.15) {
     const healed=Math.round(creature.maxHp*0.5);
     creature.hp=Math.min(creature.maxHp,creature.hp+healed);
     ed=0; passives.push({icon:'🌀',text:T(`DODGE + ฟื้น +${healed} HP`,`DODGE + Healed +${healed} HP`)});
@@ -2587,14 +2587,15 @@ function doTurn(moveIdx) {
     passives.push({icon:'🛡',text:`ATK×${(1.15*(1+sb)).toFixed(2)}→${pd}${bs.ironcladStack?` Stack${bs.ironcladStack}`:''}`});
   }
 
-  if(ff==='F+M') { // WARLORD: ATK×1.2 + WIN→dmg+15% (2×consec→+35%)
+  if(ff==='F+M') { // WARLORD: ATK×1.2 + WIN→dmg+15% (2×consec→+35%) + 20% double attack
     pd=Math.round(pd*1.2);
     if(cmp==='win') {
       bs.warlordConsec++;
       const bonus=bs.warlordConsec>=2?0.35:0.15;
       pd=Math.round(pd*(1+bonus));
       passives.push({icon:'⚔️',text:`WIN×${bs.warlordConsec} dmg+${Math.round(bonus*100)}%→${pd}`});
-    } else { passives.push({icon:'⚔️',text:`ATK×1.2 → ${pd}`}); }
+    } else { bs.warlordConsec=0; passives.push({icon:'⚔️',text:`ATK×1.2 → ${pd}`}); }
+    if(Math.random()<0.20) { const extra=pd; pd+=extra; passives.push({icon:'⚔️',text:T(`โจมตี 2 ครั้ง! →${pd}`,`DOUBLE ATTACK! →${pd}`)}); }
   }
 
   if(ff==='W+W') { // PHANTASM: dodge 20%+ (stack), heal post-damage
@@ -2805,8 +2806,8 @@ function doTurn(moveIdx) {
   if(ep.includes('FWS') && cmp==='lose') { ed=Math.round(ed*1.2); pd=Math.round(pd*0.8); passives.push({icon:'🏆',text:`CHAMPION WIN ed+20%→${ed}`}); }
   if(ep.includes('FSS') && pd>0) { const ref=Math.max(1,Math.round(pd*0.25)); creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🔄',text:`FORTRESS Reflect${ref}`}); }
   if(ep.includes('WWW') && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:'GHOSTCLAW DODGE!'}); }
-  if(ep.includes('WWS')) { if(Math.random()<0.10) { const h=Math.round(enemy.maxHp*0.2); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; pd=0; if(!bs.eSwiftguardDodged)bs.eSwiftguardDodged=false; bs.eSwiftguardDodged=true; passives.push({icon:'🌀',text:`SWIFTGUARD DODGE+Heal+${h}`}); } else { if(bs.eSwiftguardDodged){ed=Math.round(ed*1.3);passives.push({icon:'🌀',text:`SWIFTGUARD COUNTER ATK+30%→${ed}`});}bs.eSwiftguardDodged=false; } }
-  if(ep.includes('WSS') && cmp==='lose') { pd=Math.round(pd*0.4); passives.push({icon:'🛡',text:`SHIELDWING WIN dmg×0.4→${pd}`}); }
+  if(ep.includes('WWS')) { if(Math.random()<0.15) { const h=Math.round(enemy.maxHp*0.2); enemy.hp=Math.min(enemy.maxHp,enemy.hp+h); enemyHeal+=h; pd=0; if(!bs.eSwiftguardDodged)bs.eSwiftguardDodged=false; bs.eSwiftguardDodged=true; passives.push({icon:'🌀',text:`SWIFTGUARD DODGE+Heal+${h}`}); } else { if(bs.eSwiftguardDodged){ed=Math.round(ed*1.3);passives.push({icon:'🌀',text:`SWIFTGUARD COUNTER ATK+30%→${ed}`});}bs.eSwiftguardDodged=false; } }
+  if(ep.includes('WSS')) { if(cmp==='lose'){pd=Math.round(pd*0.5);passives.push({icon:'🛡',text:`SHIELDWING WIN dmg×0.5→${pd}`});}else if(cmp==='win'){pd=Math.round(pd*0.85);passives.push({icon:'🛡',text:`SHIELDWING LOSE dmg×0.85→${pd}`});} }
   if(ep.includes('SSS') && Math.random()<0.35) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:`IRONHIDE dmg×0.5→${pd}`}); }
 
   // ===== FUSION ENEMY FORM PASSIVES =====
@@ -2818,7 +2819,7 @@ function doTurn(moveIdx) {
     else{passives.push({icon:'⚡',text:`STORMFANG ATK×1.15→${ed}`});}
   }
   if(ep.includes('F+S')) { if(!bs.eIroncladStack)bs.eIroncladStack=0; ed=Math.round(ed*1.15*(1+bs.eIroncladStack*0.05)); passives.push({icon:'🛡',text:`IRONCLAD ATK→${ed}${bs.eIroncladStack?` Stk${bs.eIroncladStack}`:''}`}); if(pd>0)bs.eIroncladStack=Math.min(3,(bs.eIroncladStack||0)+1); }
-  if(ep.includes('F+M')) { ed=Math.round(ed*1.2); if(cmp==='lose'){if(!bs.eWarlordConsec)bs.eWarlordConsec=0; bs.eWarlordConsec++; const bon=bs.eWarlordConsec>=2?0.35:0.15; ed=Math.round(ed*(1+bon)); passives.push({icon:'⚔️',text:`WARLORD WIN×${bs.eWarlordConsec}→${ed}`});} else{bs.eWarlordConsec=0;passives.push({icon:'⚔️',text:`WARLORD ATK×1.2→${ed}`});} }
+  if(ep.includes('F+M')) { ed=Math.round(ed*1.2); if(cmp==='lose'){if(!bs.eWarlordConsec)bs.eWarlordConsec=0; bs.eWarlordConsec++; const bon=bs.eWarlordConsec>=2?0.35:0.15; ed=Math.round(ed*(1+bon)); passives.push({icon:'⚔️',text:`WARLORD WIN×${bs.eWarlordConsec}→${ed}`});} else{bs.eWarlordConsec=0;passives.push({icon:'⚔️',text:`WARLORD ATK×1.2→${ed}`});} if(Math.random()<0.20){const ex=ed;ed+=ex;passives.push({icon:'⚔️',text:`WARLORD DOUBLE!→${ed}`});} }
   if(ep.includes('W+W')) { if(!bs.ePhantasmStack)bs.ePhantasmStack=0; const dc=[0.20,0.20,0.30,0.40][Math.min(bs.ePhantasmStack,3)]; if(Math.random()<dc){pd=0;bs.ePhantasmStack=Math.min(3,bs.ePhantasmStack+1);passives.push({icon:'👁️',text:`PHANTASM DODGE! Stk${bs.ePhantasmStack}`}); const h=Math.round(enemy.maxHp*0.10);enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'👁️',text:`+${h}HP`});}else{if(bs.ePhantasmStack>0){bs.ePhantasmStack=0;passives.push({icon:'👁️',text:'PHANTASM Stack reset'});}} if(bs.ePhantasmStack>=3){ed=Math.round(ed*1.5);passives.push({icon:'👁️',text:`PHANTASM ATK+50%→${ed}`});} }
   if(ep.includes('W+S')) { if(!bs.eVanguardStack)bs.eVanguardStack=0; if(Math.random()<0.25){pd=0;bs.eVanguardStack=Math.min(3,bs.eVanguardStack+1);passives.push({icon:'🌀',text:`VANGUARD DODGE! Shield×${bs.eVanguardStack}`});} else if(bs.eVanguardStack>0&&pd>0){const r=bs.eVanguardStack*0.15;pd=Math.round(pd*(1-r));passives.push({icon:'🌀',text:`VANGUARD Shield×${bs.eVanguardStack} pd→${pd}`});} }
   if(ep.includes('W+M')) { if(Math.random()<0.25){pd=0;bs.eWraithDodged=true;passives.push({icon:'🌫️',text:'WRAITH DODGE! → ATK+50% next'});}else{if(bs.eWraithDodged){ed=Math.round(ed*1.5);passives.push({icon:'🌫️',text:`WRAITH BOOST ATK×1.5→${ed}`});}bs.eWraithDodged=false;} }
@@ -2882,7 +2883,7 @@ function doTurn(moveIdx) {
     }
     // RAGNAROK: lifesteal 15%/35%
     if(ff==='F+F' && pd>0 && creature.hp>0) {
-      const lsPct=creature.hp<creature.maxHp*0.5?0.35:0.15; const ls=Math.max(1,Math.round(pd*lsPct));
+      const lsPct=creature.hp<creature.maxHp*0.25?0.35:0.15; const ls=Math.max(1,Math.round(pd*lsPct));
       creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls;
       passives.push({icon:'💥',text:T(`ดูดเลือด ${Math.round(lsPct*100)}% +${ls} HP`,`Lifesteal ${Math.round(lsPct*100)}% +${ls} HP`)});
     }
@@ -2951,7 +2952,7 @@ function doTurn(moveIdx) {
       passives.push({icon:'🩸',text:`IRONJAW Lifesteal+${steal}`});
     }
     if(ep.includes('F+F') && edApplied && ed>0 && enemy.hp>0) {
-      const ls=Math.max(1,Math.round(ed*(enemy.hp<enemy.maxHp*0.5?0.35:0.15))); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
+      const ls=Math.max(1,Math.round(ed*(enemy.hp<enemy.maxHp*0.25?0.35:0.15))); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
       passives.push({icon:'🩸',text:`RAGNAROK Lifesteal+${ls}`});
     }
     if(ep.includes('M+M') && edApplied && enemy.hp>0) {

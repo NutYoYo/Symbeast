@@ -4416,10 +4416,10 @@ function renderTower() {
             </div>`;
           }
           const isNewRun = towerFloor === 0;
-          const canEnter = !isNewRun || stamina >= 10;
+          const canEnter = !isNewRun || stamina >= 30;
           return `<div data-tower-start style="padding:12px;border-radius:12px;background:linear-gradient(135deg,${canEnter?'#3a2000,#6a3800':'#1a1a1a,#2a2a2a'});border:2px solid ${canEnter?'#ffaa00':'#444'};font-family:Orbitron,monospace;font-size:15px;color:${canEnter?'#ffcc44':'#666'};text-align:center;cursor:pointer;letter-spacing:1px">
             ${T('⚔ เข้าสู่ชั้น','⚔ Enter Floor ')} ${nextFloor}
-            ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/${MAX_STAMINA} AP (-10)</div>`:''}
+            ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/${MAX_STAMINA} AP (-30)</div>`:''}
           </div>`;
         })()}
         ${towerFloor>0?`<div data-tower-abandon style="padding:8px;border-radius:10px;background:#0a0808;border:1px solid #3a2020;font-family:Orbitron,monospace;font-size:12px;color:#aa4444;text-align:center;cursor:pointer">${T('✕ ยอมแพ้ (รับรางวัลตามชั้นที่ถึง)','✕ Give Up (collect rewards so far)')}</div>`:''}
@@ -5581,8 +5581,8 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
       if(towerFloor === 0) {
-        if(stamina < 10) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 10 AP','⚡ Not enough Stamina! Need 10 AP'); render(); return; }
-        stamina -= 10; saveGame();
+        if(stamina < 30) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 30 AP','⚡ Not enough Stamina! Need 30 AP'); render(); return; }
+        stamina -= 30; saveGame();
       }
       startTowerBattle(); return;
     }

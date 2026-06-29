@@ -4437,7 +4437,7 @@ function renderTower() {
               ${T('🚫 เข้าไม่ได้','🚫 Cannot enter')}<br><span style="font-size:11px;color:#666633">${reason}</span>
             </div>`;
           }
-          const isNewRun = towerFloor === 0;
+          const isNewRun = towerFloor === towerCheckpoint;
           const todayStr2 = new Date().toISOString().slice(0,10);
           const runsLeft = towerRunsDate===todayStr2 ? Math.max(0,TOWER_DAILY_MAX-towerRunsToday) : TOWER_DAILY_MAX;
           const canEnter = !isNewRun || (stamina >= 30 && runsLeft > 0);

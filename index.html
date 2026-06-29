@@ -1088,7 +1088,7 @@ const ARTIFACTS = {
   true_sight:      { name:'True Sight',       nameTh:'สายตาแท้',          grade:'E', icon:'🔭', desc:'In battle: The enemy cannot dodge your attacks. ATK +50%', descTh:'ในการต่อสู้: ศัตรูไม่สามารถหลบการโจมตีของคุณได้ และ ATK +50%' },
   moon_veil:       { name:'Moon Veil',        nameTh:'ม่านจันทร์',        grade:'E', icon:'🌙', desc:'In battle: Regenerates 8% of Max HP each round', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 8% ทุกรอบ' },
   double_attack:   { name:'Double Attack',    nameTh:'โจมตีสองครั้ง',     grade:'E', icon:'⚔', desc:'In battle: 20% chance to attack twice in one round', descTh:'ในการต่อสู้: 20% โอกาสโจมตีสองครั้งในรอบเดียว' },
-  wild_card:       { name:'Wild Card',        nameTh:'ไพ่มหัศจรรย์',      grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly heal, boost ATK, or reflect damage', descTh:'ในการต่อสู้: 25% โอกาสสุ่มระหว่างฟื้น HP, เพิ่ม ATK หรือสะท้อนดาเมจ' },
+  wild_card:       { name:'Wild Card',        nameTh:'ไพ่มหัศจรรย์',      grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly Heal/ATK×1.5/Reflect(30% each) or Bad Luck +50% dmg taken (10%)', descTh:'ในการต่อสู้: 25% โอกาสสุ่ม Heal/ATK×1.5/Reflect (30% ต่ออัน) หรือ Bad Luck โดนดาเมจ+50% (10%)' },
   execution:       { name:'Execution',        nameTh:'ประหาร',            grade:'E', icon:'☠', desc:'In battle: When your HP drops below 20%, deal 200% more damage', descTh:'ในการต่อสู้: เมื่อ HP ของคุณต่ำกว่า 20% โจมตีเพิ่ม 200%' },
   chain_strike:    { name:'Chain Strike',     nameTh:'โจมตีลูกโซ่',       grade:'E', icon:'💥', desc:'In battle: WIN streak bonus — ×1: 65% ATK / ×2: 130% ATK / ×3: 200% ATK. Breaks on non-WIN.', descTh:'ในการต่อสู้: ชนะต่อเนื่อง — ×1: 65% ATK / ×2: 130% ATK / ×3: 200% ATK | ไม่ชนะ = รีเซ็ต' },
   // stat boosts (equip-time)
@@ -2740,9 +2740,10 @@ function doTurn(moveIdx) {
     if(artId==='deathblow') { /* crit mult handled above */ }
     if(artId==='wild_card' && Math.random()<0.25) {
       const roll=Math.random();
-      if(roll<0.333) { const h=Math.round(creature.maxHp*0.30); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🎲',text:`Wild Card Heal +${h}`}); }
-      else if(roll<0.667) { pd=Math.round(pd*1.50); passives.push({icon:'🎲',text:`Wild Card ATK×1.5 → ${pd}`}); }
-      else { const ref=Math.round(ed*0.50); enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🎲',text:`Wild Card Reflect ${ref}`}); }
+      if(roll<0.30) { const h=Math.round(creature.maxHp*0.30); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🎲',text:`Wild Card Heal +${h}`}); }
+      else if(roll<0.60) { pd=Math.round(pd*1.50); passives.push({icon:'🎲',text:`Wild Card ATK×1.5 → ${pd}`}); }
+      else if(roll<0.90) { const ref=Math.round(ed*0.50); enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🎲',text:`Wild Card Reflect ${ref}`}); }
+      else { ed=Math.round(ed*1.50); passives.push({icon:'🎲',text:`Wild Card BAD LUCK! ed×1.5 → ${ed}`}); }
     }
   }
 
@@ -2795,9 +2796,10 @@ function doTurn(moveIdx) {
     if(artId2==='deathblow') { /* crit mult handled above */ }
     if(artId2==='wild_card' && Math.random()<0.25) {
       const roll=Math.random();
-      if(roll<0.333) { const h=Math.round(creature.maxHp*0.30); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🎲',text:`Wild Card Heal +${h}`}); }
-      else if(roll<0.667) { pd=Math.round(pd*1.50); passives.push({icon:'🎲',text:`Wild Card ATK×1.5 → ${pd}`}); }
-      else { const ref=Math.round(ed*0.50); enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🎲',text:`Wild Card Reflect ${ref}`}); }
+      if(roll<0.30) { const h=Math.round(creature.maxHp*0.30); creature.hp=Math.min(creature.maxHp,creature.hp+h); playerHeal+=h; passives.push({icon:'🎲',text:`Wild Card Heal +${h}`}); }
+      else if(roll<0.60) { pd=Math.round(pd*1.50); passives.push({icon:'🎲',text:`Wild Card ATK×1.5 → ${pd}`}); }
+      else if(roll<0.90) { const ref=Math.round(ed*0.50); enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🎲',text:`Wild Card Reflect ${ref}`}); }
+      else { ed=Math.round(ed*1.50); passives.push({icon:'🎲',text:`Wild Card BAD LUCK! ed×1.5 → ${ed}`}); }
     }
   }
 

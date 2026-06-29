@@ -1,4 +1,4 @@
-const CACHE = 'symbeast-v4';
+const CACHE = 'symbeast-v5';
 
 self.addEventListener('install', e => {
   e.waitUntil(

@@ -1220,16 +1220,16 @@ let firstBossKilled = false;
 let overdriveCharge = 0;
 const MAX_OVERDRIVE = 5;
 const OVERDRIVE_INFO = {
-  'F+F':{name:'APOCALYPSE',   icon:'💥'},
-  'F+W':{name:'THUNDER FANG', icon:'⚡'},
-  'F+S':{name:'FORTRESS BREAK',icon:'🛡'},
-  'F+M':{name:"CONQUEROR'S WRATH",icon:'⚔️'},
-  'W+W':{name:'DEATH SCYTHE', icon:'💀'},
-  'W+S':{name:'IRON CURTAIN', icon:'🌀'},
-  'W+M':{name:'SOUL SURGE',   icon:'🌫️'},
-  'S+S':{name:'EARTHSHATTER', icon:'🏔️'},
-  'S+M':{name:'DIVINE AEGIS', icon:'🏰'},
-  'M+M':{name:'BLOOD TRIBUTE',icon:'👑'},
+  'F+F':{name:'APOCALYPSE',        icon:'💥', desc:'Strike ×2.5 twice with forced crit, then +25% CRIT for 3 turns',                            descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) จากนั้น Crit +25% นาน 3 เทิร์น'},
+  'F+W':{name:'THUNDER FANG',      icon:'⚡', desc:'Strike ×2.5 and stun the enemy, then ATK/SPD×2 with 25% stun chance for 3 turns',           descTh:'โจมตี ×2.5 + สตันศัตรู จากนั้น ATK/SPD×2 มีโอกาสสตัน 25% นาน 3 เทิร์น'},
+  'F+S':{name:'FORTRESS BREAK',    icon:'🛡', desc:'Strike ×2.5 ignoring DEF, then pierce DEF and reflect 50% damage for 3 turns',              descTh:'โจมตี ×2.5 ทะลุ DEF จากนั้นทะลุ DEF และสะท้อนดาเมจ 50% นาน 3 เทิร์น'},
+  'F+M':{name:"CONQUEROR'S WRATH", icon:'⚔️', desc:'Unleash 4 rapid strikes, then ATK×1.2 with 20% double-attack chance for 3 turns',           descTh:'โจมตี 4 ครั้งรวดเร็ว จากนั้น ATK×1.2 มีโอกาสโจมตี 2 ครั้ง 20% นาน 3 เทิร์น'},
+  'W+W':{name:'DEATH SCYTHE',      icon:'💀', desc:'Massive ×5.0 strike with +50% CRIT chance for 3 turns',                                     descTh:'โจมตี ×5.0 ทรงพลัง จากนั้น Crit +50% นาน 3 เทิร์น'},
+  'W+S':{name:'IRON CURTAIN',      icon:'🌀', desc:'Fully charge shield, then ATK×2 and heal 15% MaxHP per turn for 3 turns',                   descTh:'ชาร์จโล่เต็ม จากนั้น ATK×2 และฮีล 15% MaxHP ต่อเทิร์น นาน 3 เทิร์น'},
+  'W+M':{name:'SOUL SURGE',        icon:'🌫️', desc:'Strike ×2.0 and dodge this turn, then ATK×2 with 50% dodge chance for 3 turns',             descTh:'โจมตี ×2.0 + หลบในเทิร์นนี้ จากนั้น ATK×2 Dodge 50% นาน 3 เทิร์น'},
+  'S+S':{name:'EARTHSHATTER',      icon:'🏔️', desc:'Strike ×2.0 and reflect all incoming damage, then 100% reflect for 3 turns',                descTh:'โจมตี ×2.0 + สะท้อนดาเมจทั้งหมด จากนั้นสะท้อน 100% นาน 3 เทิร์น'},
+  'S+M':{name:'DIVINE AEGIS',      icon:'🏰', desc:'Take only 1 damage this turn, then ATK×3 and heal 5% MaxHP per turn for 3 turns',           descTh:'รับดาเมจเพียง 1 ในเทิร์นนี้ จากนั้น ATK×3 ฮีล 5% MaxHP นาน 3 เทิร์น'},
+  'M+M':{name:'BLOOD TRIBUTE',     icon:'👑', desc:'Strike ×2.0 and halve enemy damage, then ATK×2, lifesteal 35%, SPD/DEF×2 for 3 turns',     descTh:'โจมตี ×2.0 ลดดาเมจศัตรู ×0.5 จากนั้น ATK×2 ดูดเลือด 35% SPD/DEF×2 นาน 3 เทิร์น'},
 };
 
 const BIOMES = {
@@ -5205,16 +5205,20 @@ function renderBattleScreen() {
     const label  = odBuff?`${odBuff.turnsLeft}T`:odReady?'USE!':odUsed?'USED':'OD';
     const readyAnim = odReady?'animation:odFire 0.8s ease-in-out infinite alternate;':'';
     const title  = odInfo ? `${odInfo.icon} ${odInfo.name}${odBuff?` (${odBuff.turnsLeft} turns left)`:odUsed?' — USED':''}` : '';
+    const nameCol = odBuff?'#00cc88':odReady?'#ff9900':odUsed?'#333':'#3a3a6a';
     return `
-      <div id="overdriveBtn" style="position:relative;width:${size}px;height:${size}px;cursor:${odReady&&!isAnimating?'pointer':'default'};user-select:none;flex-shrink:0;${readyAnim}" title="${title}">
-        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="position:absolute;inset:0">
-          <circle cx="${cx}" cy="${cy}" r="${r-3}" fill="${bgCol}" stroke="${rimCol}" stroke-width="1.5"/>
-          ${arcs}
-        </svg>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-          <span style="font-size:20px;line-height:1">${icon}</span>
-          <span style="font-family:Orbitron,monospace;font-size:8px;color:${iconCol};margin-top:2px;letter-spacing:0.5px">${label}</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div id="overdriveBtn" style="position:relative;width:${size}px;height:${size}px;cursor:${odReady&&!isAnimating?'pointer':'default'};user-select:none;flex-shrink:0;${readyAnim}" title="${title}">
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="position:absolute;inset:0">
+            <circle cx="${cx}" cy="${cy}" r="${r-3}" fill="${bgCol}" stroke="${rimCol}" stroke-width="1.5"/>
+            ${arcs}
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:20px;line-height:1">${icon}</span>
+            <span style="font-family:Orbitron,monospace;font-size:8px;color:${iconCol};margin-top:2px;letter-spacing:0.5px">${label}</span>
+          </div>
         </div>
+        <div style="font-family:Orbitron,monospace;font-size:6px;color:${nameCol};text-align:center;max-width:64px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.3px">${odInfo?.name||''}</div>
       </div>`;
   }
 
@@ -5401,6 +5405,7 @@ function renderBattleScreen() {
         }).join('')}
       </div>` : ''}
 
+      ${odInfo ? `<div style="font-size:8px;color:${odBuff?'#00bb77':odReady?'#ff8800':'#383858'};line-height:1.4;padding:2px 4px;border-radius:5px;${odReady?'background:rgba(255,100,0,0.08);border:1px solid #331500;':odBuff?'background:rgba(0,100,60,0.12);border:1px solid #003322;':''}transition:color 0.3s">${odInfo.icon} ${T(odInfo.descTh,odInfo.desc)}</div>` : ''}
       <div style="display:flex;gap:4px;align-items:flex-end">
         <div style="flex:1;display:flex;gap:3px">${moveBtns}</div>
         <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
@@ -6703,8 +6708,9 @@ function renderParty() {
     const symHtml = pet.symbols.map(s=>
       `<span style="background:#1a1a3a;border:1px solid #3a3a6a;border-radius:6px;padding:4px 8px;display:inline-flex;align-items:center;justify-content:center">${(s==='W'||s==='S')?symSvg(s,16):`<span style="font-size:14px">${{F:'✊'}[s]||s}</span>`}</span>`
     ).join('');
+    const odDetail = ff ? (()=>{ const oi=OVERDRIVE_INFO[pet.finalKey]; return oi ? `<div style="margin-top:4px;padding:6px 8px;background:#0a0a1c;border-radius:8px;border:1px solid #ff660033"><div style="font-family:Orbitron,monospace;font-size:9px;color:#ff6600;margin-bottom:3px;letter-spacing:0.5px">⚡ OVERDRIVE — ${oi.icon} ${oi.name}</div><div style="font-size:10px;color:#c08060;line-height:1.5">${T(oi.descTh,oi.desc)}</div></div>` : ''; })() : '';
     const passiveInfo = ff
-      ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid ${ff.color}44;font-size:11px;color:${ff.color}">${ff.passiveIcon||''} ${P(ff)}</div>`
+      ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid ${ff.color}44;font-size:11px;color:${ff.color}">${ff.passiveIcon||''} ${P(ff)}</div>${odDetail}`
       : f ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid #2a2a4a;font-size:11px;color:#c0a0ff">${f.passiveIcon||''} ${P(f)}</div>` : '';
     const _prevVid = screenContent.querySelector('#pet-detail-video');
     const _savedSrc = _prevVid?.querySelector('source')?.src || '';
@@ -6926,6 +6932,10 @@ function renderParty() {
             ${!inSwapMode && (onExp && pet.expedition.ready) ? `<div onclick="event.stopPropagation();state='expedition';render();" style="padding:6px 10px;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;text-align:center;cursor:pointer;background:#003322;color:#00ffaa;border:2px solid #00ffaa;animation:shiny-pulse 1s ease-in-out infinite">✅<br>COLLECT</div>` : ''}
             ${!inSwapMode && (!isActive && !onExp && pet.phase!=='egg') ? `<div onclick="event.stopPropagation();setActivePet(${i});render();" style="padding:6px 10px;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;text-align:center;cursor:pointer;background:#0a0a1a;color:#c0a0ff;border:1px solid #6040a0">▶<br>ACTIVE</div>` : ''}
             ${!inSwapMode && (!onExp && pet.phase!=='egg' && (pet.hp<pet.maxHp||isResting)) ? `<div onclick="event.stopPropagation();toggleRest(${i});render();" style="padding:6px 10px;border-radius:8px;font-family:Orbitron,monospace;font-size:11px;text-align:center;cursor:pointer;${isResting?'background:#1a0a30;color:#c0a0ff;border:1px solid #8060d0':'background:#0a0a1a;color:#4a4a7a;border:1px solid #2a2a5a'}">${isResting?'😴<br>STOP':'🛌<br>REST'}</div>` : ''}
+            ${!inSwapMode ? `<div style="display:flex;flex-direction:column;gap:2px">
+              <div onclick="event.stopPropagation();movePartyPet(${i},-1)" style="padding:3px 8px;border-radius:6px;font-size:12px;text-align:center;cursor:${i>0?'pointer':'default'};background:#0a0a1a;color:${i>0?'#7060c0':'#2a2a3a'};border:1px solid ${i>0?'#3a2a6a':'#1a1a2a'};user-select:none">▲</div>
+              <div onclick="event.stopPropagation();movePartyPet(${i},1)" style="padding:3px 8px;border-radius:6px;font-size:12px;text-align:center;cursor:${i<pets.length-1?'pointer':'default'};background:#0a0a1a;color:${i<pets.length-1?'#7060c0':'#2a2a3a'};border:1px solid ${i<pets.length-1?'#3a2a6a':'#1a1a2a'};user-select:none">▼</div>
+            </div>` : ''}
           </div>
         </div>
       </div>`;
@@ -6958,7 +6968,11 @@ function renderParty() {
         ${inPartySwapMode
           ? `<div data-swapstorage="${si}" style="padding:5px 8px;border-radius:7px;font-family:Orbitron,monospace;font-size:10px;text-align:center;cursor:pointer;background:#003322;color:#00ffaa;border:1px solid #00ffaa">⇄ SWAP</div>`
           : `<div data-storagetopary="${si}" style="padding:5px 8px;border-radius:7px;font-family:Orbitron,monospace;font-size:10px;text-align:center;cursor:pointer;background:${swapStorageIdx===si?'#003322':canMove?'#0e1a0e':'#0a1a1a'};color:${swapStorageIdx===si?'#00ffaa':canMove?'#60cc60':'#00aaaa'};border:1px solid ${swapStorageIdx===si?'#00ffaa':canMove?'#40a040':'#006666'}">${swapStorageIdx===si?'⇄ SWAP':'→ PARTY'}</div>
-             <div data-storageremove="${si}" style="padding:5px 8px;border-radius:7px;font-family:Orbitron,monospace;font-size:10px;text-align:center;cursor:pointer;background:#1a0808;color:#aa4444;border:1px solid #3a1a1a">🗑</div>`
+             <div data-storageremove="${si}" style="padding:5px 8px;border-radius:7px;font-family:Orbitron,monospace;font-size:10px;text-align:center;cursor:pointer;background:#1a0808;color:#aa4444;border:1px solid #3a1a1a">🗑</div>
+             <div style="display:flex;gap:2px">
+               <div onclick="event.stopPropagation();moveStoragePet(${si},-1)" style="flex:1;padding:3px 0;border-radius:5px;font-size:11px;text-align:center;cursor:${si>0?'pointer':'default'};background:#0a0a1a;color:${si>0?'#507050':'#2a2a3a'};border:1px solid ${si>0?'#2a4a2a':'#1a1a2a'};user-select:none">▲</div>
+               <div onclick="event.stopPropagation();moveStoragePet(${si},1)" style="flex:1;padding:3px 0;border-radius:5px;font-size:11px;text-align:center;cursor:${si<storage.length-1?'pointer':'default'};background:#0a0a1a;color:${si<storage.length-1?'#507050':'#2a2a3a'};border:1px solid ${si<storage.length-1?'#2a4a2a':'#1a1a2a'};user-select:none">▼</div>
+             </div>`
         }
       </div>
     </div>`;
@@ -7154,6 +7168,7 @@ function renderParty() {
           <div style="font-family:Orbitron,monospace;font-size:10px;color:#4a4a7a;margin-bottom:6px">PASSIVE</div>
           <div style="font-size:12px;color:#c0b0e0;line-height:1.5">${form.passiveIcon} ${P(form)}</div>
         </div>
+        ${isFinal ? (()=>{ const oi=OVERDRIVE_INFO[collectionDetailKey]; return oi ? `<div style="width:100%;padding:10px 14px;border-radius:10px;background:#08080f;border:1px solid #ff660033"><div style="font-family:Orbitron,monospace;font-size:10px;color:#ff6600;margin-bottom:6px">⚡ OVERDRIVE — ${oi.icon} ${oi.name}</div><div style="font-size:11px;color:#c08060;line-height:1.6">${T(oi.descTh,oi.desc)}</div></div>` : ''; })() : ''}
         ` : `
         <div style="padding:16px;text-align:center;color:#3a3a5a;font-size:12px">${T('— ยังไม่ได้รับ —','— Not yet unlocked —')}</div>
         `}
@@ -7805,6 +7820,21 @@ function renderInventory() {
         </div>`;
       })()}
     </div>`;
+}
+
+function movePartyPet(idx, dir) {
+  const to = idx + dir;
+  if(to < 0 || to >= pets.length) return;
+  [pets[idx], pets[to]] = [pets[to], pets[idx]];
+  if(activePetIdx === idx) activePetIdx = to;
+  else if(activePetIdx === to) activePetIdx = idx;
+  syncCreature(); saveGame(); render();
+}
+function moveStoragePet(idx, dir) {
+  const to = idx + dir;
+  if(to < 0 || to >= storage.length) return;
+  [storage[idx], storage[to]] = [storage[to], storage[idx]];
+  saveGame(); render();
 }
 
 function toggleRest(idx) {

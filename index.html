@@ -4446,7 +4446,7 @@ function renderTower() {
             ${isNewRun?`<div style="font-size:11px;color:${canEnter?'#ff9944':'#666'};margin-top:4px">⚡ ${stamina}/${MAX_STAMINA} AP (-30) &nbsp;|&nbsp; 🏯 ${runsLeft}/${TOWER_DAILY_MAX}</div>`:''}
           </div>`;
         })()}
-        ${towerFloor>0?`<div data-tower-abandon style="padding:8px;border-radius:10px;background:#0a0808;border:1px solid #3a2020;font-family:Orbitron,monospace;font-size:12px;color:#aa4444;text-align:center;cursor:pointer">${T('✕ ยอมแพ้ (รับรางวัลตามชั้นที่ถึง)','✕ Give Up (collect rewards so far)')}</div>`:''}
+        ${towerFloor>towerCheckpoint?`<div data-tower-abandon style="padding:8px;border-radius:10px;background:#0a0808;border:1px solid #3a2020;font-family:Orbitron,monospace;font-size:12px;color:#aa4444;text-align:center;cursor:pointer">${T('✕ ยอมแพ้ (รับรางวัลตามชั้นที่ถึง)','✕ Give Up (collect rewards so far)')}</div>`:''}
       </div>
     </div>`;
 }

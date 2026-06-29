@@ -1542,7 +1542,7 @@ function useItem(type, petIdx=activePetIdx) {
     scoutToast=T('💎 ฟื้นคืนชีพ! HP 50%','💎 Revived! HP 50%');
   }
   if(type==='artifact_box'||type==='box_R'||type==='box_E') {
-    const grade = type==='box_E'?'E' : type==='box_R'?(Math.random()<0.15?'E':'R') : (()=>{ const r=Math.random(); return r<0.05?'E':r<0.40?'R':'N'; })();
+    const grade = type==='box_E'?'E' : type==='box_R'?(Math.random()<0.10?'E':'R') : (()=>{ const r=Math.random(); return r<0.05?'E':r<0.30?'R':'N'; })();
     const pool = ARTIFACT_POOL[grade];
     const artKey = pool[Math.floor(Math.random()*pool.length)];
     addArtifactToBag(artKey);

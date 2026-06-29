@@ -303,8 +303,8 @@ code{color:#cc88ff;font-size:11px}
     <tr><td>🔮</td><td>fusion_stone</td><td>Fusion คู่กับ 300G</td><td>—</td></tr>
     <tr><td>⚡</td><td>energy_drink</td><td>+15 Stamina</td><td>—</td></tr>
     <tr><td>💎</td><td>revive</td><td>ฟื้นจากตาย 50% HP อัตโนมัติ</td><td>—</td></tr>
-    <tr><td>📦</td><td>artifact_box</td><td>N 60% / R 35% / E 5%</td><td>—</td></tr>
-    <tr><td>💜📦</td><td>box_R (Artifact Rare Box)</td><td>การันตี Artifact เกรด Rare [R]</td><td>150G</td></tr>
+    <tr><td>📦</td><td>artifact_box</td><td>N 70% / R 25% / E 5%</td><td>—</td></tr>
+    <tr><td>💜📦</td><td>box_R (Artifact Rare Box)</td><td>R 90% / E 10%</td><td>150G</td></tr>
     <tr><td>✨📦</td><td>box_E (Artifact Epic Box)</td><td>การันตี Artifact เกรด Epic [E]</td><td>400G</td></tr>
     <tr><td>💢</td><td>perm_atk</td><td>ATK +1 ถาวร</td><td>—</td></tr>
     <tr><td>🌪️</td><td>perm_spd</td><td>SPD +1 ถาวร</td><td>—</td></tr>
@@ -366,7 +366,7 @@ code{color:#cc88ff;font-size:11px}
     <tr><td>🔭 true_sight</td><td>ATK +50% (×1.5) ทุกรอบ + ศัตรู dodge ไม่ได้</td><td>—</td></tr>
     <tr><td>🌙 moon_veil</td><td>Regen 8% MaxHP/รอบ</td><td>—</td></tr>
     <tr><td>⚔ double_attack</td><td>20% โอกาสตี 2 ครั้ง/รอบ (pd ×2)</td><td>—</td></tr>
-    <tr><td>🎲 wild_card</td><td>25% สุ่ม: heal 30%MaxHP / ATK×1.5 / reflect 50%ed</td><td>—</td></tr>
+    <tr><td>🎲 wild_card</td><td>25% สุ่ม: Heal 30%MaxHP (30%) / ATK×1.5 (30%) / Reflect 50%ed (30%) / Bad Luck ed×1.5 (10%)</td><td>—</td></tr>
     <tr><td>☠ execution</td><td>ATK ×3.0 (+200%) เมื่อ startHp &lt; 20% MaxHP</td><td>ใช้ startHp (HP ต้นเทิร์น)</td></tr>
     <tr><td>💥 chain_strike</td><td>WIN streak bonus (ใช้ pd หลัง boosts): ×1=65% / ×2=130% / ×3=200% | ไม่ WIN = reset</td><td>synergy กับ artifact อื่น</td></tr>
     <tr><td>☠️ soul_reaper</td><td>Lifesteal 25% of pd/รอบ (deferred หลัง ATK boosts)</td><td>—</td></tr>
@@ -500,11 +500,18 @@ code{color:#cc88ff;font-size:11px}
 <!-- TOWER -->
 <section id="s-tower">
   <div class="sec-header"><span class="sec-icon">🏔️</span><h2>Tower Mode</h2></div>
-  <div class="info">เปิดหลัง Scout Stage 10 | ศัตรู scale ตาม floor | Boss ทุก 10 ชั้น | Checkpoint ทุก 5 ชั้น</div>
+  <div class="info">เปิดหลัง Scout Stage 10 | ศัตรู scale ตาม floor | Boss ทุก 10 ชั้น | Checkpoint ทุก 10 ชั้น | รีเซ็ตทุกวัน (UTC+0) | จำกัด 5 ครั้ง/วัน</div>
   <div class="two-col" style="margin-bottom:14px">
-    <div class="card"><h3>Mechanics</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">Checkpoint ทุก 10 ชั้น (พร้อมกับ Boss — heal ทุก pet)<br>Boss ทุก 10 ชั้น<br>เก็บ Gold + Artifacts ระหว่าง run<br>ตายหรือออก → สรุปผล + ล้าง run<br>Mimic: 5% chance floor 5+</p></div>
+    <div class="card"><h3>Mechanics</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">Checkpoint ทุก 10 ชั้น (Boss floor — heal ทุก pet)<br>Boss ทุก 10 ชั้น<br>เก็บ Gold + Artifact Box ระหว่าง run<br>ตายหรือออก → เก็บรางวัล + กลับ Checkpoint<br>วันใหม่ → reset กลับชั้น 1<br>จำกัด 5 รอบ/วัน | ใช้ 30 AP/รอบ<br>Mimic: 5% chance floor 5+</p></div>
     <div class="card"><h3>Variables</h3><p style="font-size:12px;color:#9977bb;line-height:1.8">towerFloor, towerHighest<br>towerCheckpoint<br>towerPendingGold<br>towerPendingArtifacts[]<br>towerFirstClears (Set)</p></div>
   </div>
+  <h3 style="margin-bottom:8px">Per-Run Rewards (ทุกรอบ ไม่ใช่ first clear)</h3>
+  <table style="margin-bottom:14px">
+    <tr><th>Floor</th><th>รางวัล</th></tr>
+    <tr><td>ทุก 10 ชั้น (10–40)</td><td>Gold (floor×6) + 📦 Artifact Box</td></tr>
+    <tr><td>50, 60, 70, 80, 90</td><td>Gold (floor×6) + 💜 Rare Box (R 90% / E 10%)</td></tr>
+    <tr><td>100</td><td>Gold (floor×6) + 🌟 Epic Box (E 100%)</td></tr>
+  </table>
   <h3 style="margin-bottom:8px">Artifact Drop Rate by Floor</h3>
   <table>
     <tr><th>Floor</th><th>Epic (E)</th><th>Rare (R)</th><th>Normal (N)</th></tr>

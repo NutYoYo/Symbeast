@@ -3186,7 +3186,7 @@ function endBattle(won) {
       towerFloor++;
       towerHighest = Math.max(towerHighest, towerFloor);
       towerPendingGold += Math.round(towerFloor * 6);
-      if(towerFloor % 10 === 0) { towerPendingArtifacts.push('box'); }
+      if(towerFloor % 10 === 0) { towerPendingArtifacts.push(towerFloor>=100?'box_E':towerFloor>=50?'box_R':'box'); }
       if(towerFloor % 10 === 0 && !towerFirstClears.has(towerFloor)) {
         towerFirstClears.add(towerFloor);
         const fcFloor = towerFloor;
@@ -3214,7 +3214,7 @@ function endBattle(won) {
     } else {
       towerHighest = Math.max(towerHighest, towerFloor);
       towerRunSummary = { floor: towerFloor, gold: towerPendingGold, artifacts: [...towerPendingArtifacts] };
-      towerFloor = 0; towerCheckpoint = 0; towerPendingGold = 0; towerPendingArtifacts = [];
+      towerFloor = towerCheckpoint; towerPendingGold = 0; towerPendingArtifacts = [];
       towerActive = false;
       saveGame();
       state = 'tower'; render();
@@ -4315,13 +4315,18 @@ function renderTower() {
           </div>
           ${s.artifacts.length>0?`
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-            ${s.artifacts.filter(a=>a==='box').map(()=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#0e0e22;border:1px solid #5040a060">
-                <span style="font-size:24px">📦</span>
+            ${s.artifacts.filter(a=>a==='box'||a==='box_R'||a==='box_E').map(a=>{
+              const isE=a==='box_E',isR=a==='box_R';
+              const col=isE?'#ffd700':isR?'#cc88ff':'#c0a0ff';
+              const lbl=isE?'Epic Artifact Box':isR?'Rare Artifact Box':'Artifact Box';
+              const odds=isE?'R40/E60':isR?'N20/R65/E15':'N60/R35/E5';
+              return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#0e0e22;border:1px solid ${col}60">
+                <span style="font-size:24px">${isE?'🌟':isR?'💜':'📦'}</span>
                 <div>
-                  <div style="font-family:Orbitron,monospace;font-size:12px;color:#c0a0ff">Artifact Box</div>
-                  <div style="font-size:11px;color:#6858a0">${T('เปิดใน Inventory เพื่อสุ่ม (N60/R35/E5)','Open in Inventory to roll (N60/R35/E5)')}</div>
+                  <div style="font-family:Orbitron,monospace;font-size:12px;color:${col}">${lbl}</div>
+                  <div style="font-size:11px;color:#6858a0">${T('เปิดใน Inventory','Open in Inventory')} (${odds})</div>
                 </div>
-              </div>`).join('')}
+              </div>`;}).join('')}
           </div>`:`<div style="font-size:11px;color:#4a4a6a">${T('ไม่มี Artifact Box','No Artifact Box')}</div>`}
         </div>
         <div data-tower-claim style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#003a00,#006a00);border:2px solid #44cc44;font-family:Orbitron,monospace;font-size:15px;color:#88ff88;text-align:center;cursor:pointer;letter-spacing:1px;margin-top:4px">
@@ -4345,7 +4350,7 @@ function renderTower() {
           <div style="font-family:Orbitron,monospace;font-size:24px;font-weight:700;color:${isBossFloor?'#ff4444':'#c0a0ff'}">
             FLOOR ${nextFloor} ${isBossFloor?'👑 BOSS':''}
           </div>
-          <div style="font-size:11px;color:#8878b8;text-align:right">reward<br><span style="color:#ffaa00">${nextFloor%10===0?'📦 ARTIFACT BOX':Math.round(nextFloor*8)+'G'}</span></div>
+          <div style="font-size:11px;color:#8878b8;text-align:right">reward<br><span style="color:#ffaa00">${nextFloor%10===0?(nextFloor>=100?'🌟 EPIC BOX':nextFloor>=50?'💜 RARE BOX':'📦 ARTIFACT BOX'):Math.round(nextFloor*6)+'G'}</span></div>
         </div>
         ${isBossFloor?`<div style="font-size:11px;color:#ff6666;margin-top:4px">${T('⚠ Boss มีพลังงานสูงกว่าปกติมาก','⚠ Boss has much higher power than normal')}</div>`:''}
         <div style="font-size:11px;color:#6858a0;margin-top:4px">${T('Artifact grade ที่ชั้นนี้:','Artifact grade this floor:')} <span style="color:#ffaa00">${rollArtifactGrade(nextFloor)}</span></div>
@@ -4407,7 +4412,7 @@ function renderTower() {
       <div style="padding:8px 12px;border-radius:10px;background:#0a0a0f;border:1px solid #2a2a3a;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div style="font-family:Orbitron,monospace;font-size:11px;color:#8878b8">${T('สะสมอยู่','Pending')}</div>
         <div style="font-size:12px;color:#ffcc44">💰 ${towerPendingGold.toLocaleString()} G</div>
-        ${towerPendingArtifacts.filter(a=>a==='box').map(()=>`<span style="font-size:16px;color:#c0a0ff">📦</span>`).join('')}
+        ${towerPendingArtifacts.filter(a=>a==='box'||a==='box_R'||a==='box_E').map(a=>`<span style="font-size:16px">${a==='box_E'?'🌟':a==='box_R'?'💜':'📦'}</span>`).join('')}
         ${towerPendingArtifacts.filter(a=>a.startsWith('🏆')).map(a=>{
           const fl=a.replace('🏆first_','');
           const labels={'10':'💰 First Clear Bonus! +1,000G','20':'✨ First Clear Bonus! Essence ×10','30':'💰✨ First Clear Bonus! +5,000G + Essence ×10','40':'📦 First Clear Bonus! Rare Box','50':'✨ First Clear Bonus! Shiny Egg!','60':'📦 First Clear Bonus! Epic Box','70':'💰🔮 First Clear Bonus! +50,000G + Rebirth Stone ×5','80':'📦 First Clear Bonus! Epic Box','90':'✨ First Clear Bonus! Shiny Egg!','100':'✨📦 First Clear Bonus! Shiny Egg + Epic Box'};
@@ -5601,7 +5606,7 @@ screenContent.addEventListener('click', e=>{
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
       if(towerFloor === 0) {
         const todayStr = new Date().toISOString().slice(0,10);
-        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; }
+        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerFloor = 0; towerCheckpoint = 0; towerPendingGold = 0; towerPendingArtifacts = []; }
         if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
         if(stamina < 30) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 30 AP','⚡ Not enough Stamina! Need 30 AP'); render(); return; }
         towerRunsToday++; stamina -= 30; saveGame();
@@ -5633,7 +5638,7 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       towerHighest = Math.max(towerHighest, towerFloor);
       towerRunSummary = { floor: towerFloor, gold: towerPendingGold, artifacts: [...towerPendingArtifacts] };
-      towerFloor = 0; towerCheckpoint = 0; towerPendingGold = 0; towerPendingArtifacts = [];
+      towerFloor = towerCheckpoint; towerPendingGold = 0; towerPendingArtifacts = [];
       towerActive = false;
       saveGame(); render(); return;
     }
@@ -5641,14 +5646,19 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       if(towerRunSummary) {
         const claimedGold = towerRunSummary.gold;
-        const claimedBoxes = towerRunSummary.artifacts.filter(a=>a==='box').length;
+        const arts = towerRunSummary.artifacts;
         gold += claimedGold;
-        towerRunSummary.artifacts.filter(a=>a==='box').forEach(() => addItemToInventory('artifact_box'));
+        arts.filter(a=>a==='box').forEach(()=>addItemToInventory('artifact_box'));
+        arts.filter(a=>a==='box_R').forEach(()=>addItemToInventory('box_R'));
+        arts.filter(a=>a==='box_E').forEach(()=>addItemToInventory('box_E'));
         towerRunSummary = null;
         const parts = [];
         if(claimedGold > 0) parts.push(`💰 +${claimedGold.toLocaleString()} G`);
-        if(claimedBoxes > 0) parts.push(`📦 ×${claimedBoxes} Artifact Box`);
-        scoutToast = parts.length ? `✅ Tower Run Rewards: ${parts.join('  ')}` : '✅ Tower Run Rewards Collected!';
+        const nb=arts.filter(a=>a==='box').length, nr=arts.filter(a=>a==='box_R').length, ne=arts.filter(a=>a==='box_E').length;
+        if(nb>0) parts.push(`📦 ×${nb}`);
+        if(nr>0) parts.push(`💜 ×${nr}`);
+        if(ne>0) parts.push(`🌟 ×${ne}`);
+        scoutToast = parts.length ? `✅ Tower Rewards: ${parts.join('  ')}` : '✅ Tower Run Rewards Collected!';
       }
       saveGame(); state='menu'; render(); return;
     }

@@ -4472,7 +4472,7 @@ function startTowerBattle() {
   const baseSpd = Math.round(7+slv*1.2);
 
   // Tower passive counts by floor tier
-  const monPassiveCount = floor>=50?2:floor>=20?1:0;
+  const monPassiveCount = floor>=90?3:floor>=50?2:floor>=20?1:0;
   const bossPassiveCount = floor>=90?3:floor>=50?2:floor>=20?1:0;
 
   // Decide enemy pool: normal / evolved / fusion
@@ -4485,7 +4485,7 @@ function startTowerBattle() {
 
   // Try to pick Evolved or Fusion form as enemy (50% chance when available)
   let evolvedEnemy = null;
-  if((useEvolved || useFusion || allFusion) && Math.random() < 0.5) {
+  if(allFusion || ((useEvolved || useFusion) && Math.random() < 0.5)) {
     if(allFusion) {
       const fkeys = Object.keys(FINAL_FORMS);
       const fk = fkeys[Math.floor(Math.random()*fkeys.length)];

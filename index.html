@@ -4307,31 +4307,33 @@ function renderTower() {
   if(towerRunSummary) {
     const s = towerRunSummary;
     screenContent.innerHTML = `
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;padding:16px">
-        <div style="font-family:Orbitron,monospace;font-size:15px;color:#ffaa00;text-align:center;letter-spacing:2px">🏯 RUN ENDED</div>
-        <div style="font-family:Orbitron,monospace;font-size:13px;color:#8878b8;text-align:center">${T('ชั้นสูงสุดที่ผ่าน:','Highest floor cleared:')} <span style="color:#c0a0ff">${s.floor}</span></div>
-        <div style="width:100%;padding:14px;border-radius:12px;background:#0a0a1a;border:1px solid #2a2a3a;display:flex;flex-direction:column;gap:8px">
-          <div style="font-family:Orbitron,monospace;font-size:12px;color:#8878b8">${T('รางวัลที่ได้','Rewards')}</div>
-          <div style="display:flex;align-items:center;gap:8px;font-family:Orbitron,monospace;font-size:16px;color:#ffcc44">
-            💰 <span>${s.gold.toLocaleString()} G</span>
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;padding:16px;gap:10px">
+        <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;align-items:center">
+          <div style="font-family:Orbitron,monospace;font-size:15px;color:#ffaa00;text-align:center;letter-spacing:2px">🏯 RUN ENDED</div>
+          <div style="font-family:Orbitron,monospace;font-size:13px;color:#8878b8;text-align:center">${T('ชั้นสูงสุดที่ผ่าน:','Highest floor cleared:')} <span style="color:#c0a0ff">${s.floor}</span></div>
+          <div style="width:100%;padding:14px;border-radius:12px;background:#0a0a1a;border:1px solid #2a2a3a;display:flex;flex-direction:column;gap:8px">
+            <div style="font-family:Orbitron,monospace;font-size:12px;color:#8878b8">${T('รางวัลที่ได้','Rewards')}</div>
+            <div style="display:flex;align-items:center;gap:8px;font-family:Orbitron,monospace;font-size:16px;color:#ffcc44">
+              💰 <span>${s.gold.toLocaleString()} G</span>
+            </div>
+            ${s.artifacts.length>0?`
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+              ${s.artifacts.filter(a=>a==='box'||a==='box_R'||a==='box_E').map(a=>{
+                const isE=a==='box_E',isR=a==='box_R';
+                const col=isE?'#ffd700':isR?'#cc88ff':'#c0a0ff';
+                const lbl=isE?'Epic Artifact Box':isR?'Rare Artifact Box':'Artifact Box';
+                const odds=isE?'R40/E60':isR?'N20/R65/E15':'N60/R35/E5';
+                return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#0e0e22;border:1px solid ${col}60">
+                  <span style="font-size:24px">${isE?'🌟':isR?'💜':'📦'}</span>
+                  <div>
+                    <div style="font-family:Orbitron,monospace;font-size:12px;color:${col}">${lbl}</div>
+                    <div style="font-size:11px;color:#6858a0">${T('เปิดใน Inventory','Open in Inventory')} (${odds})</div>
+                  </div>
+                </div>`;}).join('')}
+            </div>`:`<div style="font-size:11px;color:#4a4a6a">${T('ไม่มี Artifact Box','No Artifact Box')}</div>`}
           </div>
-          ${s.artifacts.length>0?`
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-            ${s.artifacts.filter(a=>a==='box'||a==='box_R'||a==='box_E').map(a=>{
-              const isE=a==='box_E',isR=a==='box_R';
-              const col=isE?'#ffd700':isR?'#cc88ff':'#c0a0ff';
-              const lbl=isE?'Epic Artifact Box':isR?'Rare Artifact Box':'Artifact Box';
-              const odds=isE?'R40/E60':isR?'N20/R65/E15':'N60/R35/E5';
-              return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#0e0e22;border:1px solid ${col}60">
-                <span style="font-size:24px">${isE?'🌟':isR?'💜':'📦'}</span>
-                <div>
-                  <div style="font-family:Orbitron,monospace;font-size:12px;color:${col}">${lbl}</div>
-                  <div style="font-size:11px;color:#6858a0">${T('เปิดใน Inventory','Open in Inventory')} (${odds})</div>
-                </div>
-              </div>`;}).join('')}
-          </div>`:`<div style="font-size:11px;color:#4a4a6a">${T('ไม่มี Artifact Box','No Artifact Box')}</div>`}
         </div>
-        <div data-tower-claim style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#003a00,#006a00);border:2px solid #44cc44;font-family:Orbitron,monospace;font-size:15px;color:#88ff88;text-align:center;cursor:pointer;letter-spacing:1px;margin-top:4px">
+        <div data-tower-claim style="flex-shrink:0;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#003a00,#006a00);border:2px solid #44cc44;font-family:Orbitron,monospace;font-size:15px;color:#88ff88;text-align:center;cursor:pointer;letter-spacing:1px">
           ${T('✅ รับรางวัล','✅ Collect Rewards')}
         </div>
       </div>`;

@@ -1148,6 +1148,7 @@ let titlePhase = 'start'; // 'start' | 'slots'
 let towerFloor = 0;
 let towerHighest = 0;
 let towerCheckpoint = 0;
+let towerNeedsEntry = false;
 let towerActive = false;
 let towerRunsToday = 0;
 let towerRunsDate = '';
@@ -1949,7 +1950,7 @@ function importSave(file) {
 function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry}));
   } catch(e) {}
 }
 
@@ -2013,6 +2014,7 @@ function loadGame(slotNum) {
         if(typeof d.vsCurrentStage==='number') vsCurrentStage = d.vsCurrentStage;
         if(typeof d.towerRunsToday==='number') towerRunsToday = d.towerRunsToday;
         if(typeof d.towerRunsDate==='string') towerRunsDate = d.towerRunsDate;
+        if(typeof d.towerNeedsEntry==='boolean') towerNeedsEntry = d.towerNeedsEntry;
         if(typeof d.totalPlayTime==='number') totalPlayTime = d.totalPlayTime;
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
@@ -3205,6 +3207,7 @@ function endBattle(won) {
       }
       if(towerFloor % 10 === 0) {
         towerCheckpoint = towerFloor;
+        towerNeedsEntry = false;
         pets.forEach(p => { if(p.phase!=='egg') p.hp = p.maxHp; });
       }
       saveGame();
@@ -3213,6 +3216,7 @@ function endBattle(won) {
       towerHighest = Math.max(towerHighest, towerFloor);
       towerRunSummary = { floor: towerFloor, gold: towerPendingGold, artifacts: [...towerPendingArtifacts] };
       towerFloor = towerCheckpoint; towerPendingGold = 0; towerPendingArtifacts = [];
+      towerNeedsEntry = true;
       towerActive = false;
       saveGame();
       state = 'tower'; render();
@@ -4477,8 +4481,8 @@ function renderTower() {
               ${T('🚫 เข้าไม่ได้','🚫 Cannot enter')}<br><span style="font-size:11px;color:#666633">${reason}</span>
             </div>`;
           }
-          const isNewRun = towerFloor === 0;
-          const todayStr2 = new Date().toISOString().slice(0,10);
+          const isNewRun = towerFloor === 0 || towerNeedsEntry;
+          const todayStr2 = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
           const runsLeft = towerRunsDate===todayStr2 ? Math.max(0,TOWER_DAILY_MAX-towerRunsToday) : TOWER_DAILY_MAX;
           const canEnter = !isNewRun || (stamina >= 30 && runsLeft > 0);
           return `<div data-tower-start style="padding:12px;border-radius:12px;background:linear-gradient(135deg,${canEnter?'#3a2000,#6a3800':'#1a1a1a,#2a2a2a'});border:2px solid ${canEnter?'#ffaa00':'#444'};font-family:Orbitron,monospace;font-size:15px;color:${canEnter?'#ffcc44':'#666'};text-align:center;cursor:pointer;letter-spacing:1px">
@@ -5650,11 +5654,11 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
       if(towerFloor === 0) {
-        const todayStr = new Date().toISOString().slice(0,10);
-        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerFloor = 0; towerCheckpoint = 0; towerPendingGold = 0; towerPendingArtifacts = []; }
+        const todayStr = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerFloor = 0; towerCheckpoint = 0; towerPendingGold = 0; towerPendingArtifacts = []; towerNeedsEntry = false; }
         if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
         if(stamina < 30) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 30 AP','⚡ Not enough Stamina! Need 30 AP'); render(); return; }
-        towerRunsToday++; stamina -= 30; saveGame();
+        towerRunsToday++; stamina -= 30; towerNeedsEntry = false; saveGame();
       }
       startTowerBattle(); return;
     }
@@ -5684,6 +5688,7 @@ screenContent.addEventListener('click', e=>{
       towerHighest = Math.max(towerHighest, towerFloor);
       towerRunSummary = { floor: towerFloor, gold: towerPendingGold, artifacts: [...towerPendingArtifacts] };
       towerFloor = towerCheckpoint; towerPendingGold = 0; towerPendingArtifacts = [];
+      towerNeedsEntry = true;
       towerActive = false;
       saveGame(); render(); return;
     }
@@ -5820,6 +5825,7 @@ screenContent.addEventListener('click', e=>{
     else if(action==='tower')      { actionMenuOpen=false;
       if(towerFloor > towerCheckpoint) {
         towerFloor = towerCheckpoint;
+        towerNeedsEntry = true;
         pets.forEach(p => { if(p.phase!=='egg') p.hp = p.maxHp; });
         saveGame();
       }

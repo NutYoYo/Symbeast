@@ -2032,12 +2032,7 @@ function loadGame(slotNum) {
           if(staminaRegen > 0) stamina = Math.min(MAX_STAMINA, stamina + staminaRegen);
         }
         syncCreature();
-        // ONE-TIME DEV CHEAT — remove after testing
-        if(!localStorage.getItem('_devCheat1')) {
-          ['shiny_egg','box_R','box_E'].forEach(t=>addItemToInventory(t));
-          localStorage.setItem('_devCheat1','1');
-          scoutToast = '🎁 DEV: Shiny Egg + box_R + box_E added!';
-        }
+
         return true;
       }
     }

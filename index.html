@@ -5967,6 +5967,7 @@ screenContent.addEventListener('click', e=>{
       const np2 = newPet();
       if(eggType==='shiny_egg') { np2.shiny=true; applyShinyStats(np2); }
       else if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
+      np2.phase='larva'; np2.name='LARVA'; np2.tapCount=np2.tapTarget;
       pets.push(np2); emptySlotModal=null; saveGame();
       showHatchAnimation(np2.shiny, () => { scoutToast = np2.shiny ? T('✨ SHINY HATCHED!','✨ SHINY HATCHED!') : '🥚 HATCHED!'; render(); });
       return;

@@ -2912,7 +2912,7 @@ function doTurn(moveIdx) {
   // Called when ENEMY's attack lands on player (phase 1 if !playerFirst, phase 2 if playerFirst)
   const _whenEnemyHitsPlayer = () => {
     const _iwForce = bs.eIronWillRevengeThisTurn; bs.eIronWillRevengeThisTurn = false;
-    if(enemy.hp > 0 || _iwForce) { creature.hp = Math.max(0, creature.hp - ed); edApplied = true; }
+    if((enemy.hp > 0 || _iwForce) && ed > 0) { creature.hp = Math.max(0, creature.hp - ed); edApplied = true; }
     // Iron Will protection: enemy cannot die from reflect/counter this turn
     const _eIWMin = bs.eIronWillThisTurn ? 1 : 0;
     // FORTRESS: reflect 25%

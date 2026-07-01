@@ -976,7 +976,7 @@ const ENEMY_TYPES = {
     names:['BRUISER','BERSERKER','CRUSHER'],
     bossName:'INFERNO-Ω',
     hp:1.1, atk:1.25, spd:1.0, def:0.75,
-    ai:{STRIKE:0.60, RUSH:0.25, GUARD:0.15},
+    ai:{STRIKE:0.40, RUSH:0.30, GUARD:0.30},
     desc:'High ATK. Favors STRIKE.',
   },
   W: {
@@ -984,7 +984,7 @@ const ENEMY_TYPES = {
     names:['SWOOPER','HARPY','STORMWING'],
     bossName:'TEMPEST-Ω',
     hp:0.95, atk:1.0, spd:1.45, def:0.85,
-    ai:{STRIKE:0.20, RUSH:0.60, GUARD:0.20},
+    ai:{STRIKE:0.30, RUSH:0.40, GUARD:0.30},
     desc:'High SPD. Favors RUSH.',
   },
   S: {
@@ -992,7 +992,7 @@ const ENEMY_TYPES = {
     names:['TANKARD','IRONWALL','BULWARK'],
     bossName:'CITADEL-Ω',
     hp:1.35, atk:0.75, spd:0.8, def:1.5,
-    ai:{STRIKE:0.20, RUSH:0.15, GUARD:0.65},
+    ai:{STRIKE:0.30, RUSH:0.30, GUARD:0.40},
     desc:'High DEF. Favors GUARD.',
   },
 };
@@ -2438,6 +2438,7 @@ function doTurn(moveIdx) {
   if(bs.enemyStunnedNextTurn)  { ed=0; enemyStunned=true;  bs.enemyStunnedNextTurn=false;  SFX.stun(); passives.push({icon:'⚡',text:T('STUN! ศัตรูยังขยับไม่ได้ (ค้างจากเทิร์นที่แล้ว)','STUN! Enemy still cannot act (carried)')}); }
 
   const ep = enemy.passives || [];
+  const enemyTrueStrike = ep.includes('true_strike');
 
   // ===== ENEMY ARTIFACT EFFECTS =====
   if(eArtId || eArtId2) {
@@ -2799,7 +2800,6 @@ function doTurn(moveIdx) {
   }
 
   // ===== PRE-DAMAGE: ENEMY PASSIVES =====
-  const enemyTrueStrike = ep.includes('true_strike');
   if(ep.includes('atk_boost'))    { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:T(`ศัตรู ATK×1.25 → ${ed}`,`Enemy ATK×1.25 → ${ed}`)}); }
   if(ep.includes('dodge') && !ep.includes('true_strike') && Math.random()<0.25 && artId!=='true_sight' && artId2!=='true_sight') { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }
   if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=Math.round(pd*0.5); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
@@ -4436,7 +4436,7 @@ function renderTower() {
               ${T('🚫 เข้าไม่ได้','🚫 Cannot enter')}<br><span style="font-size:11px;color:#666633">${reason}</span>
             </div>`;
           }
-          const isNewRun = towerFloor === towerCheckpoint;
+          const isNewRun = towerFloor === 0;
           const todayStr2 = new Date().toISOString().slice(0,10);
           const runsLeft = towerRunsDate===todayStr2 ? Math.max(0,TOWER_DAILY_MAX-towerRunsToday) : TOWER_DAILY_MAX;
           const canEnter = !isNewRun || (stamina >= 30 && runsLeft > 0);

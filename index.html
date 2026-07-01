@@ -1158,6 +1158,7 @@ let towerRunSummary = null;
 let towerFirstClears = new Set();
 let scoutFirstClears = new Set();
 let towerToast = '';
+let vsToast = '';
 let pets = [];          // max 4 pet objects
 let storage = [];       // max 10 pet objects (storage box)
 const MAX_STORAGE = 20;
@@ -3895,19 +3896,59 @@ function renderVsLobby() {
         </div>
       </div>
       <div style="background:#0a0a1a;border:1px solid #2a3a5a;border-radius:10px;padding:10px">
-        <div style="font-family:Orbitron,monospace;font-size:10px;color:#4ecdc4;letter-spacing:1px;margin-bottom:6px">🐾 ${T('ทีมของคุณ','YOUR TEAM')}</div>
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:#4ecdc4;letter-spacing:1px;margin-bottom:6px">🐾 ${T('ทีมของคุณ (แตะเพื่อเปลี่ยนตัวหน้า)','YOUR TEAM (tap to switch)')}</div>
         <div style="display:flex;gap:6px">
-          ${pets.filter(p=>p.phase!=='egg').map(p=>{
+          ${pets.map((p,i)=>{
+            if(p.phase==='egg') return '';
+            const isActive = i===activePetIdx;
             const dead = p.hp<=0;
-            return `<div style="flex:1;text-align:center;background:#0e0e22;border:1px solid ${dead?'#2a1a1a':'#2a3a4a'};border-radius:8px;padding:6px 2px;opacity:${dead?0.4:1}">
+            const resting = p.resting && p.hp<p.maxHp;
+            const canSwap = !dead && !p.expedition && p.phase!=='egg';
+            const f = p.phase==='final'?FINAL_FORMS[p.finalKey]:p.phase==='evolved'?FORMS[p.formKey]:null;
+            const col = f?.color||'#8080c0';
+            const hpPct = Math.round(p.hp/p.maxHp*100);
+            const hpColor = hpPct>60?'#44ff88':hpPct>30?'#ffcc44':'#ff4444';
+            return `<div ${canSwap&&!isActive?`data-vs-swap="${i}"`:''}
+              style="flex:1;text-align:center;padding:6px 2px;border-radius:8px;background:${isActive?'#12082a':dead?'#1a0808':'#08080f'};border:2px solid ${isActive?col:dead?'#5a1a1a':resting?'#3a3a00':'#1a1a3a'};cursor:${canSwap&&!isActive?'pointer':'default'};opacity:${dead?0.4:1}">
               <div style="width:44px;height:44px;margin:0 auto;${dead?'filter:grayscale(1)':''}">${buildPetSvg(p,44,false)}</div>
-              <div style="font-family:Orbitron,monospace;font-size:8px;color:${dead?'#3a2a2a':'#c0a0ff'};margin-top:2px">${p.name}</div>
-              <div style="height:4px;background:#0a0a20;border-radius:2px;margin-top:3px;overflow:hidden"><div style="width:${Math.max(0,Math.round(p.hp/p.maxHp*100))}%;height:100%;background:${dead?'#3a1a1a':'#2ecc71'}"></div></div>
+              <div style="font-family:Orbitron,monospace;font-size:8px;color:${isActive?col:dead?'#3a2a2a':'#c0a0ff'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+              <div style="font-size:9px;color:${hpColor};margin-top:1px">${p.hp}/${p.maxHp}</div>
+              <div style="height:3px;background:#0a0a20;border-radius:2px;margin-top:2px;overflow:hidden"><div style="width:${hpPct}%;height:100%;background:${hpColor}"></div></div>
+              ${isActive?'<div style="font-size:7px;color:#8040ff;font-family:Orbitron,monospace;margin-top:2px">ACTIVE</div>':''}
+              ${resting?'<div style="font-size:7px;color:#aaaa00;margin-top:1px">😴 REST</div>':''}
             </div>`;
           }).join('')}
         </div>
       </div>
-      <div id="vsStartBtn" style="padding:14px;text-align:center;background:linear-gradient(135deg,#3a0a0a,#1a0a2a);border:2px solid #ff4444;border-radius:10px;font-family:Orbitron,monospace;font-size:14px;color:#ff6666;cursor:pointer;letter-spacing:2px">⚔️ START BATTLE</div>
+      <div style="padding:8px 10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
+        <div style="font-family:Orbitron,monospace;font-size:10px;color:#6858a0;margin-bottom:5px">${T('ใช้ไอเทมก่อนสู้','USE ITEM BEFORE BATTLE')}</div>
+        ${(()=>{
+          const consumables = ['hp_potion','super_potion','max_potion','power_shard','speed_shard','guard_shard','revive'];
+          const avail = consumables.filter(k=>{ const s=inventory.find(x=>x.type===k); return s&&s.qty>0; });
+          if(!avail.length) return `<div style="font-size:10px;color:#2a2a4a;font-family:Orbitron,monospace">${T('ไม่มีไอเทม','NO ITEMS')}</div>`;
+          return `<div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${avail.map(k=>{
+              const it=ITEMS[k]; const qty=inventory.find(x=>x.type===k)?.qty||0;
+              return `<div data-vs-useitem="${k}" title="${N(it)}" style="position:relative;width:36px;height:36px;border-radius:8px;border:1px solid #1a1a3a;background:#08080f;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-size:20px">${it.icon}</span>
+                <span style="position:absolute;bottom:1px;right:3px;font-size:9px;color:${it.color};font-family:Orbitron,monospace">${qty}</span>
+              </div>`;
+            }).join('')}
+          </div>`;
+        })()}
+        ${vsToast?`<div style="font-size:11px;color:#80ee80;margin-top:4px">${vsToast}</div>`:''}
+      </div>
+      ${(()=>{
+        const restingPet = pets.find(p=>p.phase!=='egg'&&p.resting&&p.hp<p.maxHp);
+        const blocked = restingPet || pets.find(p=>p.phase!=='egg'&&p.expedition);
+        if(blocked) {
+          const reason = blocked.resting ? T(`${blocked.name} กำลัง Rest อยู่`,`${blocked.name} is Resting`) : T(`${blocked.name} อยู่ใน Expedition`,`${blocked.name} is on Expedition`);
+          return `<div style="padding:12px;border-radius:12px;background:#1a1008;border:2px solid #555522;font-family:Orbitron,monospace;font-size:13px;color:#888844;text-align:center">
+            🚫 ${T('เข้าต่อสู้ไม่ได้','Cannot enter battle')}<br><span style="font-size:11px;color:#666633">${reason}</span>
+          </div>`;
+        }
+        return `<div id="vsStartBtn" style="padding:14px;text-align:center;background:linear-gradient(135deg,#3a0a0a,#1a0a2a);border:2px solid #ff4444;border-radius:10px;font-family:Orbitron,monospace;font-size:14px;color:#ff6666;cursor:pointer;letter-spacing:2px">⚔️ START BATTLE</div>`;
+      })()}
     </div>`;
 }
 
@@ -6355,9 +6396,40 @@ screenContent.addEventListener('click', e=>{
     if(btn) doTurn(Number(btn.dataset.moveidx));
   }
 
-  if(el.closest('#vsStartBtn'))      { SFX.vsStart(); startVsBattle(0); return; }
+  if(el.closest('#vsStartBtn'))      { SFX.vsStart(); vsToast=''; startVsBattle(0); return; }
   if(el.closest('#vsNextBtn'))       { SFX.click(); state='vs_lobby'; render(); return; }
   if(el.closest('#vsResultBackBtn')) { SFX.click(); state='menu'; render(); return; }
+
+  const vsSwapEl = el.closest('[data-vs-swap]');
+  if(vsSwapEl) {
+    SFX.click();
+    activePetIdx = parseInt(vsSwapEl.dataset.vsSwap);
+    syncCreature(); saveGame(); render(); return;
+  }
+  const vsItemEl = el.closest('[data-vs-useitem]');
+  if(vsItemEl) {
+    SFX.click();
+    const k = vsItemEl.dataset.vsUseitem;
+    const slot = inventory.find(s=>s.type===k);
+    if(!slot||slot.qty<=0) return;
+    const target = creature;
+    const it = ITEMS[k];
+    if(k==='hp_potion')    { target.hp=Math.min(target.maxHp,target.hp+Math.round(target.maxHp*0.30)); vsToast=`${it.icon} HP +30%`; }
+    else if(k==='super_potion') { target.hp=Math.min(target.maxHp,target.hp+Math.round(target.maxHp*0.60)); vsToast=`${it.icon} HP +60%`; }
+    else if(k==='max_potion')   { target.hp=target.maxHp; vsToast=`${it.icon} HP FULL`; }
+    else if(k==='revive') {
+      const dead = pets.find(p=>p.phase!=='egg'&&p.hp<=0);
+      if(!dead) { vsToast=T('ไม่มีมอนที่ HP=0','No KO beast to revive'); render(); return; }
+      dead.hp=Math.round(dead.maxHp*0.30); vsToast=`${it.icon} ${dead.name} ${T('ฟื้น!','revived!')}`;
+    }
+    else if(k==='power_shard'||k==='speed_shard'||k==='guard_shard') {
+      const now=Date.now(); const BUFF_DUR=30*60*1000;
+      pets.forEach(p=>{ if(p.phase!=='egg'){ if(!p.buffExpiry)p.buffExpiry={atk:0,spd:0,def:0}; if(k==='power_shard')p.buffExpiry.atk=now+BUFF_DUR; else if(k==='speed_shard')p.buffExpiry.spd=now+BUFF_DUR; else p.buffExpiry.def=now+BUFF_DUR; } });
+      vsToast=`${it.icon} ${T('ทุกตัว +20% (30 นาที)','All +20% (30 min)')}`;
+    }
+    slot.qty--; if(slot.qty<=0) inventory.splice(inventory.indexOf(slot),1);
+    saveGame(); render(); return;
+  }
 
   // ── DUEL ──
   const vsTabEl = el.closest('[data-vstab]');

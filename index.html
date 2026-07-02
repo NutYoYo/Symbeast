@@ -1985,8 +1985,6 @@ function loadGame(slotNum) {
         artifactBag = Array.isArray(d.artifactBag) ? d.artifactBag : [];
         if(Array.isArray(d.inventory)) d.inventory.filter(s=>s.type.startsWith('artifact_')&&s.type!=='artifact_box').forEach(s=>{ addArtifactToBag(s.type.slice('artifact_'.length), s.qty); });
         if(typeof d.stage==='number') stage = d.stage;
-    if(typeof d.hardMode==='boolean') hardMode = d.hardMode;
-    if(typeof d.hardStage==='number') hardStage = d.hardStage;
         gold = (typeof d.gold==='number' && !isNaN(d.gold)) ? d.gold : 0;
         pets.forEach(p=>{ if(typeof p.trainCount !== 'number' || isNaN(p.trainCount)) p.trainCount = 0; });
         // Normalize old symbol format: 'sym_F' → 'F'
@@ -2022,6 +2020,8 @@ function loadGame(slotNum) {
         if(Array.isArray(d.seenFinal))   seenFinal   = new Set(d.seenFinal);
         if(Array.isArray(d.towerFirstClears)) towerFirstClears = new Set(d.towerFirstClears);
         if(Array.isArray(d.scoutFirstClears)) scoutFirstClears = new Set(d.scoutFirstClears);
+        if(typeof d.hardMode==='boolean') hardMode = d.hardMode;
+        if(typeof d.hardStage==='number') hardStage = d.hardStage;
         if(typeof d.hellMode==='boolean') hellMode = d.hellMode;
         if(typeof d.hellStage==='number') hellStage = d.hellStage;
         if(typeof d.vsCurrentStage==='number') vsCurrentStage = d.vsCurrentStage;

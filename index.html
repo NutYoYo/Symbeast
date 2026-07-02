@@ -1075,7 +1075,7 @@ const ARTIFACTS = {
   death_mark:      { name:'Death Mark',       nameTh:'ตราแห่งความตาย',    grade:'R', icon:'💀', desc:'In battle: When HP drops below 30%, ATK increases by 100%', descTh:'ในการต่อสู้: เมื่อ HP ต่ำกว่า 30% ATK เพิ่ม 100%' },
   precision_stone: { name:'Precision Stone',  nameTh:'หินแม่นยำ',         grade:'R', icon:'🔮', desc:'In battle: Every 3 rounds, deal double damage', descTh:'ในการต่อสู้: ทุก 3 รอบ โจมตีด้วยดาเมจสองเท่า' },
   paralysis_fang:  { name:'Paralysis Fang',   nameTh:'เขี้ยวอัมพาต',     grade:'R', icon:'🦷', desc:'In battle: 15% chance to stun the enemy; if stunned, ATK +30% next round', descTh:'ในการต่อสู้: 15% โอกาส Stun ศัตรู หาก Stun ATK +30% รอบถัดไป' },
-  berserker_claw:  { name:'Berserker Claw',   nameTh:'กรงเล็บคลั่ง',     grade:'R', icon:'🐾', desc:'In battle: Crit chance +20%, but you take 10% more damage', descTh:'ในการต่อสู้: โอกาสคริติคอล +20% แต่รับดาเมจเพิ่ม 10%' },
+  berserker_claw:  { name:'Berserker Claw',   nameTh:'กรงเล็บคลั่ง',     grade:'R', icon:'🐾', desc:'In battle: ATK +25%, Crit chance +20%, but you take 10% more damage', descTh:'ในการต่อสู้: ATK +25%, โอกาสคริติคอล +20% แต่รับดาเมจเพิ่ม 10%' },
   sniper_eye:      { name:'Sniper Eye',       nameTh:'ตานักแม่น',         grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (×2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ ×2.0)' },
   victory_chain:   { name:'Victory Chain',    nameTh:'โซ่แห่งชัยชนะ',    grade:'R', icon:'⛓', desc:'In battle: Each WIN increases ATK by 20%, stacking up to 3 times', descTh:'ในการต่อสู้: ทุกครั้งที่ชนะ ATK +20% สะสมสูงสุด 3 ครั้ง' },
   reflect_coat:    { name:'Reflect Coat',     nameTh:'เสื้อสะท้อน',       grade:'R', icon:'🪞', desc:'In battle: Reflects 15% of damage received back to the enemy', descTh:'ในการต่อสู้: สะท้อนดาเมจที่รับ 15% กลับไปยังศัตรู' },
@@ -1411,8 +1411,9 @@ function getEffStat(stat) {
   const now = Date.now();
   const base = creature[stat] || 0;
   const exp = creature.buffExpiry?.[stat] || 0;
-  if(exp > now) return Math.round(base * 1.2);
-  return base;
+  let val = (exp > now) ? Math.round(base * 1.2) : base;
+  if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
+  return val;
 }
 
 function buffRemaining(stat) {
@@ -2436,7 +2437,7 @@ function doTurn(moveIdx) {
   const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
   let eCritBonus = 0;
   if(eArtId==='keen_edge'      || eArtId2==='keen_edge')      eCritBonus += 0.10;
-  if(eArtId==='berserker_claw' || eArtId2==='berserker_claw') eCritBonus += 0.20;
+  if(eArtId==='berserker_claw' || eArtId2==='berserker_claw') { eCritBonus += 0.20; enemy = {...enemy, atk: Math.round(enemy.atk*1.25)}; }
   if(eArtId==='crit_core'      || eArtId2==='crit_core')      eCritBonus += 0.25;
   if(eArtId==='deathblow'      || eArtId2==='deathblow')      eCritBonus += 0.15;
   const enemyCritChance = (isBoss ? 0.12 : 0.08) + eCritBonus;

@@ -5666,9 +5666,9 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('[data-tower-start]')) {
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
-      if(towerFloor === 0) {
+      if(towerFloor === 0 || towerNeedsEntry) {
         const todayStr = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
-        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerFloor = 0; towerCheckpoint = 0; towerPendingGold = 0; towerPendingArtifacts = []; towerNeedsEntry = false; }
+        if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; if(towerFloor===0){ towerCheckpoint=0; towerPendingGold=0; towerPendingArtifacts=[]; } towerNeedsEntry = false; }
         if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
         if(stamina < 30) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 30 AP','⚡ Not enough Stamina! Need 30 AP'); render(); return; }
         towerRunsToday++; stamina -= 30; towerNeedsEntry = false; saveGame();

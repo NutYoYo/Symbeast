@@ -3913,7 +3913,7 @@ function renderVsLobby() {
             const hpPct = Math.round(p.hp/p.maxHp*100);
             const hpColor = hpPct>60?'#44ff88':hpPct>30?'#ffcc44':'#ff4444';
             return `<div ${canSwap&&!isActive?`data-vs-swap="${i}"`:''}
-              style="flex:1;text-align:center;padding:6px 2px;border-radius:8px;background:${isActive?'#12082a':dead?'#1a0808':'#08080f'};border:2px solid ${isActive?col:dead?'#5a1a1a':resting?'#3a3a00':'#1a1a3a'};cursor:${canSwap&&!isActive?'pointer':'default'};opacity:${dead?0.4:1}">
+              style="flex:0 0 calc(25% - 5px);min-width:0;text-align:center;padding:6px 2px;border-radius:8px;background:${isActive?'#12082a':dead?'#1a0808':'#08080f'};border:2px solid ${isActive?col:dead?'#5a1a1a':resting?'#3a3a00':'#1a1a3a'};cursor:${canSwap&&!isActive?'pointer':'default'};opacity:${dead?0.4:1}">
               <div style="width:44px;height:44px;margin:0 auto;${dead?'filter:grayscale(1)':''}">${buildPetSvg(p,44,false)}</div>
               <div style="font-family:Orbitron,monospace;font-size:8px;color:${isActive?col:dead?'#3a2a2a':'#c0a0ff'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
               <div style="font-size:9px;color:${hpColor};margin-top:1px">${p.hp}/${p.maxHp}</div>

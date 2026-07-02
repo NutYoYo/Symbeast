@@ -4416,7 +4416,7 @@ function renderTower() {
             const isDead = p.hp<=0;
             const hasRevive = (inventory.find(s=>s.type==='revive')?.qty||0)>0;
             return `<div ${canSwap&&!isActive?`data-tower-swap="${i}"`:''}
-              style="flex:1;text-align:center;padding:6px;border-radius:8px;background:${isActive?'#12082a':isDead?'#1a0808':'#08080f'};border:2px solid ${isActive?col:isDead?'#5a1a1a':'#1a1a3a'};cursor:${canSwap&&!isActive?'pointer':'default'}">
+              style="flex:0 0 calc(25% - 5px);min-width:0;text-align:center;padding:6px;border-radius:8px;background:${isActive?'#12082a':isDead?'#1a0808':'#08080f'};border:2px solid ${isActive?col:isDead?'#5a1a1a':'#1a1a3a'};cursor:${canSwap&&!isActive?'pointer':'default'}">
               <div style="width:36px;height:36px;margin:0 auto;display:flex;align-items:center;justify-content:center;${isDead?'opacity:0.4':''}">${buildPetSvg(p,34,true)}</div>
               <div style="font-size:9px;font-family:Orbitron,monospace;color:${isActive?col:isDead?'#884444':'#9070c0'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${petName(p)}</div>
               <div style="font-size:10px;color:${artColor};margin-top:1px">${art?art.icon:'—'}</div>

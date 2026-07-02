@@ -5409,6 +5409,7 @@ function renderBattleScreen() {
           } else if(ap==='e-atk') {
             dmgNums += `<div class="dmg-num player-hit ${lr.ed===0?'miss-tag':''}">${lr.ed>0?'-'+lr.ed:'DODGE!'}</div>`;
             if(lr.enemyCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
+            if(lr.playerHeal>0) dmgNums += `<div class="dmg-num heal">💚+${lr.playerHeal}</div>`;
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;
             if(lr.reflectDmg>0) dmgNums += `<div class="dmg-num enemy-hit" style="color:#00ffcc;font-size:18px;top:50%;animation-delay:0.3s;text-shadow:0 0 8px #00ffcc">🛡🔄-${lr.reflectDmg}</div>`;
           }

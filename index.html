@@ -1990,6 +1990,18 @@ function loadGame(slotNum) {
         pets.forEach(p=>{ if(typeof p.trainCount !== 'number' || isNaN(p.trainCount)) p.trainCount = 0; });
         // Normalize old symbol format: 'sym_F' → 'F'
         pets.forEach(p=>{ p.symbols = (p.symbols||[]).map(s=>s.length>1?s.split('_').pop():s).filter(s=>'FWS'.includes(s)); });
+        // Reset all slot-specific state before loading to avoid bleed between slots
+        scoutGrid=[]; scoutPos={x:0,y:0}; currentBiome='desert';
+        hardMode=false; hardStage=0; hellMode=false; hellStage=1;
+        replayStage=null; replayHard=false; lastScrollDay='';
+        stamina=100; firstBossKilled=false; overdriveCharge=0;
+        towerFloor=0; towerHighest=0; towerCheckpoint=0; towerPendingGold=0;
+        towerPendingArtifacts=[]; towerRunSummary=null; towerNeedsEntry=false;
+        towerRunsToday=0; towerRunsDate='';
+        seenEvolved=new Set(); seenFinal=new Set();
+        towerFirstClears=new Set(); scoutFirstClears=new Set();
+        vsCurrentStage=1; totalPlayTime=0;
+
         if(Array.isArray(d.scoutGrid)&&d.scoutGrid.length) scoutGrid = d.scoutGrid;
         if(d.scoutPos) scoutPos = d.scoutPos;
         if(d.lastScrollDay) lastScrollDay = d.lastScrollDay;

@@ -8459,6 +8459,9 @@ screenContent.addEventListener('click', e=>{
     pvpBattleData = { defenderTeam: challenge.team, defenderName, defenderUid };
     duelEnemyTeam = challenge.team.map(p => {
       const phase = p.ph==='f'?'final':p.ph==='l'?'larva':'evolved';
+      const form = phase==='final' ? EVOLVE2_FORMS[p.fk] : phase==='evolved' ? FORMS[p.ek] : null;
+      const passivesList = [];
+      if(phase==='evolved' && p.ek) passivesList.push(p.ek);
       return {
       name: p.name||'???',
       phase,
@@ -8475,9 +8478,11 @@ screenContent.addEventListener('click', e=>{
       isLarvaEnemy: phase==='larva',
       evolve2Key: p.fk||null,
       evolvedKey: p.ek||null,
+      ownPassiveDesc: form?.passive || null,
+      ownPassiveIcon: form?.passiveIcon || null,
       typeKey: 'F',
       spriteFile: null,
-      passives: [],
+      passives: passivesList,
     };
     });
     duelMode = '3v3';

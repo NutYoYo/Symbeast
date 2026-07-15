@@ -8456,9 +8456,11 @@ screenContent.addEventListener('click', e=>{
     }
     // Convert team data to duel format
     pvpBattleData = { defenderTeam: challenge.team, defenderName, defenderUid };
-    duelEnemyTeam = challenge.team.map(p => ({
+    duelEnemyTeam = challenge.team.map(p => {
+      const phase = p.ph==='f'?'final':p.ph==='l'?'larva':'evolved';
+      return {
       name: p.name||'???',
-      phase: p.ph==='f'?'final':p.ph==='l'?'larva':'evolved',
+      phase,
       maxHp: p.hp, hp: p.hp,
       atk: p.atk, spd: p.spd, def: p.def,
       formKey: p.ek||null,
@@ -8467,7 +8469,16 @@ screenContent.addEventListener('click', e=>{
       artifact: p.a1||null,
       artifact2: p.a2||null,
       weapon: p.w||null,
-    }));
+      isEvolve2Enemy: phase==='final',
+      isEvolvedEnemy: phase==='evolved',
+      isLarvaEnemy: phase==='larva',
+      evolve2Key: p.fk||null,
+      evolvedKey: p.ek||null,
+      typeKey: 'F',
+      spriteFile: null,
+      passives: [],
+    };
+    });
     duelMode = '3v3';
     duelMyTeam = [];
     duelSelectStep = 'team';

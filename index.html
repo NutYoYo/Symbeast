@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -3372,7 +3372,8 @@ function doOverdriveTurn() {
 
 function doTurn(moveIdx) {
   if(!battleState || battleState.waiting) return;
-  const {enemy, isBoss} = battleState;
+  const enemy = battleState.enemy;
+  const isBoss = battleState.isBoss;
   const pm = MOVES[moveIdx];
   const et = ENEMY_TYPES[enemy.typeKey] || ENEMY_TYPES.F;
   const em = pickEnemyMove(et.ai);
@@ -3427,10 +3428,11 @@ function doTurn(moveIdx) {
   const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
   let eCritBonus = 0;
   if(eArtId==='keen_edge'      || eArtId2==='keen_edge')      eCritBonus += 0.10;
-  if(eArtId==='berserker_claw' || eArtId2==='berserker_claw') { eCritBonus += 0.20; enemy = {...enemy, atk: Math.round(enemy.atk*1.25)}; }
+  if(eArtId==='berserker_claw' || eArtId2==='berserker_claw') eCritBonus += 0.20;
   if(eArtId==='crit_core'      || eArtId2==='crit_core')      eCritBonus += 0.20;
   if(eArtId==='blade_shard'    || eArtId2==='blade_shard')    eCritBonus += 0.05;
   if(eArtId==='deathblow'      || eArtId2==='deathblow')      eCritBonus += 0.15;
+  const enemyAtk = (eArtId==='berserker_claw' || eArtId2==='berserker_claw') ? Math.round(enemy.atk*1.25) : enemy.atk;
   // Evolve II enemy mimic — mirrors the player's branch-skill crit modifiers (no Overdrive)
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='DARK-SPECTER') eCritBonus += 0.25;
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='FIGHT-SWIFTGUARD' && cmp==='lose') bs.e2StackE = Math.min(3, (bs.e2StackE||0)+1);
@@ -3444,7 +3446,7 @@ function doTurn(moveIdx) {
   const eCritMult = (eArtId==='deathblow'||eArtId2==='deathblow') ? 2.0 : 1.5;
   // PIERCE (enemy passive) / Piercing Fang (player artifact): ignores DEF and all incoming damage-reduction effects below
   const enemyIgnoresDef = (enemy.passives||[]).includes('pierce_atk');
-  let ed = Math.max(1, Math.round((em.dmg + enemy.atk/3 + Math.random()*4) / mult * ((eSniperReady||enemyCrit) ? eCritMult : 1)) - (enemyIgnoresDef ? 0 : Math.floor(getEffStat('def')/2)));
+  let ed = Math.max(1, Math.round((em.dmg + enemyAtk/3 + Math.random()*4) / mult * ((eSniperReady||enemyCrit) ? eCritMult : 1)) - (enemyIgnoresDef ? 0 : Math.floor(getEffStat('def')/2)));
 
   const passives = [];
   const startHp = creature.hp; // HP at start of turn (before any heals/modifications)
@@ -3872,7 +3874,7 @@ function doTurn(moveIdx) {
     if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.15*bs.e2StackE)); passives.push({icon:'💢',text:`[E] RAGING Stack×${bs.e2StackE}→${ed}`}); }
   }
   if(fk2==='CRIMSON-BRAWLER' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) {
-    pd=0; const counter=Math.max(1,Math.round(enemy.atk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=0; const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🗡',text:`[E] CRIMSON DODGE! Counter -${counter}`});
   }
   if(fk2==='KAIJU-BRAWLER') {
@@ -3881,18 +3883,18 @@ function doTurn(moveIdx) {
   }
   if(fk2==='FIGHTER-PANDA' && cmp==='win') { ed=Math.round(ed*1.75); passives.push({icon:'🥊',text:`[E] FIGHTER dmg+75%→${ed}`}); }
   if(fk2==='PANDA-WARRIOR' && Math.random()<0.25) {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const counter=Math.max(1,Math.round(enemy.atk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🐼',text:`[E] PANDA-WARRIOR dmg½ Counter -${counter}`});
   }
   if(fk2==='ARMOR-PANDA') {
     pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
-    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(enemy.atk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA Counter -${counter}`}); }
+    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA Counter -${counter}`}); }
     else passives.push({icon:'🛡',text:`[E] ARMOR-PANDA dmg-20%→${pd}`});
   }
   if(fk2==='TYRANT-IRONJAW') { ed=Math.round(ed*1.2); passives.push({icon:'🩸',text:`[E] TYRANT dmg+20%→${ed}`}); }
   if(fk2==='AGILE-IRONJAW' && Math.random()<0.25) { const extra=ed; ed+=extra; passives.push({icon:'⚔',text:`[E] AGILE DOUBLE ATTACK→${ed}`}); }
   if(fk2==='FULLARMOR-IRONJAW' && enemy.hp<enemy.maxHp*0.5) {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); const counter=Math.max(1,Math.round(enemy.atk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🛡',text:`[E] FULLARMOR HP<50% Counter -${counter}`});
   }
   if(fk2==='STRONG-BLITZ' && cmp==='lose') {
@@ -4020,8 +4022,8 @@ function doTurn(moveIdx) {
     const finisherNow = enemy.hp < enemy.maxHp*0.30 && !bs.eSpecialBossFinisherUsed;
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true;
-      const h1=Math.max(1,Math.round((em.dmg+enemy.atk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
-      const h2=Math.max(1,Math.round((em.dmg+enemy.atk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
+      const h1=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
+      const h2=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
       ed = h1+h2;
       const ls=Math.max(1,Math.round(ed*0.5)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
       passives.push({icon:'☄️',text:T(`RAGNAROK ไม้ตาย WORLD ENDER! ×2.0 สองครั้ง + ดูดเลือด 50% →${ed}`,`RAGNAROK finisher WORLD ENDER! ×2.0 twice + 50% lifesteal →${ed}`)});
@@ -4057,7 +4059,7 @@ function doTurn(moveIdx) {
   if(enemy.spriteFile==='monster & boss/W-phantasm-specialboss.png') {
     if(bs.ePhantasmFinisherThisTurn) {
       bs.ePhantasmFinisherThisTurn = false;
-      const h=Math.max(1,Math.round((em.dmg+enemy.atk/3+Math.random()*4)*4.0)-Math.floor(getEffStat('def')/2));
+      const h=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*4.0)-Math.floor(getEffStat('def')/2));
       ed = h;
       const ls=Math.max(1,Math.round(ed*0.75)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
       passives.push({icon:'🌑',text:T(`PHANTASM ไม้ตาย SOUL HARVEST! ×4.0 + ดูดเลือด 75% →${ed}`,`PHANTASM finisher SOUL HARVEST! ×4.0 + 75% lifesteal →${ed}`)});
@@ -4071,7 +4073,7 @@ function doTurn(moveIdx) {
     const finisherNow = enemy.hp < enemy.maxHp*0.30 && !bs.eSpecialBossFinisherUsed;
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true;
-      const h=Math.max(1,Math.round((em.dmg+enemy.atk/3+Math.random()*4)*3.5)-Math.floor(getEffStat('def')/2));
+      const h=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*3.5)-Math.floor(getEffStat('def')/2));
       ed = h;
       if(!playerStunned) { if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); }
       passives.push({icon:'🔨',text:T(`TYRANTJAW ไม้ตาย PRIMAL SMASH! ×3.5 (คริบังคับ) + Stun ผู้เล่น →${ed}`,`TYRANTJAW finisher PRIMAL SMASH! ×3.5 (forced crit) + stuns you →${ed}`)});
@@ -4085,7 +4087,7 @@ function doTurn(moveIdx) {
     const finisherNow = enemy.hp < enemy.maxHp*0.30 && !bs.eSpecialBossFinisherUsed;
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true; bs.eVanguardFinisherTurns = 3;
-      const h=Math.max(1,Math.round((em.dmg+enemy.atk/3+Math.random()*4)*2.5)-Math.floor(getEffStat('def')/2));
+      const h=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*2.5)-Math.floor(getEffStat('def')/2));
       ed = h;
       if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun();
       passives.push({icon:'⚡',text:T(`VANGUARD ไม้ตาย OVERLOAD PROTOCOL! ×2.5 + Stun แน่นอน →${ed}`,`VANGUARD finisher OVERLOAD PROTOCOL! ×2.5 + guaranteed stun →${ed}`)});
@@ -4104,7 +4106,7 @@ function doTurn(moveIdx) {
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true;
       let total = 0;
-      for(let i=0;i<5;i++) { const isLast=i===4; total += Math.max(1,Math.round((em.dmg+enemy.atk/3+Math.random()*4)*(isLast?eCritMult:1))-Math.floor(getEffStat('def')/2)); }
+      for(let i=0;i<5;i++) { const isLast=i===4; total += Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*(isLast?eCritMult:1))-Math.floor(getEffStat('def')/2)); }
       ed = total;
       passives.push({icon:'👊',text:T(`MONKEY ไม้ตาย THOUSAND FIST FURY! โจมตี 5 ครั้งติด (คริบังคับครั้งสุดท้าย) →${ed}`,`MONKEY finisher THOUSAND FIST FURY! 5 strikes in a row (guaranteed crit on final) →${ed}`)});
     } else {

@@ -62,7 +62,7 @@ code{color:#cc88ff;font-size:11px}
 
 <div class="hdr">
   <h1>⚔ SYMBEAST</h1>
-  <p>COMPENDIUM — อัปเดต 2026-06-26</p>
+  <p>COMPENDIUM — อัปเดต 2026-07-15</p>
 </div>
 
 <div id="nav">
@@ -676,6 +676,15 @@ code{color:#cc88ff;font-size:11px}
     <tr><td>box_R/box_E แสดงข้อมูลผิด</td><td class="bug-cause">duplicate keys ใน ITEMS object ทำให้ถูก overwrite</td><td class="bug-fixed">ลบ duplicate entries ออก</td></tr>
     <tr><td>เพิ่ม shiny_egg / box_R / box_E</td><td class="bug-cause">—</td><td class="bug-fixed">items ใหม่ใน inventory, tower rewards, useItem(), emptySlotModal</td></tr>
     <tr><td>HP threshold badges</td><td class="bug-cause">—</td><td class="bug-fixed">เพิ่ม visual badges ใต้ HP bar: Execution/Death Mark/Stone Skin/Iron Will</td></tr>
+  </table>
+  <h3 style="margin-bottom:8px">Session 2026-07-15 — v0.1.0</h3>
+  <table>
+    <tr><th>Change</th><th>รายละเอียด</th><th>หมายเหตุ</th></tr>
+    <tr><td>PVP Async Ranked</td><td class="bug-cause">ระบบจัดอันดับผ่าน Firestore</td><td class="bug-fixed">ส่งทีม 3 ตัว + ท้าชิง + Rating</td></tr>
+    <tr><td>Tutorial System</td><td class="bug-cause">แนะนำการเล่นขั้นพื้นฐาน</td><td class="bug-fixed">6 ขั้นตอนตั้งแต่ฟักไข่ถึง Tower</td></tr>
+    <tr><td>Overdrive ปิดใน PVP/Duel</td><td class="bug-cause">resource สะสมไม่ fair ใน PVP</td><td class="bug-fixed">ปิด Overdrive เมื่อ isDuelBattle</td></tr>
+    <tr><td>ไอเทมปิดใน PVP/Duel</td><td class="bug-cause">consistent กับ Overdrive</td><td class="bug-fixed">เพิ่ม isDuelBattle check ในปุ่ม Item</td></tr>
+    <tr><td>SFX แยก death/hit</td><td class="bug-cause">death ใช้เสียง hit</td><td class="bug-fixed">SFX.death() แยกออกมา</td></tr>
   </table>
 </section>
 

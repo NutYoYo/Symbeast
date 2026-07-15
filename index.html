@@ -1536,6 +1536,20 @@ let idlePopupShown = false;   // prevent re-showing idle popup in same session
 let idleAnimFrame = null;     // animation frame timer for idle cosmetic scene
 let idleOnlineInterval = null; // 1s interval for accumulating online idle time
 let lastSeenPatch = '';       // patch notes version last seen (for popup)
+let tutorialDone = false;     // tutorial completed flag
+let tutorialStep = 0;        // current tutorial step index (when active)
+let privacyOpen = false;     // privacy policy popup open
+
+// ── PVP (Async Ranked) ──
+let pvpTeam = [];          // indices of pets I've deployed (max 3)
+let pvpChallenges = [];    // list of {id, uid, name, team, wins, losses, rating, createdAt} from Firestore
+let pvpHistory = [];       // list of {opponent, result, timestamp}
+let pvpTab = 'deploy';     // 'deploy' | 'challenge' | 'history'
+let pvpWins = 0;
+let pvpLosses = 0;
+let pvpRating = 1000;
+let pvpLoadMsg = '';
+let pvpBattleData = null;  // {defenderTeam, defenderName, defenderUid} when entering battle
 
 const PATCH_NOTES = [
   { ver:'v0.0.1', date:'2026-07-15', th:[
@@ -1568,6 +1582,46 @@ const PATCH_NOTES = [
       '⛓️ HEAL BLOCK system — prevents healing for 3 turns',
       '   • New Artifact ⛓️ Cursed Shackle (R grade) — 25% on hit blocks enemy healing',
       '   • New Enemy Skill 🚫💚 HEAL BLOCK — S-type 25% on hit blocks player healing',
+    ]
+  },
+  { ver:'v0.1.0', date:'2026-07-15', th:[
+      '⚔️ PVP (Async Ranked) — ระบบจัดอันดับผ่าน Firestore',
+      '   • ส่งทีม 3 ตัวขึ้น Ladder ให้คนอื่นท้าสู้',
+      '   • ท้าชิงผู้เล่นอื่น — เลือกสู้กับทีมที่ deploy ไว้',
+      '   • คะแนน Rating + ประวัติการสู้',
+      '🎓 ระบบ Tutorial — แนะนำการเล่นขั้นพื้นฐาน',
+      '🔒 Privacy Policy — นโยบายความเป็นส่วนตัว',
+      '⚖️ PVP Balance: ปิด Overdrive + ไอเทมใน PVP/Duel',
+      '   • Overdrive: ปิดใน PVP/Duel (resource ไม่ fair)',
+      '   • ไอเทม: ปิดใน PVP/Duel เช่นกัน (consistent)',
+      '🎨 Pet Sprite Animation — SFX แยก death/hit',
+      '', // blank line spacer
+      '📌 อัปเดตสะสมจาก v0.0.1:',
+      '✨ IDLE HUNT — สะสมเวลา Gold + ไอเทม',
+      '🤖 Tower Auto x10 — ออโต้ 10 ชั้น',
+      '🛡 แก้บั๊ก Floating damage / Reflect',
+      '⛓️ HEAL BLOCK System — Cursed Shackle',
+      '💰 ขาย Artifact ราคาตามเกรด + ขายทีละหลายชิ้น',
+      '💬 หน้าต่างข่าวอัปเดตอัตโนมัติ',
+    ], en:[
+      '⚔️ PVP (Async Ranked) — Firestore ladder system',
+      '   • Deploy 3 pets for others to challenge',
+      '   • Challenge other players — fight their deployed team',
+      '   • Rating system + battle history',
+      '🎓 Tutorial system — step-by-step gameplay guide',
+      '🔒 Privacy Policy page',
+      '⚖️ PVP Balance: Overdrive + Items disabled in PVP/Duel',
+      '   • Overdrive: disabled in PVP/Duel (unfair resource)',
+      '   • Items: disabled in PVP/Duel (consistency)',
+      '🎨 Pet Sprite Animation — death/hit SFX separation',
+      '', // blank line spacer
+      '📌 Cumulative from v0.0.1:',
+      '✨ IDLE HUNT — accumulate Gold + items',
+      '🤖 Tower Auto x10 — quick climb 10 floors',
+      '🛡 Fixed floating damage / Reflect bugs',
+      '⛓️ HEAL BLOCK System — Cursed Shackle',
+      '💰 Artifact grade-based pricing + multi-sell',
+      '💬 Auto patch notes popup on update',
     ]
   },
 ];
@@ -2530,11 +2584,91 @@ function cloudCheckNewerOnLoad(slotNum) {
   }).catch(()=>{});
 }
 
+// ============================================================
+// PVP (Async Ranked) — Firestore Functions
+// ============================================================
+function pvpDeployTeam() {
+  if(!cloudUser || !_cloudDb) { pvpLoadMsg=T('ต้องเข้าสู่ระบบก่อน!','Need to sign in first!'); render(); return; }
+  const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
+  if(alivePets.length < 1) { pvpLoadMsg=T('ต้องการ Pet ที่มีชีวิตอย่างน้อย 1 ตัว!','Need at least 1 alive pet!'); render(); return; }
+  pvpTeam = alivePets.slice(0,3).map(p => pets.indexOf(p));
+  
+  const teamData = pvpTeam.map(i => {
+    const p = pets[i];
+    return {
+      ph: p.phase==='final'?'f':p.phase==='larva'?'l':'e',
+      hp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
+      ek: p.formKey||null, fk: p.finalKey||null,
+      sh: p.shiny?1:0, a1: p.artifact||null, a2: p.artifact2||null,
+      w: p.weapon||null
+    };
+  });
+  
+  _cloudDb.collection('pvp_teams').doc(cloudUser.uid).set({
+    uid: cloudUser.uid,
+    name: cloudUser.displayName||'Anonymous',
+    team: teamData,
+    wins: pvpWins,
+    losses: pvpLosses,
+    rating: pvpRating,
+    active: true,
+    updatedAt: Date.now()
+  }, {merge:true}).then(() => {
+    pvpLoadMsg = T('✅ ส่งทีมแล้ว!','✅ Team deployed!'); render();
+  }).catch(() => { pvpLoadMsg = T('❌ ส่งทีมไม่สำเร็จ','❌ Deploy failed'); render(); });
+}
+
+function pvpUndeployTeam() {
+  if(!cloudUser || !_cloudDb) return;
+  _cloudDb.collection('pvp_teams').doc(cloudUser.uid).set({active:false}, {merge:true})
+    .then(() => { pvpTeam=[]; pvpLoadMsg=T('ถอนทีมแล้ว','Team withdrawn'); render(); })
+    .catch(() => {});
+}
+
+function pvpFetchChallenges() {
+  if(!_cloudDb) return;
+  pvpLoadMsg = T('กำลังโหลด...','Loading...'); render();
+  _cloudDb.collection('pvp_teams').where('active','==',true).get()
+    .then(snapshot => {
+      pvpChallenges = [];
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        if(d.uid !== cloudUser?.uid) {
+          pvpChallenges.push({id: doc.id, ...d});
+        }
+      });
+      pvpLoadMsg = '';
+      render();
+    })
+    .catch(() => { pvpLoadMsg = T('โหลดไม่สำเร็จ','Failed to load'); render(); });
+}
+
+function pvpRecordBattle(defenderUid, defenderName, won) {
+  if(!cloudUser || !_cloudDb) return;
+  const result = { defenderUid, defenderName, won, timestamp: Date.now() };
+  pvpHistory.unshift(result);
+  if(pvpHistory.length > 50) pvpHistory.pop();
+  if(won) pvpWins++; else pvpLosses++;
+  pvpRating += won ? 10 : -5;
+  if(pvpRating < 0) pvpRating = 0;
+  
+  // Update defender stats too
+  _cloudDb.collection('pvp_teams').doc(defenderUid).get().then(doc => {
+    if(doc.exists) {
+      const d = doc.data();
+      _cloudDb.collection('pvp_teams').doc(defenderUid).set({
+        wins: (d.wins||0) + (won?0:1),
+        losses: (d.losses||0) + (won?1:0)
+      }, {merge:true});
+    }
+  }).catch(() => {});
+}
+
 function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidHighestCleared, idleAccumulatedMs, lastSeenPatch}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidHighestCleared, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -2626,6 +2760,11 @@ function loadGame(slotNum) {
         if(typeof d.idleAccumulatedMs==='number') idleAccumulatedMs = d.idleAccumulatedMs;
         else if(typeof d.idleLastTime==='number') idleAccumulatedMs = 0; // old save, reset
         if(typeof d.lastSeenPatch==='string') lastSeenPatch = d.lastSeenPatch;
+    if(typeof d.tutorialDone==='boolean') tutorialDone = d.tutorialDone;
+        if(typeof d.pvpWins==='number') pvpWins = d.pvpWins;
+        if(typeof d.pvpLosses==='number') pvpLosses = d.pvpLosses;
+        if(typeof d.pvpRating==='number') pvpRating = d.pvpRating;
+        if(Array.isArray(d.pvpHistory)) pvpHistory = d.pvpHistory;
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
         pets.concat(storage).forEach(p=>{ if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey); if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey); });
@@ -4282,6 +4421,7 @@ function endBattle(won) {
     if(duelMyWins >= maxWins || duelEnemyWins >= maxWins) {
       duelWon = duelMyWins >= maxWins;
       pets.forEach((p,i) => { if(duelHpSnapshot[i]!==undefined) p.hp=duelHpSnapshot[i]; });
+      if(pvpBattleData) { pvpRecordBattle(pvpBattleData.defenderUid, pvpBattleData.defenderName, duelWon); pvpBattleData = null; saveGame(); }
       saveGame(); state='duel_result'; render(); return;
     }
     // next enemy pet
@@ -4292,6 +4432,7 @@ function endBattle(won) {
     }
     duelWon = true;
     pets.forEach((p,i) => { if(duelHpSnapshot[i]!==undefined) p.hp=duelHpSnapshot[i]; });
+    if(pvpBattleData) { pvpRecordBattle(pvpBattleData.defenderUid, pvpBattleData.defenderName, duelWon); pvpBattleData = null; saveGame(); }
     saveGame(); state='duel_result'; render(); return;
   }
 
@@ -4872,6 +5013,10 @@ function render() {
   else if(state==='duel_result') renderDuelResult();
   else if(state==='shop') renderShop();
   else if(state==='title') renderTitle();
+  // 🎓 Auto-show tutorial on first menu visit
+  if(!tutorialDone && state==='menu' && !helpOpen && !settingsOpen && !actionMenuOpen && !document.getElementById('tutorialPopup')) {
+    showTutorial();
+  }
   if(cloudConflict && state!=='title') {
     screenContent.insertAdjacentHTML('beforeend', `
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:90;border-radius:16px">
@@ -5154,10 +5299,12 @@ function enterVs() {
 
 function renderVsLobby() {
   if(vsTab === 'duel') { renderDuelSetup(); return; }
+  if(vsTab === 'ranked') { renderPvPLobby(); return; }
   const stageCol = vsCurrentStage > 40 ? '#ff4444' : vsCurrentStage > 20 ? '#ffaa00' : '#a080ff';
   labelStrip.textContent = `⚔️ VS STAGE ${vsCurrentStage} ⚔️`;
   const tabBar = `<div style="display:flex;gap:6px;margin-bottom:4px">
     <div data-vstab="ladder" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${vsTab==='ladder'?'rgba(80,40,160,0.3)':'#08080f'};border:1px solid ${vsTab==='ladder'?'#8060d0':'#2a2a4a'};color:${vsTab==='ladder'?'#c0a0ff':'#4a4a7a'}">🏆 LADDER</div>
+    <div data-vstab="ranked" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${vsTab==='ranked'?'rgba(40,160,80,0.3)':'#08080f'};border:1px solid ${vsTab==='ranked'?'#40c080':'#2a2a4a'};color:${vsTab==='ranked'?'#80ffa0':'#4a4a7a'}">🏅 RANKED</div>
     <div data-vstab="duel" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${vsTab==='duel'?'rgba(160,40,80,0.3)':'#08080f'};border:1px solid ${vsTab==='duel'?'#d06080':'#2a2a4a'};color:${vsTab==='duel'?'#ff90a0':'#4a4a7a'}">🤝 DUEL</div>
   </div>`;
   screenContent.innerHTML = `
@@ -5258,6 +5405,152 @@ function renderVsResult() {
         <div id="vsResultBackBtn" style="flex:1;padding:12px;background:#0a0a1a;border:1px solid #2a2a4a;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#a080ff;cursor:pointer">${T('เมนู','MENU')}</div>
       </div>
     </div>`;
+}
+
+// ============================================================
+// PVP LOBBY (Async Ranked)
+// ============================================================
+function renderPvPLobby() {
+  labelStrip.textContent = T('🏅 RANKED PVP','🏅 RANKED PVP');
+  const subTabBar = `<div style="display:flex;gap:6px;margin-bottom:6px">
+    <div data-pvp-tab="deploy" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${pvpTab==='deploy'?'rgba(40,160,80,0.25)':'#08080f'};border:1px solid ${pvpTab==='deploy'?'#40c080':'#2a2a4a'};color:${pvpTab==='deploy'?'#80ffa0':'#4a4a7a'}">${T('ส่งทีม','DEPLOY')}</div>
+    <div data-pvp-tab="challenge" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${pvpTab==='challenge'?'rgba(200,60,60,0.25)':'#08080f'};border:1px solid ${pvpTab==='challenge'?'#d04040':'#2a2a4a'};color:${pvpTab==='challenge'?'#ff8080':'#4a4a7a'}">${T('ท้าทาย','CHALLENGE')}</div>
+    <div data-pvp-tab="history" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${pvpTab==='history'?'rgba(80,80,200,0.25)':'#08080f'};border:1px solid ${pvpTab==='history'?'#6060c0':'#2a2a4a'};color:${pvpTab==='history'?'#a0a0ff':'#4a4a7a'}">${T('ประวัติ','HISTORY')}</div>
+  </div>`;
+
+  if(pvpTab === 'deploy') {
+    // Filter alive pets not on expedition
+    const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
+    const selectedIndices = pvpTeam.length ? pvpTeam : [];
+    screenContent.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
+      ${subTabBar}
+      <div style="background:#0a0a1a;border:1px solid #2a3a2a;border-radius:10px;padding:10px">
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#40c080;letter-spacing:1px;margin-bottom:6px">${T('สถิติ','STATS')}</div>
+        <div style="display:flex;gap:8px;text-align:center">
+          <div style="flex:1;background:#08080f;border-radius:8px;padding:6px;border:1px solid #2a2a3a">
+            <div style="font-size:16px;color:#44cc44;font-family:Kanit,sans-serif">${pvpWins}</div>
+            <div style="font-size:9px;color:#4a6a4a">${T('ชนะ','WINS')}</div>
+          </div>
+          <div style="flex:1;background:#08080f;border-radius:8px;padding:6px;border:1px solid #2a2a3a">
+            <div style="font-size:16px;color:#cc4444;font-family:Kanit,sans-serif">${pvpLosses}</div>
+            <div style="font-size:9px;color:#6a4a4a">${T('แพ้','LOSSES')}</div>
+          </div>
+          <div style="flex:1;background:#08080f;border-radius:8px;padding:6px;border:1px solid #2a2a3a">
+            <div style="font-size:16px;color:#ffcc44;font-family:Kanit,sans-serif">${pvpRating}</div>
+            <div style="font-size:9px;color:#6a6a3a">${T('คะแนน','RATING')}</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#0a0a1a;border:1px solid #2a3a5a;border-radius:10px;padding:10px">
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4ecdc4;letter-spacing:1px;margin-bottom:6px">🐾 ${T('เลือก Pet ที่มีชีวิต (สูงสุด 3)','Select Alive Pets (max 3)')}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto">
+          ${alivePets.length === 0 ? `<div style="font-size:11px;color:#4a4a6a;padding:8px;text-align:center">${T('ไม่มี Pet ที่มีชีวิต','No alive pets')}</div>` :
+          alivePets.map((p, idx) => {
+            const globalIdx = pets.indexOf(p);
+            const isSelected = selectedIndices.includes(globalIdx);
+            const f = p.phase==='final'?EVOLVE2_FORMS[p.finalKey]:p.phase==='evolved'?FORMS[p.formKey]:null;
+            const col = f?.color||'#c0a0ff';
+            return `<div data-pvp-pet-toggle="${globalIdx}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:${isSelected?'rgba(40,160,80,0.15)':'#08080f'};border:1px solid ${isSelected?col:'#2a2a4a'};cursor:pointer">
+              <div style="width:36px;height:36px;flex-shrink:0">${buildPetSvg(p,36,false)}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:Kanit,sans-serif;font-size:10px;color:${col};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.shiny?'✨ ':''}${petName(p)}</div>
+                <div style="font-size:9px;color:#5050a0">HP ${p.hp}/${p.maxHp} | ATK ${p.atk} SPD ${p.spd} DEF ${p.def}</div>
+              </div>
+              <div style="font-size:16px">${isSelected?'✅':''}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${pvpTeam.length > 0 ? `
+      <div style="background:#0a1a0a;border:1px solid #2a5a3a;border-radius:10px;padding:10px">
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#44cc44;letter-spacing:1px;margin-bottom:6px">✅ ${T('ทีมที่ส่งอยู่','CURRENTLY DEPLOYED')}</div>
+        <div style="display:flex;gap:8px">
+          ${pvpTeam.map(i => {
+            const p = pets[i];
+            if(!p) return '';
+            const f = p.phase==='final'?EVOLVE2_FORMS[p.finalKey]:p.phase==='evolved'?FORMS[p.formKey]:null;
+            const col = f?.color||'#c0a0ff';
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;background:#08080f;border-radius:8px;padding:6px;border:1px solid ${col}">
+              <div style="width:32px;height:32px">${buildPetSvg(p,32,false)}</div>
+              <div style="font-size:9px;color:${col};font-family:Kanit,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;text-align:center">${p.shiny?'✨ ':''}${petName(p)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+      <div style="display:flex;gap:8px">
+        <div data-pvp-deploy style="flex:1;padding:12px;text-align:center;background:linear-gradient(135deg,#0a2a0a,#0a0a2a);border:2px solid #44cc44;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#88ff88;cursor:pointer;letter-spacing:1px">${T('📤 ส่งทีม','📤 DEPLOY TEAM')}</div>
+        <div data-pvp-withdraw style="flex:1;padding:12px;text-align:center;background:#0a0a1a;border:1px solid #cc4444;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#ff6666;cursor:pointer">${T('↩ ถอนทีม','↩ WITHDRAW')}</div>
+      </div>
+      ${pvpLoadMsg ? `<div style="text-align:center;font-size:11px;color:#80ee80">${pvpLoadMsg}</div>` : ''}
+    </div>`;
+    return;
+  }
+
+  if(pvpTab === 'challenge') {
+    screenContent.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
+      ${subTabBar}
+      <div data-pvp-refresh style="padding:10px;text-align:center;background:#0a0a1a;border:1px solid #4060c0;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#80a0ff;cursor:pointer;letter-spacing:1px">${T('🔄 รีเฟรชผู้ท้าชิง','🔄 REFRESH CHALLENGERS')}</div>
+      ${pvpLoadMsg ? `<div style="text-align:center;font-size:11px;color:#80ee80">${pvpLoadMsg}</div>` : ''}
+      ${pvpChallenges.length === 0 ? `<div style="padding:20px;text-align:center;font-size:11px;color:#4a4a6a">${T('ไม่มีทีมที่ท้าชิงได้ กดรีเฟรชเพื่อโหลด','No challengers available. Tap refresh to load.')}</div>` :
+      `<div style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto">
+        ${pvpChallenges.map(c => `
+          <div style="background:#0a0a1a;border:1px solid #2a2a3a;border-radius:10px;padding:10px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <div style="width:32px;height:32px;border-radius:50%;background:#1a0a3a;border:1px solid #6040c0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#c0a0ff;flex-shrink:0">👤</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:Kanit,sans-serif;font-size:11px;color:#c0a0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name||'Anonymous'}</div>
+                <div style="font-size:9px;color:#5050a0">W:${c.wins||0} L:${c.losses||0} ★${c.rating||1000}</div>
+              </div>
+              <div data-pvp-challenge data-pvp-id="${c.uid}" data-pvp-name="${(c.name||'Anonymous').replace(/"/g,'&quot;')}" style="padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#3a0a0a,#1a0a2a);border:1px solid #ff4444;font-family:Kanit,sans-serif;font-size:11px;color:#ff6666;cursor:pointer;white-space:nowrap">${T('⚔️ ท้า','⚔️ FIGHT')}</div>
+            </div>
+            ${c.team ? `<div style="display:flex;gap:4px">
+              ${c.team.map(t => {
+                const col = t.ph==='f'?'#ff8800':t.ph==='l'?'#44cc88':'#8888ff';
+                return `<div style="flex:1;text-align:center;background:#08080f;border-radius:6px;padding:4px 2px;border:1px solid ${col}44">
+                  <div style="font-size:9px;color:${col}">${t.ph==='f'?'FINAL':t.ph==='l'?'LARVA':'EVO'}</div>
+                  <div style="font-size:8px;color:#5050a0">♥${t.hp} ⚔${t.atk}</div>
+                </div>`;
+              }).join('')}
+            </div>` : ''}
+          </div>
+        `).join('')}
+      </div>`}
+    </div>`;
+    return;
+  }
+
+  // HISTORY tab
+  const timeAgo = (ts) => {
+    const diff = Date.now() - ts;
+    const min = Math.floor(diff/60000);
+    if(min < 1) return T('เมื่อกี้','just now');
+    if(min < 60) return min+T(' นาที','m');
+    const h = Math.floor(min/60);
+    if(h < 24) return h+T(' ชม.','h');
+    return Math.floor(h/24)+T(' วัน','d');
+  };
+  screenContent.innerHTML = `
+  <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
+    ${subTabBar}
+    <div style="background:#0a0a1a;border:1px solid #2a2a3a;border-radius:10px;padding:10px">
+      <div style="font-family:Kanit,sans-serif;font-size:10px;color:#8080e0;letter-spacing:1px;margin-bottom:6px">${T('📜 ประวัติการต่อสู้','📜 BATTLE HISTORY')}</div>
+      ${pvpHistory.length === 0 ? `<div style="padding:8px;text-align:center;font-size:11px;color:#4a4a6a">${T('ยังไม่มีประวัติ','No history yet')}</div>` :
+      `<div style="display:flex;flex-direction:column;gap:4px;max-height:350px;overflow-y:auto">
+        ${pvpHistory.map(h => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:#08080f;border:1px solid ${h.won?'#2a4a2a':'#4a2a2a'}">
+            <span style="font-size:16px">${h.won?'🏆':'💀'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Kanit,sans-serif;font-size:11px;color:${h.won?'#44cc44':'#cc4444'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.defenderName||'Unknown'}</div>
+              <div style="font-size:9px;color:#5050a0">${timeAgo(h.timestamp)}</div>
+            </div>
+            <div style="font-size:10px;color:${h.won?'#44cc44':'#cc4444'};font-family:Kanit,sans-serif">${h.won?T('ชนะ','WIN'):T('แพ้','LOSE')}</div>
+          </div>
+        `).join('')}
+      </div>`}
+    </div>
+  </div>`;
 }
 
 // ============================================================
@@ -6206,6 +6499,7 @@ function renderMenu() {
           ` : ''}
           ${helpTab !== 'patch' ? `<div style="text-align:center;font-size:10px;color:#4a3a6a;font-family:Kanit,sans-serif;padding:4px 0">${T('— ค้นพบส่วนที่เหลือด้วยตัวเอง! —','— Discover the rest for yourself! —')}</div>` : ''}
           ${helpTab !== 'patch' ? `<div id="patchNotesLink" style="text-align:center;font-size:11px;color:#6888a0;font-family:Kanit,sans-serif;padding:6px 0;cursor:pointer;transition:color 0.2s" onmouseover="this.style.color='#88bbcc'" onmouseout="this.style.color='#6888a0'">📢 ${T('ข่าวอัปเดต v','Patch Notes v')}${PATCH_NOTES[PATCH_NOTES.length-1].ver}</div>` : ''}
+          <div onclick="showPrivacyPolicy()" style="text-align:center;font-size:10px;color:#3a5a4a;font-family:Kanit,sans-serif;padding:4px 0;cursor:pointer">🔒 ${T('นโยบายความเป็นส่วนตัว','Privacy Policy')}</div>
         </div>
       </div>` : ''}
       ${settingsOpen ? `
@@ -6278,6 +6572,7 @@ function renderMenu() {
           </div>
 
           <div style="display:flex;flex-direction:column;gap:8px">
+            <div id="restartTutorialBtn" onclick="tutorialDone=false;startTutorial();settingsOpen=false;render();" style="padding:8px;border-radius:10px;background:#1a1030;border:1px solid #6040c0;font-family:Kanit,sans-serif;font-size:12px;color:#a080e0;cursor:pointer;text-align:center">🎓 ${T('ดูคำแนะนำอีกครั้ง','RESTART TUTORIAL')}</div>
             <div id="exitBtn" style="padding:8px;border-radius:10px;background:linear-gradient(135deg,#2a0808,#3a1010);border:1px solid rgba(180,40,40,0.5);font-family:Kanit,sans-serif;font-size:12px;color:#cc4444;cursor:pointer;text-align:center">⏻ EXIT TO TITLE</div>
             <div id="settingsClose" style="padding:8px;border-radius:10px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:12px;color:#8080c0;cursor:pointer;text-align:center">✕ CLOSE</div>
           </div>
@@ -6855,7 +7150,7 @@ function renderBattleScreen() {
           <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
             ${buildOdBar(83)}
             <div style="display:flex;flex-direction:row;gap:3px">
-              ${battleState.isVsBattle ? `<div style="padding:5px 6px;border-radius:8px;background:#080808;border:1px solid #1a1a1a;text-align:center;width:40px;opacity:0.3">
+              ${battleState.isVsBattle || battleState.isDuelBattle ? `<div style="padding:5px 6px;border-radius:8px;background:#080808;border:1px solid #1a1a1a;text-align:center;width:40px;opacity:0.3">
                 <div style="font-size:15px">🧪</div>
                 <div style="font-size:7px;color:#2a2a2a;font-family:Kanit,sans-serif">NO ITEM</div>
               </div>` : `<div id="battleItemBtn" style="padding:5px 6px;border-radius:8px;cursor:pointer;user-select:none;background:${hasHealItem?'#0e2218':'#080810'};border:1px solid ${hasHealItem?'#2ecc71':'#1a1a2a'};text-align:center;width:40px">
@@ -7981,7 +8276,7 @@ screenContent.addEventListener('click', e=>{
 
   // ── DUEL ──
   const vsTabEl = el.closest('[data-vstab]');
-  if(vsTabEl) { SFX.click(); vsTab=vsTabEl.dataset.vstab; if(vsTab==='duel'){duelSelectStep='mode';duelUrlData=null;duelMyTeam=[];duelMode=null;} render(); return; }
+  if(vsTabEl) { SFX.click(); vsTab=vsTabEl.dataset.vstab; if(vsTab==='duel'){duelSelectStep='mode';duelUrlData=null;duelMyTeam=[];duelMode=null;} if(vsTab==='ranked'){pvpTab='deploy';pvpLoadMsg='';} render(); return; }
 
   if(el.closest('#duel1v1Btn')) { SFX.click(); duelMode='1v1'; duelSelectStep='team'; render(); return; }
   if(el.closest('#duel3v3Btn')) { SFX.click(); duelMode='3v3'; duelSelectStep='team'; render(); return; }
@@ -8049,12 +8344,12 @@ screenContent.addEventListener('click', e=>{
     return;
   }
   if(el.closest('#duelScanImageBtn')) { return; } // let label handle file input naturally
-  if(el.closest('#duelBackBtn')) { SFX.click(); if(duelSelectStep==='lobby'){duelSelectStep='team';}else if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{vsTab='ladder';} render(); return; }
+  if(el.closest('#duelBackBtn')) { SFX.click(); pvpBattleData=null; if(duelSelectStep==='lobby'){duelSelectStep='team';}else if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{vsTab='ladder';} render(); return; }
   if(el.closest('#duelFightBtn')) { SFX.vsStart(); startDuelFight(); return; }
   if(el.closest('#duelRetryBtn')) { SFX.click();
     duelEnemyTeam = duelUrlData?duelUrlData.team.map(p=>({...p,hp:p.maxHp})):duelEnemyTeam.map(p=>({...p,hp:p.maxHp}));
     duelMyTeam=[]; duelSelectStep='team'; vsTab='duel'; state='vs_lobby'; render(); return; }
-  if(el.closest('#duelResultBackBtn')) { SFX.click(); vsTab='duel'; duelSelectStep='mode'; duelUrlData=null; duelMyTeam=[]; duelMode=null; state='vs_lobby'; render(); return; }
+  if(el.closest('#duelResultBackBtn')) { SFX.click(); vsTab='duel'; duelSelectStep='mode'; duelUrlData=null; duelMyTeam=[]; duelMode=null; pvpBattleData=null; state='vs_lobby'; render(); return; }
   if(el.closest('#duelShareBtn')) {
     SFX.click(); duelQrOpen=true; render();
     setTimeout(()=>{
@@ -8077,6 +8372,58 @@ screenContent.addEventListener('click', e=>{
     else if(duelMyTeam.length < maxSel) { duelMyTeam.push({idx,from}); }
     // if challenger (has enemy data) and team full → go to lobby
     if(duelUrlData && duelMyTeam.length===maxSel) { duelSelectStep='lobby'; }
+    render(); return;
+  }
+
+  // ── PVP (Async Ranked) ──
+  const pvpTabEl = el.closest('[data-pvp-tab]');
+  if(pvpTabEl) { SFX.click(); pvpTab=pvpTabEl.dataset.pvpTab; render(); return; }
+  if(el.closest('[data-pvp-deploy]')) { SFX.click(); pvpDeployTeam(); return; }
+  if(el.closest('[data-pvp-withdraw]')) { SFX.click(); pvpUndeployTeam(); return; }
+  if(el.closest('[data-pvp-refresh]')) { SFX.click(); pvpFetchChallenges(); return; }
+  const pvpChallengeEl = el.closest('[data-pvp-challenge]');
+  if(pvpChallengeEl) {
+    SFX.click();
+    const defenderUid = pvpChallengeEl.dataset.pvpId;
+    const defenderName = pvpChallengeEl.dataset.pvpName||'Unknown';
+    // Find the challenge data
+    const challenge = pvpChallenges.find(c => c.uid === defenderUid);
+    if(!challenge || !challenge.team || challenge.team.length === 0) {
+      pvpLoadMsg = T('❌ ข้อมูลทีมไม่ถูกต้อง','❌ Invalid team data');
+      render(); return;
+    }
+    // Convert team data to duel format
+    pvpBattleData = { defenderTeam: challenge.team, defenderName, defenderUid };
+    duelEnemyTeam = challenge.team.map(p => ({
+      name: p.name||'???',
+      phase: p.ph==='f'?'final':p.ph==='l'?'larva':'evolved',
+      maxHp: p.hp, hp: p.hp,
+      atk: p.atk, spd: p.spd, def: p.def,
+      formKey: p.ek||null,
+      finalKey: p.fk||null,
+      shiny: p.sh?true:false,
+      artifact: p.a1||null,
+      artifact2: p.a2||null,
+      weapon: p.w||null,
+    }));
+    duelMode = '3v3';
+    duelMyTeam = [];
+    duelSelectStep = 'team';
+    vsTab = 'duel';
+    state = 'vs_lobby';
+    pvpLoadMsg = T('✅ เลือก Pet เพื่อสู้!','✅ Select your pets to fight!');
+    render(); return;
+  }
+  const pvpPetToggle = el.closest('[data-pvp-pet-toggle]');
+  if(pvpPetToggle && (state==='vs_lobby'||state==='menu')) {
+    SFX.click();
+    const idx = parseInt(pvpPetToggle.dataset.pvpPetToggle);
+    const existing = pvpTeam.indexOf(idx);
+    if(existing >= 0) {
+      pvpTeam.splice(existing, 1);
+    } else if(pvpTeam.length < 3) {
+      pvpTeam.push(idx);
+    }
     render(); return;
   }
 
@@ -9185,7 +9532,7 @@ function startIdleAnim() {
     // SFX triggers on phase change
     if (isPetAtk && lastPetPhase !== 'petAtk') { SFX.hit(); lastPetPhase = 'petAtk'; }
     if (isMonAtk && lastMonPhase !== 'monAtk') { SFX.hit(); lastMonPhase = 'monAtk'; }
-    if (isDying && lastMonPhase !== 'dying') { SFX.hit(); lastMonPhase = 'dying'; }
+    if (isDying && lastMonPhase !== 'dying') { SFX.death(); lastMonPhase = 'dying'; }
     if (fightChanged) { lastPetPhase = ''; lastMonPhase = ''; }
     let petCls = '', monCls = '';
     if (isPetAtk) { petCls = 'atk-r'; monCls = 'hit flash'; }
@@ -9405,6 +9752,125 @@ function showPatchPopup(force) {
       popup.remove();
     }
   });
+}
+
+// 🎓 TUTORIAL SYSTEM
+const TUTORIAL_STEPS = {
+  welcome: {
+    icon:'🐣', title:T('ยินดีต้อนรับ!','WELCOME!'),
+    text:T(
+      'ยินดีต้อนรับสู่โลก SYMBEAST! 🌍\n\nที่นี่คุณจะได้ฟักไข่ เลี้ยงดู และวิวัฒนาการสัตว์เลี้ยงสุดพิเศษ\n\n• ตีมอนสเตอร์เพื่อเก็บสัญลักษณ์\n• สะสมสัญลักษณ์ครบ 3 ชิ้นเพื่อวิวัฒนาการ\n• พัฒนาไปจนถึงร่างสุดยอด Evolve II\n\nมากกว่า 30 สายพันธุ์ให้ค้นหา!',
+      'Welcome to SYMBEAST! 🌍\n\nHatch, raise, and evolve your unique pets\n\n• Fight monsters to collect symbols\n• Collect 3 symbols to evolve\n• Reach the ultimate Evolve II form\n\nOver 30 forms to discover!'
+    )
+  },
+  menu: {
+    icon:'🏠', title:T('หน้าหลัก','MAIN MENU'),
+    text:T(
+      'นี่คือหน้าหลักของคุณ\n\n🐾 PARTY — จัดการทีม\n🏋️ TRAIN — ฝึกพลัง\n🎒 ITEMS — ใช้/ขายของ\n🛒 SHOP — ซื้อของ\n\nกด ⚔ ACTION เพื่อดูโหมดการเล่นอื่นๆ',
+      'This is your main hub\n\n🐾 PARTY — Manage your pets\n🏋️ TRAIN — Train your pet\n🎒 ITEMS — Use/sell items\n🛒 SHOP — Buy supplies\n\nTap ⚔ ACTION for more modes'
+    )
+  },
+  scout: {
+    icon:'🗺️', title:T('การลาดตระเวน','SCOUTING'),
+    text:T(
+      '🗺 SCOUT — โหมดหลักในการต่อสู้\n\n• เดินบนกริดเพื่อหามอนสเตอร์\n• เก็บสัญลักษณ์ F/W/S\n• เก็บ Gold และไอเทม\n• ด่านยิ่งสูง มอนยิ่งแข็งแกร่ง!',
+      '🗺 SCOUT — Main battle mode\n\n• Move on the grid to find monsters\n• Collect F/W/S symbols\n• Earn Gold and items\n• Higher stages = stronger foes!'
+    )
+  },
+  evolve: {
+    icon:'🧬', title:T('วิวัฒนาการ','EVOLUTION'),
+    text:T(
+      '🧬 เมื่อสะสมสัญลักษณ์ครบ 3 ชิ้น\n\n• LARVA → EVOLVED (ร่างที่ 1)\n• EVOLVED → FINAL (Evolve II)\n\nสัญลักษณ์ต่างกันให้สายพันธุ์ต่างกัน\nลองผสมดูเพื่อค้นหาทั้ง 30+ สายพันธุ์!',
+      '🧬 Collect 3 symbols to evolve\n\n• LARVA → EVOLVED (Form 1)\n• EVOLVED → FINAL (Evolve II)\n\nDifferent symbol combos = different forms\nDiscover all 30+ forms!'
+    )
+  },
+  tower: {
+    icon:'🏯', title:T('หอคอย','TOWER'),
+    text:T(
+      '🏯 TOWER — ท้าทายตัวเอง\n\n• ปีนหอคอยทีละชั้น\n• มอนยิ่งสูงยิ่งโหด\n• ได้รางวัลพิเศษทุก N ชั้น\n• ใช้ Auto x10 เพื่อตีอัตโนมัติ 10 ชั้น',
+      '🏯 TOWER — Challenge yourself\n\n• Climb floor by floor\n• Enemies get tougher\n• Special rewards every N floors\n• Auto x10 for quick climb'
+    )
+  },
+  idle: {
+    icon:'⏳', title:'IDLE HUNT',
+    text:T(
+      '⏳ IDLE HUNT — สะสมรางวัลแบบไม่ต้องเล่น\n\n• นับเวลาทั้งตอนเล่นและปิดเกม\n• สะสมได้สูงสุด 8 ชั่วโมง\n• ได้ Gold + ไอเทมตามด่าน Scout\n• กดรับแล้วเริ่มนับใหม่ loop เรื่อยๆ',
+      '⏳ IDLE HUNT — Earn rewards offline\n\n• Accumulates while you play or away\n• Up to 8 hours cap\n• Gold + items based on Scout stage\n• Claim and restart automatically'
+    )
+  },
+  done: {
+    icon:'🎉', title:T('พร้อมผจญภัย!','READY TO ADVENTURE!'),
+    text:T(
+      'การแนะนำพื้นฐานจบแล้ว!\n\n💡 Tips เด็ด:\n• กริ่ง ⚙️ SETTINGS เพื่อเปลี่ยนภาษา TH/EN\n• กด ❓ GUIDE เพื่อดูข้อมูลเพิ่มเติม\n• อย่าลืมสะสมเวลา IDLE HUNT\n\nขอให้สนุกกับการผจญภัย! 🎮',
+      'Tutorial complete!\n\n💡 Pro tips:\n• Tap ⚙️ SETTINGS to switch language\n• Tap ❓ GUIDE for detailed info\n• Don\'t forget IDLE HUNT rewards\n\nGood luck on your adventure! 🎮'
+    ),
+    isLast:true
+  }
+};
+const TUTORIAL_KEYS = Object.keys(TUTORIAL_STEPS);
+
+function showTutorial() {
+  const step = TUTORIAL_STEPS[TUTORIAL_KEYS[tutorialStep]];
+  if(!step) { tutorialDone=true; saveGame(); return; }
+  const popup = document.getElementById('tutorialPopup') || (()=>{
+    const d = document.createElement('div'); d.id='tutorialPopup';
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:99999;animation:fadeIn 0.3s ease-out;padding:20px';
+    document.body.appendChild(d);
+    return d;
+  })();
+  const total = TUTORIAL_KEYS.length;
+  const idx = tutorialStep;
+  const isLast = !!step.isLast;
+  popup.onclick = null;
+  popup.innerHTML = `
+    <div style="background:linear-gradient(135deg,#0a0520,#1a1040);border:2px solid #6040c0;border-radius:18px;padding:28px 22px;width:88%;max-width:340px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 50px rgba(96,64,192,0.3);text-align:center">
+      <div style="font-size:48px;margin-bottom:4px">${step.icon}</div>
+      <div style="font-family:Kanit,sans-serif;font-size:17px;color:#c0a0ff;font-weight:bold;letter-spacing:1px">${step.title}</div>
+      <div style="font-size:12px;color:#9080b8;font-family:Kanit,sans-serif;line-height:1.7;white-space:pre-line">${step.text}</div>
+      <div style="display:flex;justify-content:center;gap:6px;margin:4px 0">
+        ${TUTORIAL_KEYS.map((k,i)=>`<div style="width:${i===idx?'10px':'6px'};height:${i===idx?'10px':'6px'};border-radius:50%;background:${i===idx?'#c080ff':'#3a2a5a'};transition:all 0.3s"></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        ${idx>0?`<div onclick="tutorialStep--;showTutorial();" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:12px;color:#8080c0;cursor:pointer">${T('← ก่อนหน้า','← BACK')}</div>`:''}
+        <div onclick="${isLast ? 'tutorialDone=true;saveGame();document.getElementById(\'tutorialPopup\').remove();render();' : 'tutorialStep++;showTutorial();'}" style="flex:${idx>0?'1':'2'};padding:9px;border-radius:8px;background:linear-gradient(135deg,#3a1a6a,#5a2a9a);border:2px solid #8040c0;font-family:Kanit,sans-serif;font-size:12px;color:#e0c0ff;cursor:pointer;font-weight:bold;letter-spacing:1px">${isLast ? T('🎉 เริ่มเล่น!','🎉 START!') : T('ถัดไป →','NEXT →')}</div>
+      </div>
+      <div onclick="tutorialDone=true;saveGame();document.getElementById('tutorialPopup').remove();render();" style="font-size:10px;color:#4a3a6a;font-family:Kanit,sans-serif;cursor:pointer;text-decoration:underline;margin-top:-2px">${T('ข้ามการสอน','SKIP TUTORIAL')}</div>
+    </div>`;
+}
+
+function startTutorial() {
+  tutorialStep = 0;
+  showTutorial();
+}
+
+// 🔒 PRIVACY POLICY
+function showPrivacyPolicy() {
+  const popup = document.getElementById('privacyPopup') || (()=>{
+    const d = document.createElement('div'); d.id='privacyPopup';
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:99999;animation:fadeIn 0.3s ease-out;padding:20px';
+    document.body.appendChild(d);
+    return d;
+  })();
+  popup.innerHTML = `
+    <div style="background:#0a0a1e;border:2px solid #3a7a5a;border-radius:16px;padding:24px 20px;width:90%;max-width:360px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 40px rgba(58,122,90,0.2);max-height:85vh">
+      <div style="font-family:Kanit,sans-serif;font-size:10px;color:#3a7a5a;letter-spacing:2px;text-align:center">🔒 PRIVACY POLICY</div>
+      <div style="font-size:10px;color:#7060a0;font-family:Kanit,sans-serif;line-height:1.6;overflow-y:auto;padding:4px 0">
+        <b>Privacy Policy for SYMBEAST</b><br><br>
+        <i>Last updated: July 2026</i><br><br>
+        1. <b>Data Collection</b><br>
+        SYMBEAST does not collect, store, or share any personal data. All game data (save files, settings) is stored locally in your browser's localStorage and never transmitted to any server.<br><br>
+        2. <b>Cloud Save</b><br>
+        If you choose to sign in with Google for cloud save backup, your email and display name are used solely for authentication and save-file identification. This data is handled by Firebase Authentication and is not stored on our servers.<br><br>
+        3. <b>Cookies</b><br>
+        This game does not use cookies.<br><br>
+        4. <b>Third-Party Services</b><br>
+        When hosted on GitHub Pages, standard GitHub server logs may apply. Refer to GitHub's Privacy Policy for details.<br><br>
+        5. <b>Contact</b><br>
+        For questions, reach out via the GitHub repository: <span style="color:#4ecdc4">https://github.com/NutYoYo/Symbeast</span><br><br>
+        <i>This policy may be updated occasionally. Continued use of the game constitutes acceptance.</i>
+      </div>
+      <div onclick="var p=document.getElementById('privacyPopup');if(p)p.remove();" style="padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:12px;color:#8080c0;cursor:pointer;text-align:center">${T('ปิด','CLOSE')}</div>
+    </div>`;
 }
 
 function renderRest() {

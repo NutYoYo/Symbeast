@@ -2616,7 +2616,8 @@ function pvpDeployTeam() {
       hp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
       ek: p.formKey||null, fk: p.finalKey||null,
       sh: p.shiny?1:0, a1: p.artifact||null, a2: p.artifact2||null,
-      w: p.weapon||null
+      w: p.weapon||null,
+      name: petName(p),
     };
   });
   
@@ -8464,7 +8465,7 @@ screenContent.addEventListener('click', e=>{
       if(phase==='evolved' && p.ek) passivesList.push(p.ek);
       if(phase==='final' && p.ek) passivesList.push(p.ek); // base Evolve form passive carries over
       return {
-      name: p.name||'???',
+      name: p.name || (()=>{ const f=phase==='final'?EVOLVE2_FORMS[p.fk]:phase==='evolved'?FORMS[p.ek]:null; return f?.name||(phase==='larva'?'LARVA':'???'); })(),
       phase,
       maxHp: p.hp, hp: p.hp,
       atk: p.atk, spd: p.spd, def: p.def,

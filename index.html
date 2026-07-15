@@ -4433,6 +4433,11 @@ function endBattle(won) {
         battleState.won = null;
         state = 'battle'; render(); return;
       }
+      // No more pets — player loses the duel
+      duelWon = false;
+      pets.forEach((p,i) => { if(duelHpSnapshot[i]!==undefined) p.hp=duelHpSnapshot[i]; });
+      if(pvpBattleData) { pvpRecordBattle(pvpBattleData.defenderUid, pvpBattleData.defenderName, false); pvpBattleData = null; saveGame(); }
+      saveGame(); state='duel_result'; render(); return;
     }
     // check if duel over
     const maxWins = duelMode==='1v1' ? 1 : 3;
@@ -5582,6 +5587,7 @@ function encodeDuelTeam(teamPets) {
       hp: p.maxHp, atk: p.atk, spd: p.spd, def: p.def,
     };
     if(p.formKey)   obj.ek = p.formKey;
+    else if(p.phase==='final' && p.finalKey) { const bk = evolve2BaseOfKey(p.finalKey); if(bk) obj.ek = bk; }
     if(p.finalKey)  obj.fk = p.finalKey;
     if(p.shiny)     obj.sh = 1;
     if(p.artifact)  obj.a1 = p.artifact;
@@ -5614,7 +5620,7 @@ function decodeDuelB64(str) {
       hp: p.hp, maxHp: p.hp, atk: p.atk, spd: p.spd, def: p.def,
       shiny: p.sh===1,
       artifact: p.a1||null, artifact2: p.a2||null,
-      passives: (()=>{ const pl=[]; if(p.ek) pl.push(p.ek); if(p.fk) pl.push(p.fk); return pl; })(),
+      passives: (()=>{ const pl=[]; if(p.ek) pl.push(p.ek); else if(isFusion && p.fk) { const bk=evolve2BaseOfKey(p.fk); if(bk) pl.push(bk); } if(p.fk) pl.push(p.fk); return pl; })(),
       ownPassiveDesc: form?.passive||null,
       ownPassiveIcon: form?.passiveIcon||null,
       typeKey: 'F',
@@ -8462,8 +8468,9 @@ screenContent.addEventListener('click', e=>{
       const phase = p.ph==='f'?'final':p.ph==='l'?'larva':'evolved';
       const form = phase==='final' ? EVOLVE2_FORMS[p.fk] : phase==='evolved' ? FORMS[p.ek] : null;
       const passivesList = [];
-      if(phase==='evolved' && p.ek) passivesList.push(p.ek);
-      if(phase==='final' && p.ek) passivesList.push(p.ek); // base Evolve form passive carries over
+      if(p.ek) passivesList.push(p.ek); // evolved or own base key
+      else if(phase==='final' && p.fk) { const baseKey = evolve2BaseOfKey(p.fk); if(baseKey) passivesList.push(baseKey); } // derive base form key from finalKey
+      if(p.fk) passivesList.push(p.fk);
       return {
       name: p.name || (()=>{ const f=phase==='final'?EVOLVE2_FORMS[p.fk]:phase==='evolved'?FORMS[p.ek]:null; return f?.name||(phase==='larva'?'LARVA':'???'); })(),
       phase,

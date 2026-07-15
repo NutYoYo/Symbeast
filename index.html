@@ -1458,14 +1458,14 @@ function spawnRaidWave(level, wave) {
   let enemy;
   if(wave===1) {
     const sprite = RAID_MON_SPRITES[typeKey][Math.floor(Math.random()*RAID_MON_SPRITES[typeKey].length)];
-    enemy = { name:`${SPRITE_NAMES[sprite]||'MONSTER'} Lv.${level}`, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:sprite, maxHp:stats.maxHp, hp:stats.maxHp, atk:stats.atk, def:stats.def, spd:stats.spd, passives:[] };
+    enemy = { name:`${SPRITE_NAMES[sprite]||'MONSTER'} Lv.${level}`, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:sprite, maxHp:stats.maxHp, hp:stats.maxHp, atk:stats.atk, def:stats.def, spd:stats.spd, passives:level>=3?pickEnemyPassives(typeKey,1):[] };
   } else if(wave===2) {
     const pool = RAID_BOSS_SPRITES[typeKey];
     const sprite = pool[Math.floor(Math.random()*pool.length)];
     const et = ENEMY_TYPES[typeKey];
-    enemy = { name:`${et.bossName} Lv.${level}`, typeKey, isBoss:true, isMini:false, isMimic:false, spriteFile:sprite, maxHp:stats.maxHp, hp:stats.maxHp, atk:stats.atk, def:stats.def, spd:stats.spd, passives:[] };
+    enemy = { name:`${et.bossName} Lv.${level}`, typeKey, isBoss:true, isMini:false, isMimic:false, spriteFile:sprite, maxHp:stats.maxHp, hp:stats.maxHp, atk:stats.atk, def:stats.def, spd:stats.spd, passives:level>=5?pickEnemyPassives(typeKey,2):pickEnemyPassives(typeKey,1) };
   } else {
-    enemy = { name:`${boss.name} Lv.${level}`, typeKey, isBoss:true, isMini:false, isMimic:false, isSpecialBoss:true, spriteFile:boss.sprite, maxHp:stats.maxHp, hp:stats.maxHp, atk:stats.atk, def:stats.def, spd:stats.spd, passives:[] };
+    enemy = { name:`${boss.name} Lv.${level}`, typeKey, isBoss:true, isMini:false, isMimic:false, isSpecialBoss:true, spriteFile:boss.sprite, maxHp:stats.maxHp, hp:stats.maxHp, atk:stats.atk, def:stats.def, spd:stats.spd, passives:level>=8?pickEnemyPassives(typeKey,3):level>=4?pickEnemyPassives(typeKey,2):pickEnemyPassives(typeKey,1) };
   }
   battleState.enemy = enemy;
   battleState.isBoss = enemy.isBoss;

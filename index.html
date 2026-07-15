@@ -5435,11 +5435,7 @@ function renderVsResult() {
 // ============================================================
 function renderPvPLobby() {
   labelStrip.textContent = T('🏅 RANKED PVP','🏅 RANKED PVP');
-  const tabBar = `<div style="display:flex;gap:6px;margin-bottom:4px">
-    <div data-vstab="ladder" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:#08080f;border:1px solid #2a2a4a;color:#4a4a7a">🏆 LADDER</div>
-    <div data-vstab="ranked" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:rgba(40,160,80,0.3);border:1px solid #40c080;color:#80ffa0">🏅 RANKED</div>
-    <div data-vstab="duel" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:#08080f;border:1px solid #2a2a4a;color:#4a4a7a">🤝 DUEL</div>
-  </div>`;
+  const backBtn = `<div data-pvp-back style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;margin-bottom:4px;border-radius:6px;font-family:Kanit,sans-serif;font-size:10px;color:#8080c0;cursor:pointer;background:#08080f;border:1px solid #2a2a4a">← ${T('กลับ','BACK')}</div>`;
   const subTabBar = `<div style="display:flex;gap:6px;margin-bottom:6px">
     <div data-pvp-tab="deploy" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${pvpTab==='deploy'?'rgba(40,160,80,0.25)':'#08080f'};border:1px solid ${pvpTab==='deploy'?'#40c080':'#2a2a4a'};color:${pvpTab==='deploy'?'#80ffa0':'#4a4a7a'}">${T('ส่งทีม','DEPLOY')}</div>
     <div data-pvp-tab="challenge" style="flex:1;padding:7px;text-align:center;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;cursor:pointer;background:${pvpTab==='challenge'?'rgba(200,60,60,0.25)':'#08080f'};border:1px solid ${pvpTab==='challenge'?'#d04040':'#2a2a4a'};color:${pvpTab==='challenge'?'#ff8080':'#4a4a7a'}">${T('ท้าทาย','CHALLENGE')}</div>
@@ -5452,7 +5448,7 @@ function renderPvPLobby() {
     const selectedIndices = pvpTeam.length ? pvpTeam : [];
     screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
-      ${tabBar}
+      ${backBtn}
       ${subTabBar}
       <div style="background:#0a0a1a;border:1px solid #2a3a2a;border-radius:10px;padding:10px">
         <div style="font-family:Kanit,sans-serif;font-size:10px;color:#40c080;letter-spacing:1px;margin-bottom:6px">${T('สถิติ','STATS')}</div>
@@ -5519,7 +5515,7 @@ function renderPvPLobby() {
   if(pvpTab === 'challenge') {
     screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
-      ${tabBar}
+      ${backBtn}
       ${subTabBar}
       <div data-pvp-refresh style="padding:10px;text-align:center;background:#0a0a1a;border:1px solid #4060c0;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#80a0ff;cursor:pointer;letter-spacing:1px">${T('🔄 รีเฟรชผู้ท้าชิง','🔄 REFRESH CHALLENGERS')}</div>
       ${pvpLoadMsg ? `<div style="text-align:center;font-size:11px;color:#80ee80">${pvpLoadMsg}</div>` : ''}
@@ -5563,7 +5559,7 @@ function renderPvPLobby() {
   };
   screenContent.innerHTML = `
   <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
-    ${tabBar}
+    ${backBtn}
     ${subTabBar}
     <div style="background:#0a0a1a;border:1px solid #2a2a3a;border-radius:10px;padding:10px">
       <div style="font-family:Kanit,sans-serif;font-size:10px;color:#8080e0;letter-spacing:1px;margin-bottom:6px">${T('📜 ประวัติการต่อสู้','📜 BATTLE HISTORY')}</div>
@@ -8456,6 +8452,7 @@ screenContent.addEventListener('click', e=>{
   // ── PVP (Async Ranked) ──
   const pvpTabEl = el.closest('[data-pvp-tab]');
   if(pvpTabEl) { SFX.click(); pvpTab=pvpTabEl.dataset.pvpTab; render(); return; }
+  if(el.closest('[data-pvp-back]')) { SFX.click(); vsTab='ladder'; render(); return; }
   if(el.closest('[data-pvp-deploy]')) { SFX.click(); pvpDeployTeam(); return; }
   if(el.closest('[data-pvp-withdraw]')) { SFX.click(); pvpUndeployTeam(); return; }
   if(el.closest('[data-pvp-refresh]')) { SFX.click(); pvpFetchChallenges(); return; }

@@ -8092,6 +8092,7 @@ screenContent.addEventListener('click', e=>{
       const REPEATABLE = ['essence','perm_atk','perm_spd','perm_def','perm_hp','artifact_box','box_R','box_E'];
       const stillHas = inventory.some(s=>s.type===t && s.qty>0);
       if(!REPEATABLE.includes(t) || !stillHas) itemUseConfirm=null;
+      render(); return;
     }
     if(el.closest('#secretShopClose')) { secretShopOpen=false; render(); return; }
     const secretBuy = el.closest('[data-secretbuy]');

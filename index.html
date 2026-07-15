@@ -8406,7 +8406,7 @@ screenContent.addEventListener('click', e=>{
     return;
   }
   if(el.closest('#duelScanImageBtn')) { return; } // let label handle file input naturally
-  if(el.closest('#duelBackBtn')) { SFX.click(); pvpBattleData=null; if(duelSelectStep==='lobby'){duelSelectStep='team';}else if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{vsTab='ladder';} render(); return; }
+  if(el.closest('#duelBackBtn')) { SFX.click(); if(pvpBattleData){pvpBattleData=null;vsTab='ranked';pvpTab='challenge';}else if(duelSelectStep==='lobby'){duelSelectStep='team';}else if(duelSelectStep==='team'&&!duelUrlData){duelSelectStep='mode';}else{vsTab='ladder';} render(); return; }
   if(el.closest('#duelFightBtn')) { SFX.vsStart(); startDuelFight(); return; }
   if(el.closest('#duelRetryBtn')) { SFX.click();
     duelEnemyTeam = duelUrlData?duelUrlData.team.map(p=>({...p,hp:p.maxHp})):duelEnemyTeam.map(p=>({...p,hp:p.maxHp}));

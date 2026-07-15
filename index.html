@@ -1392,13 +1392,29 @@ const RAID_BOSS_SPRITES = {
   S: ['monster & boss/S-slime-boss.png'],
 };
 
+let _raidSundayPick = -1; // user's boss pick on Sunday (-1 = not yet picked)
+
+function getRaidDayBossIdx() {
+  // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+  const day = new Date(Date.now()+7*3600000).getDay();
+  if(day === 0) return -1; // Sunday: player picks
+  return day - 1;          // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5
+}
+
 function getRaidDailyBoss() {
   const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
   if(raidDailyBossDate !== today) {
     raidDailyBossDate = today;
-    raidDailyBossIdx = Math.floor(Math.random()*RAID_SPECIAL_BOSSES.length);
+    _raidSundayPick = -1;
   }
-  return RAID_SPECIAL_BOSSES[raidDailyBossIdx];
+  const dayIdx = getRaidDayBossIdx();
+  if(dayIdx === -1) {
+    // Sunday: pick from _raidSundayPick (set when player selects)
+    if(_raidSundayPick < 0 || _raidSundayPick >= RAID_SPECIAL_BOSSES.length) return null;
+    return RAID_SPECIAL_BOSSES[_raidSundayPick];
+  }
+  raidDailyBossIdx = dayIdx;
+  return RAID_SPECIAL_BOSSES[dayIdx];
 }
 function raidResetIfNewDay() {
   const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
@@ -1471,7 +1487,7 @@ function spawnRaidWave(level, wave) {
 }
 function startRaidBattle(level) {
   if(!(hardMode || hellMode || stage > 20)) { raidToast = T('🔒 ต้องผ่าน Scout Stage 20 (Normal) ก่อน!','🔒 Clear Scout Stage 20 (Normal) first!'); render(); return; }
-  if(level > Math.min(10, raidHighestCleared + 1)) { raidToast = T('🔒 ต้องผ่านเลเวลก่อนหน้าก่อน!','🔒 Clear the previous level first!'); render(); return; }
+  if(level > Math.min(10, raidProgress[raidDailyBossIdx] + 1)) { raidToast = T('🔒 ต้องผ่านเลเวลก่อนหน้าก่อน!','🔒 Clear the previous level first!'); render(); return; }
   if(creature.hp <= 0) { raidToast = T('💀 ตัวนี้ HP=0 เปลี่ยนตัวก่อน!','💀 HP=0 — swap to another beast first!'); render(); return; }
   if(creature.resting) { raidToast = T('🛌 กำลัง Rest อยู่ — หยุด Rest ก่อน!','🛌 Resting — stop Rest first!'); render(); return; }
   raidResetIfNewDay();
@@ -1520,7 +1536,7 @@ let raidRunsDate = '';
 let raidDailyBossDate = '';
 let raidDailyBossIdx = 0;
 let raidRunSummary = null;
-let raidHighestCleared = 0; // highest Raid Level fully cleared (Wave 3 win) — gates sequential level unlock
+let raidProgress = [0,0,0,0,0,0]; // per-boss highest cleared level [RAGNAROK, COLOSSUS, PHANTASM, TYRANTJAW, VANGUARD, MONKEY]
 let raidToast = '';
 let towerPendingGold = 0;
 let towerPendingArtifacts = [];
@@ -2668,7 +2684,7 @@ function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidHighestCleared, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -2716,7 +2732,7 @@ function loadGame(slotNum) {
         towerFloor=0; towerHighest=0; towerCheckpoint=0; towerPendingGold=0; towerPendingEssence=0;
         towerPendingArtifacts=[]; towerRunSummary=null; towerNeedsEntry=false;
         towerRunsToday=0; towerRunsDate='';
-        raidRunsToday=0; raidRunsDate=''; raidDailyBossDate=''; raidDailyBossIdx=0; raidRunSummary=null; raidHighestCleared=0;
+        raidRunsToday=0; raidRunsDate=''; raidDailyBossDate=''; raidDailyBossIdx=0; raidRunSummary=null; raidProgress=[0,0,0,0,0,0];
         seenEvolved=new Set(); seenFinal=new Set();
         towerFirstClears=new Set(); scoutFirstClears=new Set();
         vsCurrentStage=1; totalPlayTime=0;
@@ -2754,7 +2770,8 @@ function loadGame(slotNum) {
         if(typeof d.raidRunsDate==='string') raidRunsDate = d.raidRunsDate;
         if(typeof d.raidDailyBossDate==='string') raidDailyBossDate = d.raidDailyBossDate;
         if(typeof d.raidDailyBossIdx==='number') raidDailyBossIdx = d.raidDailyBossIdx;
-        if(typeof d.raidHighestCleared==='number') raidHighestCleared = d.raidHighestCleared;
+        if(Array.isArray(d.raidProgress)) raidProgress = d.raidProgress;
+        else if(typeof d.raidHighestCleared==='number') raidProgress = [d.raidHighestCleared,0,0,0,0,0]; // legacy
         if(typeof d.towerNeedsEntry==='boolean') towerNeedsEntry = d.towerNeedsEntry;
         if(typeof d.totalPlayTime==='number') totalPlayTime = d.totalPlayTime;
         if(typeof d.idleAccumulatedMs==='number') idleAccumulatedMs = d.idleAccumulatedMs;
@@ -4587,7 +4604,7 @@ function endBattle(won) {
     // Full clear confirmed — commit all accumulated rewards now
     gold += battleState.raidGold;
     battleState.raidPendingItems.forEach(it => it.startsWith('weapon:') ? addWeaponToBag(it.slice(7)) : addItemToInventory(it));
-    raidHighestCleared = Math.max(raidHighestCleared, level);
+    raidProgress[raidDailyBossIdx] = Math.max(raidProgress[raidDailyBossIdx], level);
     raidRunSummary = { level, gold: battleState.raidGold, drops: battleState.raidPendingItems, cleared:true };
     saveGame(); state = 'raid_result'; render(); return;
   }
@@ -5912,29 +5929,65 @@ function startDuelFight() {
 }
 
 function renderRaid() {
+  const isSunday = getRaidDayBossIdx() === -1;
   const boss = getRaidDailyBoss();
-  const et = ENEMY_TYPES[boss.typeKey];
+  const et = boss ? ENEMY_TYPES[boss.typeKey] : null;
   const runsLeft = raidRunsLeft();
   const canRun = runsLeft>0 && stamina>=RAID_STAMINA_COST && creature.hp>0 && !creature.resting;
-  const maxUnlocked = Math.min(10, raidHighestCleared + 1);
+
+  // Sunday: show boss picker if not yet picked
+  if(isSunday && !boss && _raidSundayPick < 0) {
+    const DAY_NAMES = [T('จันทร์','Mon'),T('อังคาร','Tue'),T('พุธ','Wed'),T('พฤหัส','Thu'),T('ศุกร์','Fri'),T('เสาร์','Sat')];
+    labelStrip.textContent = '☠️ RAID — SUNDAY';
+    screenContent.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto">
+        <div style="text-align:center;font-family:Kanit,sans-serif;font-size:12px;color:#ffdd88;letter-spacing:1px;margin-bottom:4px">${T('🎉 วันอาทิตย์ — เลือกบอสที่ต้องการสู้ได้!','🎉 Sunday — Pick any boss to fight!')}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${RAID_SPECIAL_BOSSES.map((b,i)=>{
+            const e = ENEMY_TYPES[b.typeKey];
+            const prog = raidProgress[i];
+            return `<div data-raid-sunday-pick="${i}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#0e0e22;border:1px solid ${e.color}66;cursor:pointer">
+              <div style="width:40px;height:40px;flex-shrink:0">${buildMonsterSvg(true, b.typeKey, b.sprite)}</div>
+              <div style="flex:1">
+                <div style="font-family:Kanit,sans-serif;font-size:12px;color:${e.color}">${b.icon} ${b.name}</div>
+                <div style="font-size:9px;color:#8878b8">${T('ความคืบหน้า:','Progress:')} LV ${prog}/10</div>
+              </div>
+              <div style="font-size:16px;color:#60c060">▶</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div data-raid-back style="padding:8px;border-radius:8px;background:#0e0e1a;border:1px solid #2a2a4a;font-family:Kanit,sans-serif;font-size:11px;color:#5050a0;text-align:center;cursor:pointer">${T('กลับ','BACK')}</div>
+      </div>`;
+    return;
+  }
+
+  const maxUnlocked = Math.min(10, raidProgress[raidDailyBossIdx] + 1);
   labelStrip.textContent = `☠️ RAID — ${boss.name}`;
   screenContent.innerHTML = `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:10px;overflow-y:auto">
       <div style="text-align:center;padding:12px;border-radius:12px;background:linear-gradient(135deg,#1a0a2a,#2a1040);border:2px solid ${et.color}">
-        <div style="font-size:11px;color:#8878b8;font-family:Kanit,sans-serif;letter-spacing:1px">${T('บอสประจำวันนี้','DAILY BOSS')}</div>
+        <div style="font-size:11px;color:#8878b8;font-family:Kanit,sans-serif;letter-spacing:1px">
+          ${isSunday ? T('☀️ วันอาทิตย์ — บอสที่เลือก','☀️ Sunday — Chosen Boss') : T('บอสประจำวันนี้','DAILY BOSS')}
+        </div>
         <div style="display:flex;justify-content:center;align-items:center">${buildMonsterSvg(true, boss.typeKey, boss.sprite)}</div>
         <div style="font-size:20px;margin:4px 0">${boss.icon} <span style="color:${et.color};font-family:Kanit,sans-serif">${boss.name}</span></div>
-        <div style="font-size:11px;color:#8878b8">☠️ ${runsLeft}/${RAID_DAILY_MAX} ${T('รอบเหลือวันนี้','runs left today')} &nbsp;|&nbsp; ⚡${stamina}/${MAX_STAMINA} (-${RAID_STAMINA_COST})</div>
+        <div style="font-size:10px;color:#8878b8">
+          ${T('ความคืบหน้า:','Progress:')} LV ${raidProgress[raidDailyBossIdx]}/10
+          &nbsp;|&nbsp; ☠️ ${runsLeft}/${RAID_DAILY_MAX} ${T('รอบ','runs')}
+          &nbsp;|&nbsp; ⚡${stamina}/${MAX_STAMINA} (-${RAID_STAMINA_COST})
+        </div>
+        ${isSunday ? `<div data-raid-back style="margin-top:4px;font-size:9px;color:#aa8866;cursor:pointer;text-decoration:underline">${T('← เปลี่ยนบอส','← Change Boss')}</div>` : ''}
       </div>
       ${raidToast?`<div style="text-align:center;color:#ff8888;font-size:12px">${raidToast}</div>`:''}
-      <div style="font-size:10px;color:#6858a0;text-align:center">${T('เลือกเลเวลที่จะต่อสู้ — Wave1 มอนสเตอร์ → Wave2 Mini-Boss → Wave3 Special Boss (ต้องผ่านเลเวลก่อนหน้าก่อน)','Pick a level — Wave1 Monster → Wave2 Mini-Boss → Wave3 Special Boss (clear the previous level first)')}</div>
+      <div style="font-size:10px;color:#6858a0;text-align:center">${T('เลือกเลเวล — Wave1 มอน → Wave2 Mini-Boss → Wave3 Special Boss','Pick a level — Wave1 Monster → Wave2 Mini-Boss → Wave3 Special')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         ${Array.from({length:10},(_,i)=>i+1).map(lv=>{
           const unlocked = lv <= maxUnlocked;
+          const cleared = lv <= raidProgress[raidDailyBossIdx];
           const clickable = unlocked && canRun;
           return `
         <div data-raid-level="${lv}" style="padding:12px;border-radius:10px;background:#0e0e22;border:1px solid ${unlocked?et.color+'66':'#2a2a3a'};text-align:center;cursor:${clickable?'pointer':'default'};opacity:${unlocked?(canRun?1:0.5):0.35}">
-          <div style="font-family:Kanit,sans-serif;font-size:14px;color:${unlocked?et.color:'#5a5a6a'}">${unlocked?`LV ${lv}`:`🔒 LV ${lv}`}</div>
+          <div style="font-family:Kanit,sans-serif;font-size:14px;color:${unlocked?et.color:'#5a5a6a'}">${cleared?`✅ LV ${lv}`:unlocked?`LV ${lv}`:`🔒 LV ${lv}`}</div>
           <div style="font-size:10px;color:#8878b8">Eff.Lv ${RAID_EFF_LEVEL[lv-1]}</div>
         </div>`;
         }).join('')}
@@ -7378,11 +7431,20 @@ screenContent.addEventListener('click', e=>{
   }
 
   if(state==='raid') {
-    if(el.closest('[data-raid-back]')) { state='menu'; render(); return; }
+    if(el.closest('[data-raid-back]')) { _raidSundayPick=-1; state='menu'; render(); return; }
+    const sunPick = el.closest('[data-raid-sunday-pick]');
+    if(sunPick) {
+      const idx = parseInt(sunPick.dataset.raidSundayPick);
+      _raidSundayPick = idx;
+      raidDailyBossIdx = idx;
+      raidToast = '';
+      render();
+      return;
+    }
     const lvBtn = el.closest('[data-raid-level]');
     if(lvBtn) {
       const lv = parseInt(lvBtn.dataset.raidLevel);
-      if(lv > Math.min(10, raidHighestCleared + 1)) { render(); return; }
+      if(lv > Math.min(10, raidProgress[raidDailyBossIdx] + 1)) { render(); return; }
       raidResetIfNewDay();
       if(raidRunsToday >= RAID_DAILY_MAX) { raidToast=T(`☠️ เล่น Raid ครบ ${RAID_DAILY_MAX} ครั้งแล้ววันนี้!`,`☠️ Raid limit reached! (${RAID_DAILY_MAX}/day)`); render(); return; }
       if(stamina < RAID_STAMINA_COST) { raidToast=T('⚡ Stamina ไม่พอ!','⚡ Not enough Stamina!'); render(); return; }

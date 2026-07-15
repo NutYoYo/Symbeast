@@ -8433,7 +8433,7 @@ screenContent.addEventListener('click', e=>{
     if(existing >= 0) { duelMyTeam.splice(existing,1); }
     else if(duelMyTeam.length < maxSel) { duelMyTeam.push({idx,from}); }
     // if challenger (has enemy data) and team full → go to lobby
-    if(duelUrlData && duelMyTeam.length===maxSel) { duelSelectStep='lobby'; }
+    if((duelUrlData || pvpBattleData) && duelMyTeam.length===maxSel) { duelSelectStep='lobby'; }
     render(); return;
   }
 

@@ -9545,7 +9545,7 @@ function renderInventory() {
   };
 
   // === WEAPONS TAB ===
-  const WEAPON_SELL_PRICE = {N:20, R:60, E:200};
+  const WEAPON_SELL_PRICE = {N:200, R:1000, E:5000};
   const gradeOrderForWeapon = {E:0, R:1, N:2};
   const sortedWeaponBag = [...weaponBag].sort((a,b)=>{
     const aw = WEAPONS[a.key], bw = WEAPONS[b.key];
@@ -9575,7 +9575,7 @@ function renderInventory() {
   }).join('') : `<div style="text-align:center;color:#6858a0;font-size:13px;padding:20px">${T('ยังไม่มี Weapon','No Weapons yet')}<br><span style="font-size:11px">${T('ชนะ Wave 3 ใน Raid เพื่อรับการันตี','Clear Wave 3 in Raid to get a guaranteed drop')}</span></div>`;
 
   // === ARTIFACTS TAB ===
-  const ART_SELL_PRICE = {N:20, R:60, E:200};
+  const ART_SELL_PRICE = {N:200, R:1000, E:5000};
   const gradeOrder = {E:0, R:1, N:2};
   const sortedArtifactBag = [...artifactBag].sort((a,b)=>{
     const aa = ARTIFACTS[a.key], ab = ARTIFACTS[b.key];

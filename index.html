@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -2607,7 +2607,10 @@ function pvpDeployTeam() {
   if(!cloudUser || !_cloudDb) { pvpLoadMsg=T('ต้องเข้าสู่ระบบก่อน!','Need to sign in first!'); render(); return; }
   const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
   if(alivePets.length < 1) { pvpLoadMsg=T('ต้องการ Pet ที่มีชีวิตอย่างน้อย 1 ตัว!','Need at least 1 alive pet!'); render(); return; }
-  pvpTeam = alivePets.slice(0,3).map(p => pets.indexOf(p));
+  // Keep user-selected team; fallback: first 3 alive only if nothing selected
+  if(pvpTeam.length === 0) {
+    pvpTeam = alivePets.slice(0,3).map(p => pets.indexOf(p));
+  }
   
   const teamData = pvpTeam.map(i => {
     const p = pets[i];
@@ -5448,7 +5451,6 @@ function renderPvPLobby() {
     const selectedIndices = pvpTeam.length ? pvpTeam : [];
     screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
-      ${backBtn}
       ${subTabBar}
       <div style="background:#0a0a1a;border:1px solid #2a3a2a;border-radius:10px;padding:10px">
         <div style="font-family:Kanit,sans-serif;font-size:10px;color:#40c080;letter-spacing:1px;margin-bottom:6px">${T('สถิติ','STATS')}</div>
@@ -5508,6 +5510,7 @@ function renderPvPLobby() {
         <div data-pvp-withdraw style="flex:1;padding:12px;text-align:center;background:#0a0a1a;border:1px solid #cc4444;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#ff6666;cursor:pointer">${T('↩ ถอนทีม','↩ WITHDRAW')}</div>
       </div>
       ${pvpLoadMsg ? `<div style="text-align:center;font-size:11px;color:#80ee80">${pvpLoadMsg}</div>` : ''}
+      ${backBtn}
     </div>`;
     return;
   }
@@ -5515,7 +5518,6 @@ function renderPvPLobby() {
   if(pvpTab === 'challenge') {
     screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
-      ${backBtn}
       ${subTabBar}
       <div data-pvp-refresh style="padding:10px;text-align:center;background:#0a0a1a;border:1px solid #4060c0;border-radius:10px;font-family:Kanit,sans-serif;font-size:12px;color:#80a0ff;cursor:pointer;letter-spacing:1px">${T('🔄 รีเฟรชผู้ท้าชิง','🔄 REFRESH CHALLENGERS')}</div>
       ${pvpLoadMsg ? `<div style="text-align:center;font-size:11px;color:#80ee80">${pvpLoadMsg}</div>` : ''}
@@ -5543,6 +5545,7 @@ function renderPvPLobby() {
           </div>
         `).join('')}
       </div>`}
+      ${backBtn}
     </div>`;
     return;
   }
@@ -5559,7 +5562,6 @@ function renderPvPLobby() {
   };
   screenContent.innerHTML = `
   <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
-    ${backBtn}
     ${subTabBar}
     <div style="background:#0a0a1a;border:1px solid #2a2a3a;border-radius:10px;padding:10px">
       <div style="font-family:Kanit,sans-serif;font-size:10px;color:#8080e0;letter-spacing:1px;margin-bottom:6px">${T('📜 ประวัติการต่อสู้','📜 BATTLE HISTORY')}</div>
@@ -5577,6 +5579,7 @@ function renderPvPLobby() {
         `).join('')}
       </div>`}
     </div>
+    ${backBtn}
   </div>`;
 }
 

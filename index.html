@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -2610,6 +2610,17 @@ function pvpDeployTeam() {
   // Keep user-selected team; fallback: first 3 alive only if nothing selected
   if(pvpTeam.length === 0) {
     pvpTeam = alivePets.slice(0,3).map(p => pets.indexOf(p));
+  } else {
+    // Filter out invalid indices (dead, egg, expedition, or out-of-bounds)
+    pvpTeam = pvpTeam.filter(i => {
+      const p = pets[i];
+      return p && p.phase !== 'egg' && p.hp > 0 && !p.expedition;
+    });
+    // Cap at 3
+    if(pvpTeam.length > 3) pvpTeam = pvpTeam.slice(0,3);
+    if(pvpTeam.length === 0) {
+      pvpTeam = alivePets.slice(0,3).map(p => pets.indexOf(p));
+    }
   }
   
   const teamData = pvpTeam.map(i => {

@@ -5613,7 +5613,7 @@ function decodeDuelB64(str) {
       hp: p.hp, maxHp: p.hp, atk: p.atk, spd: p.spd, def: p.def,
       shiny: p.sh===1,
       artifact: p.a1||null, artifact2: p.a2||null,
-      passives: p.ek ? [p.ek] : p.fk ? [p.fk] : [],
+      passives: (()=>{ const pl=[]; if(p.ek) pl.push(p.ek); if(p.fk) pl.push(p.fk); return pl; })(),
       ownPassiveDesc: form?.passive||null,
       ownPassiveIcon: form?.passiveIcon||null,
       typeKey: 'F',
@@ -8462,6 +8462,7 @@ screenContent.addEventListener('click', e=>{
       const form = phase==='final' ? EVOLVE2_FORMS[p.fk] : phase==='evolved' ? FORMS[p.ek] : null;
       const passivesList = [];
       if(phase==='evolved' && p.ek) passivesList.push(p.ek);
+      if(phase==='final' && p.ek) passivesList.push(p.ek); // base Evolve form passive carries over
       return {
       name: p.name||'???',
       phase,

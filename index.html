@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -3585,8 +3585,8 @@ function doTurn(moveIdx) {
   if(fk==='WSS') { if(cmp==='win'){ed=(enemyIgnoresDef?ed:Math.round(ed*0.5));passives.push({icon:'🛡',text:T(`WIN: ลดดาเมจ 50% → ${ed}`,`WIN: -50% dmg → ${ed}`)});}else if(cmp==='lose'){ed=(enemyIgnoresDef?ed:Math.round(ed*0.85));passives.push({icon:'🛡',text:T(`LOSE: ลดดาเมจ 15% → ${ed}`,`LOSE: -15% dmg → ${ed}`)});} }
   if(fk==='FWW' && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้เทิร์นถัดไป','STUN! Enemy cannot act next turn')});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้','STUN! Enemy cannot act')});} }
   if(fk==='WWW' && Math.random()<0.25) { ed=0; passives.push({icon:'👻',text:'DODGE!'}); }
-  if(fk==='WWS' && Math.random()<0.12) {
-    const healed=Math.round(creature.maxHp*0.12);
+  if(fk==='WWS' && Math.random()<0.15) {
+    const healed=Math.round(creature.maxHp*0.15);
     _pHeal(healed,'🌀',T(`DODGE + ฟื้น +${healed} HP`,`DODGE + Healed +${healed} HP`));
     ed=0;
     _dodgeEffectApplied = true;
@@ -3601,7 +3601,7 @@ function doTurn(moveIdx) {
     if(cmp==='win') bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1);
     if(bs.e2Stack>0) { pd=Math.round(pd*(1+0.15*bs.e2Stack)); passives.push({icon:'💢',text:`RAGING WIN Stack×${bs.e2Stack}→${pd}`}); }
   }
-  if(ff==='CRIMSON-BRAWLER' && !enemyTrueStrike && Math.random()<0.12) {
+  if(ff==='CRIMSON-BRAWLER' && !enemyTrueStrike && Math.random()<0.20) {
     ed=0; const counter=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
     passives.push({icon:'🗡',text:`CRIMSON DODGE! Counter -${counter}`});
     _dodgeEffectApplied = true;
@@ -3633,7 +3633,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='STORM-BLITZ') {
     if(bs.e2NextBuff) { pd=Math.round(pd*1.5); bs.e2NextBuff=false; passives.push({icon:'🌩',text:`STORM BUFF ATK+50%→${pd}`}); }
-    if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🌩',text:'STORM DODGE! ATK+50% next round'}); }
+    if(!enemyTrueStrike && Math.random()<0.20) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🌩',text:'STORM DODGE! ATK+50% next round'}); }
   }
   if(ff==='BULWARK-BLITZ') {
     ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
@@ -3647,7 +3647,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='KING-CHAMPION') {
     if(bs.e2Stack>0) { pd=Math.round(pd*(1+0.10*bs.e2Stack)); ed=(enemyIgnoresDef?ed:Math.round(ed*(1-0.10*bs.e2Stack))); }
-    if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); _dodgeEffectApplied=true; passives.push({icon:'👑',text:`KING DODGE! Stack×${bs.e2Stack}`}); }
+    if(!enemyTrueStrike && Math.random()<0.20) { ed=0; bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); _dodgeEffectApplied=true; passives.push({icon:'👑',text:`KING DODGE! Stack×${bs.e2Stack}`}); }
     else if(bs.e2Stack>0) passives.push({icon:'👑',text:`KING Stack×${bs.e2Stack} ATK/DEF/SPD+${bs.e2Stack*10}%→${pd}`});
   }
   if(ff==='ROLLING-CHAMPION') {
@@ -3672,7 +3672,7 @@ function doTurn(moveIdx) {
   if(ff==='DARK-SPECTER') { pd=Math.round(pd*1.2); passives.push({icon:'🌑',text:`DARK dmg+20%→${pd}`}); }
   if(ff==='SOUL-SPECTER') {
     if(bs.e2NextBuff) { const extra=pd; pd+=extra; bs.e2NextBuff=false; passives.push({icon:'👻',text:`SOUL DOUBLE HIT!→${pd}`}); }
-    if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'👻',text:'SOUL DODGE! next hits ×2'}); }
+    if(!enemyTrueStrike && Math.random()<0.20) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'👻',text:'SOUL DODGE! next hits ×2'}); }
   }
   if(ff==='GRAVE-SPECTER') {
     ed=(enemyIgnoresDef?ed:Math.round(ed*0.75));
@@ -3688,7 +3688,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='QUICK-SWIFTGUARD') {
     if(bs.e2NextBuff) { pd+=Math.floor(enemy.def/2); bs.playerTrueStrike=true; bs.e2NextBuff=false; passives.push({icon:'💨',text:`QUICK PIERCE+TRUE STRIKE→${pd}`}); }
-    if(!enemyTrueStrike && Math.random()<0.15) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'💨',text:'QUICK DODGE! next pierces+true strike'}); }
+    if(!enemyTrueStrike && Math.random()<0.25) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'💨',text:'QUICK DODGE! next pierces+true strike'}); }
   }
   if(ff==='IRON-SWIFTGUARD') {
     if(cmp==='lose') bs.e2Stack=Math.min(3,(bs.e2Stack||0)+1);
@@ -3833,7 +3833,7 @@ function doTurn(moveIdx) {
   }
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
   if(ed===0 && !_dodgeEffectApplied && !enemyTrueStrike) {
-    if(fk==='WWS') { const h=Math.round(creature.maxHp*0.12); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
+    if(fk==='WWS') { const h=Math.round(creature.maxHp*0.15); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
     else if(ff==='CRIMSON-BRAWLER') { const c=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`CRIMSON Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
     else if(ff==='STORM-BLITZ') { bs.e2NextBuff=true; passives.push({icon:'🌩',text:'STORM BUFF from dodge! ATK+50% next round'}); _dodgeEffectApplied=true; }
     else if(ff==='KING-CHAMPION') { bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); passives.push({icon:'👑',text:`KING Stack from dodge! ×${bs.e2Stack}`}); _dodgeEffectApplied=true; }

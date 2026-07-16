@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4440,6 +4440,8 @@ function doTurn(moveIdx) {
     const phase1DefenderDead = playerFirst ? enemy.hp <= 0 : creature.hp <= 0;
     if(phase1DefenderDead) {
       _endOfTurn();
+      bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
+      bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
       bs.waiting = false;
       finish();
       flashWeaponRegen(bs);
@@ -4468,6 +4470,8 @@ function doTurn(moveIdx) {
     setTimeout(() => {
       if(battleState !== bs) return;
       _endOfTurn();
+      bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
+      bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
       bs.waiting = false;
       finish();
       flashWeaponRegen(bs);

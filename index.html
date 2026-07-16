@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -497,6 +497,7 @@ body::after {
 .dmg-num.enemy-heal { animation:heal-float 0.9s ease-out forwards;font-size:18px;color:#ff4466;right:8%;top:45%; }
 .dmg-num.crit-tag   { animation:dmg-float 0.9s 0.1s ease-out forwards;font-size:13px;color:#ffdd00;right:8%;top:48%; }
 .dmg-num.miss-tag   { animation:dmg-float 0.9s ease-out forwards;font-size:16px;color:#88aaff; }
+.dmg-num.stun-tag   { animation:dmg-float 0.9s 0.1s ease-out forwards;font-size:18px;color:#ffdd44;text-shadow:0 0 12px #ff8800,0 2px 4px #000; }
 .dmg-num.poison-enemy { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#aa44ff;right:8%;top:55%;text-shadow:0 0 10px #aa44ff,0 2px 4px #000; }
 .dmg-num.poison-player { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#aa44ff;left:8%;top:55%;text-shadow:0 0 10px #aa44ff,0 2px 4px #000; }
 .dmg-num.heal-blocked-enemy { animation:dmg-float 0.9s 0.6s ease-out forwards;font-size:16px;color:#ff4488;right:8%;top:68%;text-shadow:0 0 8px #ff4488,0 2px 4px #000; }
@@ -7141,7 +7142,7 @@ function renderBattleScreen() {
           if(ap==='p-atk') {
             const hits = lr.pdHits&&lr.pdHits.length>1 ? lr.pdHits : (lr.pd>0?[lr.pd]:[]);
             if(hits.length===0) {
-              dmgNums += `<div class="dmg-num enemy-hit">MISS</div>`;
+              dmgNums += `<div class="dmg-num enemy-hit ${lr.playerStunned?'stun-tag':''}">${lr.playerStunned?'⚡STUNNED!':'MISS'}</div>`;
             } else {
               hits.forEach((h,i)=>{ dmgNums += `<div class="dmg-num enemy-hit" style="animation-delay:${i*0.22}s;top:${30-i*11}%">-${h}</div>`; });
             }
@@ -7149,7 +7150,7 @@ function renderBattleScreen() {
             if(lr.crit && lr.pd>0) dmgNums += `<div class="dmg-num crit-tag">⚡CRIT!</div>`;
             { const ph = (lr.playerHealPre||0) + (lr.playerFirst ? (lr.playerHealP1||0) : (lr.playerHealP2||0)); if(ph>0) dmgNums += `<div class="dmg-num heal">🩸+${ph}</div>`; }
           } else if(ap==='e-atk') {
-            dmgNums += `<div class="dmg-num player-hit ${lr.ed===0?'miss-tag':''}">${lr.ed>0?'-'+lr.ed:'DODGE!'}</div>`;
+            dmgNums += `<div class="dmg-num player-hit ${lr.ed===0?(lr.enemyStunned?'stun-tag':'miss-tag'):''}">${lr.ed>0?'-'+lr.ed:(lr.enemyStunned?'⚡STUNNED!':'DODGE!')}</div>`;
             if(lr.enemyCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
             { const ph = lr.playerFirst ? (lr.playerHealP2||0) : (lr.playerHealP1||0); if(ph>0) dmgNums += `<div class="dmg-num heal">💚+${ph}</div>`; }
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;

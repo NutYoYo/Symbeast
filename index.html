@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -7154,12 +7154,11 @@ function renderBattleScreen() {
             { const ph = lr.playerFirst ? (lr.playerHealP2||0) : (lr.playerHealP1||0); if(ph>0) dmgNums += `<div class="dmg-num heal">💚+${ph}</div>`; }
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;
           }
-          // Reflect/Counter — show in attack phase AND final end-of-turn render
-          if(ap==='p-atk' || !ap) {
+          // Reflect/Counter — show only in correct attack phase
+          if(ap==='p-atk') {
             if(lr.eReflectDmg>0) dmgNums += `<div class="dmg-num player-hit" style="color:#00ffcc;animation-delay:0.3s;top:44%">🛡-${lr.eReflectDmg}</div>`;
             if(lr.eCounterDmg>0) dmgNums += `<div class="dmg-num counter-player" style="color:#ff8800">⚔-${lr.eCounterDmg}</div>`;
-          }
-          if(ap==='e-atk' || !ap) {
+          } else if(ap==='e-atk') {
             if(lr.reflectDmg>0) dmgNums += `<div class="dmg-num enemy-hit" style="color:#00ffcc;font-size:18px;top:44%;animation-delay:0.3s;text-shadow:0 0 8px #00ffcc">🛡-${lr.reflectDmg}</div>`;
             if(lr.counterDmg>0) dmgNums += `<div class="dmg-num counter-enemy" style="color:#ff8800">⚔-${lr.counterDmg}</div>`;
           }

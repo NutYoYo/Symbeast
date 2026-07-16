@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -7165,6 +7165,7 @@ function renderBattleScreen() {
           }
           // Poison / Heal Block — per-turn effects, show in any phase
           if(lr.poisonDmgPlayer>0) dmgNums += `<div class="dmg-num poison-player">☠️-${lr.poisonDmgPlayer}</div>`;
+          if(lr.poisonDmgEnemy>0) dmgNums += `<div class="dmg-num poison-enemy">☠️-${lr.poisonDmgEnemy}</div>`;
           if(lr.healBlockedEnemy>0) dmgNums += `<div class="dmg-num heal-blocked-enemy">🚫💚+${lr.healBlockedEnemy}</div>`;
           if(lr.healBlockedPlayer>0) dmgNums += `<div class="dmg-num heal-blocked-player">🚫💚+${lr.healBlockedPlayer}</div>`;
         }

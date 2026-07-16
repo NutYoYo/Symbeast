@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1472,7 +1472,7 @@ function spawnRaidWave(level, wave) {
   battleState.isBoss = enemy.isBoss;
   battleState.isMini = enemy.isMini;
   battleState.isMimic = false;
-  battleState.turn = 1; battleState.log = []; battleState.passivesLog = []; battleState.lastResult = null;
+  battleState.turn = 1; battleState.log = []; battleState.passivesLog = []; battleState.lastResult = null; battleState.recentTurns = [];
   battleState.animPhase = null; battleState.waiting = false;
   battleState.overdriveUsed = false; battleState.odBuff = null; battleState.enemyStunTurns = 0;
   battleState.e2Stack = 0; battleState.e2NextBuff = false; battleState.enemyPoisonTurns = 0; battleState.playerPoisonTurns = 0; battleState.enemyHealBlockTurns = 0; battleState.playerHealBlockTurns = 0;
@@ -3243,6 +3243,7 @@ function doEnemyOnlyTurn() {
   creature.hp = Math.max(0, creature.hp - ed);
   bs.lastResult = { pm:{name:'—',icon:'🔄',desc:''}, em, cmp:'lose', crit:false, pd:0, ed, playerFirst:false, passives:[], playerHeal:0, enemyHeal:0 };
   bs.log.push(`T${bs.turn} [SWITCH/ITEM] foe -0  you -${ed}`);
+  bs.recentTurns.push({turn:bs.turn,cmp:'lose',pd:0,ed});
   bs.turn++;
   bs.animPhase = 'e-atk';
   bs.waiting = true;
@@ -3405,6 +3406,7 @@ function doOverdriveTurn() {
   bs.turn++;
   bs.log.push(`T${turnNum} ★OVERDRIVE★ ${OVERDRIVE_INFO[ff]?.name||ff}`,`  foe -${pd}  you -${ed}`);
   passives.forEach(p=>bs.log.push(`  ${p.icon} ${p.text}`));
+  bs.recentTurns.push({turn:turnNum,cmp:'win',pd,ed});
   bs.animPhase='p-atk'; bs.waiting=true; bs.preAnimCleared=false; render();
   // Every deferred callback below checks `battleState!==bs` first: if the battle already moved on
   // (e.g. a VS win replaced battleState with the next enemy during this delay), a stray/late callback
@@ -4379,6 +4381,7 @@ function doTurn(moveIdx) {
     `  you -${ed}${enemyCrit?' CRIT':''}  foe -${pd}${crit?' CRIT':''}`
   );
   if(passives.length) passives.forEach(p => battleState.log.push(`  ${p.icon} ${p.text}`));
+  battleState.recentTurns.push({turn:turnNum,cmp,pd,ed});
 
   const finish = () => {
     if(enemy.hp<=0 || creature.hp<=0) {
@@ -6955,7 +6958,17 @@ function renderBattleScreen() {
           <div style="font-size:11px;color:#ff4444;margin-top:1px">-${ed}</div>
         </div>
       </div>
-      ${eventsHtml ? `<div style="display:flex;flex-direction:column;gap:3px;margin-top:4px">${eventsHtml}</div>` : ''}`;
+      ${eventsHtml ? `<div style="display:flex;flex-direction:column;gap:3px;margin-top:4px">${eventsHtml}</div>` : ''}
+      ${(()=>{
+        const rt = battleState.recentTurns||[];
+        if(rt.length<=1) return '';
+        const prev = rt.slice(-3,-1).reverse();
+        return `<div style="display:flex;gap:6px;justify-content:center;margin-top:4px;font-family:monospace">${prev.map(t=>{
+          const icon = t.cmp==='win'?'🏆':t.cmp==='lose'?'💀':'🤝';
+          const col = t.cmp==='win'?'#40c060':t.cmp==='lose'?'#c04040':'#8080c0';
+          return `<span style="font-size:9px;color:${col}">T${t.turn}${icon}</span>`;
+        }).join('<span style="color:#303050">·</span>')}</div>`;
+      })()}`;
   } else {
     resultBox = `<div style="font-family:Kanit,sans-serif;font-size:12px;color:#7060aa;text-align:center;padding:6px 0">CHOOSE YOUR MOVE</div>`;
   }
@@ -7265,13 +7278,8 @@ function renderBattleScreen() {
         </div>`;
       })()}
 
-      <div style="background:#08080f;border-radius:8px;padding:6px 8px;border:1px solid #1a1a3a;min-height:50px;max-height:130px;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0">
+      <div style="background:#08080f;border-radius:8px;padding:6px 8px;border:1px solid #1a1a3a;min-height:50px;max-height:150px;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0">
         ${resultBox}
-      </div>
-      <div style="background:#05050c;border-radius:8px;padding:4px 8px;border:1px solid #111128;max-height:72px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:1px">
-        ${battleState.log.length ? [...battleState.log].reverse().slice(0,14).map((line,i)=>`
-          <div style="font-family:monospace;font-size:10px;color:${i<=1?'#6060c0':line.trimStart().startsWith('you')||line.trimStart().startsWith('foe')?'#3a3a6a':line.match(/^\s+[^\s]/)?'#7050a0':'#2a2a4a'};white-space:pre">${line}</div>`).join('')
-        : `<div style="font-size:10px;color:#1a1a3a;text-align:center">— log —</div>`}
       </div>
 
 

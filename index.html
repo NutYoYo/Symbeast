@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -7228,11 +7228,13 @@ function renderBattleScreen() {
             if(lr.reflectDmg>0) dmgNums += `<div class="dmg-num enemy-hit" style="color:#00ffcc;font-size:18px;top:44%;animation-delay:0.3s;text-shadow:0 0 8px #00ffcc">🛡-${lr.reflectDmg}</div>`;
             if(lr.counterDmg>0) dmgNums += `<div class="dmg-num counter-enemy" style="color:#ff8800">⚔-${lr.counterDmg}</div>`;
           }
-          // Poison / Heal Block — per-turn effects, show in any phase
-          if(lr.poisonDmgPlayer>0) dmgNums += `<div class="dmg-num poison-player">☠️-${lr.poisonDmgPlayer}</div>`;
-          if(lr.poisonDmgEnemy>0) dmgNums += `<div class="dmg-num poison-enemy">☠️-${lr.poisonDmgEnemy}</div>`;
-          if(lr.healBlockedEnemy>0) dmgNums += `<div class="dmg-num heal-blocked-enemy">🚫💚+${lr.healBlockedEnemy}</div>`;
-          if(lr.healBlockedPlayer>0) dmgNums += `<div class="dmg-num heal-blocked-player">🚫💚+${lr.healBlockedPlayer}</div>`;
+          // Poison / Heal Block — per-turn effects, show only at end of turn (ap=null)
+          if(!ap) {
+            if(lr.poisonDmgPlayer>0) dmgNums += `<div class="dmg-num poison-player">☠️-${lr.poisonDmgPlayer}</div>`;
+            if(lr.poisonDmgEnemy>0) dmgNums += `<div class="dmg-num poison-enemy">☠️-${lr.poisonDmgEnemy}</div>`;
+            if(lr.healBlockedEnemy>0) dmgNums += `<div class="dmg-num heal-blocked-enemy">🚫💚+${lr.healBlockedEnemy}</div>`;
+            if(lr.healBlockedPlayer>0) dmgNums += `<div class="dmg-num heal-blocked-player">🚫💚+${lr.healBlockedPlayer}</div>`;
+          }
         }
         // Weapon regen (e.g. Steel Heart) lands after both phases resolve, so it flashes independently
         // of the p-atk/e-atk animation window instead of riding the heal numbers above.

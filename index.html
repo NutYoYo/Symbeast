@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -3179,7 +3179,7 @@ function startBattle(battleType) {
     enemy, isBoss, isMini, isMimic,
     turn: 1, log: [],
     passivesLog: [], // [{turn, passives:[{icon,text}]}]
-    lastResult: null,
+    lastResult: null, recentTurns: [],
     animPhase: null, // null | 'atk1' | 'atk2'
     waiting: false,
     overdriveUsed: false,
@@ -5390,7 +5390,7 @@ function startVsBattle(idx) {
   const enemy = vsEnemies[idx];
   battleState = {
     enemy, isBoss:false, isMini:false,
-    turn:1, log:[], passivesLog:[], lastResult:null,
+    turn:1, log:[], passivesLog:[], lastResult:null, recentTurns:[],
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
     e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
@@ -5891,7 +5891,7 @@ function startDuelBattle(enemyIdx) {
   const enemy = duelEnemyTeam[enemyIdx];
   battleState = {
     enemy, isBoss:false, isMini:false,
-    turn:1, log:[], passivesLog:[], lastResult:null,
+    turn:1, log:[], passivesLog:[], lastResult:null, recentTurns:[],
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
     e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
@@ -6419,7 +6419,7 @@ function startTowerBattle() {
 
   battleState = {
     enemy, isBoss:isBossFloor,
-    turn:1, log:[], passivesLog:[], lastResult:null,
+    turn:1, log:[], passivesLog:[], lastResult:null, recentTurns:[],
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
     e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -3586,7 +3586,7 @@ function doTurn(moveIdx) {
   if(fk==='FWW' && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้เทิร์นถัดไป','STUN! Enemy cannot act next turn')});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้','STUN! Enemy cannot act')});} }
   if(fk==='WWW' && Math.random()<0.25) { ed=0; passives.push({icon:'👻',text:'DODGE!'}); }
   if(fk==='WWS' && Math.random()<0.15) {
-    const healed=Math.round(creature.maxHp*0.12);
+    const healed=Math.round(creature.maxHp*0.10);
     _pHeal(healed,'🌀',T(`DODGE + ฟื้น +${healed} HP`,`DODGE + Healed +${healed} HP`));
     ed=0;
     _dodgeEffectApplied = true;
@@ -3646,9 +3646,9 @@ function doTurn(moveIdx) {
     else passives.push({icon:'⚔️',text:`WARLORD dmg+20%→${pd}`});
   }
   if(ff==='KING-CHAMPION') {
-    if(bs.e2Stack>0) { pd=Math.round(pd*(1+0.12*bs.e2Stack)); ed=(enemyIgnoresDef?ed:Math.round(ed*(1-0.12*bs.e2Stack))); }
+    if(bs.e2Stack>0) { pd=Math.round(pd*(1+0.10*bs.e2Stack)); ed=(enemyIgnoresDef?ed:Math.round(ed*(1-0.10*bs.e2Stack))); }
     if(!enemyTrueStrike && Math.random()<0.20) { ed=0; bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); _dodgeEffectApplied=true; passives.push({icon:'👑',text:`KING DODGE! Stack×${bs.e2Stack}`}); }
-    else if(bs.e2Stack>0) passives.push({icon:'👑',text:`KING Stack×${bs.e2Stack} ATK/DEF/SPD+${bs.e2Stack*12}%→${pd}`});
+    else if(bs.e2Stack>0) passives.push({icon:'👑',text:`KING Stack×${bs.e2Stack} ATK/DEF/SPD+${bs.e2Stack*10}%→${pd}`});
   }
   if(ff==='ROLLING-CHAMPION') {
     ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
@@ -3833,7 +3833,7 @@ function doTurn(moveIdx) {
   }
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
   if(ed===0 && !_dodgeEffectApplied && !enemyTrueStrike) {
-    if(fk==='WWS') { const h=Math.round(creature.maxHp*0.12); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
+    if(fk==='WWS') { const h=Math.round(creature.maxHp*0.10); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
     else if(ff==='CRIMSON-BRAWLER') { const c=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`CRIMSON Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
     else if(ff==='STORM-BLITZ') { bs.e2NextBuff=true; passives.push({icon:'🌩',text:'STORM BUFF from dodge! ATK+50% next round'}); _dodgeEffectApplied=true; }
     else if(ff==='KING-CHAMPION') { bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); passives.push({icon:'👑',text:`KING Stack from dodge! ×${bs.e2Stack}`}); _dodgeEffectApplied=true; }
@@ -3931,7 +3931,7 @@ function doTurn(moveIdx) {
     else passives.push({icon:'⚔️',text:`[E] WARLORD dmg+20%→${ed}`});
   }
   if(fk2==='KING-CHAMPION') {
-    if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.12*bs.e2StackE)); pd=(playerIgnoresDef?pd:Math.round(pd*(1-0.12*bs.e2StackE))); }
+    if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.10*bs.e2StackE)); pd=(playerIgnoresDef?pd:Math.round(pd*(1-0.10*bs.e2StackE))); }
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1); passives.push({icon:'👑',text:`[E] KING DODGE! Stack×${bs.e2StackE}`}); }
     else if(bs.e2StackE>0) passives.push({icon:'👑',text:`[E] KING Stack×${bs.e2StackE}→${ed}`});
   }

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1487,6 +1487,7 @@ function spawnRaidWave(level, wave) {
 }
 function startRaidBattle(level) {
   if(!(hardMode || hellMode || stage > 20)) { raidToast = T('🔒 ต้องผ่าน Scout Stage 20 (Normal) ก่อน!','🔒 Clear Scout Stage 20 (Normal) first!'); render(); return; }
+  getRaidDailyBoss(); // refresh boss in case day changed while on raid screen
   if(level > Math.min(10, raidProgress[raidDailyBossIdx] + 1)) { raidToast = T('🔒 ต้องผ่านเลเวลก่อนหน้าก่อน!','🔒 Clear the previous level first!'); render(); return; }
   if(creature.hp <= 0) { raidToast = T('💀 ตัวนี้ HP=0 เปลี่ยนตัวก่อน!','💀 HP=0 — swap to another beast first!'); render(); return; }
   if(creature.resting) { raidToast = T('🛌 กำลัง Rest อยู่ — หยุด Rest ก่อน!','🛌 Resting — stop Rest first!'); render(); return; }

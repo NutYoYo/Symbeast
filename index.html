@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -7210,7 +7210,7 @@ function renderBattleScreen() {
           if(ap==='p-atk') {
             const hits = lr.pdHits&&lr.pdHits.length>1 ? lr.pdHits : (lr.pd>0?[lr.pd]:[]);
             if(hits.length===0) {
-              dmgNums += `<div class="dmg-num enemy-hit ${lr.playerStunned?'stun-tag':''}">${lr.playerStunned?'⚡STUNNED!':'MISS'}</div>`;
+              dmgNums += `<div class="dmg-num ${lr.playerStunned?'player-hit':'enemy-hit'} ${lr.playerStunned?'stun-tag':''}">${lr.playerStunned?'⚡STUNNED!':'MISS'}</div>`;
             } else {
               hits.forEach((h,i)=>{ dmgNums += `<div class="dmg-num enemy-hit" style="animation-delay:${i*0.22}s;top:${30-i*11}%">-${h}</div>`; });
             }
@@ -7218,7 +7218,7 @@ function renderBattleScreen() {
             if(lr.crit && lr.pd>0) dmgNums += `<div class="dmg-num crit-tag">⚡CRIT!</div>`;
             { const ph = (lr.playerHealPre||0) + (lr.playerFirst ? (lr.playerHealP1||0) : (lr.playerHealP2||0)); if(ph>0) dmgNums += `<div class="dmg-num heal">🩸+${ph}</div>`; }
           } else if(ap==='e-atk') {
-            dmgNums += `<div class="dmg-num player-hit ${lr.ed===0?(lr.enemyStunned?'stun-tag':'miss-tag'):''}">${lr.ed>0?'-'+lr.ed:(lr.enemyStunned?'⚡STUNNED!':'DODGE!')}</div>`;
+            dmgNums += `<div class="dmg-num ${lr.ed===0?(lr.enemyStunned?'enemy-hit stun-tag':'player-hit miss-tag'):'player-hit'}">${lr.ed>0?'-'+lr.ed:(lr.enemyStunned?'⚡STUNNED!':'DODGE!')}</div>`;
             if(lr.enemyCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
             { const ph = lr.playerFirst ? (lr.playerHealP2||0) : (lr.playerHealP1||0); if(ph>0) dmgNums += `<div class="dmg-num heal">💚+${ph}</div>`; }
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;

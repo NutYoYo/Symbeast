@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1393,17 +1393,19 @@ const RAID_BOSS_SPRITES = {
   S: ['monster & boss/S-slime-boss.png'],
 };
 
+function _thaiDateStr() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
 let _raidSundayPick = -1; // user's boss pick on Sunday (-1 = not yet picked)
 
 function getRaidDayBossIdx() {
   // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-  const day = new Date(Date.now()+7*3600000).getDay();
+  const day = new Date().getDay();
   if(day === 0) return -1; // Sunday: player picks
   return day - 1;          // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5
 }
 
 function getRaidDailyBoss() {
-  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+  const today = _thaiDateStr();
   if(raidDailyBossDate !== today) {
     raidDailyBossDate = today;
     _raidSundayPick = -1;
@@ -1418,7 +1420,7 @@ function getRaidDailyBoss() {
   return RAID_SPECIAL_BOSSES[dayIdx];
 }
 function raidResetIfNewDay() {
-  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+  const today = _thaiDateStr();
   if(raidRunsDate !== today) { raidRunsDate = today; raidRunsToday = 0; }
 }
 function raidRunsLeft() {
@@ -6267,7 +6269,7 @@ function renderTower() {
             </div>`;
           }
           const isNewRun = towerFloor === 0 || towerNeedsEntry;
-          const todayStr2 = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+          const todayStr2 = _thaiDateStr();
           const runsLeft = towerRunsDate===todayStr2 ? Math.max(0,TOWER_DAILY_MAX-towerRunsToday) : TOWER_DAILY_MAX;
           const canEnter = !isNewRun || (stamina >= 30 && runsLeft > 0);
           const showAutoBtn = canEnter && !isBossFloor && towerFloor > 0;
@@ -7582,7 +7584,7 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('[data-tower-start]')) {
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
-      const todayStr = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+      const todayStr = _thaiDateStr();
       if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerToast = ''; if(towerFloor===0){ towerCheckpoint=0; towerPendingGold=0; towerPendingArtifacts=[]; towerPendingEssence=0; } towerNeedsEntry = false; }
       if(towerFloor === 0 || towerNeedsEntry) {
         if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
@@ -7776,7 +7778,7 @@ screenContent.addEventListener('click', e=>{
     else if(action==='vs')         { actionMenuOpen=false; enterVs(); return; }
     else if(action==='duel')       { actionMenuOpen=false; enterDuel(); return; }
     else if(action==='tower')      { actionMenuOpen=false;
-      const _tToday = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+      const _tToday = _thaiDateStr();
       if(towerRunsDate !== _tToday) {
         towerRunsDate = _tToday; towerRunsToday = 0; towerToast = '';
         towerFloor = 0; towerCheckpoint = 0; towerNeedsEntry = false;
@@ -10542,7 +10544,7 @@ function enterScout() {
 // ============================================================
 
 function checkDailyScrolls() {
-  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+  const today = _thaiDateStr();
   if(lastScrollDay !== today) {
     lastScrollDay = today;
     addItemToInventory('map_scroll');
@@ -10553,7 +10555,7 @@ function checkDailyScrolls() {
 }
 
 function checkDailyEnergyDrink() {
-  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+  const today = _thaiDateStr();
   if(lastEnergyDrinkDay !== today) {
     lastEnergyDrinkDay = today;
     addItemToInventory('energy_drink');

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1242,7 +1242,7 @@ const ARTIFACTS = {
   antidote_charm:  { name:'Antidote Charm',   nameTh:'เครื่องรางแก้พิษ',    grade:'R', icon:'💊', desc:'In battle: Complete immunity to poison', descTh:'ในการต่อสู้: ป้องกันพิษได้สมบูรณ์' },
   plague_scythe:   { name:'Plague Scythe',    nameTh:'เคียวกาฬโรค',         grade:'E', icon:'☣️', desc:'In battle: On attack, 30% chance to poison; deals +50% damage to an already-poisoned opponent', descTh:'ในการต่อสู้: เมื่อโจมตี 30% โอกาสวางพิษ และดาเมจ +50% ถ้าคู่ต่อสู้ติดพิษอยู่แล้ว' },
   reflect_ward:    { name:'Reflect Ward',     nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🚫🔄', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
-  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'ATK +25% when equipped. In battle: Attacks ignore enemy DEF and all damage-reduction effects', descTh:'ATK +25% เมื่อสวมใส่ และในการต่อสู้: โจมตีทะลุ Def ของศัตรูและเอฟเฟกต์ลดดาเมจทั้งหมด' },
+  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'In battle: ATK +25%, attacks ignore enemy DEF and all damage-reduction effects', descTh:'ในการต่อสู้: ATK +25% และโจมตีทะลุ Def ของศัตรูและเอฟเฟกต์ลดดาเมจทั้งหมด' },
   cursed_shackle:  { name:'Cursed Shackle',   nameTh:'ตรวนต้องสาป',         grade:'R', icon:'⛓️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
 };
 // Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
@@ -2041,6 +2041,7 @@ function getEffStat(stat) {
   const exp = creature.buffExpiry?.[stat] || 0;
   let val = (exp > now) ? Math.round(base * 1.2) : base;
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
+  if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   return val;
 }
 
@@ -2062,7 +2063,6 @@ const STAT_ART_MULT = {
   atk_shard:{atk:1.15}, def_shard:{def:1.15}, spd_shard:{spd:1.15}, hp_core:{hp:1.15},
   all_stats_r:{atk:1.15,def:1.15,spd:1.15,hp:1.15},
   all_stats_e:{atk:1.25,def:1.25,spd:1.25,hp:1.25},
-  piercing_fang:{atk:1.25},
 };
 function applyArtifactStat(pet, key, revert=false) {
   const m = STAT_ART_MULT[key]; if(!m) return;
@@ -4113,7 +4113,7 @@ function doTurn(moveIdx) {
       bs.eColossusFinisherTurns--;
       passives.push({icon:'🌋',text:T(`COLOSSUS ไม้ตาย TECTONIC RUIN! รับดาเมจเพียง 1 + สะท้อน ${ref} (เหลือ ${bs.eColossusFinisherTurns} เทิร์น)`,`COLOSSUS finisher TECTONIC RUIN! Takes only 1 dmg + reflects ${ref} (${bs.eColossusFinisherTurns} turns left)`)});
     } else {
-      pd = Math.round(pd*0.65);
+      pd = playerIgnoresDef ? pd : Math.round(pd*0.65);
       const refPct = enemy.hp > enemy.maxHp*0.6 ? 0.40 : 0.20;
       const ref = Math.max(1, Math.round(pd*refPct));
       creature.hp = Math.max(0, creature.hp-ref); reflectDmg += ref;
@@ -4121,7 +4121,7 @@ function doTurn(moveIdx) {
         bs.eColossusHits = (bs.eColossusHits||0)+1;
         if(bs.eColossusHits>=3) { bs.eColossusHits=0; bs.eColossusAtkBuffNext=true; }
       }
-      passives.push({icon:'🐢',text:`COLOSSUS dmg-35% + reflect${ref}→${pd}`});
+      passives.push({icon:'🐢',text:`COLOSSUS dmg-35%${playerIgnoresDef?' (PIERCE!)':''} + reflect${ref}→${pd}`});
     }
   }
   if(enemy.spriteFile==='monster & boss/W-phantasm-specialboss.png') {
@@ -4160,12 +4160,12 @@ function doTurn(moveIdx) {
       if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun();
       passives.push({icon:'⚡',text:T(`VANGUARD ไม้ตาย OVERLOAD PROTOCOL! ×2.5 + Stun แน่นอน →${ed}`,`VANGUARD finisher OVERLOAD PROTOCOL! ×2.5 + guaranteed stun →${ed}`)});
     } else if((bs.eVanguardFinisherTurns||0) > 0) {
-      pd = Math.round(pd*0.5); bs.eVanguardFinisherTurns--;
-      passives.push({icon:'⚡',text:T(`VANGUARD หลังไม้ตาย ลดดาเมจ 50% (เหลือ ${bs.eVanguardFinisherTurns} เทิร์น)→${pd}`,`VANGUARD post-finisher dmg-50% (${bs.eVanguardFinisherTurns} turns left)→${pd}`)});
+      pd = playerIgnoresDef ? pd : Math.round(pd*0.5); bs.eVanguardFinisherTurns--;
+      passives.push({icon:'⚡',text:T(`VANGUARD หลังไม้ตาย ลดดาเมจ 50%${playerIgnoresDef?' (PIERCE!)':''} (เหลือ ${bs.eVanguardFinisherTurns} เทิร์น)→${pd}`,`VANGUARD post-finisher dmg-50%${playerIgnoresDef?' (PIERCE!)':''} (${bs.eVanguardFinisherTurns} turns left)→${pd}`)});
     } else if(bs.turn%3===0) {
-      pd = Math.round(pd*0.4);
-      if(pd>0 && Math.random()<0.30) { if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60% + Stun! →${pd}`,`VANGUARD energy barrier! dmg-60% + STUN! →${pd}`)}); }
-      else passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60% →${pd}`,`VANGUARD energy barrier! dmg-60% →${pd}`)});
+      pd = playerIgnoresDef ? pd : Math.round(pd*0.4);
+      if(pd>0 && Math.random()<0.30) { if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60%${playerIgnoresDef?' (PIERCE!)':''} + Stun! →${pd}`,`VANGUARD energy barrier! dmg-60%${playerIgnoresDef?' (PIERCE!)':''} + STUN! →${pd}`)}); }
+      else passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60%${playerIgnoresDef?' (PIERCE!)':''} →${pd}`,`VANGUARD energy barrier! dmg-60%${playerIgnoresDef?' (PIERCE!)':''} →${pd}`)});
     }
   }
   // MONKEY: 30% chance combo double-attack + 20% chance on landed hit to stack a DEF-shred debuff (max 3)
@@ -6621,7 +6621,7 @@ function renderMenu() {
               ['🗡️','WEAPON',T('แต่ละ Pet สวมใส่ Weapon ได้ 1 ชิ้น เพิ่มสเตตัสตรงๆ (เกรด Normal เพิ่มสเตตัสอย่างเดียว ส่วน Rare/Epic มีความสามารถพิเศษเพิ่มด้วย) หาได้จาก Weapon Box, ร้านค้า หรือรางวัลต่างๆ — ไปที่ PARTY → เลือก Pet → ใส่ Weapon','Each Pet can equip 1 Weapon for a flat stat boost (Normal grade is stats-only; Rare/Epic also add a special effect). Found from Weapon Boxes, the Shop, or various rewards — go to PARTY → select a Pet → equip Weapon')],
               ['🐾','PARTY',T('มี Pet ได้สูงสุด 4 ตัว พร้อม Storage อีก 20 ช่อง เลือก Pet ที่ Active เพื่อนำไปต่อสู้ — เปลี่ยน Pet ระหว่างสู้ได้ในโหมด Tower และ VS','Hold up to 4 active pets plus 20 in Storage. Switch pets mid-battle in Tower and VS modes')],
               ['🔮','REBIRTH',T(`Pet ที่ Evolve หรือ Evolve II แล้ว (ต้องถอด Artifact ก่อน) ใช้ Rebirth Stone 1 ชิ้น + Gold ${REBIRTH_GOLD_COST} เพื่อ Rebirth — สเตตัสรีเซ็ตกลับฐาน แต่ได้โบนัสถาวร +25% ของสเตตัสก่อน Rebirth ติดตัวไปตลอด ทำซ้ำได้เรื่อยๆ เพื่อสะสมโบนัส (มีดาว ✦ แสดง rank)\n\n🔮 หา Rebirth Stone ได้จาก: ชนะ Boss (10%) หรือ Mini-Boss (10%) ใน Scout, ซื้อได้ที่ Secret Shop (${REBIRTH_GOLD_COST}G/ครั้ง), First-Clear Tower Floor 70 (การันตี 5 ก้อน), หรือลุ้นจาก Special Boss ใน Raid — โอกาสจะสูงขึ้นมากในโหมด Hard/Hell`,`An Evolved or Evolve II Pet (with no Artifact equipped) can Rebirth using 1 Rebirth Stone + ${REBIRTH_GOLD_COST} Gold — stats reset to base, but you keep a permanent +25% bonus based on stats before the Rebirth. Repeatable to stack more bonuses (shown as ✦ rank stars)\n\n🔮 Get Rebirth Stones from: beating a Boss (10%) or Mini-Boss (10%) in Scout, buying one at the Secret Shop (${REBIRTH_GOLD_COST}G each), Tower Floor 70's First-Clear (guaranteed 5), or a chance from Raid's Special Boss — odds go up a lot in Hard/Hell Mode`)],
-              ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัสถาวร +10% ทุกค่า พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว','Some Pets have a rare chance to be Shiny — a permanent +10% bonus on every stat, plus a unique glowing visual effect')],
+              ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัส +10% ของสเตตัสตอนเกิด/อีโวลท์ (คงที่ ไม่ปรับตามเทรน/ไอเท็ม) พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว และคงไว้เมื่อ Rebirth','Some Pets have a rare chance to be Shiny — gain +10% stats at birth/evolution (flat bonus, does not scale with training/items), plus a unique glowing visual effect. Persists through Rebirth')],
             ];
             const BATTLE_SYSTEMS = [
               ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!')],
@@ -6930,7 +6930,7 @@ function renderBattleScreen() {
 
   let resultBox = '';
   if(lastResult) {
-    const {pm, em, cmp, crit, pd, ed, playerFirst} = lastResult;
+    const {pm, em, cmp, crit, pd, ed, playerFirst, pdHits} = lastResult;
     const cmpColor = cmp==='win' ? '#ffd700' : cmp==='lose' ? '#ff4444' : '#8080c0';
     const cmpLabel = cmp==='win' ? '✓ WIN' : cmp==='lose' ? '✗ LOSE' : '= DRAW';
     const cmpIcon  = cmp==='win' ? '🏆' : cmp==='lose' ? '💀' : '🤝';
@@ -6946,7 +6946,7 @@ function renderBattleScreen() {
         <div style="text-align:center;flex:1">
           <div style="font-size:20px">${pm.icon}</div>
           <div style="font-family:Kanit,sans-serif;font-size:12px;color:#c0a0ff">${pm.name}</div>
-          <div style="font-size:11px;color:#ff6b35;margin-top:1px">-${pd}${crit?' ⚡CRIT':''}</div>
+          <div style="font-size:11px;color:#ff6b35;margin-top:1px">${pdHits&&pdHits.length>1?pdHits.map(h=>`-${h}`).join(' '):(pd>0?`-${pd}`:'')}${crit?' ⚡CRIT':''}</div>
         </div>
         <div style="text-align:center;padding:0 4px">
           <div style="font-size:18px">${cmpIcon}</div>
@@ -8067,6 +8067,7 @@ screenContent.addEventListener('click', e=>{
         pet.trainCount = 0;
         if(pet.artifact)  { applyArtifactStat(pet,pet.artifact); if(pet.artifact==='vitality_core'){pet.maxHp=Math.round(pet.maxHp*1.2);pet.hp=pet.maxHp;} }
         if(pet.artifact2) { applyArtifactStat(pet,pet.artifact2); if(pet.artifact2==='vitality_core'){pet.maxHp=Math.round(pet.maxHp*1.2);pet.hp=pet.maxHp;} }
+        if(pet.shiny) applyShinyStats(pet);
       }
       syncCreature();
       SFX.rebirth();

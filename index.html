@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1219,7 +1219,7 @@ const ARTIFACTS = {
   soul_reaper:     { name:'Soul Reaper',      nameTh:'เกี่ยวเกลียวจิตวิญญาณ', grade:'E', icon:'☠️', desc:'In battle: Drains 25% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 25% จากดาเมจที่โจมตีทุกรอบ' },
   iron_will:       { name:'Iron Will',        nameTh:'ใจเหล็ก',           grade:'E', icon:'💎', desc:'In battle: Survive one fatal blow (once per battle). The next attack deals ATK +300%', descTh:'ในการต่อสู้: รอดจากการโจมตีที่จะทำให้ตาย 1 ครั้ง/การต่อสู้ การโจมตีครั้งถัดไป ATK +300%' },
   true_sight:      { name:'True Sight',       nameTh:'สายตาแท้',          grade:'E', icon:'🔭', desc:'In battle: The enemy cannot dodge your attacks. ATK +50%', descTh:'ในการต่อสู้: ศัตรูไม่สามารถหลบการโจมตีของคุณได้ และ ATK +50%' },
-  moon_veil:       { name:'Moon Veil',        nameTh:'ม่านจันทร์',        grade:'E', icon:'🌙', desc:'In battle: Regenerates 8% of Max HP each round', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 8% ทุกรอบ' },
+  moon_veil:       { name:'Moon Veil',        nameTh:'ม่านจันทร์',        grade:'E', icon:'🌙', desc:'In battle: Regenerates 5% Max HP each round. ATK/DEF/SPD +10%', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 5% ทุกรอบ และ ATK/DEF/SPD +10%' },
   double_attack:   { name:'Double Attack',    nameTh:'โจมตีสองครั้ง',     grade:'E', icon:'⚔', desc:'In battle: 20% chance to attack twice in one round', descTh:'ในการต่อสู้: 20% โอกาสโจมตีสองครั้งในรอบเดียว' },
   wild_card:       { name:'Wild Card',        nameTh:'ไพ่มหัศจรรย์',      grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly Heal/ATK×1.5/Reflect(30% each) or Bad Luck +50% dmg taken (10%)', descTh:'ในการต่อสู้: 25% โอกาสสุ่ม Heal/ATK×1.5/Reflect (30% ต่ออัน) หรือ Bad Luck โดนดาเมจ+50% (10%)' },
   execution:       { name:'Execution',        nameTh:'ประหาร',            grade:'E', icon:'☠', desc:'In battle: When your HP drops below 20%, deal 200% more damage', descTh:'ในการต่อสู้: เมื่อ HP ของคุณต่ำกว่า 20% โจมตีเพิ่ม 200%' },
@@ -2042,6 +2042,7 @@ function getEffStat(stat) {
   let val = (exp > now) ? Math.round(base * 1.2) : base;
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
+  if((stat==='atk'||stat==='def'||stat==='spd') && (creature.artifact==='moon_veil' || creature.artifact2==='moon_veil')) val = Math.round(val * 1.10);
   return val;
 }
 
@@ -3852,7 +3853,7 @@ function doTurn(moveIdx) {
       if(as.ironWillBoostReady) { pd=Math.round(pd*4); as.ironWillBoostReady=false; passives.push({icon:'💎',text:`Iron Will REVENGE ATK×4 → ${pd}`}); }
     }
     if(artId==='true_sight') { pd=Math.round(pd*1.50); passives.push({icon:'🔭',text:`True Sight ATK+50% → ${pd}`}); }
-    if(artId==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.08)); _pHeal(h,'🌙',`Moon Veil +${h}`); }
+    if(artId==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.05)); _pHeal(h,'🌙',`Moon Veil +${h}`); }
     if(artId==='double_attack' && Math.random()<0.20) { const orig=pd; pd=Math.round(pd*2); pdHits=[orig,orig]; passives.push({icon:'⚔',text:`Double Attack ×2 → ${pd}`}); }
     if(artId==='execution' && startHp<creature.maxHp*0.20) { pd=Math.round(pd*3.00); passives.push({icon:'☠',text:`Execution +200% → ${pd}`}); }
     if(artId==='chain_strike') { if(cmp==='win') { bs.chainStrikeStreak=(bs.chainStrikeStreak||0)+1; const rate=bs.chainStrikeStreak>=3?2.00:bs.chainStrikeStreak>=2?1.00:0.50; const bonus=Math.round(pd*rate); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike${bs.chainStrikeStreak>=3?' ×3':bs.chainStrikeStreak>=2?' ×2':''} ${Math.round(rate*100)}% → +${bonus}`}); } else { bs.chainStrikeStreak=0; } }
@@ -4345,7 +4346,7 @@ function doTurn(moveIdx) {
   // Called at end of turn (after both phases) — regen, overdrive charge
   const _endOfTurn = () => {
     if(enemy.hp > 0 && _eHasArt('life_seed')) { const h=Math.max(1,Math.round(enemy.maxHp*0.04)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌱',text:T(`Cursed Shackle: บล็อค Life Seed +${h}`,'Cursed Shackle: Life Seed +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌱',text:`[E] Life Seed +${h}`});} }
-    if(enemy.hp > 0 && _eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.08)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌙',text:T(`Cursed Shackle: บล็อค Moon Veil +${h}`,'Cursed Shackle: Moon Veil +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`});} }
+    if(enemy.hp > 0 && _eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌙',text:T(`Cursed Shackle: บล็อค Moon Veil +${h}`,'Cursed Shackle: Moon Veil +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`});} }
     if(_eHasArt('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🎯',text:T(`Cursed Shackle: บล็อค Crit Core +${h}`,'Cursed Shackle: Crit Core +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🎯',text:`[E] Crit Core +${h}`});} }
     if(wpn?.effect?.type==='regen' && creature.hp>0 && creature.hp<creature.maxHp && Math.random()<wpn.effect.chance) {
       const h=Math.max(1,Math.round(creature.maxHp*0.05));

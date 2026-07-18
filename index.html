@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -3873,7 +3873,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='WARLORD-CHAMPION') {
     pd=Math.round(pd*1.2);
-    if(Math.random()<0.10) { const extra=pd*3; pd+=extra; passives.push({icon:'⚔️',text:`WARLORD 4-HIT!→${pd}`}); }
+    if(Math.random()<0.10) { const orig=pd; pd=orig*4; pdHits=[orig,orig,orig,orig]; passives.push({icon:'⚔️',text:`WARLORD 4-HIT!→${pd}`}); }
     else passives.push({icon:'⚔️',text:`WARLORD dmg+20%→${pd}`});
   }
   if(ff==='KING-CHAMPION') {
@@ -4089,7 +4089,7 @@ function doTurn(moveIdx) {
     const we = wpn.effect;
     if(we.type==='atk_dmg_boost' && Math.random()<we.chance) { pd=Math.round(pd*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} ATK×${we.mult} → ${pd}`}); }
     if(we.type==='on_win_dmg' && cmp==='win') { pd=Math.round(pd*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} WIN dmg×${we.mult} → ${pd}`}); }
-    if(we.type==='multi_attack' && Math.random()<we.chance) { const orig=pd; pd=Math.round(pd*we.hits); for(let i=1;i<we.hits;i++) pdHits.push(orig); passives.push({icon:wpn.icon,text:`${wpn.name} ×${we.hits} HITS → ${pd}`}); }
+    if(we.type==='multi_attack' && Math.random()<we.chance) { const orig=pd; pd=Math.round(pd*we.hits); for(let i=0;i<we.hits;i++) pdHits.push(orig); passives.push({icon:wpn.icon,text:`${wpn.name} ×${we.hits} HITS → ${pd}`}); }
     if(we.type==='poison_on_hit' && pd>0 && Math.random()<we.chance) { if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} poisoned the enemy!`}); } }
     if(we.type==='stun_on_hit' && pd>0 && Math.random()<we.chance) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:wpn.icon,text:`${wpn.name} STUN! (next turn)`});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:wpn.icon,text:`${wpn.name} STUN!`});} }
     if(we.type==='block' && ed>0 && Math.random()<we.chance) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:wpn.icon,text:`${wpn.name} BLOCK! → ${ed}`}); }
@@ -9428,7 +9428,6 @@ function renderParty() {
           ? `${['F','W','S'].map(s=>`${ITEMS['sym_'+s].icon}${symCounts[s]}/${EVOLVE2_BALANCE_SYM_COST}`).join(' ')}`
           : `${ITEMS['sym_'+sym].icon} ${symCounts[sym]}/${EVOLVE2_SYM_COST}`;
         return `<div data-evo2branch="${sym}" style="padding:10px;border-radius:10px;border:2px solid ${picked?ff.color:'#2a2a5a'};background:${picked?'rgba(255,153,68,0.12)':'#0a0a1a'};cursor:pointer;display:flex;align-items:center;gap:10px">
-          ${iconHtml}
           <div style="flex:1;min-width:0">
             <div style="font-family:Kanit,sans-serif;font-size:13px;font-weight:700;color:${ff.color}">${ff.name}</div>
             <div style="font-size:9px;color:#8878b8;margin-top:2px">HP ${ff.hp} ● ATK ${ff.atk} ● SPD ${ff.spd} ● DEF ${ff.def}</div>

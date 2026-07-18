@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4613,7 +4613,7 @@ function doTurn(moveIdx) {
     if(wpn?.effect?.type==='regen' && creature.hp>0 && creature.hp<creature.maxHp && Math.random()<wpn.effect.chance) {
       const h=Math.max(1,Math.round(creature.maxHp*0.05));
       if(bs.playerHealBlockTurns>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+wpn.icon,text:T(`Heal Block: ${wpn.name} +${h} ถูกบล็อค`,'Heal Block: '+wpn.name+' +'+h+' BLOCKED')});bs.weaponRegenFlash=null;}
-      else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon:wpn.icon,text:`${wpn.name} Regen +${h}`});bs.weaponRegenFlash={icon:wpn.icon,amount:h};}
+      else{creature.hp=Math.min(creature.maxHp,creature.hp+h);passives.push({icon:wpn.icon,text:`${wpn.name} Regen +${h}`});bs.weaponRegenFlash={icon:wpn.icon,amount:h};}
     }
     if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) { overdriveCharge++; saveGame(); }
     bs.playerIronWillThisTurn = false;
@@ -7531,7 +7531,7 @@ function renderBattleScreen() {
         // of the p-atk/e-atk animation window instead of riding the heal numbers above.
         if(bs.weaponRegenFlash) {
           const {icon, amount} = bs.weaponRegenFlash;
-          dmgNums += `<div class="dmg-num heal">${icon}+${amount}</div>`;
+          dmgNums += `<div class="dmg-num heal" style="top:62%;left:12%;font-size:14px">${icon}+${amount}</div>`;
         }
         return `
         <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;min-height:180px;border-radius:10px;overflow:hidden;background-image:url('${getBattleBg()}');background-size:cover;background-position:center bottom;position:relative">

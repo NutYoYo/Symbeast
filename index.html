@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4612,8 +4612,8 @@ function doTurn(moveIdx) {
     if(_eHasArt('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🎯',text:T(`Cursed Shackle: บล็อค Crit Core +${h}`,'Cursed Shackle: Crit Core +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🎯',text:`[E] Crit Core +${h}`});} }
     if(wpn?.effect?.type==='regen' && creature.hp>0 && creature.hp<creature.maxHp && Math.random()<wpn.effect.chance) {
       const h=Math.max(1,Math.round(creature.maxHp*0.05));
-      if(bs.playerHealBlockTurns>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+wpn.icon,text:T(`Heal Block: ${wpn.name} +${h} ถูกบล็อค`,'Heal Block: '+wpn.name+' +'+h+' BLOCKED')});bs.weaponRegenFlash=null;}
-      else{creature.hp=Math.min(creature.maxHp,creature.hp+h);passives.push({icon:wpn.icon,text:`${wpn.name} Regen +${h}`});bs.weaponRegenFlash={icon:wpn.icon,amount:h};}
+      if(bs.playerHealBlockTurns>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+wpn.icon,text:T(`Heal Block: ${wpn.name} +${h} ถูกบล็อค`,'Heal Block: '+wpn.name+' +'+h+' BLOCKED')});}
+      else{_pHeal(h,wpn.icon,`${wpn.name} Regen +${h}`);}
     }
     if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) { overdriveCharge++; saveGame(); }
     bs.playerIronWillThisTurn = false;
@@ -4712,6 +4712,7 @@ function doTurn(moveIdx) {
     const phase1DefenderDead = playerFirst ? enemy.hp <= 0 : creature.hp <= 0;
     if(phase1DefenderDead) {
       _endOfTurn();
+      bs.lastResult.playerHeal = playerHeal;
       bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
       bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
       bs.waiting = false;
@@ -4742,6 +4743,7 @@ function doTurn(moveIdx) {
     setTimeout(() => {
       if(battleState !== bs) return;
       _endOfTurn();
+      bs.lastResult.playerHeal = playerHeal;
       bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
       bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
       bs.waiting = false;
@@ -7222,13 +7224,6 @@ function renderBattleScreen() {
     const cmpColor = cmp==='win' ? '#ffd700' : cmp==='lose' ? '#ff4444' : '#8080c0';
     const cmpLabel = cmp==='win' ? '✓ WIN' : cmp==='lose' ? '✗ LOSE' : '= DRAW';
     const cmpIcon  = cmp==='win' ? '🏆' : cmp==='lose' ? '💀' : '🤝';
-    const eventsHtml = lastResult.passives?.length
-      ? lastResult.passives.map(p=>`
-        <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;background:rgba(50,20,80,0.5);border-radius:6px;border-left:2px solid #7030b0">
-          <span style="font-size:16px;flex-shrink:0">${p.icon}</span>
-          <span style="font-size:11px;color:#d0b0ff;line-height:1.3">${p.text}</span>
-        </div>`).join('')
-      : '';
     resultBox = `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 4px">
         <div style="text-align:center;flex:1">
@@ -7246,7 +7241,7 @@ function renderBattleScreen() {
           <div style="font-size:11px;color:#ff4444;margin-top:1px">-${ed}</div>
         </div>
       </div>
-      ${eventsHtml ? `<div style="display:flex;flex-direction:column;gap:3px;margin-top:4px">${eventsHtml}</div>` : ''}`;
+      `;
   } else {
     resultBox = `<div style="font-family:Kanit,sans-serif;font-size:12px;color:#7060aa;text-align:center;padding:6px 0">CHOOSE YOUR MOVE</div>`;
   }

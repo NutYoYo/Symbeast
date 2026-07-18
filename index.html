@@ -948,27 +948,27 @@ const FORMS = {
 // EVOLVE II: each base Evolved form branches into 3 stage-2 forms, chosen by
 // which symbol material (F/W/S) is fed in. Keys must match the Pet/ filenames exactly.
 const EVOLVE2_BRANCHES = {
-  FFF:{F:'RAGING-BRAWLER',    W:'CRIMSON-BRAWLER',  S:'KAIJU-BRAWLER'},
-  FFW:{F:'FIGHTER-PANDA',     W:'PANDA-WARRIOR',    S:'ARMOR-PANDA'},
-  FFS:{F:'TYRANT-IRONJAW',    W:'AGILE-IRONJAW',    S:'FULLARMOR-IRONJAW'},
-  FWW:{F:'STRONG-BLITZ',      W:'STORM-BLITZ',      S:'BULWARK-BLITZ'},
-  FWS:{F:'WARLORD-CHAMPION',  W:'KING-CHAMPION',    S:'ROLLING-CHAMPION'},
-  FSS:{F:'BLAZING-FORTRESS',  W:'SWIFT-FORTRESS',   S:'GUARDIAN-FORTRESS'},
-  WWW:{F:'DARK-SPECTER',      W:'SOUL-SPECTER',     S:'GRAVE-SPECTER'},
-  WWS:{F:'FIGHT-SWIFTGUARD',  W:'QUICK-SWIFTGUARD', S:'IRON-SWIFTGUARD'},
-  WSS:{F:'HAMMER-SHIELDWING', W:'CHILL-SHIELDWING', S:'FATTY-SHIELDWING'},
-  SSS:{F:'GUANLET-BASTION',   W:'IRON-BASTION',     S:'GOLEM-BASTION'},
+  FFF:{F:'RAGING-BRAWLER',    W:'WINDBLADE-BRAWLER',  S:'KAIJU-BRAWLER',     B:'CRIMSON-BRAWLER'},
+  FFW:{F:'FIGHTER-PANDA',     W:'PANDA-NINJA',        S:'ARMOR-PANDA',       B:'PANDA-WARRIOR'},
+  FFS:{F:'TYRANT-IRONJAW',    W:'AGILE-IRONJAW',      S:'FULLARMOR-IRONJAW', B:'RUNE-IRONJAW'},
+  FWW:{F:'STRONG-BLITZ',      W:'STORM-BLITZ',        S:'BULWARK-BLITZ',     B:'THUNDERCLOUD-BLITZ'},
+  FWS:{F:'WARLORD-CHAMPION',  W:'KING-CHAMPION',      S:'ROLLING-CHAMPION',  B:'SOUL-CHAMPION'},
+  FSS:{F:'BLAZING-FORTRESS',  W:'SWIFT-FORTRESS',     S:'GUARDIAN-FORTRESS', B:'POISON-FORTRESS'},
+  WWW:{F:'DARK-SPECTER',      W:'SOUL-SPECTER',       S:'GRAVE-SPECTER',     B:'MAGE-SPECTER'},
+  WWS:{F:'FIGHT-SWIFTGUARD',  W:'QUICK-SWIFTGUARD',   S:'IRON-SWIFTGUARD',   B:'PHEONIX-SWIFTGUARD'},
+  WSS:{F:'HAMMER-SHIELDWING', W:'CHILL-SHIELDWING',   S:'FATTY-SHIELDWING',  B:'GAIA-SHIELDWING'},
+  SSS:{F:'GUANLET-BASTION',   W:'IRON-BASTION',       S:'GOLEM-BASTION',     B:'CRYSTAWOLF-BASTION'},
 };
 function evolve2Branch(formKey, symbol) { return EVOLVE2_BRANCHES[formKey]?.[symbol] || null; }
 function evolve2SymbolOfKey(key) {
   for(const base in EVOLVE2_BRANCHES) {
-    for(const sym of ['F','W','S']) { if(EVOLVE2_BRANCHES[base][sym]===key) return sym; }
+    for(const sym of ['F','W','S','B']) { if(EVOLVE2_BRANCHES[base][sym]===key) return sym; }
   }
   return null;
 }
 function evolve2BaseOfKey(key) {
   for(const base in EVOLVE2_BRANCHES) {
-    for(const sym of ['F','W','S']) { if(EVOLVE2_BRANCHES[base][sym]===key) return base; }
+    for(const sym of ['F','W','S','B']) { if(EVOLVE2_BRANCHES[base][sym]===key) return base; }
   }
   return null;
 }
@@ -977,103 +977,133 @@ function evolve2BaseOfKey(key) {
 // per form (implemented in the EVOLVE II BRANCH SKILL block in doTurn).
 // Data source of truth: SYMBEAST_Evolve_Forms.xlsx (user-authored, confirmed final).
 const EVOLVE2_FORMS = {
-  'RAGING-BRAWLER':    { name:'RAGING-BRAWLER',    color:'#ff6644', hp:111, atk:50, spd:14, def:5,  passiveIcon:'💢',
+  'RAGING-BRAWLER':     { name:'RAGING-BRAWLER',     color:'#ff6644', hp:111, atk:50, spd:14, def:5,  passiveIcon:'💢',
     passive:'On WIN: damage dealt +15% per stack (max 5 stacks per battle, never resets)',
     passiveTh:'เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15% (สะสมได้สูงสุด 5 ครั้ง/1 การต่อสู้)' },
-  'CRIMSON-BRAWLER':   { name:'CRIMSON-BRAWLER',   color:'#ff2200', hp:104, atk:38, spd:21, def:5,  passiveIcon:'🗡',
-    passive:'20% chance to fully dodge; on dodge, counter-attacks for 75% damage',
-    passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จจะโจมตีโต้กลับด้วยดาเมจ 75%' },
-  'KAIJU-BRAWLER':     { name:'KAIJU-BRAWLER',     color:'#aa2222', hp:137, atk:36, spd:13, def:8,  passiveIcon:'🦖',
+  'WINDBLADE-BRAWLER':  { name:'WINDBLADE-BRAWLER',  color:'#ff8888', hp:104, atk:38, spd:21, def:5,  passiveIcon:'🗡',
+    passive:'25% chance to fully dodge; on dodge, counter-attacks for 75% damage',
+    passiveTh:'25% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จจะโจมตีโต้กลับด้วยดาเมจ 75%' },
+  'CRIMSON-BRAWLER':    { name:'CRIMSON-BRAWLER',    color:'#ff2200', hp:117, atk:41, spd:16, def:6,  passiveIcon:'☯️',
+    passive:'Every round (WIN or LOSE): ATK+10% and SPD+10% (max 3 stacks per battle)',
+    passiveTh:'ไม่ว่า WIN หรือ LOSE: ATK+10% และ SPD+10% ทุกรอบ (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้)' },
+  'KAIJU-BRAWLER':      { name:'KAIJU-BRAWLER',      color:'#aa2222', hp:137, atk:36, spd:13, def:8,  passiveIcon:'🦖',
     passive:'On LOSE: next round ATK +50% and DEF +50%',
     passiveTh:'เมื่อ LOSE รอบถัดไปจะ ATK +50%, DEF +50%' },
 
-  'FIGHTER-PANDA':     { name:'FIGHTER-PANDA',     color:'#ff6a00', hp:111, atk:42, spd:19, def:5,  passiveIcon:'🥊',
+  'FIGHTER-PANDA':      { name:'FIGHTER-PANDA',      color:'#ff6a00', hp:111, atk:42, spd:19, def:5,  passiveIcon:'🥊',
     passive:'On LOSE: damage dealt +75% that turn',
     passiveTh:'เมื่อ LOSE ดาเมจที่สร้างเพิ่มขึ้น 75% (ในเทิร์นที่ LOSE)' },
-  'PANDA-WARRIOR':     { name:'PANDA-WARRIOR',     color:'#ffaa44', hp:104, atk:32, spd:29, def:5,  passiveIcon:'🐼',
+  'PANDA-NINJA':        { name:'PANDA-NINJA',        color:'#2c2c2c', hp:104, atk:32, spd:29, def:5,  passiveIcon:'🥷',
+    passive:'25% chance to fully dodge; on dodge, the next attack is a guaranteed critical hit (dmg ×1.6)',
+    passiveTh:'25% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จ การโจมตีครั้งถัดไปจะติดคริติคอลแน่นอน (ดาเมจ ×1.6)' },
+  'PANDA-WARRIOR':      { name:'PANDA-WARRIOR',      color:'#ffaa44', hp:117, atk:35, spd:22, def:6,  passiveIcon:'🐼',
     passive:'25% chance to take half damage and counter-attack for 75% damage',
     passiveTh:'มีโอกาส 25% รับดาเมจครึ่งนึงและโจมตีโต้กลับด้วยดาเมจ 75%' },
-  'ARMOR-PANDA':       { name:'ARMOR-PANDA',       color:'#444444', hp:137, atk:30, spd:18, def:8,  passiveIcon:'🛡',
+  'ARMOR-PANDA':        { name:'ARMOR-PANDA',        color:'#444444', hp:137, atk:30, spd:18, def:8,  passiveIcon:'🛡',
     passive:'All damage taken -20%; 50% chance to counter-attack for 75% damage',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และมีโอกาส 50% ที่จะโจมตีกลับด้วยดาเมจ 75%' },
 
-  'TYRANT-IRONJAW':    { name:'TYRANT-IRONJAW',    color:'#8b0000', hp:136, atk:42, spd:14, def:10, passiveIcon:'🩸',
+  'TYRANT-IRONJAW':     { name:'TYRANT-IRONJAW',     color:'#8b0000', hp:136, atk:42, spd:14, def:10, passiveIcon:'🩸',
     passive:'Damage dealt +20% and lifesteal +10%',
     passiveTh:'ดาเมจที่สร้างเพิ่มขึ้น 20% และดูดเลือดเพิ่ม 10%' },
-  'AGILE-IRONJAW':     { name:'AGILE-IRONJAW',     color:'#cc6644', hp:128, atk:32, spd:21, def:10, passiveIcon:'⚔',
+  'AGILE-IRONJAW':      { name:'AGILE-IRONJAW',      color:'#cc6644', hp:128, atk:32, spd:21, def:10, passiveIcon:'⚔',
     passive:'25% chance to attack twice',
     passiveTh:'25% โอกาสโจมตี 2 ครั้ง' },
-  'FULLARMOR-IRONJAW': { name:'FULLARMOR-IRONJAW', color:'#663322', hp:168, atk:30, spd:13, def:17, passiveIcon:'🛡',
+  'RUNE-IRONJAW':       { name:'RUNE-IRONJAW',       color:'#9966ff', hp:144, atk:35, spd:16, def:12, passiveIcon:'🔮',
+    passive:'15% chance to stun the enemy; each round gains a random Rune buff: ATK+50% or DEF+50% (does not stack, resets each round)',
+    passiveTh:'มีโอกาส 15% สตันศัตรู และทุกรอบได้รับ Rune บัฟสุ่ม: ATK+50% หรือ DEF+50% (ไม่สะสม รีเซ็ตทุกรอบ)' },
+  'FULLARMOR-IRONJAW':  { name:'FULLARMOR-IRONJAW',  color:'#663322', hp:168, atk:30, spd:13, def:17, passiveIcon:'🛡',
     passive:'While HP < 50%: damage taken -20% and counter-attacks for 75% damage',
     passiveTh:'เมื่อ HP < 50% ลดดาเมจที่รับทั้งหมด 20% และโจมตีกลับด้วยดาเมจ 75%' },
 
-  'STRONG-BLITZ':      { name:'STRONG-BLITZ',      color:'#ffdd00', hp:102, atk:34, spd:24, def:5,  passiveIcon:'⚡',
+  'STRONG-BLITZ':       { name:'STRONG-BLITZ',       color:'#ffdd00', hp:102, atk:34, spd:24, def:5,  passiveIcon:'⚡',
     passive:'On WIN: damage dealt +20% and +15% chance to stun the enemy for 1 round',
     passiveTh:'เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้น 20% และเพิ่มโอกาส 15% Stun ศัตรู ทำให้โจมตีไม่ได้ 1 รอบ' },
-  'STORM-BLITZ':       { name:'STORM-BLITZ',       color:'#fff066', hp:96,  atk:26, spd:38, def:5,  passiveIcon:'🌩',
+  'STORM-BLITZ':        { name:'STORM-BLITZ',        color:'#fff066', hp:96,  atk:26, spd:38, def:5,  passiveIcon:'🌩',
     passive:'20% chance to fully dodge; on dodge, ATK +50% next round',
     passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จ ATK+50% ในรอบถัดไป' },
-  'BULWARK-BLITZ':     { name:'BULWARK-BLITZ',     color:'#ccaa00', hp:126, atk:24, spd:23, def:8,  passiveIcon:'🛡',
+  'THUNDERCLOUD-BLITZ': { name:'THUNDERCLOUD-BLITZ', color:'#7788cc', hp:108, atk:28, spd:28, def:6,  passiveIcon:'⛈️',
+    passive:'15% chance to stun the enemy for 1 round; if not stunned, gains 25% dodge for that round instead',
+    passiveTh:'15% โอกาส Stun ศัตรู 1 รอบ ถ้าไม่ติดจะได้โอกาสหลบ 25% แทนในรอบนั้น' },
+  'BULWARK-BLITZ':      { name:'BULWARK-BLITZ',      color:'#ccaa00', hp:126, atk:24, spd:23, def:8,  passiveIcon:'🛡',
     passive:'All damage taken -20%; when hit, 15% chance to stun the attacker for 1 round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อถูกโจมตีมีโอกาส 15% ที่จะทำให้อีกฝ่าย Stun 1 รอบ' },
 
-  'WARLORD-CHAMPION':  { name:'WARLORD-CHAMPION',  color:'#6a0dad', hp:128, atk:34, spd:19, def:10, passiveIcon:'⚔️',
+  'WARLORD-CHAMPION':   { name:'WARLORD-CHAMPION',   color:'#6a0dad', hp:128, atk:34, spd:19, def:10, passiveIcon:'⚔️',
     passive:'Damage dealt +20%; 10% chance to attack 4 times',
     passiveTh:'ดาเมจที่สร้างเพิ่มขึ้น 20% และมีโอกาส 10% ที่จะโจมตี 4 ครั้ง' },
-  'KING-CHAMPION':     { name:'KING-CHAMPION',     color:'#4b0082', hp:120, atk:26, spd:29, def:10, passiveIcon:'👑',
+  'KING-CHAMPION':      { name:'KING-CHAMPION',      color:'#4b0082', hp:120, atk:26, spd:29, def:10, passiveIcon:'👑',
     passive:'20% chance to fully dodge; on dodge, ATK/DEF/SPD +10% (max 5 stacks per battle)',
     passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จ ATK+10%, DEF+10%, SPD+10% (สะสมได้สูงสุด 5 ครั้ง/1 การต่อสู้)' },
-  'ROLLING-CHAMPION':  { name:'ROLLING-CHAMPION',  color:'#b366ff', hp:158, atk:24, spd:18, def:17, passiveIcon:'🌀',
+  'SOUL-CHAMPION':      { name:'SOUL-CHAMPION',      color:'#ccbb44', hp:135, atk:28, spd:22, def:12, passiveIcon:'⚖️',
+    passive:'On WIN: ATK+25% and damage taken -15% that round; on LOSE: dodge +25% and damage dealt +25% that round',
+    passiveTh:'เมื่อ WIN: ATK+25% และรับดาเมจ -15% ในรอบนั้น เมื่อ LOSE: โอกาสหลบ+25% และดาเมจที่สร้างเพิ่ม 25% ในรอบนั้น' },
+  'ROLLING-CHAMPION':   { name:'ROLLING-CHAMPION',   color:'#b366ff', hp:158, atk:24, spd:18, def:17, passiveIcon:'🌀',
     passive:'All damage taken -20%; every 3 rounds the attack deals +50% damage and cannot miss',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และทุกๆ 3 รอบจะโจมตีแรงขึ้น 50% และไม่พลาดเป้า (รีเซ็ต)' },
 
-  'BLAZING-FORTRESS':  { name:'BLAZING-FORTRESS',  color:'#cc3300', hp:153, atk:34, spd:14, def:16, passiveIcon:'🔥',
-    passive:'On WIN: damage dealt +15% and DEF +15% per stack (max 3 stacks per battle); 20% chance to poison the enemy',
+  'BLAZING-FORTRESS':   { name:'BLAZING-FORTRESS',   color:'#cc3300', hp:153, atk:34, spd:14, def:16, passiveIcon:'🔥',
+    passive:'On WIN: damage dealt +15% and DEF +15% per stack (max 3 stacks per battle), 20% chance to poison the enemy',
     passiveTh:'เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15% และ DEF+15% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้) และมีโอกาส 20% ทำให้ศัตรูติดพิษ' },
-  'SWIFT-FORTRESS':    { name:'SWIFT-FORTRESS',    color:'#aa66cc', hp:144, atk:26, spd:21, def:16, passiveIcon:'🔄',
-    passive:'Every 3 turns: reflects 75% of damage taken back, recovers 10% HP, and has a 50% chance to poison the enemy',
-    passiveTh:'ทุก 3 เทิร์น จะสะท้อนดาเมจที่รับ 75% กลับไปยังศัตรู และฟื้นฟู HP 10% และมีโอกาส 50% ทำให้ศัตรูติดพิษ' },
-  'GUARDIAN-FORTRESS': { name:'GUARDIAN-FORTRESS', color:'#663399', hp:189, atk:24, spd:13, def:25, passiveIcon:'🏰',
+  'SWIFT-FORTRESS':     { name:'SWIFT-FORTRESS',     color:'#aa66cc', hp:144, atk:26, spd:21, def:16, passiveIcon:'🔄',
+    passive:'Every 3 turns: reflects 75% of damage taken back, recovers 10% HP, and 50% chance to poison the enemy',
+    passiveTh:'ทุก 3 เทิร์น จะสะท้อนดาเมจที่รับ 75% กลับไปยังศัตรู ฟื้นฟู HP 10% และมีโอกาส 50% ทำให้ศัตรูติดพิษ' },
+  'POISON-FORTRESS':    { name:'POISON-FORTRESS',    color:'#66aa33', hp:162, atk:28, spd:16, def:19, passiveIcon:'☠️',
+    passive:'All damage taken -10%; 25% chance to poison the enemy when hit (6% MaxHP/turn, 3 turns); immune to poison',
+    passiveTh:'ลดดาเมจที่รับทั้งหมด 10% และมีโอกาส 25% ทำให้ศัตรูติดพิษเมื่อถูกโจมตี (6% MaxHP/เทิร์น นาน 3 เทิร์น) และตัวเองจะไม่มีทางติดพิษ' },
+  'GUARDIAN-FORTRESS':  { name:'GUARDIAN-FORTRESS',  color:'#663399', hp:189, atk:24, spd:13, def:25, passiveIcon:'🏰',
     passive:'All damage taken -25%; while HP < 50%, reflects an extra 25% of damage taken back to the enemy',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 25% และเมื่อ HP < 50% จะสะท้อนดาเมจที่ได้รับเพิ่ม 25% กลับไปยังศัตรู' },
 
-  'DARK-SPECTER':      { name:'DARK-SPECTER',      color:'#227766', hp:102, atk:25, spd:30, def:5,  passiveIcon:'🌑',
+  'DARK-SPECTER':       { name:'DARK-SPECTER',       color:'#227766', hp:102, atk:25, spd:30, def:5,  passiveIcon:'🌑',
     passive:'Damage dealt +20%, Crit Rate +25%, lifesteal 15%',
     passiveTh:'ดาเมจที่สร้างเพิ่มขึ้น 20% และ Crit Rate +25%, ดูดเลือด 15%' },
-  'SOUL-SPECTER':      { name:'SOUL-SPECTER',      color:'#66ffdd', hp:96,  atk:19, spd:46, def:5,  passiveIcon:'👻',
+  'SOUL-SPECTER':       { name:'SOUL-SPECTER',       color:'#66ffdd', hp:96,  atk:19, spd:46, def:5,  passiveIcon:'👻',
     passive:'20% chance to fully dodge; on dodge, the next attack hits twice',
     passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จ การโจมตีถัดไปจะโจมตี 2 ครั้ง' },
-  'GRAVE-SPECTER':     { name:'GRAVE-SPECTER',     color:'#0d4f43', hp:126, atk:18, spd:29, def:8,  passiveIcon:'⚰️',
+  'MAGE-SPECTER':       { name:'MAGE-SPECTER',       color:'#8844cc', hp:108, atk:21, spd:35, def:6,  passiveIcon:'🧙',
+    passive:'On WIN: curses enemy, reducing ATK by 25% for 2 turns; on DRAW: enemy cannot heal for 3 turns; on LOSE: damage taken -10%',
+    passiveTh:'เมื่อ WIN จะสาปศัตรู ลด ATK ของศัตรู 25% เป็นเวลา 2 รอบ, เมื่อ DRAW จะสาปให้ศัตรูฟื้นฟู HP ไม่ได้ 3 รอบ, เมื่อ LOSE ลดดาเมจที่ได้รับ 10%' },
+  'GRAVE-SPECTER':      { name:'GRAVE-SPECTER',      color:'#0d4f43', hp:126, atk:18, spd:29, def:8,  passiveIcon:'⚰️',
     passive:'All damage taken -25%; 50% chance to recover 5% HP each round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 25% และมีโอกาส 50% ฟื้นฟู HP 5%' },
 
-  'FIGHT-SWIFTGUARD':  { name:'FIGHT-SWIFTGUARD',  color:'#22aa77', hp:128, atk:25, spd:24, def:10, passiveIcon:'🥋',
+  'FIGHT-SWIFTGUARD':   { name:'FIGHT-SWIFTGUARD',   color:'#22aa77', hp:128, atk:25, spd:24, def:10, passiveIcon:'🥋',
     passive:'On WIN: damage dealt +15%, dodge +5%, Crit Rate +5% per stack (max 3 stacks per battle)',
     passiveTh:'เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15%, โอกาสหลบ +5%, Crit Rate +5% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้)' },
-  'QUICK-SWIFTGUARD':  { name:'QUICK-SWIFTGUARD',  color:'#44ffcc', hp:120, atk:19, spd:38, def:10, passiveIcon:'💨',
+  'QUICK-SWIFTGUARD':   { name:'QUICK-SWIFTGUARD',   color:'#44ffcc', hp:120, atk:19, spd:38, def:10, passiveIcon:'💨',
     passive:'25% chance to fully dodge; on dodge, the next attack pierces DEF and cannot miss',
     passiveTh:'25% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จการโจมตีครั้งถัดไปจะทะลุ DEF ฝั่งตรงข้ามและไม่พลาดเป้า' },
-  'IRON-SWIFTGUARD':   { name:'IRON-SWIFTGUARD',   color:'#0d6655', hp:158, atk:18, spd:23, def:17, passiveIcon:'🛡',
+  'PHEONIX-SWIFTGUARD': { name:'PHEONIX-SWIFTGUARD', color:'#ff6644', hp:135, atk:21, spd:28, def:12, passiveIcon:'🔥',
+    passive:'Once per battle when HP < 30%: full heal + ATK/DEF/SPD +20%',
+    passiveTh:'เมื่อ HP<30% (ครั้งเดียว/การต่อสู้): ฟื้น HP 100% ทันที + ATK/DEF/SPD +20%' },
+  'IRON-SWIFTGUARD':    { name:'IRON-SWIFTGUARD',    color:'#0d6655', hp:158, atk:18, spd:23, def:17, passiveIcon:'🛡',
     passive:'On LOSE: damage taken -15% per stack (max 3 stacks per battle)',
     passiveTh:'เมื่อ LOSE ลดดาเมจที่รับทั้งหมด 15% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้)' },
 
-  'HAMMER-SHIELDWING': { name:'HAMMER-SHIELDWING', color:'#cc4422', hp:153, atk:25, spd:19, def:16, passiveIcon:'🔨',
+  'HAMMER-SHIELDWING':  { name:'HAMMER-SHIELDWING',  color:'#cc4422', hp:153, atk:25, spd:19, def:16, passiveIcon:'🔨',
     passive:'On WIN: damage dealt +20%, +15% chance to stun, and the attack pierces DEF',
     passiveTh:'เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้น 20% และเพิ่มโอกาส 15% Stun ศัตรู ทำให้โจมตีไม่ได้ 1 รอบ และโจมตีทะลุ DEF' },
-  'CHILL-SHIELDWING':  { name:'CHILL-SHIELDWING',  color:'#66bbff', hp:144, atk:19, spd:29, def:16, passiveIcon:'❄️',
+  'CHILL-SHIELDWING':   { name:'CHILL-SHIELDWING',   color:'#66bbff', hp:144, atk:19, spd:29, def:16, passiveIcon:'❄️',
     passive:'Every 3 turns: dodges 100% and attacks through DEF with ATK +50%',
     passiveTh:'ทุก 3 เทิร์น จะหลบการโจมตีได้ 100% และโจมตีทะลุ DEF ด้วย ATK+50%' },
-  'FATTY-SHIELDWING':  { name:'FATTY-SHIELDWING',  color:'#1a5588', hp:189, atk:18, spd:18, def:25, passiveIcon:'🛡',
-    passive:'All damage taken -20%; while HP > 70%, ATK +30% and DEF +30%',
-    passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP > 70% ATK+30%, DEF+30%' },
+  'GAIA-SHIELDWING':    { name:'GAIA-SHIELDWING',    color:'#44aa44', hp:162, atk:21, spd:22, def:19, passiveIcon:'🌿',
+    passive:'Every 3 rounds: recovers 15% of Max HP and ATK/DEF +20% for that round',
+    passiveTh:'ทุก 3 รอบ: ฟื้น HP 15% ของ Max HP และ ATK/DEF+20% ในรอบนั้น' },
+  'FATTY-SHIELDWING':   { name:'FATTY-SHIELDWING',   color:'#1a5588', hp:189, atk:18, spd:18, def:25, passiveIcon:'🛡',
+    passive:'All damage taken -20%; while HP > 70%, ATK +30% and DEF +30%; while HP < 70%, ATK +50%',
+    passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP > 70% ATK+30%, DEF+30% แต่ถ้า HP <70% ATK+50%' },
 
-  'GUANLET-BASTION':   { name:'GUANLET-BASTION',   color:'#663333', hp:179, atk:25, spd:14, def:21, passiveIcon:'🥊',
+  'GUANLET-BASTION':    { name:'GUANLET-BASTION',    color:'#663333', hp:179, atk:25, spd:14, def:21, passiveIcon:'🥊',
     passive:'On LOSE: damage dealt +15% per stack (max 5 stacks per battle)',
     passiveTh:'เมื่อ LOSE ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15% (สะสมได้สูงสุด 5 ครั้ง/1 การต่อสู้)' },
-  'IRON-BASTION':      { name:'IRON-BASTION',      color:'#6688aa', hp:168, atk:19, spd:21, def:21, passiveIcon:'🎯',
-    passive:'20% chance to fully dodge; every 3 turns, attacks cannot miss, deal +50% damage, and guarantee a critical hit (resets after triggering)',
-    passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์, ทุก 3 เทิร์นจะโจมตีไม่พลาดเป้าและแรงขึ้น 50% และติดคริติคอลแน่นอน (รีเซ็ตหลังจากทำงานแล้ว)' },
-  'GOLEM-BASTION':     { name:'GOLEM-BASTION',     color:'#1a2733', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿',
+  'IRON-BASTION':       { name:'IRON-BASTION',       color:'#6688aa', hp:168, atk:19, spd:21, def:21, passiveIcon:'🎯',
+    passive:'20% chance to fully dodge; every 3 turns, attacks cannot miss, deal +50% damage, and guarantee a critical hit',
+    passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์, ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ +50% และติดคริติคอลแน่นอน' },
+  'CRYSTAWOLF-BASTION': { name:'CRYSTAWOLF-BASTION', color:'#88aacc', hp:189, atk:21, spd:16, def:25, passiveIcon:'💎',
+    passive:'25% chance to halve incoming damage; on success, counter-attacks for 75% damage; when hit, 10% chance to stun the enemy',
+    passiveTh:'25% โอกาสลดดาเมจครึ่งหนึ่ง เมื่อสำเร็จ จะโจมตีโต้กลับด้วยดาเมจ 75% และเมื่อโดนโจมตีมีโอกาส 10% ทำให้ศัตรูสต้น' },
+  'GOLEM-BASTION':      { name:'GOLEM-BASTION',      color:'#1a2733', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿',
     passive:'All damage taken -20%; while HP < 30%, ATK +30% and recovers 5% HP each round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP < 30% ATK+30%, ฟื้นฟู HP 5%' },
 };
@@ -1219,7 +1249,7 @@ const ARTIFACTS = {
   soul_reaper:     { name:'Soul Reaper',      nameTh:'เกี่ยวเกลียวจิตวิญญาณ', grade:'E', icon:'☠️', desc:'In battle: Drains 25% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 25% จากดาเมจที่โจมตีทุกรอบ' },
   iron_will:       { name:'Iron Will',        nameTh:'ใจเหล็ก',           grade:'E', icon:'💎', desc:'In battle: Survive one fatal blow (once per battle). The next attack deals ATK +300%', descTh:'ในการต่อสู้: รอดจากการโจมตีที่จะทำให้ตาย 1 ครั้ง/การต่อสู้ การโจมตีครั้งถัดไป ATK +300%' },
   true_sight:      { name:'True Sight',       nameTh:'สายตาแท้',          grade:'E', icon:'🔭', desc:'In battle: The enemy cannot dodge your attacks. ATK +50%', descTh:'ในการต่อสู้: ศัตรูไม่สามารถหลบการโจมตีของคุณได้ และ ATK +50%' },
-  moon_veil:       { name:'Moon Veil',        nameTh:'ม่านจันทร์',        grade:'E', icon:'🌙', desc:'In battle: Regenerates 5% Max HP each round. ATK/DEF/SPD +10%', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 5% ทุกรอบ และ ATK/DEF/SPD +10%' },
+  moon_veil:       { name:'Moon Veil',        nameTh:'ม่านจันทร์',        grade:'E', icon:'🌙', desc:'In battle: Regenerates 8% of Max HP each round', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 8% ทุกรอบ' },
   double_attack:   { name:'Double Attack',    nameTh:'โจมตีสองครั้ง',     grade:'E', icon:'⚔', desc:'In battle: 20% chance to attack twice in one round', descTh:'ในการต่อสู้: 20% โอกาสโจมตีสองครั้งในรอบเดียว' },
   wild_card:       { name:'Wild Card',        nameTh:'ไพ่มหัศจรรย์',      grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly Heal/ATK×1.5/Reflect(30% each) or Bad Luck +50% dmg taken (10%)', descTh:'ในการต่อสู้: 25% โอกาสสุ่ม Heal/ATK×1.5/Reflect (30% ต่ออัน) หรือ Bad Luck โดนดาเมจ+50% (10%)' },
   execution:       { name:'Execution',        nameTh:'ประหาร',            grade:'E', icon:'☠', desc:'In battle: When your HP drops below 20%, deal 200% more damage', descTh:'ในการต่อสู้: เมื่อ HP ของคุณต่ำกว่า 20% โจมตีเพิ่ม 200%' },
@@ -1242,7 +1272,7 @@ const ARTIFACTS = {
   antidote_charm:  { name:'Antidote Charm',   nameTh:'เครื่องรางแก้พิษ',    grade:'R', icon:'💊', desc:'In battle: Complete immunity to poison', descTh:'ในการต่อสู้: ป้องกันพิษได้สมบูรณ์' },
   plague_scythe:   { name:'Plague Scythe',    nameTh:'เคียวกาฬโรค',         grade:'E', icon:'☣️', desc:'In battle: On attack, 30% chance to poison; deals +50% damage to an already-poisoned opponent', descTh:'ในการต่อสู้: เมื่อโจมตี 30% โอกาสวางพิษ และดาเมจ +50% ถ้าคู่ต่อสู้ติดพิษอยู่แล้ว' },
   reflect_ward:    { name:'Reflect Ward',     nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🚫🔄', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
-  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'In battle: ATK +25%, attacks ignore enemy DEF and all damage-reduction effects', descTh:'ในการต่อสู้: ATK +25% และโจมตีทะลุ Def ของศัตรูและเอฟเฟกต์ลดดาเมจทั้งหมด' },
+  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'ATK +25% when equipped. In battle: Attacks ignore enemy DEF and all damage-reduction effects', descTh:'ATK +25% เมื่อสวมใส่ และในการต่อสู้: โจมตีทะลุ Def ของศัตรูและเอฟเฟกต์ลดดาเมจทั้งหมด' },
   cursed_shackle:  { name:'Cursed Shackle',   nameTh:'ตรวนต้องสาป',         grade:'R', icon:'⛓️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
 };
 // Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
@@ -1393,19 +1423,17 @@ const RAID_BOSS_SPRITES = {
   S: ['monster & boss/S-slime-boss.png'],
 };
 
-function _thaiDateStr() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-
 let _raidSundayPick = -1; // user's boss pick on Sunday (-1 = not yet picked)
 
 function getRaidDayBossIdx() {
   // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-  const day = new Date().getDay();
+  const day = new Date(Date.now()+7*3600000).getDay();
   if(day === 0) return -1; // Sunday: player picks
   return day - 1;          // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5
 }
 
 function getRaidDailyBoss() {
-  const today = _thaiDateStr();
+  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
   if(raidDailyBossDate !== today) {
     raidDailyBossDate = today;
     _raidSundayPick = -1;
@@ -1420,7 +1448,7 @@ function getRaidDailyBoss() {
   return RAID_SPECIAL_BOSSES[dayIdx];
 }
 function raidResetIfNewDay() {
-  const today = _thaiDateStr();
+  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
   if(raidRunsDate !== today) { raidRunsDate = today; raidRunsToday = 0; }
 }
 function raidRunsLeft() {
@@ -1474,7 +1502,7 @@ function spawnRaidWave(level, wave) {
   battleState.isBoss = enemy.isBoss;
   battleState.isMini = enemy.isMini;
   battleState.isMimic = false;
-  battleState.turn = 1; battleState.log = []; battleState.passivesLog = []; battleState.lastResult = null; battleState.recentTurns = [];
+  battleState.turn = 1; battleState.log = []; battleState.passivesLog = []; battleState.lastResult = null;
   battleState.animPhase = null; battleState.waiting = false;
   battleState.overdriveUsed = false; battleState.odBuff = null; battleState.enemyStunTurns = 0;
   battleState.e2Stack = 0; battleState.e2NextBuff = false; battleState.enemyPoisonTurns = 0; battleState.playerPoisonTurns = 0; battleState.enemyHealBlockTurns = 0; battleState.playerHealBlockTurns = 0;
@@ -1564,6 +1592,7 @@ let privacyOpen = false;     // privacy policy popup open
 let pvpTeam = [];          // indices of pets I've deployed (max 3)
 let pvpChallenges = [];    // list of {id, uid, name, team, wins, losses, rating, createdAt} from Firestore
 let pvpHistory = [];       // list of {opponent, result, timestamp}
+let pvpDefenseLog = [];    // list of {attackerName, attackerUid, attackerWon, timestamp} — who attacked us
 let pvpTab = 'deploy';     // 'deploy' | 'challenge' | 'history'
 let pvpWins = 0;
 let pvpLosses = 0;
@@ -1662,7 +1691,7 @@ const PATCH_NOTES = [
       '   • Artifact/Weapon ที่ทำให้หลบ จะ trigger Effect ฟอร์มด้วย',
       '   • KING-CHAMPION: หลบจากแหล่งใด → สแตก+1',
       '   • WWS SWIFTGUARD: หลบจากแหล่งใด → ฮีล 10% MaxHP',
-      '   • CRIMSON-BRAWLER / STORM-BLITZ / SOUL-SPECTER / QUICK-SWIFTGUARD ก็เช่นกัน',
+      '   • WINDBLADE-BRAWLER / STORM-BLITZ / SOUL-SPECTER / QUICK-SWIFTGUARD ก็เช่นกัน',
       '   • WWS ฮีลปรับจาก 15% → 10% (บาลานซ์)',
       '⚡ อื่นๆ',
       '   • แก้ค้างศัตรูที่มี berserker_claw (const enemy reassign)',
@@ -1687,13 +1716,61 @@ const PATCH_NOTES = [
       '   • Artifact/Weapon dodges now trigger form passives',
       '   • KING-CHAMPION: any dodge → stack +1',
       '   • WWS SWIFTGUARD: any dodge → heal 10% MaxHP',
-      '   • CRIMSON-BRAWLER / STORM-BLITZ / SOUL-SPECTER / QUICK-SWIFTGUARD also',
+      '   • WINDBLADE-BRAWLER / STORM-BLITZ / SOUL-SPECTER / QUICK-SWIFTGUARD also',
       '   • WWS heal adjusted 15% → 10% (balance)',
       '⚡ Other fixes',
       '   • Fixed crash on enemy with berserker_claw (const enemy reassign)',
       '   • Poison damage numbers now show on enemy',
       '   • Reflect/Counter show only during enemy attack (no duplicate)',
       '   • STUNNED! replaces DODGE!/MISS when stunned',
+    ]
+  },
+  { ver:'v0.1.2', date:'2026-07-18', th:[
+      '🧬 EVOLVE II BALANCE BRANCH — เพิ่มร่างที่ 4 (Balance) 10 ตัว',
+      '   • ใช้ Symbol F×2 + W×2 + S×2 ในการพัฒนา',
+      '   • Brawler: WINDBLADE-BRAWLER (W) — หลบ 25% + โต้กลับ',
+      '   • Panda: PANDA-NINJA (W) — หลบ 25% + ตีถัดไป Crit แน่นอน',
+      '   • Ironjaw: RUNE-IRONJAW (B) — สตัน 15% + สุ่ม Rune บัฟ',
+      '   • Blitz: THUNDERCLOUD-BLITZ (B) — สตัน 15% / หลบ 25%',
+      '   • Champion: SOUL-CHAMPION (B) — WIN:ATK+25%/-15%dmg, LOSE:หลบ+25%/+25%dmg',
+      '   • Fortress: POISON-FORTRESS (B) — -10%dmg, 25% วางพิษ, กันพิษ',
+      '   • Specter: MAGE-SPECTER (B) — WIN:สาป-25%ATK, DRAW:No-Heal, LOSE:-10%dmg',
+      '   • Swiftguard: PHEONIX-SWIFTGUARD (B) — HP<30% ฟื้นเต็มครั้งเดียว +ATK/DEF/SPD',
+      '   • Shieldwing: GAIA-SHIELDWING (B) — ทุก 3T ฮีล 15% +ATK/DEF+20%',
+      '   • Bastion: CRYSTAWOLF-BASTION (B) — 25% ลดดาเมจครึ่ง+โต้กลับ, 10% สตัน',
+      '🔄 CRIMSON-BRAWLER / PANDA-WARRIOR ย้ายไปร่าง Balance',
+      '🗑️ sym_B ถูกลบออกจากเกม (ไม่มีประโยชน์)',
+      '⚔️ PVP ปรับปรุง',
+      '   • ปิดระบบคะแนน Rating — แสดง "ทดสอบ" แทน (ช่วงทดสอบ)',
+      '   • เพิ่ม 🛡️ Defense Log — ดูประวัติตอนเราโดนโจมตีได้',
+      '   • ประวัติแยกเป็น "เราไปบุก" และ "โดนบุก" ในแท็บ HISTORY',
+      '🐛 แก้บั๊ก',
+      '   • curse/no-heal tick-down (MAGE-SPECTER หมดอายุได้แล้ว)',
+      '   • pCurseAtk ใน doTurn (เมื่อก่อน undefined → counter damage เป็น NaN)',
+      '   • OVERDRIVE_INFO, doOverdriveTurn, doTurn branch skills ครบ 40 ตัว',
+    ], en:[
+      '🧬 EVOLVE II BALANCE BRANCH — 10 new 4th-branch forms',
+      '   • Requires F×2 + W×2 + S×2 symbols to evolve',
+      '   • Brawler: WINDBLADE-BRAWLER (W) — 25% dodge + counter',
+      '   • Panda: PANDA-NINJA (W) — 25% dodge + next hit guaranteed crit',
+      '   • Ironjaw: RUNE-IRONJAW (B) — 15% stun + random Rune buff',
+      '   • Blitz: THUNDERCLOUD-BLITZ (B) — 15% stun / 25% dodge',
+      '   • Champion: SOUL-CHAMPION (B) — WIN:+25%ATK/-15%dmg, LOSE:+25%dodge/+25%dmg',
+      '   • Fortress: POISON-FORTRESS (B) — -10%dmg, 25% poison on hit, poison immune',
+      '   • Specter: MAGE-SPECTER (B) — WIN:curse-25%ATK, DRAW:No-Heal, LOSE:-10%dmg',
+      '   • Swiftguard: PHEONIX-SWIFTGUARD (B) — once full heal at HP<30% +ATK/DEF/SPD',
+      '   • Shieldwing: GAIA-SHIELDWING (B) — every 3T heal 15% +ATK/DEF+20%',
+      '   • Bastion: CRYSTAWOLF-BASTION (B) — 25% halve dmg+counter, 10% stun',
+      '🔄 CRIMSON-BRAWLER / PANDA-WARRIOR moved to Balance branch',
+      '🗑️ sym_B removed from game (useless)',
+      '⚔️ PVP Improvements',
+      '   • Rating system disabled — shows "TESTING" instead (testing phase)',
+      '   • Added 🛡️ Defense Log — see who attacked you',
+      '   • History tab now split: Attack Log + Defense Log',
+      '🐛 Bug Fixes',
+      '   • curse/no-heal tick-down (MAGE-SPECTER effects now expire)',
+      '   • pCurseAtk defined in doTurn (was undefined → NaN counter damage)',
+      '   • OVERDRIVE_INFO, doOverdriveTurn, doTurn branch skills all 40 forms complete',
     ]
   },
 ];
@@ -1765,8 +1842,8 @@ const MAX_OVERDRIVE = 5;
 const OVERDRIVE_INFO = {
   'RAGING-BRAWLER':    {name:'APOCALYPSE',          icon:'💥', desc:'Strike ×2.5 twice (forced crit), then Crit +25% for 3 turns',
     descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) จากนั้น Crit +25% นาน 3 เทิร์น'},
-  'CRIMSON-BRAWLER':   {name:'APOCALYPSE RUSH',     icon:'💥', desc:'Strike ×3.0 (forced crit) + dodge this turn, then Crit +20% and dodge +20% for 3 turns',
-    descTh:'โจมตี ×3.0 ครั้งเดียว (Crit บังคับ) + หลบเทิร์นนี้ จากนั้น Crit +20% และโอกาสหลบ +20% นาน 3 เทิร์น'},
+  'CRIMSON-BRAWLER':   {name:'WIND CUTTER',         icon:'☯️', desc:'Strike ×2.5, ignoring half of enemy DEF this turn, then ATK +30%, SPD +30% and 15% chance to attack twice for 3 turns',
+    descTh:'โจมตี ×2.5 ทะลุ DEF ครึ่งหนึ่งเทิร์นนี้ จากนั้น ATK+30%, SPD+30% และมีโอกาส 15% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
   'KAIJU-BRAWLER':     {name:'APOCALYPSE WALL',     icon:'💥', desc:'Strike ×2.0 twice + damage taken -50% this turn, then Crit +15% and damage taken -15% for 3 turns',
     descTh:'โจมตี ×2.0 สองครั้ง + ลดดาเมจที่รับ 50% เทิร์นนี้ จากนั้น Crit +15% และลดดาเมจที่รับ 15% นาน 3 เทิร์น'},
 
@@ -1832,10 +1909,31 @@ const OVERDRIVE_INFO = {
     descTh:'โจมตี ×3.5 + หลบเทิร์นนี้ จากนั้นโอกาสหลบ +30% และฟื้นฟู HP 10% ต่อเทิร์น และการโจมตีจะไม่พลาดเป้า นาน 3 เทิร์น'},
   'GOLEM-BASTION':     {name:'DIVINE AEGIS',        icon:'🏰', desc:'Take only 1 damage this turn, then take only 1 damage, ATK×2 and heal 10% MaxHP for 3 turns',
     descTh:'รับดาเมจเพียง 1 ในเทิร์นนี้ จากนั้นรับดาเมจเพียง 1, ATK×2 และฮีล 10% MaxHP นาน 3 เทิร์น'},
+
+  'WINDBLADE-BRAWLER': {name:'APOCALYPSE WIND',    icon:'💥', desc:'Strike ×2.5 twice (forced crit) + dodge this turn, then Crit +20% and dodge +20% for 3 turns',
+    descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) + หลบเทิร์นนี้ จากนั้น Crit +20% และโอกาสหลบ +20% นาน 3 เทิร์น'},
+  'PANDA-NINJA':       {name:'FORTRESS BREAK SHADOW',icon:'🛡', desc:'Strike ×2.5 piercing DEF + dodge this turn, then ATK×1.5, dodge +30% and next hit guaranteed crit for 3 turns',
+    descTh:'โจมตี ×2.5 ทะลุ DEF + หลบเทิร์นนี้ จากนั้น ATK×1.5, โอกาสหลบ +30% และโจมตีครั้งถัดไปติด Crit แน่นอน นาน 3 เทิร์น'},
+  'RUNE-IRONJAW':      {name:'CRIMSON REAPER RUNE', icon:'🩸', desc:'Strike ×2.5 + lifesteal 50% this turn + random Rune buff (ATK+50% or DEF+50%), then lifesteal +20% and random Rune buff for 3 turns',
+    descTh:'โจมตี ×2.5 + ดูดเลือด 50% เทิร์นนี้ + สุ่ม Rune บัฟ (ATK+50% หรือ DEF+50%) จากนั้นดูดเลือด +20% และสุ่ม Rune บัฟ นาน 3 เทิร์น'},
+  'THUNDERCLOUD-BLITZ':{name:'THUNDER STORM',       icon:'⚡', desc:'Strike ×2.5 + stun, then ATK×2 and 25% stun chance for 3 turns',
+    descTh:'โจมตี ×2.5 + สตันศัตรู จากนั้น ATK×2 และโอกาสสตัน 25% นาน 3 เทิร์น'},
+  'SOUL-CHAMPION':     {name:'SOUL BALANCE',        icon:'⚖️', desc:'Strike ×2.0 + halve enemy damage this turn, then ATK/DEF +25% and 50% chance to double-attack for 3 turns',
+    descTh:'โจมตี ×2.0 + ลดดาเมจศัตรูครึ่งหนึ่งเทิร์นนี้ จากนั้น ATK/DEF +25% และมีโอกาส 50% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
+  'POISON-FORTRESS':   {name:'VENOM EARTHSHATTER',  icon:'🏔️', desc:'Strike ×2.5 + reflect all damage this turn + poison ☠️ the enemy for 3 turns, then reflect 50%, ATK +20% and 25% chance to poison on hit for 3 turns',
+    descTh:'โจมตี ×2.5 + สะท้อนดาเมจทั้งหมดเทิร์นนี้ + วางพิษ ☠️ ใส่ศัตรู 3 เทิร์น จากนั้นสะท้อน 50%, ATK+20% และโอกาส 25% วางพิษเมื่อถูกโจมตี นาน 3 เทิร์น'},
+  'MAGE-SPECTER':      {name:'MAGE SCYTHE',         icon:'💀', desc:'Strike ×4.0 + dodge this turn + curse enemy (ATK-25%, 2 turns), then Crit +30% and 30% chance to curse on hit for 3 turns',
+    descTh:'โจมตี ×4.0 + หลบเทิร์นนี้ + สาปศัตรู (ATK-25%, 2 เทิร์น) จากนั้น Crit +30% และโอกาส 30% สาปเมื่อโจมตี นาน 3 เทิร์น'},
+  'PHEONIX-SWIFTGUARD':{name:'PHOENIX STRIKE',      icon:'🔥', desc:'Strike ×3.0 + recover 30% HP this turn, then ATK/DEF +50% and recover 10% HP each turn for 3 turns (once per battle: full heal when HP<30%)',
+    descTh:'โจมตี ×3.0 + ฟื้นฟู HP 30% เทิร์นนี้ จากนั้น ATK/DEF +50% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น (ครั้งเดียว/การต่อสู้: ฟื้น HP เต็มเมื่อ HP<30%)'},
+  'GAIA-SHIELDWING':   {name:'GAIA WRATH',          icon:'🌿', desc:'Strike ×3.0 piercing DEF + recover 20% HP this turn, then ATK/DEF +30% and recover 10% HP each turn for 3 turns',
+    descTh:'โจมตี ×3.0 ทะลุ DEF + ฟื้นฟู HP 20% เทิร์นนี้ จากนั้น ATK/DEF +30% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น'},
+  'CRYSTAWOLF-BASTION':{name:'CRYSTAL BEAM',        icon:'💎', desc:'Strike ×3.5 + dodge this turn, then ATK +50%, damage taken -30% and recover 10% HP each turn for 3 turns',
+    descTh:'โจมตี ×3.5 + หลบเทิร์นนี้ จากนั้น ATK+50%, ลดดาเมจที่รับ 30% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น'},
 };
 // Overdrive-buff crit-chance bonuses that must apply before the crit roll (see doTurn's critChance calc)
 const OD_CRIT_BONUS = {
-  'RAGING-BRAWLER':0.25, 'CRIMSON-BRAWLER':0.20, 'KAIJU-BRAWLER':0.15, 'DARK-SPECTER':0.50,
+  'RAGING-BRAWLER':0.25, 'WINDBLADE-BRAWLER':0.20, 'KAIJU-BRAWLER':0.15, 'DARK-SPECTER':0.50,
 };
 
 const BIOMES = {
@@ -1965,6 +2063,7 @@ function applyShinyStats(pet) {
 
 const EVOLVE2_GOLD_COST = 2000;
 const EVOLVE2_SYM_COST = 5;
+const EVOLVE2_BALANCE_SYM_COST = 2; // Balance branch (B): 2x EACH of Symbol F/W/S instead of 5x one type
 const REBIRTH_GOLD_COST = 2000;
 
 function doEvolve2(petIdx, fromList, symbol) {
@@ -1975,15 +2074,25 @@ function doEvolve2(petIdx, fromList, symbol) {
   const branchKey = evolve2Branch(pet.formKey, symbol);
   const ff = branchKey ? EVOLVE2_FORMS[branchKey] : null;
   if(!ff) return;
-  const symType = `sym_${symbol}`;
-  const symSlot = inventory.find(s=>s.type===symType);
   const stoneSlot = inventory.find(s=>s.type==='rebirth_stone');
-  if(!symSlot || symSlot.qty < EVOLVE2_SYM_COST) { scoutToast=T(`${ITEMS[symType].icon} ต้องมี ${ITEMS[symType].name} ${EVOLVE2_SYM_COST} อัน!`,`${ITEMS[symType].icon} Need ${EVOLVE2_SYM_COST}× ${ITEMS[symType].name}!`); saveGame(); render(); return; }
+  const isBalance = symbol === 'B';
+  const balanceSlots = isBalance ? ['F','W','S'].map(s=>inventory.find(i=>i.type===`sym_${s}`)) : null;
+  const symType = `sym_${symbol}`;
+  const symSlot = isBalance ? null : inventory.find(s=>s.type===symType);
+  if(isBalance) {
+    if(!balanceSlots.every(slot=>slot && slot.qty >= EVOLVE2_BALANCE_SYM_COST)) { scoutToast=T(`ต้องมี Symbol F/W/S อย่างละ ${EVOLVE2_BALANCE_SYM_COST} อัน!`,`Need ${EVOLVE2_BALANCE_SYM_COST}× each of Symbol F/W/S!`); saveGame(); render(); return; }
+  } else {
+    if(!symSlot || symSlot.qty < EVOLVE2_SYM_COST) { scoutToast=T(`${ITEMS[symType].icon} ต้องมี ${ITEMS[symType].name} ${EVOLVE2_SYM_COST} อัน!`,`${ITEMS[symType].icon} Need ${EVOLVE2_SYM_COST}× ${ITEMS[symType].name}!`); saveGame(); render(); return; }
+  }
   if(!stoneSlot || stoneSlot.qty <= 0) { scoutToast=T('🔮 ต้องมี Rebirth Stone!','🔮 Rebirth Stone required!'); saveGame(); render(); return; }
   if(gold < EVOLVE2_GOLD_COST) { scoutToast=T(`💰 ต้องมี Gold ${EVOLVE2_GOLD_COST}G!`,`💰 Need ${EVOLVE2_GOLD_COST}G!`); saveGame(); render(); return; }
 
-  symSlot.qty -= EVOLVE2_SYM_COST;
-  if(symSlot.qty <= 0) inventory.splice(inventory.indexOf(symSlot), 1);
+  if(isBalance) {
+    balanceSlots.forEach(slot => { slot.qty -= EVOLVE2_BALANCE_SYM_COST; if(slot.qty <= 0) inventory.splice(inventory.indexOf(slot), 1); });
+  } else {
+    symSlot.qty -= EVOLVE2_SYM_COST;
+    if(symSlot.qty <= 0) inventory.splice(inventory.indexOf(symSlot), 1);
+  }
   stoneSlot.qty--;
   if(stoneSlot.qty <= 0) inventory.splice(inventory.indexOf(stoneSlot), 1);
   gold -= EVOLVE2_GOLD_COST;
@@ -2043,8 +2152,6 @@ function getEffStat(stat) {
   const exp = creature.buffExpiry?.[stat] || 0;
   let val = (exp > now) ? Math.round(base * 1.2) : base;
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
-  if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
-  if((stat==='atk'||stat==='def'||stat==='spd') && (creature.artifact==='moon_veil' || creature.artifact2==='moon_veil')) val = Math.round(val * 1.10);
   return val;
 }
 
@@ -2066,6 +2173,7 @@ const STAT_ART_MULT = {
   atk_shard:{atk:1.15}, def_shard:{def:1.15}, spd_shard:{spd:1.15}, hp_core:{hp:1.15},
   all_stats_r:{atk:1.15,def:1.15,spd:1.15,hp:1.15},
   all_stats_e:{atk:1.25,def:1.25,spd:1.25,hp:1.25},
+  piercing_fang:{atk:1.25},
 };
 function applyArtifactStat(pet, key, revert=false) {
   const m = STAT_ART_MULT[key]; if(!m) return;
@@ -2698,7 +2806,6 @@ function pvpDeployTeam() {
     team: teamData,
     wins: pvpWins,
     losses: pvpLosses,
-    rating: pvpRating,
     active: true,
     updatedAt: Date.now()
   }, {merge:true}).then(() => {
@@ -2731,22 +2838,39 @@ function pvpFetchChallenges() {
     .catch(() => { pvpLoadMsg = T('โหลดไม่สำเร็จ','Failed to load'); render(); });
 }
 
+function pvpFetchDefenseLog() {
+  if(!cloudUser || !_cloudDb) return;
+  _cloudDb.collection('pvp_teams').doc(cloudUser.uid).get()
+    .then(doc => {
+      if(doc.exists) {
+        const d = doc.data();
+        if(Array.isArray(d.defenseLog)) pvpDefenseLog = d.defenseLog;
+      }
+      render();
+    }).catch(() => {});
+}
+
 function pvpRecordBattle(defenderUid, defenderName, won) {
   if(!cloudUser || !_cloudDb) return;
   const result = { defenderUid, defenderName, won, timestamp: Date.now() };
   pvpHistory.unshift(result);
   if(pvpHistory.length > 50) pvpHistory.pop();
   if(won) pvpWins++; else pvpLosses++;
-  pvpRating += won ? 10 : -5;
-  if(pvpRating < 0) pvpRating = 0;
+  // Rating disabled during testing phase
+  // pvpRating += won ? 10 : -5;
+  // if(pvpRating < 0) pvpRating = 0;
   
-  // Update defender stats too
+  // Update defender stats + defense log
   _cloudDb.collection('pvp_teams').doc(defenderUid).get().then(doc => {
     if(doc.exists) {
       const d = doc.data();
+      const defLog = Array.isArray(d.defenseLog) ? d.defenseLog : [];
+      defLog.unshift({ attackerName: cloudUser.displayName||'Anonymous', attackerUid: cloudUser.uid, attackerWon: won, timestamp: Date.now() });
+      if(defLog.length > 50) defLog.pop();
       _cloudDb.collection('pvp_teams').doc(defenderUid).set({
         wins: (d.wins||0) + (won?0:1),
-        losses: (d.losses||0) + (won?1:0)
+        losses: (d.losses||0) + (won?1:0),
+        defenseLog: defLog
       }, {merge:true});
     }
   }).catch(() => {});
@@ -2756,7 +2880,7 @@ function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -2854,6 +2978,7 @@ function loadGame(slotNum) {
         if(typeof d.pvpLosses==='number') pvpLosses = d.pvpLosses;
         if(typeof d.pvpRating==='number') pvpRating = d.pvpRating;
         if(Array.isArray(d.pvpHistory)) pvpHistory = d.pvpHistory;
+        if(Array.isArray(d.pvpDefenseLog)) pvpDefenseLog = d.pvpDefenseLog;
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
         pets.concat(storage).forEach(p=>{ if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey); if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey); });
@@ -3182,7 +3307,7 @@ function startBattle(battleType) {
     enemy, isBoss, isMini, isMimic,
     turn: 1, log: [],
     passivesLog: [], // [{turn, passives:[{icon,text}]}]
-    lastResult: null, recentTurns: [],
+    lastResult: null,
     animPhase: null, // null | 'atk1' | 'atk2'
     waiting: false,
     overdriveUsed: false,
@@ -3194,6 +3319,10 @@ function startBattle(battleType) {
     playerPoisonTurns: 0,
     enemyHealBlockTurns: 0, // 🚫 heal block on enemy
     playerHealBlockTurns: 0, // 🚫 heal block on player
+    e2CurseTurns: 0, e2CurseTurnsE: 0, // MAGE-SPECTER curse (ATK-25%)
+    e2NoHealTurns: 0, e2NoHealTurnsE: 0, // MAGE-SPECTER heal-block
+    e2PhoenixUsed: false, e2PhoenixUsedE: false, // PHEONIX-SWIFTGUARD once-per-battle
+    e2RuneType: null, e2RuneTypeE: null, // RUNE-IRONJAW random buff type
   };
   state = 'battle';
   render();
@@ -3246,7 +3375,6 @@ function doEnemyOnlyTurn() {
   creature.hp = Math.max(0, creature.hp - ed);
   bs.lastResult = { pm:{name:'—',icon:'🔄',desc:''}, em, cmp:'lose', crit:false, pd:0, ed, playerFirst:false, passives:[], playerHeal:0, enemyHeal:0 };
   bs.log.push(`T${bs.turn} [SWITCH/ITEM] foe -0  you -${ed}`);
-  bs.recentTurns.push({turn:bs.turn,cmp:'lose',pd:0,ed});
   bs.turn++;
   bs.animPhase = 'e-atk';
   bs.waiting = true;
@@ -3282,6 +3410,7 @@ function doOverdriveTurn() {
   const passives = [];
   let pd=0, ed=0, playerHeal=0, enemyHeal=0, reflectDmg=0, counterDmg=0, pdHits=[];
   const atk = getEffStat('atk');
+  const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(atk*0.75) : atk;
   const _hit = (mult=1.0, critBonus=0) => {
     const c = Math.random()<(0.12+critBonus);
     const d = Math.max(1, Math.round((atk/3+Math.random()*4)*mult*(c?1.6:1)) - Math.floor(enemy.def/2));
@@ -3298,8 +3427,8 @@ function doOverdriveTurn() {
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'💥',text:`APOCALYPSE ×2.5×2→${pd} | Crit+25% (3T)`});
   } else if(ff==='CRIMSON-BRAWLER') {
-    const h=_hit(3.0,1); pd=h.d; ed=0; bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'💥',text:`APOCALYPSE RUSH ×3.0→${pd} + DODGE | Crit+20%,Dodge+20% (3T)`});
+    pd=_pierceHit(2.5,0.5); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'☯️',text:`WIND CUTTER ×2.5 (half-pierce)→${pd} | ATK+30%,SPD+30%,double15% (3T)`});
   } else if(ff==='KAIJU-BRAWLER') {
     const h1=_hit(2.0), h2=_hit(2.0); pd=h1.d+h2.d; ed=Math.round(_ed()*0.5); pdHits=[h1.d,h2.d];
     bs.odBuff={type:ff,turnsLeft:3};
@@ -3396,6 +3525,44 @@ function doOverdriveTurn() {
   } else if(ff==='GOLEM-BASTION') {
     pd=0; ed=1; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🏰',text:`DIVINE AEGIS dmg=1 | dmgCapped1,ATK×2,heal10%/turn (3T)`});
+  } else if(ff==='WINDBLADE-BRAWLER') {
+    const h1=_hit(2.5,1), h2=_hit(2.5); pd=h1.d+h2.d; ed=0; pdHits=[h1.d,h2.d];
+    bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'💥',text:`APOCALYPSE WIND ×2.5×2→${pd} + DODGE | Crit+20%,Dodge+20% (3T)`});
+  } else if(ff==='PANDA-NINJA') {
+    pd=_pierceHit(2.5,1.0); ed=0; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🛡',text:`FORTRESS BREAK SHADOW ×2.5 (pierce)→${pd} + DODGE | ATK×1.5,dodge+30%,GuaranteeCrit (3T)`});
+  } else if(ff==='RUNE-IRONJAW') {
+    const h=_hit(2.5); pd=h.d; ed=_ed();
+    const ls=Math.max(1,Math.round(pd*0.5)); creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls;
+    bs.e2RuneType=['atk','def'][Math.floor(Math.random()*2)];
+    bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🩸',text:`CRIMSON REAPER RUNE ×2.5→${pd} + Lifesteal50% +${ls} | rune+20%lifesteal (3T)`});
+  } else if(ff==='THUNDERCLOUD-BLITZ') {
+    const h=_hit(2.5); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'⚡',text:`THUNDER STORM ×2.5→${pd} + STUN | ATK×2,stun+25% (3T)`});
+  } else if(ff==='SOUL-CHAMPION') {
+    const h=_hit(2.0); pd=h.d; ed=Math.round(_ed()*0.5); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'⚖️',text:`SOUL BALANCE ×2.0→${pd} + half dmg | ATK/DEF+25%,doubleAttack+50% (3T)`});
+  } else if(ff==='POISON-FORTRESS') {
+    const h=_hit(2.5); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) bs.enemyPoisonTurns=3;
+    bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🏔️',text:`VENOM EARTHSHATTER ×2.5→${pd} + Reflect${ref} + ☠️ POISON | reflect50%,ATK+20%,poisonOnHit25% (3T)`});
+  } else if(ff==='MAGE-SPECTER') {
+    const h=_hit(4.0); pd=h.d; ed=0; bs.e2CurseTurns=2; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'💀',text:`MAGE SCYTHE ×4.0→${pd} + DODGE + CURSE | Crit+30%,curse30% (3T)`});
+  } else if(ff==='PHEONIX-SWIFTGUARD') {
+    const h=_hit(3.0); pd=h.d; ed=_ed(); const heal=Math.round(creature.maxHp*0.3); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
+    bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🔥',text:`PHOENIX STRIKE ×3.0→${pd} + Heal${heal} | ATK/DEF+50%,heal10%/turn (3T)`});
+  } else if(ff==='GAIA-SHIELDWING') {
+    pd=_pierceHit(3.0,1.0); ed=_ed(); const heal=Math.round(creature.maxHp*0.2); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
+    bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🌿',text:`GAIA WRATH ×3.0 (pierce)→${pd} + Heal${heal} | ATK/DEF+30%,heal10%/turn (3T)`});
+  } else if(ff==='CRYSTAWOLF-BASTION') {
+    const h=_hit(3.5); pd=h.d; ed=0; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'💎',text:`CRYSTAL BEAM ×3.5→${pd} + DODGE | ATK+50%,dmgTaken-30%,heal10%/turn (3T)`});
   }
   // apply damage
   bs.preAnimPlayerHp = creature.hp;
@@ -3409,7 +3576,6 @@ function doOverdriveTurn() {
   bs.turn++;
   bs.log.push(`T${turnNum} ★OVERDRIVE★ ${OVERDRIVE_INFO[ff]?.name||ff}`,`  foe -${pd}  you -${ed}`);
   passives.forEach(p=>bs.log.push(`  ${p.icon} ${p.text}`));
-  bs.recentTurns.push({turn:turnNum,cmp:'win',pd,ed});
   bs.animPhase='p-atk'; bs.waiting=true; bs.preAnimCleared=false; render();
   // Every deferred callback below checks `battleState!==bs` first: if the battle already moved on
   // (e.g. a VS win replaced battleState with the next enemy during this delay), a stray/late callback
@@ -3474,8 +3640,8 @@ function doTurn(moveIdx) {
   let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], extraHits = [];
   let healBlockedEnemy = 0, healBlockedPlayer = 0;
   let _dodgeEffectApplied = false; // track if any artifact/weapon dodge should trigger form secondary effects
-  const _pHeal = (h, icon, txt) => { if(bs.playerHealBlockTurns>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon,text:txt});return true;} };
-  const _eHeal = (h, icon, txt) => { if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon,text:txt});return true;} };
+  const _pHeal = (h, icon, txt) => { if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon,text:txt});return true;} };
+  const _eHeal = (h, icon, txt) => { if(bs.enemyHealBlockTurns>0||bs.e2NoHealTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon,text:txt});return true;} };
   const spdBoost = 1.0;
   const playerFirst = Math.round(getEffStat('spd')*spdBoost) >= enemy.spd;
 
@@ -3493,6 +3659,8 @@ function doTurn(moveIdx) {
   if(eArtId==='blade_shard'    || eArtId2==='blade_shard')    eCritBonus += 0.05;
   if(eArtId==='deathblow'      || eArtId2==='deathblow')      eCritBonus += 0.15;
   const enemyAtk = (eArtId==='berserker_claw' || eArtId2==='berserker_claw') ? Math.round(enemy.atk*1.25) : enemy.atk;
+  const eCurseAtk = bs.e2CurseTurns>0 ? Math.round(enemyAtk*0.75) : enemyAtk;
+  const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(getEffStat('atk')*0.75) : getEffStat('atk');
   // Evolve II enemy mimic — mirrors the player's branch-skill crit modifiers (no Overdrive)
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='DARK-SPECTER') eCritBonus += 0.25;
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='FIGHT-SWIFTGUARD' && cmp==='lose') bs.e2StackE = Math.min(3, (bs.e2StackE||0)+1);
@@ -3506,7 +3674,7 @@ function doTurn(moveIdx) {
   const eCritMult = (eArtId==='deathblow'||eArtId2==='deathblow') ? 2.0 : 1.5;
   // PIERCE (enemy passive) / Piercing Fang (player artifact): ignores DEF and all incoming damage-reduction effects below
   const enemyIgnoresDef = (enemy.passives||[]).includes('pierce_atk');
-  let ed = Math.max(1, Math.round((em.dmg + enemyAtk/3 + Math.random()*4) / mult * ((eSniperReady||enemyCrit) ? eCritMult : 1)) - (enemyIgnoresDef ? 0 : Math.floor(getEffStat('def')/2)));
+  let ed = Math.max(1, Math.round((em.dmg + eCurseAtk/3 + Math.random()*4) / mult * ((eSniperReady||enemyCrit) ? eCritMult : 1)) - (enemyIgnoresDef ? 0 : Math.floor(getEffStat('def')/2)));
 
   const passives = [];
   const startHp = creature.hp; // HP at start of turn (before any heals/modifications)
@@ -3598,7 +3766,7 @@ function doTurn(moveIdx) {
     const {type} = bs.odBuff;
     const _atk = getEffStat('atk');
     if(type==='RAGING-BRAWLER') { /* Crit+25% via OD_CRIT_BONUS */ passives.push({icon:'💥',text:'APOCALYPSE Crit+25%'}); }
-    if(type==='CRIMSON-BRAWLER') { if(!enemyTrueStrike && Math.random()<0.20){ed=0;} passives.push({icon:'💥',text:'APOCALYPSE RUSH Crit+20%,Dodge+20%'}); }
+    if(type==='CRIMSON-BRAWLER') { pd=Math.round(pd*1.3); if(Math.random()<0.15){const orig=pd;pd=orig*2;pdHits=[orig,orig];} passives.push({icon:'☯️',text:`WIND CUTTER ATK+30%,SPD+30%,double15%→${pd}`}); }
     if(type==='KAIJU-BRAWLER') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'💥',text:`APOCALYPSE WALL Crit+15%,dmgTaken-15%→${ed}`}); }
     if(type==='FIGHTER-PANDA') { pd+=Math.floor(enemy.def/2); if(Math.random()<0.75){const c=Math.max(1,Math.round(_atk/3*0.75));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK pierce+counter→${pd}`}); }
     if(type==='PANDA-WARRIOR') { pd+=Math.floor(enemy.def/2); if(!enemyTrueStrike && Math.random()<0.20){ed=0;} if(Math.random()<0.5){const c=Math.max(1,Math.round(_atk/3*0.5));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK RUSH pierce+counter+dodge→${pd}`}); }
@@ -3630,7 +3798,19 @@ function doTurn(moveIdx) {
     if(type==='GUANLET-BASTION') { pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🥊',`GAUNTLETSTRIKE ATK+50%,+${heal}HP→${pd}`); }
     if(type==='IRON-BASTION') { if(!enemyTrueStrike && Math.random()<0.30){ed=0;} bs.playerTrueStrike=true; const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🎯',`BASTION BEAM dodge+30%,neverMiss,+${heal}HP`); }
     if(type==='GOLEM-BASTION') { ed=Math.min(ed,1); pd=Math.round(pd*2.0); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🏰',`DIVINE AEGIS dmgCapped1,ATK×2,+${heal}HP→${pd}`); }
+
+    if(type==='WINDBLADE-BRAWLER') { if(!enemyTrueStrike && Math.random()<0.20){ed=0;} passives.push({icon:'🗡',text:`WIND STRIKE crit+20%,dodge+20%→${pd}`}); }
+    if(type==='PHEONIX-SWIFTGUARD') { pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🔥',`PHOENIX STRIKE ATK/DEF+50%,+${heal}HP`); }
+    if(type==='GAIA-SHIELDWING') { pd=Math.round(pd*1.3); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🌿',`GAIA WRATH ATK/DEF+30%,+${heal}HP`); }
+    if(type==='PANDA-NINJA') { pd=Math.round(pd*1.5); if(!enemyTrueStrike && Math.random()<0.30){ed=0;} bs.playerGuaranteeCrit=true; passives.push({icon:'🥷',text:`SHADOW STRIKE dodge+30%,guaranteeCrit→${pd}`}); }
+    if(type==='RUNE-IRONJAW') { bs.e2RuneType=['atk','def'][Math.floor(Math.random()*2)]; const runeMul=bs.e2RuneType==='atk'?1.5:1.0; const runeDef=bs.e2RuneType==='def'?1.5:1.0; pd=Math.round(pd*runeMul); ed=Math.round(ed/runeDef); const heal=Math.round(pd*0.20); _pHeal(heal,'🔮',`RUNE R.${runeMul>1?'+50%ATK':'+50%DEF'}→${pd},+${heal}HP`); }
+    if(type==='THUNDERCLOUD-BLITZ') { pd=Math.round(pd*2.0); if(!enemyStunned && Math.random()<0.25){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⛈️',text:`STORM FANG ATK×2,stun25%→${pd}`}); }
+    if(type==='SOUL-CHAMPION') { pd=Math.round(pd*1.25); ed=Math.round(ed*0.75); const isDouble=Math.random()<0.50; if(isDouble){ const orig=pd; pd=orig*2; pdHits=[orig,orig]; } passives.push({icon:'⚖️',text:`SOUL BALANCE ATK/DEF+25%,double50%→${pd}${isDouble?'x2!':''}`}); }
+    if(type==='POISON-FORTRESS') { pd=Math.round(pd*1.20); ed=Math.round(ed*0.50); if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')&&Math.random()<0.25&&!hasAntiPoison){bs.enemyPoisonTurns=3;} passives.push({icon:'☠️',text:`VENOM EARTHSHATTER ATK+20%,reflect50%,poisonOnHit→${pd}`}); }
+    if(type==='MAGE-SPECTER') { if(Math.random()<0.30){bs.e2CurseTurns=2;} passives.push({icon:'🧙',text:`MAGE SCYTHE crit+30%,curse30%→${pd}`}); }
+    if(type==='CRYSTAWOLF-BASTION') { ed=Math.round(ed*0.30); pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'💎',`CRYSTAL BEAM dmgTaken-30%,ATK+50%,+${heal}HP`); }
     bs.odBuff.turnsLeft--;
+
     if(bs.odBuff.turnsLeft<=0) bs.odBuff=null;
   }
   // Enemy stun (from THUNDER FANG)
@@ -3658,29 +3838,39 @@ function doTurn(moveIdx) {
     if(cmp==='win') bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1);
     if(bs.e2Stack>0) { pd=Math.round(pd*(1+0.15*bs.e2Stack)); passives.push({icon:'💢',text:`RAGING WIN Stack×${bs.e2Stack}→${pd}`}); }
   }
-  if(ff==='CRIMSON-BRAWLER' && !enemyTrueStrike && Math.random()<0.20) {
-    ed=0; const counter=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
-    passives.push({icon:'🗡',text:`CRIMSON DODGE! Counter -${counter}`});
-    _dodgeEffectApplied = true;
+  if(ff==='CRIMSON-BRAWLER') {
+    bs.e2Stack=Math.min(3,(bs.e2Stack||0)+1);
+    pd=Math.round(pd*(1+0.10*bs.e2Stack));
+    passives.push({icon:'☯️',text:`CRIMSON BALANCE ATK+10%×${bs.e2Stack},SPD+10%×${bs.e2Stack}→${pd}`});
   }
   if(ff==='KAIJU-BRAWLER') {
     if(bs.e2NextBuff) { pd=Math.round(pd*1.5); ed=(enemyIgnoresDef?ed:Math.round(ed*0.67)); bs.e2NextBuff=false; passives.push({icon:'🦖',text:`KAIJU BUFF ATK+50%/DEF+50%→${pd}`}); }
     if(cmp==='lose') bs.e2NextBuff=true;
   }
   if(ff==='FIGHTER-PANDA' && cmp==='lose') { pd=Math.round(pd*1.75); passives.push({icon:'🥊',text:`FIGHTER LOSE dmg+75%→${pd}`}); }
+  if(ff==='PANDA-NINJA') {
+    if(bs.e2NextGuaranteeCrit) { bs.playerGuaranteeCrit=true; bs.e2NextGuaranteeCrit=false; passives.push({icon:'🥷',text:'PANDA-NINJA GUARANTEED CRIT!'}); }
+    if(!enemyTrueStrike && Math.random()<0.25) { ed=0; bs.e2NextGuaranteeCrit=true; _dodgeEffectApplied=true; passives.push({icon:'🥷',text:'PANDA-NINJA DODGE! Next crit GUARANTEED'}); }
+  }
   if(ff==='PANDA-WARRIOR' && Math.random()<0.25) {
-    ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const counter=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
+    ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
     passives.push({icon:'🐼',text:`PANDA-WARRIOR dmg½ Counter -${counter}`});
   }
   if(ff==='ARMOR-PANDA') {
     ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
-    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter); passives.push({icon:'🛡',text:`ARMOR-PANDA dmg-20% Counter -${counter}`}); }
+    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter); passives.push({icon:'🛡',text:`ARMOR-PANDA dmg-20% Counter -${counter}`}); }
     else passives.push({icon:'🛡',text:`ARMOR-PANDA dmg-20%→${ed}`});
   }
   if(ff==='TYRANT-IRONJAW') { pd=Math.round(pd*1.2); passives.push({icon:'🩸',text:`TYRANT dmg+20%→${pd}`}); }
   if(ff==='AGILE-IRONJAW' && Math.random()<0.25) { const extra=pd; pd+=extra; passives.push({icon:'⚔',text:`AGILE DOUBLE ATTACK→${pd}`}); }
+  if(ff==='RUNE-IRONJAW') {
+    bs.e2RuneType=(Math.random()<0.5?'atk':'def');
+    if(bs.e2RuneType==='atk'){pd=Math.round(pd*1.5);}else{ed=(enemyIgnoresDef?ed:Math.round(ed*0.67));}
+    if(!enemyStunned && Math.random()<0.15){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();passives.push({icon:'🔮',text:`RUNE R.${bs.e2RuneType==='atk'?'+50%ATK':'+50%DEF'}→${pd} STUN!`});}
+    else passives.push({icon:'🔮',text:`RUNE R.${bs.e2RuneType==='atk'?'+50%ATK':'+50%DEF'}→${pd}`});
+  }
   if(ff==='FULLARMOR-IRONJAW' && creature.hp<creature.maxHp*0.5) {
-    ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); const counter=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
+    ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
     passives.push({icon:'🛡',text:`FULLARMOR HP<50% dmg-20% Counter -${counter}`});
   }
   if(ff==='STRONG-BLITZ' && cmp==='win') {
@@ -3778,14 +3968,52 @@ function doTurn(moveIdx) {
       const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'🗿',`GOLEM HP<30% ATK+30% +Heal${heal}→${pd}`);
     } else passives.push({icon:'🗿',text:`GOLEM dmg-20%→${ed}`});
   }
+  if(ff==='WINDBLADE-BRAWLER' && !enemyTrueStrike && Math.random()<0.25) {
+    ed=0; const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
+    passives.push({icon:'🗡',text:`WINDBLADE DODGE! Counter -${counter}`});
+    _dodgeEffectApplied = true;
+  }
+  if(ff==='THUNDERCLOUD-BLITZ') {
+    if(!enemyStunned && Math.random()<0.15) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'⛈️',text:'THUNDERCLOUD STUN!'}); }
+    else if(!enemyTrueStrike && Math.random()<0.25) { ed=0; passives.push({icon:'⛈️',text:'THUNDERCLOUD DODGE!'}); _dodgeEffectApplied=true; }
+  }
+  if(ff==='SOUL-CHAMPION') {
+    if(cmp==='win') { pd=Math.round(pd*1.25); ed=Math.round(ed*0.85); passives.push({icon:'⚖️',text:`SOUL WIN ATK+25%,DEF+15%→${pd}`}); }
+    else if(cmp==='lose') { if(!enemyTrueStrike&&Math.random()<0.25){ed=0;_dodgeEffectApplied=true;} pd=Math.round(pd*1.25); passives.push({icon:'⚖️',text:`SOUL LOSE ATK+25%,Dodge+25%→${pd}${ed===0?' DODGE!':''}`}); }
+  }
+  if(ff==='POISON-FORTRESS') {
+    ed=Math.round(ed*0.9);
+    if(ed>0 && Math.random()<0.25 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:`POISON-FORTRESS dmg-10%→${ed} POISON!`}); }
+    else passives.push({icon:'☠️',text:`POISON-FORTRESS dmg-10%→${ed}`});
+  }
+  if(ff==='MAGE-SPECTER') {
+    if(cmp==='win') { bs.e2CurseTurns=2; passives.push({icon:'🧙',text:'MAGE CURSE! Enemy ATK-25% (2T)'}); }
+    else if(cmp==='neutral') { bs.e2NoHealTurns=3; passives.push({icon:'🧙',text:'MAGE NO-HEAL! Enemy cannot heal (3T)'}); }
+    else { ed=Math.round(ed*0.9); passives.push({icon:'🧙',text:`MAGE LOSE dmg-10%→${ed}`}); }
+  }
+  if(ff==='PHEONIX-SWIFTGUARD') {
+    if(!bs.e2PhoenixUsed && creature.hp>0 && creature.hp<creature.maxHp*0.3) {
+      creature.hp=creature.maxHp; bs.e2PhoenixUsed=true; bs.e2PhoenixBuffed=true;
+      passives.push({icon:'🔥',text:'PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+20% (permanent)'});
+    }
+    if(bs.e2PhoenixBuffed) { pd=Math.round(pd*1.2); ed=(enemyIgnoresDef?ed:Math.round(ed*0.83)); }
+  }
+  if(ff==='GAIA-SHIELDWING' && bs.turn%3===0) {
+    const heal=Math.round(creature.maxHp*0.15); _pHeal(heal,'🌿',`GAIA 3T Heal${heal} ATK/DEF+20%`);
+    pd=Math.round(pd*1.2); ed=(enemyIgnoresDef?ed:Math.round(ed*0.83));
+  }
+  if(ff==='CRYSTAWOLF-BASTION') {
+    if(Math.random()<0.25) { ed=Math.round(ed*0.5); const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'💎',text:`CRYSTAWOLF dmg½ Counter -${c}`}); }
+    if(ed>0 && Math.random()<0.10) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'CRYSTAWOLF STUN!'}); }
+  }
 
   // Enemy dodge — runs BEFORE player artifact procs so pd>0 guards are accurate
   if(!ep.includes('true_strike') && artId!=='true_sight' && artId2!=='true_sight' && !bs.playerTrueStrike) {
     if(ep.includes('dodge') && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:T('ศัตรู DODGE!','Enemy DODGE!')}); }
     if(ep.includes('WWW')   && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:'GHOSTCLAW DODGE!'}); }
-    // SKY GRIFFON (boss): 30% dodge + counter-attack for 50% of the dodged damage
+    // SKY GRIFFON (boss): 30% dodge + counter-attack for 50% of a normal hit (ATK-based, same formula as other counters)
     if(enemy.spriteFile==='monster & boss/W-griffon-boss.png' && pd>0 && Math.random()<0.30) {
-      const counter=Math.max(1,Math.round(pd*0.5)); pd=0; eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+      const counter=Math.max(1,Math.round(eCurseAtk/3*0.5)); pd=0; eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
       passives.push({icon:'🦅',text:T(`SKY GRIFFON หลบ + สวนกลับ ${counter} dmg!`,`SKY GRIFFON dodges + counters for ${counter} dmg!`)});
     }
     // GRIFFON CHICK (mini-boss): 20% dodge
@@ -3855,7 +4083,7 @@ function doTurn(moveIdx) {
       if(as.ironWillBoostReady) { pd=Math.round(pd*4); as.ironWillBoostReady=false; passives.push({icon:'💎',text:`Iron Will REVENGE ATK×4 → ${pd}`}); }
     }
     if(artId==='true_sight') { pd=Math.round(pd*1.50); passives.push({icon:'🔭',text:`True Sight ATK+50% → ${pd}`}); }
-    if(artId==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.05)); _pHeal(h,'🌙',`Moon Veil +${h}`); }
+    if(artId==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.08)); _pHeal(h,'🌙',`Moon Veil +${h}`); }
     if(artId==='double_attack' && Math.random()<0.20) { const orig=pd; pd=Math.round(pd*2); pdHits=[orig,orig]; passives.push({icon:'⚔',text:`Double Attack ×2 → ${pd}`}); }
     if(artId==='execution' && startHp<creature.maxHp*0.20) { pd=Math.round(pd*3.00); passives.push({icon:'☠',text:`Execution +200% → ${pd}`}); }
     if(artId==='chain_strike') { if(cmp==='win') { bs.chainStrikeStreak=(bs.chainStrikeStreak||0)+1; const rate=bs.chainStrikeStreak>=3?2.00:bs.chainStrikeStreak>=2?1.00:0.50; const bonus=Math.round(pd*rate); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike${bs.chainStrikeStreak>=3?' ×3':bs.chainStrikeStreak>=2?' ×2':''} ${Math.round(rate*100)}% → +${bonus}`}); } else { bs.chainStrikeStreak=0; } }
@@ -3882,7 +4110,7 @@ function doTurn(moveIdx) {
     if(we.type==='stun_on_hit' && pd>0 && Math.random()<we.chance) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:wpn.icon,text:`${wpn.name} STUN! (next turn)`});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:wpn.icon,text:`${wpn.name} STUN!`});} }
     if(we.type==='block' && ed>0 && Math.random()<we.chance) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:wpn.icon,text:`${wpn.name} BLOCK! → ${ed}`}); }
     if(we.type==='dodge' && ed>0 && Math.random()<we.chance) { ed=0; passives.push({icon:wpn.icon,text:`${wpn.name} DODGE!`}); }
-    if(we.type==='counter' && ed>0 && !enemyReflectImmune && Math.random()<we.chance) { const ref=Math.round(ed*we.mult); counterDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER ${ref} dmg`}); }
+    if(we.type==='counter' && ed>0 && !enemyReflectImmune && Math.random()<we.chance) { const ref=Math.max(1,Math.round(pCurseAtk/3*we.mult)); counterDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER ${ref} dmg`}); }
     if(we.type==='reflect' && ed>0 && !enemyReflectImmune && Math.random()<we.chance) { const ref=Math.round(ed*we.mult); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:wpn.icon,text:`${wpn.name} REFLECT ${ref} dmg`}); }
     if(we.type==='poison_when_hit' && ed>0 && Math.random()<we.chance) { if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} poisoned the attacker!`}); } }
     if(we.type==='on_lose_dr' && cmp==='lose') { ed=Math.round(ed*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} dmg-${Math.round((1-we.mult)*100)}% → ${ed}`}); }
@@ -3891,7 +4119,7 @@ function doTurn(moveIdx) {
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
   if(ed===0 && !_dodgeEffectApplied && !enemyTrueStrike) {
     if(fk==='WWS') { const h=Math.round(creature.maxHp*0.10); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
-    else if(ff==='CRIMSON-BRAWLER') { const c=Math.max(1,Math.round(getEffStat('atk')/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`CRIMSON Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
+    else if(ff==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`WINDBLADE Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
     else if(ff==='STORM-BLITZ') { bs.e2NextBuff=true; passives.push({icon:'🌩',text:'STORM BUFF from dodge! ATK+50% next round'}); _dodgeEffectApplied=true; }
     else if(ff==='KING-CHAMPION') { bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); passives.push({icon:'👑',text:`KING Stack from dodge! ×${bs.e2Stack}`}); _dodgeEffectApplied=true; }
     else if(ff==='SOUL-SPECTER') { bs.e2NextBuff=true; passives.push({icon:'👻',text:'SOUL BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
@@ -3917,7 +4145,7 @@ function doTurn(moveIdx) {
   if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
   if(ep.includes('enrage') && enemy.hp<enemy.maxHp*0.5) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`ENRAGE! ATK×1.5 → ${ed}`}); }
   if(ep.includes('barrier') && bs.turn%3===0) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
-  if(ep.includes('counter_rush') && pd>0 && Math.random()<0.25) { const counter=Math.max(1,Math.round(pd*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'💨',text:T(`COUNTER RUSH! สวนกลับ -${counter}`,`COUNTER RUSH! -${counter}`)}); }
+  if(ep.includes('counter_rush') && pd>0 && Math.random()<0.25) { const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'💨',text:T(`COUNTER RUSH! สวนกลับ -${counter}`,`COUNTER RUSH! -${counter}`)}); }
   if(ep.includes('stun_player') && ed>0 && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาดเทิร์นถัดไป','PARALYZE! Miss next turn')});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาด','PARALYZE! Your attack missed')});} }
   if(ep.includes('crit_boost') && Math.random()<0.25) { const bon=Math.round(ed*0.6); ed+=bon; passives.push({icon:'🎯',text:`CRIT BOOST! +60% → ${ed}`}); }
   if(ep.includes('double_strike') && Math.random()<0.25) { const hit2=ed; ed+=hit2; passives.push({icon:'⚔️',text:`DOUBLE STRIKE! ×2 → ${ed}`}); }
@@ -3944,28 +4172,39 @@ function doTurn(moveIdx) {
     if(cmp==='lose') bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1);
     if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.15*bs.e2StackE)); passives.push({icon:'💢',text:`[E] RAGING Stack×${bs.e2StackE}→${ed}`}); }
   }
-  if(fk2==='CRIMSON-BRAWLER' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) {
-    pd=0; const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
-    passives.push({icon:'🗡',text:`[E] CRIMSON DODGE! Counter -${counter}`});
+  if(fk2==='CRIMSON-BRAWLER') {
+    bs.e2StackE=Math.min(3,(bs.e2StackE||0)+1);
+    ed=Math.round(ed*(1+0.10*bs.e2StackE));
+    passives.push({icon:'☯️',text:`[E] CRIMSON BALANCE ATK+10%×${bs.e2StackE},SPD+10%×${bs.e2StackE}→${ed}`});
   }
   if(fk2==='KAIJU-BRAWLER') {
     if(bs.e2NextBuffE) { ed=Math.round(ed*1.5); pd=(playerIgnoresDef?pd:Math.round(pd*0.67)); bs.e2NextBuffE=false; passives.push({icon:'🦖',text:`[E] KAIJU BUFF→${ed}`}); }
     if(cmp==='win') bs.e2NextBuffE=true;
   }
   if(fk2==='FIGHTER-PANDA' && cmp==='win') { ed=Math.round(ed*1.75); passives.push({icon:'🥊',text:`[E] FIGHTER dmg+75%→${ed}`}); }
+  if(fk2==='PANDA-NINJA') {
+    if(bs.e2NextGuaranteeCritE) { ed=Math.round(ed*1.6); bs.e2NextGuaranteeCritE=false; passives.push({icon:'🥷',text:'[E] PANDA-NINJA GUARANTEED CRIT!'}); }
+    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextGuaranteeCritE=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA DODGE!'}); }
+  }
   if(fk2==='PANDA-WARRIOR' && Math.random()<0.25) {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🐼',text:`[E] PANDA-WARRIOR dmg½ Counter -${counter}`});
   }
   if(fk2==='ARMOR-PANDA') {
     pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
-    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA Counter -${counter}`}); }
+    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA Counter -${counter}`}); }
     else passives.push({icon:'🛡',text:`[E] ARMOR-PANDA dmg-20%→${pd}`});
   }
   if(fk2==='TYRANT-IRONJAW') { ed=Math.round(ed*1.2); passives.push({icon:'🩸',text:`[E] TYRANT dmg+20%→${ed}`}); }
   if(fk2==='AGILE-IRONJAW' && Math.random()<0.25) { const extra=ed; ed+=extra; passives.push({icon:'⚔',text:`[E] AGILE DOUBLE ATTACK→${ed}`}); }
+  if(fk2==='RUNE-IRONJAW') {
+    bs.e2RuneTypeE=(Math.random()<0.5?'atk':'def');
+    if(bs.e2RuneTypeE==='atk'){ed=Math.round(ed*1.5);}else{pd=(playerIgnoresDef?pd:Math.round(pd*0.67));}
+    if(!playerStunned && Math.random()<0.15){if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;}SFX.stun();passives.push({icon:'🔮',text:`[E] RUNE STUN!→${ed}`});}
+    else passives.push({icon:'🔮',text:`[E] RUNE→${ed}`});
+  }
   if(fk2==='FULLARMOR-IRONJAW' && enemy.hp<enemy.maxHp*0.5) {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); const counter=Math.max(1,Math.round(enemyAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🛡',text:`[E] FULLARMOR HP<50% Counter -${counter}`});
   }
   if(fk2==='STRONG-BLITZ' && cmp==='lose') {
@@ -4053,13 +4292,50 @@ function doTurn(moveIdx) {
     if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.15*bs.e2StackE)); passives.push({icon:'🥊',text:`[E] GAUNTLET Stack×${bs.e2StackE}→${ed}`}); }
   }
   if(fk2==='IRON-BASTION' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; passives.push({icon:'🎯',text:'[E] IRON-BASTION DODGE!'}); }
-  if(fk2==='IRON-BASTION' && bs.turn%3===0) { ed=Math.round(ed*1.5); passives.push({icon:'🎯',text:`[E] IRON-BASTION 3T TRUE STRIKE + GUARANTEED CRIT dmg+50%→${ed}`}); }
+  if(fk2==='IRON-BASTION' && bs.turn%3===0) { ed=Math.round(ed*1.5); passives.push({icon:'🎯',text:`[E] IRON-BASTION 3T TRUE STRIKE dmg+50%→${ed}`}); }
   if(fk2==='GOLEM-BASTION') {
     pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
     if(enemy.hp<enemy.maxHp*0.3) {
       ed=Math.round(ed*1.3);
       const heal=Math.round(enemy.maxHp*0.05); _eHeal(heal,'🗿',`[E] GOLEM HP<30% +Heal${heal}→${ed}`);
     } else passives.push({icon:'🗿',text:`[E] GOLEM dmg-20%→${pd}`});
+  }
+  if(fk2==='WINDBLADE-BRAWLER' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) {
+    pd=0; const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    passives.push({icon:'🗡',text:`[E] WINDBLADE DODGE! Counter -${counter}`});
+  }
+  if(fk2==='THUNDERCLOUD-BLITZ') {
+    if(!playerStunned && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'⛈️',text:'[E] THUNDERCLOUD STUN!'}); }
+    else if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; passives.push({icon:'⛈️',text:'[E] THUNDERCLOUD DODGE!'}); }
+  }
+  if(fk2==='SOUL-CHAMPION') {
+    if(cmp==='lose') { ed=Math.round(ed*1.25); pd=(playerIgnoresDef?pd:Math.round(pd*0.85)); passives.push({icon:'⚖️',text:`[E] SOUL LOSE ATK+25%,DEF+15%→${ed}`}); }
+    else if(cmp==='win') { if(artId!=='true_sight'&&artId2!=='true_sight'&&Math.random()<0.25){pd=0;} ed=Math.round(ed*1.25); passives.push({icon:'⚖️',text:`[E] SOUL WIN ATK+25%,Dodge+25%→${ed}${pd===0?' DODGE!':''}`}); }
+  }
+  if(fk2==='POISON-FORTRESS') {
+    pd=(playerIgnoresDef?pd:Math.round(pd*0.9));
+    if(pd>0 && Math.random()<0.25 && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:'☠️',text:`[E] POISON-FORTRESS dmg-10%→${pd} POISON!`}); }
+    else passives.push({icon:'☠️',text:`[E] POISON-FORTRESS dmg-10%→${pd}`});
+  }
+  if(fk2==='MAGE-SPECTER') {
+    if(cmp==='lose') { bs.e2CurseTurnsE=2; passives.push({icon:'🧙',text:'[E] MAGE CURSE! You ATK-25% (2T)'}); }
+    else if(cmp==='neutral') { bs.e2NoHealTurnsE=3; passives.push({icon:'🧙',text:'[E] MAGE NO-HEAL! You cannot heal (3T)'}); }
+    else { pd=(playerIgnoresDef?pd:Math.round(pd*0.9)); passives.push({icon:'🧙',text:`[E] MAGE WIN dmg-10%→${pd}`}); }
+  }
+  if(fk2==='PHEONIX-SWIFTGUARD') {
+    if(!bs.e2PhoenixUsedE && enemy.hp>0 && enemy.hp<enemy.maxHp*0.3) {
+      enemy.hp=enemy.maxHp; bs.e2PhoenixUsedE=true; bs.e2PhoenixBuffedE=true;
+      passives.push({icon:'🔥',text:'[E] PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+20% (permanent)'});
+    }
+    if(bs.e2PhoenixBuffedE) { ed=Math.round(ed*1.2); pd=(playerIgnoresDef?pd:Math.round(pd*0.83)); }
+  }
+  if(fk2==='GAIA-SHIELDWING' && bs.turn%3===0) {
+    const heal=Math.round(enemy.maxHp*0.15); _eHeal(heal,'🌿',`[E] GAIA 3T Heal${heal} ATK/DEF+20%`);
+    ed=Math.round(ed*1.2); pd=(playerIgnoresDef?pd:Math.round(pd*0.83));
+  }
+  if(fk2==='CRYSTAWOLF-BASTION') {
+    if(Math.random()<0.25) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c); passives.push({icon:'💎',text:`[E] CRYSTAWOLF dmg½ Counter -${c}`}); }
+    if(pd>0 && Math.random()<0.10) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'[E] CRYSTAWOLF STUN!'}); }
   }
   }
 
@@ -4093,8 +4369,8 @@ function doTurn(moveIdx) {
     const finisherNow = enemy.hp < enemy.maxHp*0.30 && !bs.eSpecialBossFinisherUsed;
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true;
-      const h1=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
-      const h2=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
+      const h1=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
+      const h2=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
       ed = h1+h2;
       const ls=Math.max(1,Math.round(ed*0.5)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
       passives.push({icon:'☄️',text:T(`RAGNAROK ไม้ตาย WORLD ENDER! ×2.0 สองครั้ง + ดูดเลือด 50% →${ed}`,`RAGNAROK finisher WORLD ENDER! ×2.0 twice + 50% lifesteal →${ed}`)});
@@ -4116,7 +4392,7 @@ function doTurn(moveIdx) {
       bs.eColossusFinisherTurns--;
       passives.push({icon:'🌋',text:T(`COLOSSUS ไม้ตาย TECTONIC RUIN! รับดาเมจเพียง 1 + สะท้อน ${ref} (เหลือ ${bs.eColossusFinisherTurns} เทิร์น)`,`COLOSSUS finisher TECTONIC RUIN! Takes only 1 dmg + reflects ${ref} (${bs.eColossusFinisherTurns} turns left)`)});
     } else {
-      pd = playerIgnoresDef ? pd : Math.round(pd*0.65);
+      pd = Math.round(pd*0.65);
       const refPct = enemy.hp > enemy.maxHp*0.6 ? 0.40 : 0.20;
       const ref = Math.max(1, Math.round(pd*refPct));
       creature.hp = Math.max(0, creature.hp-ref); reflectDmg += ref;
@@ -4124,13 +4400,13 @@ function doTurn(moveIdx) {
         bs.eColossusHits = (bs.eColossusHits||0)+1;
         if(bs.eColossusHits>=3) { bs.eColossusHits=0; bs.eColossusAtkBuffNext=true; }
       }
-      passives.push({icon:'🐢',text:`COLOSSUS dmg-35%${playerIgnoresDef?' (PIERCE!)':''} + reflect${ref}→${pd}`});
+      passives.push({icon:'🐢',text:`COLOSSUS dmg-35% + reflect${ref}→${pd}`});
     }
   }
   if(enemy.spriteFile==='monster & boss/W-phantasm-specialboss.png') {
     if(bs.ePhantasmFinisherThisTurn) {
       bs.ePhantasmFinisherThisTurn = false;
-      const h=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*4.0)-Math.floor(getEffStat('def')/2));
+      const h=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*4.0)-Math.floor(getEffStat('def')/2));
       ed = h;
       const ls=Math.max(1,Math.round(ed*0.75)); enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls); enemyHeal+=ls;
       passives.push({icon:'🌑',text:T(`PHANTASM ไม้ตาย SOUL HARVEST! ×4.0 + ดูดเลือด 75% →${ed}`,`PHANTASM finisher SOUL HARVEST! ×4.0 + 75% lifesteal →${ed}`)});
@@ -4144,7 +4420,7 @@ function doTurn(moveIdx) {
     const finisherNow = enemy.hp < enemy.maxHp*0.30 && !bs.eSpecialBossFinisherUsed;
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true;
-      const h=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*3.5)-Math.floor(getEffStat('def')/2));
+      const h=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*3.5)-Math.floor(getEffStat('def')/2));
       ed = h;
       if(!playerStunned) { if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); }
       passives.push({icon:'🔨',text:T(`TYRANTJAW ไม้ตาย PRIMAL SMASH! ×3.5 (คริบังคับ) + Stun ผู้เล่น →${ed}`,`TYRANTJAW finisher PRIMAL SMASH! ×3.5 (forced crit) + stuns you →${ed}`)});
@@ -4158,17 +4434,17 @@ function doTurn(moveIdx) {
     const finisherNow = enemy.hp < enemy.maxHp*0.30 && !bs.eSpecialBossFinisherUsed;
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true; bs.eVanguardFinisherTurns = 3;
-      const h=Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*2.5)-Math.floor(getEffStat('def')/2));
+      const h=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*2.5)-Math.floor(getEffStat('def')/2));
       ed = h;
       if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun();
       passives.push({icon:'⚡',text:T(`VANGUARD ไม้ตาย OVERLOAD PROTOCOL! ×2.5 + Stun แน่นอน →${ed}`,`VANGUARD finisher OVERLOAD PROTOCOL! ×2.5 + guaranteed stun →${ed}`)});
     } else if((bs.eVanguardFinisherTurns||0) > 0) {
-      pd = playerIgnoresDef ? pd : Math.round(pd*0.5); bs.eVanguardFinisherTurns--;
-      passives.push({icon:'⚡',text:T(`VANGUARD หลังไม้ตาย ลดดาเมจ 50%${playerIgnoresDef?' (PIERCE!)':''} (เหลือ ${bs.eVanguardFinisherTurns} เทิร์น)→${pd}`,`VANGUARD post-finisher dmg-50%${playerIgnoresDef?' (PIERCE!)':''} (${bs.eVanguardFinisherTurns} turns left)→${pd}`)});
+      pd = Math.round(pd*0.5); bs.eVanguardFinisherTurns--;
+      passives.push({icon:'⚡',text:T(`VANGUARD หลังไม้ตาย ลดดาเมจ 50% (เหลือ ${bs.eVanguardFinisherTurns} เทิร์น)→${pd}`,`VANGUARD post-finisher dmg-50% (${bs.eVanguardFinisherTurns} turns left)→${pd}`)});
     } else if(bs.turn%3===0) {
-      pd = playerIgnoresDef ? pd : Math.round(pd*0.4);
-      if(pd>0 && Math.random()<0.30) { if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60%${playerIgnoresDef?' (PIERCE!)':''} + Stun! →${pd}`,`VANGUARD energy barrier! dmg-60%${playerIgnoresDef?' (PIERCE!)':''} + STUN! →${pd}`)}); }
-      else passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60%${playerIgnoresDef?' (PIERCE!)':''} →${pd}`,`VANGUARD energy barrier! dmg-60%${playerIgnoresDef?' (PIERCE!)':''} →${pd}`)});
+      pd = Math.round(pd*0.4);
+      if(pd>0 && Math.random()<0.30) { if(!playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60% + Stun! →${pd}`,`VANGUARD energy barrier! dmg-60% + STUN! →${pd}`)}); }
+      else passives.push({icon:'🛡️',text:T(`VANGUARD เกราะพลังงาน! ลดดาเมจ 60% →${pd}`,`VANGUARD energy barrier! dmg-60% →${pd}`)});
     }
   }
   // MONKEY: 30% chance combo double-attack + 20% chance on landed hit to stack a DEF-shred debuff (max 3)
@@ -4177,7 +4453,7 @@ function doTurn(moveIdx) {
     if(finisherNow) {
       bs.eSpecialBossFinisherUsed = true;
       let total = 0;
-      for(let i=0;i<5;i++) { const isLast=i===4; total += Math.max(1,Math.round((em.dmg+enemyAtk/3+Math.random()*4)*(isLast?eCritMult:1))-Math.floor(getEffStat('def')/2)); }
+      for(let i=0;i<5;i++) { const isLast=i===4; total += Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*(isLast?eCritMult:1))-Math.floor(getEffStat('def')/2)); }
       ed = total;
       passives.push({icon:'👊',text:T(`MONKEY ไม้ตาย THOUSAND FIST FURY! โจมตี 5 ครั้งติด (คริบังคับครั้งสุดท้าย) →${ed}`,`MONKEY finisher THOUSAND FIST FURY! 5 strikes in a row (guaranteed crit on final) →${ed}`)});
     } else {
@@ -4348,7 +4624,7 @@ function doTurn(moveIdx) {
   // Called at end of turn (after both phases) — regen, overdrive charge
   const _endOfTurn = () => {
     if(enemy.hp > 0 && _eHasArt('life_seed')) { const h=Math.max(1,Math.round(enemy.maxHp*0.04)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌱',text:T(`Cursed Shackle: บล็อค Life Seed +${h}`,'Cursed Shackle: Life Seed +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌱',text:`[E] Life Seed +${h}`});} }
-    if(enemy.hp > 0 && _eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌙',text:T(`Cursed Shackle: บล็อค Moon Veil +${h}`,'Cursed Shackle: Moon Veil +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`});} }
+    if(enemy.hp > 0 && _eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.08)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌙',text:T(`Cursed Shackle: บล็อค Moon Veil +${h}`,'Cursed Shackle: Moon Veil +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`});} }
     if(_eHasArt('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🎯',text:T(`Cursed Shackle: บล็อค Crit Core +${h}`,'Cursed Shackle: Crit Core +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🎯',text:`[E] Crit Core +${h}`});} }
     if(wpn?.effect?.type==='regen' && creature.hp>0 && creature.hp<creature.maxHp && Math.random()<wpn.effect.chance) {
       const h=Math.max(1,Math.round(creature.maxHp*0.05));
@@ -4361,14 +4637,21 @@ function doTurn(moveIdx) {
     // 🚫 Decrement heal block counters
     if(bs.enemyHealBlockTurns>0) { bs.enemyHealBlockTurns--; if(bs.enemyHealBlockTurns===0) passives.push({icon:'⛓️',text:T('หมดอายุ Cursed Shackle!','Cursed Shackle expired!')}); }
     if(bs.playerHealBlockTurns>0) { bs.playerHealBlockTurns--; if(bs.playerHealBlockTurns===0) passives.push({icon:'🚫💚',text:T('หมดอายุ Heal Block!','Heal Block expired!')}); }
+    // 🧙 Decrement curse & no-heal counters (MAGE-SPECTER)
+    if(bs.e2CurseTurns>0) { bs.e2CurseTurns--; if(bs.e2CurseTurns===0) passives.push({icon:'🧙',text:T('หมดอายุ Curse ATK-25%!','Curse ATK-25% expired!')}); }
+    if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE--; if(bs.e2CurseTurnsE===0) passives.push({icon:'🧙',text:T('หมดอายุ Curse ATK-25% (ผู้เล่น)!','Curse ATK-25% (player) expired!')}); }
+    if(bs.e2NoHealTurns>0) { bs.e2NoHealTurns--; if(bs.e2NoHealTurns===0) passives.push({icon:'🚫💚',text:T('หมดอายุ No-Heal (ศัตรู)!','No-Heal (enemy) expired!')}); }
+    if(bs.e2NoHealTurnsE>0) { bs.e2NoHealTurnsE--; if(bs.e2NoHealTurnsE===0) passives.push({icon:'🚫💚',text:T('หมดอายุ No-Heal (ผู้เล่น)!','No-Heal (player) expired!')}); }
   };
 
   // ☠️ Poison ticks — applied here (before lastResult) so floating numbers can display them
+  if(enemy.isEvolve2Enemy && enemy.evolve2Key==='POISON-FORTRESS') bs.enemyPoisonTurns=0; // POISON-FORTRESS: immune to poison
   if(bs.enemyPoisonTurns>0 && enemy.hp>0) {
     const pdmg=Math.max(1,Math.round(enemy.maxHp*(enemy.isSpecialBoss?0.03:0.06))); enemy.hp=Math.max(0,enemy.hp-pdmg); bs.enemyPoisonTurns--;
     poisonDmgEnemy = pdmg;
     passives.push({icon:'☠️',text:T(`พิษ! ศัตรู -${pdmg} HP (${bs.enemyPoisonTurns} เทิร์น)`,`Poison! Enemy -${pdmg} HP (${bs.enemyPoisonTurns} turns left)`)});
   }
+  if(ff==='POISON-FORTRESS') bs.playerPoisonTurns=0; // POISON-FORTRESS: immune to poison
   if(bs.playerPoisonTurns>0 && creature.hp>0) {
     const pdmg=Math.max(1,Math.round(creature.maxHp*0.06)); creature.hp=Math.max(0,creature.hp-pdmg); bs.playerPoisonTurns--;
     poisonDmgPlayer = pdmg;
@@ -4384,7 +4667,6 @@ function doTurn(moveIdx) {
     `  you -${ed}${enemyCrit?' CRIT':''}  foe -${pd}${crit?' CRIT':''}`
   );
   if(passives.length) passives.forEach(p => battleState.log.push(`  ${p.icon} ${p.text}`));
-  battleState.recentTurns.push({turn:turnNum,cmp,pd,ed});
 
   const finish = () => {
     if(enemy.hp<=0 || creature.hp<=0) {
@@ -5393,10 +5675,11 @@ function startVsBattle(idx) {
   const enemy = vsEnemies[idx];
   battleState = {
     enemy, isBoss:false, isMini:false,
-    turn:1, log:[], passivesLog:[], lastResult:null, recentTurns:[],
+    turn:1, log:[], passivesLog:[], lastResult:null,
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
     e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
     isVsBattle:true, artifactStacks:{},
   };
   state = 'battle';
@@ -5553,8 +5836,8 @@ function renderPvPLobby() {
             <div style="font-size:9px;color:#6a4a4a">${T('แพ้','LOSSES')}</div>
           </div>
           <div style="flex:1;background:#08080f;border-radius:8px;padding:6px;border:1px solid #2a2a3a">
-            <div style="font-size:16px;color:#ffcc44;font-family:Kanit,sans-serif">${pvpRating}</div>
-            <div style="font-size:9px;color:#6a6a3a">${T('คะแนน','RATING')}</div>
+            <div style="font-size:12px;color:#ffcc44;font-family:Kanit,sans-serif">${T('ทดสอบ','TESTING')}</div>
+            <div style="font-size:9px;color:#6a6a3a">${T('สถานะ','STATUS')}</div>
           </div>
         </div>
       </div>
@@ -5618,7 +5901,7 @@ function renderPvPLobby() {
               <div style="width:32px;height:32px;border-radius:50%;background:#1a0a3a;border:1px solid #6040c0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#c0a0ff;flex-shrink:0">👤</div>
               <div style="flex:1;min-width:0">
                 <div style="font-family:Kanit,sans-serif;font-size:11px;color:#c0a0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name||'Anonymous'}</div>
-                <div style="font-size:9px;color:#5050a0">W:${c.wins||0} L:${c.losses||0} ★${c.rating||1000}</div>
+                <div style="font-size:9px;color:#5050a0">W:${c.wins||0} L:${c.losses||0}</div>
               </div>
               <div data-pvp-challenge data-pvp-id="${c.uid}" data-pvp-name="${(c.name||'Anonymous').replace(/"/g,'&quot;')}" style="padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#3a0a0a,#1a0a2a);border:1px solid #ff4444;font-family:Kanit,sans-serif;font-size:11px;color:#ff6666;cursor:pointer;white-space:nowrap">${T('⚔️ ท้า','⚔️ FIGHT')}</div>
             </div>
@@ -5664,6 +5947,25 @@ function renderPvPLobby() {
               <div style="font-size:9px;color:#5050a0">${timeAgo(h.timestamp)}</div>
             </div>
             <div style="font-size:10px;color:${h.won?'#44cc44':'#cc4444'};font-family:Kanit,sans-serif">${h.won?T('ชนะ','WIN'):T('แพ้','LOSE')}</div>
+          </div>
+        `).join('')}
+      </div>`}
+    </div>
+    <div style="background:#0a0a1a;border:1px solid #2a2a3a;border-radius:10px;padding:10px">
+      <div style="font-family:Kanit,sans-serif;font-size:10px;color:#e0a060;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        ${T('🛡️ โดนโจมตี','🛡️ DEFENSE LOG')}
+        <span style="font-size:9px;color:#6a6a3a;cursor:pointer" title="${T('โหลดใหม่','Refresh')}" onclick="pvpFetchDefenseLog()">🔄</span>
+      </div>
+      ${pvpDefenseLog.length === 0 ? `<div style="padding:8px;text-align:center;font-size:11px;color:#4a4a6a">${T('ยังไม่มีใครมาโจมตี','No one has attacked you yet')}</div>` :
+      `<div style="display:flex;flex-direction:column;gap:4px;max-height:250px;overflow-y:auto">
+        ${pvpDefenseLog.map(d => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:#08080f;border:1px solid ${d.attackerWon?'#4a2a2a':'#2a4a2a'}">
+            <span style="font-size:16px">${d.attackerWon?'💀':'🏆'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Kanit,sans-serif;font-size:11px;color:${d.attackerWon?'#cc4444':'#44cc44'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.attackerName||'Unknown'}</div>
+              <div style="font-size:9px;color:#5050a0">${timeAgo(d.timestamp)}</div>
+            </div>
+            <div style="font-size:10px;color:${d.attackerWon?'#cc4444':'#44cc44'};font-family:Kanit,sans-serif">${d.attackerWon?T('เราแพ้','LOST'):T('เราชนะ','WON')}</div>
           </div>
         `).join('')}
       </div>`}
@@ -5894,10 +6196,11 @@ function startDuelBattle(enemyIdx) {
   const enemy = duelEnemyTeam[enemyIdx];
   battleState = {
     enemy, isBoss:false, isMini:false,
-    turn:1, log:[], passivesLog:[], lastResult:null, recentTurns:[],
+    turn:1, log:[], passivesLog:[], lastResult:null,
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
     e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
     isDuelBattle:true, artifactStacks:{},
   };
   state = 'battle'; render();
@@ -6269,7 +6572,7 @@ function renderTower() {
             </div>`;
           }
           const isNewRun = towerFloor === 0 || towerNeedsEntry;
-          const todayStr2 = _thaiDateStr();
+          const todayStr2 = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
           const runsLeft = towerRunsDate===todayStr2 ? Math.max(0,TOWER_DAILY_MAX-towerRunsToday) : TOWER_DAILY_MAX;
           const canEnter = !isNewRun || (stamina >= 30 && runsLeft > 0);
           const showAutoBtn = canEnter && !isBossFloor && towerFloor > 0;
@@ -6422,10 +6725,11 @@ function startTowerBattle() {
 
   battleState = {
     enemy, isBoss:isBossFloor,
-    turn:1, log:[], passivesLog:[], lastResult:null, recentTurns:[],
+    turn:1, log:[], passivesLog:[], lastResult:null,
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
     e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
     isTowerBattle:true,
     artifactStacks: {},
   };
@@ -6624,7 +6928,7 @@ function renderMenu() {
               ['🗡️','WEAPON',T('แต่ละ Pet สวมใส่ Weapon ได้ 1 ชิ้น เพิ่มสเตตัสตรงๆ (เกรด Normal เพิ่มสเตตัสอย่างเดียว ส่วน Rare/Epic มีความสามารถพิเศษเพิ่มด้วย) หาได้จาก Weapon Box, ร้านค้า หรือรางวัลต่างๆ — ไปที่ PARTY → เลือก Pet → ใส่ Weapon','Each Pet can equip 1 Weapon for a flat stat boost (Normal grade is stats-only; Rare/Epic also add a special effect). Found from Weapon Boxes, the Shop, or various rewards — go to PARTY → select a Pet → equip Weapon')],
               ['🐾','PARTY',T('มี Pet ได้สูงสุด 4 ตัว พร้อม Storage อีก 20 ช่อง เลือก Pet ที่ Active เพื่อนำไปต่อสู้ — เปลี่ยน Pet ระหว่างสู้ได้ในโหมด Tower และ VS','Hold up to 4 active pets plus 20 in Storage. Switch pets mid-battle in Tower and VS modes')],
               ['🔮','REBIRTH',T(`Pet ที่ Evolve หรือ Evolve II แล้ว (ต้องถอด Artifact ก่อน) ใช้ Rebirth Stone 1 ชิ้น + Gold ${REBIRTH_GOLD_COST} เพื่อ Rebirth — สเตตัสรีเซ็ตกลับฐาน แต่ได้โบนัสถาวร +25% ของสเตตัสก่อน Rebirth ติดตัวไปตลอด ทำซ้ำได้เรื่อยๆ เพื่อสะสมโบนัส (มีดาว ✦ แสดง rank)\n\n🔮 หา Rebirth Stone ได้จาก: ชนะ Boss (10%) หรือ Mini-Boss (10%) ใน Scout, ซื้อได้ที่ Secret Shop (${REBIRTH_GOLD_COST}G/ครั้ง), First-Clear Tower Floor 70 (การันตี 5 ก้อน), หรือลุ้นจาก Special Boss ใน Raid — โอกาสจะสูงขึ้นมากในโหมด Hard/Hell`,`An Evolved or Evolve II Pet (with no Artifact equipped) can Rebirth using 1 Rebirth Stone + ${REBIRTH_GOLD_COST} Gold — stats reset to base, but you keep a permanent +25% bonus based on stats before the Rebirth. Repeatable to stack more bonuses (shown as ✦ rank stars)\n\n🔮 Get Rebirth Stones from: beating a Boss (10%) or Mini-Boss (10%) in Scout, buying one at the Secret Shop (${REBIRTH_GOLD_COST}G each), Tower Floor 70's First-Clear (guaranteed 5), or a chance from Raid's Special Boss — odds go up a lot in Hard/Hell Mode`)],
-              ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัส +10% ของสเตตัสตอนเกิด/อีโวลท์ (คงที่ ไม่ปรับตามเทรน/ไอเท็ม) พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว และคงไว้เมื่อ Rebirth','Some Pets have a rare chance to be Shiny — gain +10% stats at birth/evolution (flat bonus, does not scale with training/items), plus a unique glowing visual effect. Persists through Rebirth')],
+              ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัสถาวร +10% ทุกค่า พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว','Some Pets have a rare chance to be Shiny — a permanent +10% bonus on every stat, plus a unique glowing visual effect')],
             ];
             const BATTLE_SYSTEMS = [
               ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!')],
@@ -6933,7 +7237,7 @@ function renderBattleScreen() {
 
   let resultBox = '';
   if(lastResult) {
-    const {pm, em, cmp, crit, pd, ed, playerFirst, pdHits} = lastResult;
+    const {pm, em, cmp, crit, pd, ed, playerFirst} = lastResult;
     const cmpColor = cmp==='win' ? '#ffd700' : cmp==='lose' ? '#ff4444' : '#8080c0';
     const cmpLabel = cmp==='win' ? '✓ WIN' : cmp==='lose' ? '✗ LOSE' : '= DRAW';
     const cmpIcon  = cmp==='win' ? '🏆' : cmp==='lose' ? '💀' : '🤝';
@@ -6949,7 +7253,7 @@ function renderBattleScreen() {
         <div style="text-align:center;flex:1">
           <div style="font-size:20px">${pm.icon}</div>
           <div style="font-family:Kanit,sans-serif;font-size:12px;color:#c0a0ff">${pm.name}</div>
-          <div style="font-size:11px;color:#ff6b35;margin-top:1px">${pdHits&&pdHits.length>1?pdHits.map(h=>`-${h}`).join(' '):(pd>0?`-${pd}`:'')}${crit?' ⚡CRIT':''}</div>
+          <div style="font-size:11px;color:#ff6b35;margin-top:1px">-${pd}${crit?' ⚡CRIT':''}</div>
         </div>
         <div style="text-align:center;padding:0 4px">
           <div style="font-size:18px">${cmpIcon}</div>
@@ -6961,17 +7265,7 @@ function renderBattleScreen() {
           <div style="font-size:11px;color:#ff4444;margin-top:1px">-${ed}</div>
         </div>
       </div>
-      ${eventsHtml ? `<div style="display:flex;flex-direction:column;gap:3px;margin-top:4px">${eventsHtml}</div>` : ''}
-      ${(()=>{
-        const rt = battleState.recentTurns||[];
-        if(rt.length<=1) return '';
-        const prev = rt.slice(-3,-1).reverse();
-        return `<div style="display:flex;gap:6px;justify-content:center;margin-top:4px;font-family:monospace">${prev.map(t=>{
-          const icon = t.cmp==='win'?'🏆':t.cmp==='lose'?'💀':'🤝';
-          const col = t.cmp==='win'?'#40c060':t.cmp==='lose'?'#c04040':'#8080c0';
-          return `<span style="font-size:9px;color:${col}">T${t.turn}${icon}</span>`;
-        }).join('<span style="color:#303050">·</span>')}</div>`;
-      })()}`;
+      ${eventsHtml ? `<div style="display:flex;flex-direction:column;gap:3px;margin-top:4px">${eventsHtml}</div>` : ''}`;
   } else {
     resultBox = `<div style="font-family:Kanit,sans-serif;font-size:12px;color:#7060aa;text-align:center;padding:6px 0">CHOOSE YOUR MOVE</div>`;
   }
@@ -7281,8 +7575,13 @@ function renderBattleScreen() {
         </div>`;
       })()}
 
-      <div style="background:#08080f;border-radius:8px;padding:6px 8px;border:1px solid #1a1a3a;min-height:50px;max-height:150px;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0">
+      <div style="background:#08080f;border-radius:8px;padding:6px 8px;border:1px solid #1a1a3a;min-height:50px;max-height:130px;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0">
         ${resultBox}
+      </div>
+      <div style="background:#05050c;border-radius:8px;padding:4px 8px;border:1px solid #111128;max-height:72px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:1px">
+        ${battleState.log.length ? [...battleState.log].reverse().slice(0,14).map((line,i)=>`
+          <div style="font-family:monospace;font-size:10px;color:${i<=1?'#6060c0':line.trimStart().startsWith('you')||line.trimStart().startsWith('foe')?'#3a3a6a':line.match(/^\s+[^\s]/)?'#7050a0':'#2a2a4a'};white-space:pre">${line}</div>`).join('')
+        : `<div style="font-size:10px;color:#1a1a3a;text-align:center">— log —</div>`}
       </div>
 
 
@@ -7584,7 +7883,7 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('[data-tower-start]')) {
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
-      const todayStr = _thaiDateStr();
+      const todayStr = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
       if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerToast = ''; if(towerFloor===0){ towerCheckpoint=0; towerPendingGold=0; towerPendingArtifacts=[]; towerPendingEssence=0; } towerNeedsEntry = false; }
       if(towerFloor === 0 || towerNeedsEntry) {
         if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
@@ -7778,7 +8077,7 @@ screenContent.addEventListener('click', e=>{
     else if(action==='vs')         { actionMenuOpen=false; enterVs(); return; }
     else if(action==='duel')       { actionMenuOpen=false; enterDuel(); return; }
     else if(action==='tower')      { actionMenuOpen=false;
-      const _tToday = _thaiDateStr();
+      const _tToday = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
       if(towerRunsDate !== _tToday) {
         towerRunsDate = _tToday; towerRunsToday = 0; towerToast = '';
         towerFloor = 0; towerCheckpoint = 0; towerNeedsEntry = false;
@@ -8070,7 +8369,6 @@ screenContent.addEventListener('click', e=>{
         pet.trainCount = 0;
         if(pet.artifact)  { applyArtifactStat(pet,pet.artifact); if(pet.artifact==='vitality_core'){pet.maxHp=Math.round(pet.maxHp*1.2);pet.hp=pet.maxHp;} }
         if(pet.artifact2) { applyArtifactStat(pet,pet.artifact2); if(pet.artifact2==='vitality_core'){pet.maxHp=Math.round(pet.maxHp*1.2);pet.hp=pet.maxHp;} }
-        if(pet.shiny) applyShinyStats(pet);
       }
       syncCreature();
       SFX.rebirth();
@@ -8547,7 +8845,7 @@ screenContent.addEventListener('click', e=>{
 
   // ── PVP (Async Ranked) ──
   const pvpTabEl = el.closest('[data-pvp-tab]');
-  if(pvpTabEl) { SFX.click(); pvpTab=pvpTabEl.dataset.pvpTab; render(); return; }
+  if(pvpTabEl) { SFX.click(); pvpTab=pvpTabEl.dataset.pvpTab; if(pvpTab==='history') pvpFetchDefenseLog(); render(); return; }
   if(el.closest('[data-pvp-back]')) { SFX.click(); vsTab='ladder'; render(); return; }
   if(el.closest('[data-pvp-deploy]')) { SFX.click(); pvpDeployTeam(); return; }
   if(el.closest('[data-pvp-withdraw]')) { SFX.click(); pvpUndeployTeam(); return; }
@@ -9131,24 +9429,33 @@ function renderParty() {
       const symCounts = { F: inventory.find(s=>s.type==='sym_F')?.qty||0, W: inventory.find(s=>s.type==='sym_W')?.qty||0, S: inventory.find(s=>s.type==='sym_S')?.qty||0 };
       const stoneCount = inventory.find(s=>s.type==='rebirth_stone')?.qty||0;
       const goldOk = gold >= EVOLVE2_GOLD_COST;
-      const branchCards = branches ? ['F','W','S'].map(sym=>{
+      const branchCards = branches ? ['F','W','S','B'].map(sym=>{
         const key = branches[sym];
         const ff = EVOLVE2_FORMS[key];
         if(!ff) return '';
         const picked = evolve2SymbolPick===sym;
-        const symOk = symCounts[sym] >= EVOLVE2_SYM_COST;
+        const symOk = sym==='B'
+          ? ['F','W','S'].every(s=>symCounts[s] >= EVOLVE2_BALANCE_SYM_COST)
+          : symCounts[sym] >= EVOLVE2_SYM_COST;
+        const iconHtml = sym==='B'
+          ? `<div style="display:flex;gap:1px;transform:scale(0.55);transform-origin:left center">${symSvg('F',28)}${symSvg('W',28)}${symSvg('S',28)}</div>`
+          : `<div style="transform:scale(0.6);transform-origin:left center">${symSvg(sym,32)}</div>`;
+        const costHtml = sym==='B'
+          ? `${['F','W','S'].map(s=>`${ITEMS['sym_'+s].icon}${symCounts[s]}/${EVOLVE2_BALANCE_SYM_COST}`).join(' ')}`
+          : `${ITEMS['sym_'+sym].icon} ${symCounts[sym]}/${EVOLVE2_SYM_COST}`;
         return `<div data-evo2branch="${sym}" style="padding:10px;border-radius:10px;border:2px solid ${picked?ff.color:'#2a2a5a'};background:${picked?'rgba(255,153,68,0.12)':'#0a0a1a'};cursor:pointer;display:flex;align-items:center;gap:10px">
-          <div style="transform:scale(0.6);transform-origin:left center">${symSvg(sym,32)}</div>
+          ${iconHtml}
           <div style="flex:1;min-width:0">
             <div style="font-family:Kanit,sans-serif;font-size:13px;font-weight:700;color:${ff.color}">${ff.name}</div>
             <div style="font-size:9px;color:#8878b8;margin-top:2px">HP ${ff.hp} ● ATK ${ff.atk} ● SPD ${ff.spd} ● DEF ${ff.def}</div>
-            <div style="font-size:9px;color:${symOk?'#88cc88':'#cc6666'};margin-top:2px">${ITEMS['sym_'+sym].icon} ${symCounts[sym]}/${EVOLVE2_SYM_COST}</div>
+            <div style="font-size:9px;color:${symOk?'#88cc88':'#cc6666'};margin-top:2px">${costHtml}</div>
           </div>
         </div>`;
       }).join('') : '';
       const chosenKey = evolve2SymbolPick ? branches?.[evolve2SymbolPick] : null;
       const chosenForm = chosenKey ? EVOLVE2_FORMS[chosenKey] : null;
-      const symOk = evolve2SymbolPick ? symCounts[evolve2SymbolPick] >= EVOLVE2_SYM_COST : false;
+      const isBalancePick = evolve2SymbolPick === 'B';
+      const symOk = evolve2SymbolPick ? (isBalancePick ? ['F','W','S'].every(s=>symCounts[s] >= EVOLVE2_BALANCE_SYM_COST) : symCounts[evolve2SymbolPick] >= EVOLVE2_SYM_COST) : false;
       const stoneOk = stoneCount >= 1;
       previewHtml = `
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px">${branchCards}</div>
@@ -9159,7 +9466,7 @@ function renderParty() {
           <div style="font-size:10px;color:#a090d0;text-align:center;margin-top:3px">${chosenForm.passiveIcon} ${P(chosenForm)}</div>
           ${FORMS[pet.formKey] ? `<div style="font-size:9px;color:#8878b8;text-align:center;margin-top:4px">${T('+ ยังใช้พาสซีฟเดิมด้วย','+ also keeps its base passive')}: ${FORMS[pet.formKey].passiveIcon} ${P(FORMS[pet.formKey])}</div>` : ''}
           <div style="display:flex;gap:6px;margin-top:10px">
-            <div style="flex:1;padding:6px;border-radius:8px;background:#0a0018;border:1px solid ${symOk?'#88cc88':'#4a2a2a'};font-family:Kanit,sans-serif;font-size:10px;color:${symOk?'#88cc88':'#cc6666'};text-align:center">${ITEMS['sym_'+evolve2SymbolPick].icon} ${EVOLVE2_SYM_COST} ${symOk?'✓':'✗'}</div>
+            <div style="flex:1;padding:6px;border-radius:8px;background:#0a0018;border:1px solid ${symOk?'#88cc88':'#4a2a2a'};font-family:Kanit,sans-serif;font-size:10px;color:${symOk?'#88cc88':'#cc6666'};text-align:center">${isBalancePick ? `${ITEMS['sym_F'].icon}${ITEMS['sym_W'].icon}${ITEMS['sym_S'].icon} ${EVOLVE2_BALANCE_SYM_COST}ea` : `${ITEMS['sym_'+evolve2SymbolPick].icon} ${EVOLVE2_SYM_COST}`} ${symOk?'✓':'✗'}</div>
             <div style="flex:1;padding:6px;border-radius:8px;background:#0a0018;border:1px solid ${stoneOk?'#ff80ff':'#4a2a4a'};font-family:Kanit,sans-serif;font-size:10px;color:${stoneOk?'#ff80ff':'#6a4a6a'};text-align:center">🔮 1 ${stoneOk?'✓':'✗'}</div>
             <div style="flex:1;padding:6px;border-radius:8px;background:#0a0018;border:1px solid ${goldOk?'#ffcc00':'#4a3a00'};font-family:Kanit,sans-serif;font-size:10px;color:${goldOk?'#ffcc00':'#6a5a00'};text-align:center">💰 ${EVOLVE2_GOLD_COST}G ${goldOk?'✓':'✗'}</div>
           </div>
@@ -9259,7 +9566,7 @@ function renderParty() {
     const symChip = s=>`<div style="display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#0a0a18;border:1px solid ${SYMS[s].color}44"><span style="color:${SYMS[s].color};display:inline-flex;align-items:center">${symSvg(s,20)}</span><span style="font-size:11px;color:${SYMS[s].color}">${SYMS[s].name}</span></div>`;
     const symsHtml = !isFinal
       ? collectionDetailKey.split('').map(symChip).join('')
-      : (()=>{ const base=evolve2BaseOfKey(collectionDetailKey), sym=evolve2SymbolOfKey(collectionDetailKey); return base ? `${base.split('').map(symChip).join('')}<div style="display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#1a0a18;border:1px solid #ff880044"><span style="font-size:11px;color:#ff9944">+5 ${SYMS[sym].name} (${T('วัตถุดิบ','material')})</span></div>` : ''; })();
+      : (()=>{ const base=evolve2BaseOfKey(collectionDetailKey), sym=evolve2SymbolOfKey(collectionDetailKey); if(!base) return ''; const matLabel = sym==='B' ? `+${EVOLVE2_BALANCE_SYM_COST} ${T('ของแต่ละสาย F/W/S','each of F/W/S')}` : `+${EVOLVE2_SYM_COST} ${SYMS[sym].name}`; return `${base.split('').map(symChip).join('')}<div style="display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#1a0a18;border:1px solid #ff880044"><span style="font-size:11px;color:#ff9944">${matLabel} (${T('วัตถุดิบ','material')})</span></div>`; })();
     return `
     <div style="position:absolute;inset:0;background:#09091e;z-index:50;border-radius:16px;display:flex;flex-direction:column;border:1px solid #2a2a4a">
       <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}44">
@@ -10544,7 +10851,7 @@ function enterScout() {
 // ============================================================
 
 function checkDailyScrolls() {
-  const today = _thaiDateStr();
+  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
   if(lastScrollDay !== today) {
     lastScrollDay = today;
     addItemToInventory('map_scroll');
@@ -10555,7 +10862,7 @@ function checkDailyScrolls() {
 }
 
 function checkDailyEnergyDrink() {
-  const today = _thaiDateStr();
+  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
   if(lastEnergyDrinkDay !== today) {
     lastEnergyDrinkDay = today;
     addItemToInventory('energy_drink');

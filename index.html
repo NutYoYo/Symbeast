@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1826,7 +1826,7 @@ const MAX_OVERDRIVE = 5;
 const OVERDRIVE_INFO = {
   'RAGING-BRAWLER':    {name:'APOCALYPSE',          icon:'💥', desc:'Strike ×2.5 twice (forced crit), then Crit +25% for 3 turns',
     descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) จากนั้น Crit +25% นาน 3 เทิร์น'},
-  'CRIMSON-BRAWLER':   {name:'WIND CUTTER',         icon:'☯️', desc:'Strike ×2.5, ignoring half of enemy DEF this turn, then ATK +30%, SPD +30% and 15% chance to attack twice for 3 turns',
+  'CRIMSON-BRAWLER':   {name:'APOCALYPSE RUSH',     icon:'☯️', desc:'Strike ×2.5, ignoring half of enemy DEF this turn, then ATK +30%, SPD +30% and 15% chance to attack twice for 3 turns',
     descTh:'โจมตี ×2.5 ทะลุ DEF ครึ่งหนึ่งเทิร์นนี้ จากนั้น ATK+30%, SPD+30% และมีโอกาส 15% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
   'KAIJU-BRAWLER':     {name:'APOCALYPSE WALL',     icon:'💥', desc:'Strike ×2.0 twice + damage taken -50% this turn, then Crit +15% and damage taken -15% for 3 turns',
     descTh:'โจมตี ×2.0 สองครั้ง + ลดดาเมจที่รับ 50% เทิร์นนี้ จากนั้น Crit +15% และลดดาเมจที่รับ 15% นาน 3 เทิร์น'},
@@ -1900,8 +1900,8 @@ const OVERDRIVE_INFO = {
     descTh:'โจมตี ×2.5 ทะลุ DEF + หลบเทิร์นนี้ จากนั้น ATK×1.5, โอกาสหลบ +30% และโจมตีครั้งถัดไปติด Crit แน่นอน นาน 3 เทิร์น'},
   'RUNE-IRONJAW':      {name:'CRIMSON REAPER RUNE', icon:'🩸', desc:'Strike ×2.5 + lifesteal 50% this turn + random Rune buff (ATK+50% or DEF+50%), then lifesteal +20% and random Rune buff for 3 turns',
     descTh:'โจมตี ×2.5 + ดูดเลือด 50% เทิร์นนี้ + สุ่ม Rune บัฟ (ATK+50% หรือ DEF+50%) จากนั้นดูดเลือด +20% และสุ่ม Rune บัฟ นาน 3 เทิร์น'},
-  'THUNDERCLOUD-BLITZ':{name:'THUNDER STORM',       icon:'⚡', desc:'Strike ×2.5 + stun, then ATK×2 and 25% stun chance for 3 turns',
-    descTh:'โจมตี ×2.5 + สตันศัตรู จากนั้น ATK×2 และโอกาสสตัน 25% นาน 3 เทิร์น'},
+  'THUNDERCLOUD-BLITZ':{name:'THUNDERCLOUD BURST',  icon:'⚡', desc:'Strike ×3.0 + stun this turn, then ATK/SPD +25% and 50% stun chance for 3 turns',
+    descTh:'โจมตี ×3.0 + สตันศัตรูเทิร์นนี้ → จากนั้น 3 เทิร์น: ATK+25%, SPD+25%, มีโอกาส 50% สตันทุกรอบ'},
   'SOUL-CHAMPION':     {name:'SOUL BALANCE',        icon:'⚖️', desc:'Strike ×2.0 + halve enemy damage this turn, then ATK/DEF +25% and 50% chance to double-attack for 3 turns',
     descTh:'โจมตี ×2.0 + ลดดาเมจศัตรูครึ่งหนึ่งเทิร์นนี้ จากนั้น ATK/DEF +25% และมีโอกาส 50% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
   'POISON-FORTRESS':   {name:'VENOM EARTHSHATTER',  icon:'🏔️', desc:'Strike ×2.5 + reflect all damage this turn + poison ☠️ the enemy for 3 turns, then reflect 50%, ATK +20% and 25% chance to poison on hit for 3 turns',
@@ -3412,7 +3412,7 @@ function doOverdriveTurn() {
     passives.push({icon:'💥',text:`APOCALYPSE ×2.5×2→${pd} | Crit+25% (3T)`});
   } else if(ff==='CRIMSON-BRAWLER') {
     pd=_pierceHit(2.5,0.5); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'☯️',text:`WIND CUTTER ×2.5 (half-pierce)→${pd} | ATK+30%,SPD+30%,double15% (3T)`});
+    passives.push({icon:'☯️',text:`APOCALYPSE RUSH ×2.5 (half-pierce)→${pd} | ATK+30%,SPD+30%,double15% (3T)`});
   } else if(ff==='KAIJU-BRAWLER') {
     const h1=_hit(2.0), h2=_hit(2.0); pd=h1.d+h2.d; ed=Math.round(_ed()*0.5); pdHits=[h1.d,h2.d];
     bs.odBuff={type:ff,turnsLeft:3};
@@ -3523,8 +3523,8 @@ function doOverdriveTurn() {
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🩸',text:`CRIMSON REAPER RUNE ×2.5→${pd} + Lifesteal50% +${ls} | rune+20%lifesteal (3T)`});
   } else if(ff==='THUNDERCLOUD-BLITZ') {
-    const h=_hit(2.5); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'⚡',text:`THUNDER STORM ×2.5→${pd} + STUN | ATK×2,stun+25% (3T)`});
+    const h=_hit(3.0); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'⚡',text:`THUNDERCLOUD BURST ×3.0→${pd} + STUN | ATK/SPD+25%,stun50% (3T)`});
   } else if(ff==='SOUL-CHAMPION') {
     const h=_hit(2.0); pd=h.d; ed=Math.round(_ed()*0.5); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'⚖️',text:`SOUL BALANCE ×2.0→${pd} + half dmg | ATK/DEF+25%,doubleAttack+50% (3T)`});
@@ -3750,7 +3750,7 @@ function doTurn(moveIdx) {
     const {type} = bs.odBuff;
     const _atk = getEffStat('atk');
     if(type==='RAGING-BRAWLER') { /* Crit+25% via OD_CRIT_BONUS */ passives.push({icon:'💥',text:'APOCALYPSE Crit+25%'}); }
-    if(type==='CRIMSON-BRAWLER') { pd=Math.round(pd*1.3); if(Math.random()<0.15){const orig=pd;pd=orig*2;pdHits=[orig,orig];} passives.push({icon:'☯️',text:`WIND CUTTER ATK+30%,SPD+30%,double15%→${pd}`}); }
+    if(type==='CRIMSON-BRAWLER') { pd=Math.round(pd*1.3); if(Math.random()<0.15){const orig=pd;pd=orig*2;pdHits=[orig,orig];} passives.push({icon:'☯️',text:`APOCALYPSE RUSH ATK+30%,SPD+30%,double15%→${pd}`}); }
     if(type==='KAIJU-BRAWLER') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'💥',text:`APOCALYPSE WALL Crit+15%,dmgTaken-15%→${ed}`}); }
     if(type==='FIGHTER-PANDA') { pd+=Math.floor(enemy.def/2); if(Math.random()<0.75){const c=Math.max(1,Math.round(_atk/3*0.75));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK pierce+counter→${pd}`}); }
     if(type==='PANDA-WARRIOR') { pd+=Math.floor(enemy.def/2); if(!enemyTrueStrike && Math.random()<0.20){ed=0;} if(Math.random()<0.5){const c=Math.max(1,Math.round(_atk/3*0.5));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK RUSH pierce+counter+dodge→${pd}`}); }
@@ -3788,7 +3788,7 @@ function doTurn(moveIdx) {
     if(type==='GAIA-SHIELDWING') { pd=Math.round(pd*1.3); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🌿',`GAIA WRATH ATK/DEF+30%,+${heal}HP`); }
     if(type==='PANDA-NINJA') { pd=Math.round(pd*1.5); if(!enemyTrueStrike && Math.random()<0.30){ed=0;} bs.playerGuaranteeCrit=true; passives.push({icon:'🥷',text:`SHADOW STRIKE dodge+30%,guaranteeCrit→${pd}`}); }
     if(type==='RUNE-IRONJAW') { bs.e2RuneType=['atk','def'][Math.floor(Math.random()*2)]; const runeMul=bs.e2RuneType==='atk'?1.5:1.0; const runeDef=bs.e2RuneType==='def'?1.5:1.0; pd=Math.round(pd*runeMul); ed=Math.round(ed/runeDef); const heal=Math.round(pd*0.20); _pHeal(heal,'🔮',`RUNE R.${runeMul>1?'+50%ATK':'+50%DEF'}→${pd},+${heal}HP`); }
-    if(type==='THUNDERCLOUD-BLITZ') { pd=Math.round(pd*2.0); if(!enemyStunned && Math.random()<0.25){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⛈️',text:`STORM FANG ATK×2,stun25%→${pd}`}); }
+    if(type==='THUNDERCLOUD-BLITZ') { pd=Math.round(pd*1.25); if(!enemyStunned && Math.random()<0.50){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⛈️',text:`THUNDERCLOUD BURST ATK/SPD+25%,stun50%→${pd}`}); }
     if(type==='SOUL-CHAMPION') { pd=Math.round(pd*1.25); ed=Math.round(ed*0.75); const isDouble=Math.random()<0.50; if(isDouble){ const orig=pd; pd=orig*2; pdHits=[orig,orig]; } passives.push({icon:'⚖️',text:`SOUL BALANCE ATK/DEF+25%,double50%→${pd}${isDouble?'x2!':''}`}); }
     if(type==='POISON-FORTRESS') { pd=Math.round(pd*1.20); ed=Math.round(ed*0.50); if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')&&Math.random()<0.25&&!hasAntiPoison){bs.enemyPoisonTurns=3;} passives.push({icon:'☠️',text:`VENOM EARTHSHATTER ATK+20%,reflect50%,poisonOnHit→${pd}`}); }
     if(type==='MAGE-SPECTER') { if(Math.random()<0.30){bs.e2CurseTurns=2;} passives.push({icon:'🧙',text:`MAGE SCYTHE crit+30%,curse30%→${pd}`}); }

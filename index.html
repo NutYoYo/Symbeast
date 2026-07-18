@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4611,9 +4611,9 @@ function doTurn(moveIdx) {
     if(enemy.hp > 0 && _eHasArt('moon_veil')) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🌙',text:T(`Cursed Shackle: บล็อค Moon Veil +${h}`,'Cursed Shackle: Moon Veil +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🌙',text:`[E] Moon Veil +${h}`});} }
     if(_eHasArt('crit_core') && enemyCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); if(bs.enemyHealBlockTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫🎯',text:T(`Cursed Shackle: บล็อค Crit Core +${h}`,'Cursed Shackle: Crit Core +'+h+' BLOCKED')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon:'🎯',text:`[E] Crit Core +${h}`});} }
     if(wpn?.effect?.type==='regen' && creature.hp>0 && creature.hp<creature.maxHp && Math.random()<wpn.effect.chance) {
-      const h=Math.max(1,Math.round(creature.maxHp*0.05));
-      if(bs.playerHealBlockTurns>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+wpn.icon,text:T(`Heal Block: ${wpn.name} +${h} ถูกบล็อค`,'Heal Block: '+wpn.name+' +'+h+' BLOCKED')});}
-      else{_pHeal(h,wpn.icon,`${wpn.name} Regen +${h}`);}
+      const h=Math.max(1,Math.round(creature.maxHp*wpn.effect.pct));
+      if(bs.playerHealBlockTurns>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+wpn.icon,text:T(`Heal Block: ${wpn.name} +${h} ถูกบล็อค`,'Heal Block: '+wpn.name+' +'+h+' BLOCKED')});bs.weaponRegenFlash=null;}
+      else{creature.hp=Math.min(creature.maxHp,creature.hp+h);passives.push({icon:wpn.icon,text:`${wpn.name} Regen +${h}`});bs.weaponRegenFlash={icon:wpn.icon,amount:h};}
     }
     if(cmp==='lose' && creature.phase==='final' && overdriveCharge < MAX_OVERDRIVE) { overdriveCharge++; saveGame(); }
     bs.playerIronWillThisTurn = false;
@@ -4712,12 +4712,11 @@ function doTurn(moveIdx) {
     const phase1DefenderDead = playerFirst ? enemy.hp <= 0 : creature.hp <= 0;
     if(phase1DefenderDead) {
       _endOfTurn();
-      bs.lastResult.playerHeal = playerHeal;
       bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
       bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
       bs.waiting = false;
       finish();
-      flashWeaponRegen(bs);
+      bs.weaponRegenFlash = null;
       return;
     }
     // Phase 2: always play when phase-1 defender survived (shows killing-blow damage if applicable)
@@ -4743,12 +4742,11 @@ function doTurn(moveIdx) {
     setTimeout(() => {
       if(battleState !== bs) return;
       _endOfTurn();
-      bs.lastResult.playerHeal = playerHeal;
       bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
       bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
       bs.waiting = false;
       finish();
-      flashWeaponRegen(bs);
+      bs.weaponRegenFlash = null;
     }, 750);
   }, 750);
 }

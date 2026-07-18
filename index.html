@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -42,6 +42,16 @@
   let _analytics = null;
   try { _analytics = firebase.analytics(); } catch(e) {}
   function logAnalyticsEvent(name, params) { try { if(_analytics) _analytics.logEvent(name, params); } catch(e) {} }
+  function submitFeedbackToFirestore(text, rating) {
+    try {
+      firebase.firestore().collection('feedback').add({
+        text: text || '',
+        rating: rating || 0,
+        uid: (firebase.auth().currentUser && firebase.auth().currentUser.uid) || null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }).catch(e => {});
+    } catch(e) {}
+  }
 </script>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
@@ -1272,7 +1282,7 @@ const ARTIFACTS = {
   antidote_charm:  { name:'Antidote Charm',   nameTh:'เครื่องรางแก้พิษ',    grade:'R', icon:'💊', desc:'In battle: Complete immunity to poison', descTh:'ในการต่อสู้: ป้องกันพิษได้สมบูรณ์' },
   plague_scythe:   { name:'Plague Scythe',    nameTh:'เคียวกาฬโรค',         grade:'E', icon:'☣️', desc:'In battle: On attack, 30% chance to poison; deals +50% damage to an already-poisoned opponent', descTh:'ในการต่อสู้: เมื่อโจมตี 30% โอกาสวางพิษ และดาเมจ +50% ถ้าคู่ต่อสู้ติดพิษอยู่แล้ว' },
   reflect_ward:    { name:'Reflect Ward',     nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🚫🔄', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
-  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'ATK +25% when equipped. In battle: Attacks ignore enemy DEF and all damage-reduction effects', descTh:'ATK +25% เมื่อสวมใส่ และในการต่อสู้: โจมตีทะลุ Def ของศัตรูและเอฟเฟกต์ลดดาเมจทั้งหมด' },
+  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'In battle: ATK +25% and attacks pierce enemy DEF, ignoring all damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ Def ของศัตรู ไม่สนใจเอฟเฟกต์ลดดาเมจทั้งหมด' },
   cursed_shackle:  { name:'Cursed Shackle',   nameTh:'ตรวนต้องสาป',         grade:'R', icon:'⛓️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
 };
 // Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
@@ -1427,7 +1437,7 @@ let _raidSundayPick = -1; // user's boss pick on Sunday (-1 = not yet picked)
 
 function getRaidDayBossIdx() {
   // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-  const day = new Date(Date.now()+7*3600000).getDay();
+  const day = new Date(Date.now()+7*3600000).getUTCDay();
   if(day === 0) return -1; // Sunday: player picks
   return day - 1;          // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5
 }
@@ -1553,6 +1563,9 @@ function compareMoves(p, e) {
 // ============================================================
 let state = 'title';
 let titlePhase = 'start'; // 'start' | 'account' | 'slots'
+let feedbackModalOpen = false;
+let feedbackDraftText = '';
+let feedbackRating = 0; // 0 = none picked, 1-5 stars
 let towerFloor = 0;
 let towerHighest = 0;
 let towerCheckpoint = 0;
@@ -2136,6 +2149,7 @@ function getEffStat(stat) {
   const exp = creature.buffExpiry?.[stat] || 0;
   let val = (exp > now) ? Math.round(base * 1.2) : base;
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
+  if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   return val;
 }
 
@@ -2157,7 +2171,6 @@ const STAT_ART_MULT = {
   atk_shard:{atk:1.15}, def_shard:{def:1.15}, spd_shard:{spd:1.15}, hp_core:{hp:1.15},
   all_stats_r:{atk:1.15,def:1.15,spd:1.15,hp:1.15},
   all_stats_e:{atk:1.25,def:1.25,spd:1.25,hp:1.25},
-  piercing_fang:{atk:1.25},
 };
 function applyArtifactStat(pet, key, revert=false) {
   const m = STAT_ART_MULT[key]; if(!m) return;
@@ -6881,10 +6894,25 @@ function renderMenu() {
           })()}
         </div>
       </div>` : ''}
-      <div style="display:flex;gap:8px;justify-content:center">
-        <div id="settingsBtn" style="padding:6px 18px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">⚙️ SETTINGS</div>
-        <div id="helpBtn" style="padding:6px 14px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">❓ GUIDE</div>
+      <div style="display:flex;gap:8px;justify-content:center;width:100%">
+        <div id="settingsBtn" style="flex:1;padding:6px 4px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer;text-align:center">⚙️ SETTINGS</div>
+        <div id="helpBtn" style="flex:1;padding:6px 4px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer;text-align:center">❓ GUIDE</div>
+        <div id="feedbackBtn" style="flex:1;padding:6px 4px;border-radius:10px;background:#0e0e22;border:1px solid rgba(100,80,200,0.4);font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer;text-align:center">💬 ${T('FEEDBACK','FEEDBACK')}</div>
       </div>
+      ${feedbackModalOpen ? `
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:24px;z-index:30">
+        <div style="width:100%;max-width:320px;background:linear-gradient(135deg,#150a2e,#1e1040);border:1px solid #6040c0;border-radius:14px;padding:18px;box-shadow:0 0 24px rgba(96,64,192,0.4)">
+          <div style="font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;letter-spacing:1px;margin-bottom:10px;text-align:center">💬 ${T('บอกเราหน่อยว่าคิดยังไงกับเกม','TELL US WHAT YOU THINK')}</div>
+          <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px">
+            ${[1,2,3,4,5].map(n=>`<span data-feedback-star="${n}" style="font-size:26px;cursor:pointer;filter:${n<=feedbackRating?'none':'grayscale(1) opacity(0.35)'}">⭐</span>`).join('')}
+          </div>
+          <textarea id="feedbackTextarea" maxlength="300" rows="4" placeholder="${T('ความคิดเห็น, บั๊ก, หรือไอเดีย...','Feedback, bugs, or ideas...')}" style="width:100%;resize:none;background:#0a0618;border:1px solid #4a3080;border-radius:8px;padding:8px;color:#e0d0ff;font-family:Kanit,sans-serif;font-size:12px">${feedbackDraftText}</textarea>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <div id="feedbackCancelBtn" style="flex:1;padding:9px;text-align:center;background:rgba(255,255,255,0.06);border:1px solid #3a2a5a;border-radius:8px;font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
+            <div id="feedbackSubmitBtn" style="flex:1;padding:9px;text-align:center;background:rgba(96,64,192,0.5);border:1px solid #8060d0;border-radius:8px;font-family:Kanit,sans-serif;font-size:12px;color:#e0d0ff;cursor:pointer">${T('ส่ง','SEND')}</div>
+          </div>
+        </div>
+      </div>` : ''}
       ${helpOpen ? `
       <div style="position:absolute;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;z-index:30;border-radius:16px;overflow:hidden">
         <div style="background:linear-gradient(135deg,#0a0520,#120a30);border-bottom:1px solid #3a2a6a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
@@ -7701,6 +7729,9 @@ document.addEventListener('input', e => {
   if(e.target.id === 'renameInput' && renamePetPopup !== null) {
     renamePetPopup.value = e.target.value;
   }
+  if(e.target.id === 'feedbackTextarea') {
+    feedbackDraftText = e.target.value;
+  }
   if(e.target.id === 'importFileInput') {
     importSave(e.target.files[0]);
   }
@@ -8016,6 +8047,21 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('#patchNotesLink2')) { SFX.click(); showPatchPopup(true); return; }
     if(el.closest('#helpBtn'))       { SFX.click(); helpOpen=true; helpTab='game'; render(); return; }
     if(el.closest('#helpClose'))     { SFX.click(); helpOpen=false; render(); return; }
+    if(el.closest('#feedbackBtn'))   { SFX.click(); feedbackModalOpen=true; render(); document.getElementById('feedbackTextarea')?.focus(); return; }
+    if(el.closest('#feedbackCancelBtn')) { SFX.click(); feedbackModalOpen=false; feedbackDraftText=''; feedbackRating=0; render(); return; }
+    const starEl = el.closest('[data-feedback-star]');
+    if(starEl) { SFX.click(); feedbackRating = Number(starEl.dataset.feedbackStar); render(); return; }
+    if(el.closest('#feedbackSubmitBtn')) {
+      const text = feedbackDraftText.trim();
+      if(!text && !feedbackRating) return;
+      SFX.click();
+      logAnalyticsEvent('player_feedback', { feedback_text: text.slice(0, 150), rating: feedbackRating });
+      submitFeedbackToFirestore(text, feedbackRating);
+      feedbackModalOpen=false; feedbackDraftText=''; feedbackRating=0;
+      render();
+      showToast(T('ขอบคุณสำหรับความคิดเห็น! 💜','Thanks for the feedback! 💜'));
+      return;
+    }
     const helpTabBtn = el.closest('[data-help-tab]');
     if(helpTabBtn) { SFX.click(); helpTab=helpTabBtn.dataset.helpTab; render(); return; }
     if(el.closest('#exportSaveBtn')) { SFX.click(); exportSave(); return; }

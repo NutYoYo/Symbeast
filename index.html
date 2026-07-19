@@ -1111,8 +1111,8 @@ const EVOLVE2_FORMS = {
     passive:'20% chance to fully dodge; every 3 turns, attacks cannot miss, deal +50% damage, and guarantee a critical hit',
     passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์, ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ +50% และติดคริติคอลแน่นอน' },
   'CRYSTAWOLF-BASTION': { name:'CRYSTAWOLF-BASTION', color:'#88aacc', hp:189, atk:21, spd:16, def:25, passiveIcon:'💎',
-    passive:'While HP > 50%: ATK +25%; while HP < 50%: DEF +25%. Counter-attacks every round for 75% damage; 10% chance to stun the enemy when hit',
-    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และเมื่อโดนโจมตีมีโอกาส 10% ทำให้ศัตรูสต้น' },
+    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, counter-attacks every round for 75% damage, and 10% chance to stun the enemy when hit',
+    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และมีโอกาส 10% ทำให้ศัตรูสต้นเมื่อโดนโจมตี' },
   'GOLEM-BASTION':      { name:'GOLEM-BASTION',      color:'#1a2733', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿',
     passive:'All damage taken -20%; while HP < 30%, ATK +30% and recovers 5% HP each round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP < 30% ATK+30%, ฟื้นฟู HP 5%' },
@@ -4002,10 +4002,15 @@ function doTurn(moveIdx) {
     pd=Math.round(pd*1.2); ed=(enemyIgnoresDef?ed:Math.round(ed*0.83));
   }
   if(ff==='CRYSTAWOLF-BASTION') {
-    if(creature.hp > creature.maxHp*0.5) { pd=Math.round(pd*1.25); } else { ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); }
-    const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
-    passives.push({icon:'💎',text:`CRYSTAWOLF ${creature.hp>creature.maxHp*0.5?'HP>50% ATK+25%':'HP<50% DEF+25%'} Counter -${c}→${pd}`});
-    if(ed>0 && Math.random()<0.10) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'CRYSTAWOLF STUN!'}); }
+    if(creature.hp > creature.maxHp*0.5) {
+      pd=Math.round(pd*1.25);
+      passives.push({icon:'💎',text:`CRYSTAWOLF HP>50% ATK+25%→${pd}`});
+    } else {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
+      const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
+      passives.push({icon:'💎',text:`CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${ed}`});
+      if(ed>0 && Math.random()<0.10) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'CRYSTAWOLF STUN!'}); }
+    }
   }
 
   // Enemy dodge — runs BEFORE player artifact procs so pd>0 guards are accurate
@@ -4335,10 +4340,15 @@ function doTurn(moveIdx) {
     ed=Math.round(ed*1.2); pd=(playerIgnoresDef?Math.round(pd*0.915):Math.round(pd*0.83));
   }
   if(fk2==='CRYSTAWOLF-BASTION') {
-    if(enemy.hp > enemy.maxHp*0.5) { ed=Math.round(ed*1.25); } else { pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); }
-    const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c);
-    passives.push({icon:'💎',text:`[E] CRYSTAWOLF ${enemy.hp>enemy.maxHp*0.5?'HP>50% ATK+25%':'HP<50% DEF+25%'} Counter -${c}→${ed}`});
-    if(pd>0 && Math.random()<0.10) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'[E] CRYSTAWOLF STUN!'}); }
+    if(enemy.hp > enemy.maxHp*0.5) {
+      ed=Math.round(ed*1.25);
+      passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP>50% ATK+25%→${ed}`});
+    } else {
+      pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
+      const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c);
+      passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${pd}`});
+      if(pd>0 && Math.random()<0.10) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'[E] CRYSTAWOLF STUN!'}); }
+    }
   }
   }
 

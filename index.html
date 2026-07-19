@@ -3807,7 +3807,7 @@ function doTurn(moveIdx) {
     if(type==='SOUL-CHAMPION') { pd=Math.round(pd*1.25); ed=Math.round(ed*0.75); const isDouble=Math.random()<0.50; if(isDouble){ const orig=pd; pd=orig*2; pdHits=[orig,orig]; } passives.push({icon:'⚖️',text:`SOUL BALANCE ATK/DEF+25%,double50%→${pd}${isDouble?'x2!':''}`}); }
     if(type==='POISON-FORTRESS') { pd=Math.round(pd*1.20); ed=Math.round(ed*0.50); if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')&&Math.random()<0.25&&!hasAntiPoison){bs.enemyPoisonTurns=3;} passives.push({icon:'☠️',text:`VENOM EARTHSHATTER ATK+20%,reflect50%,poisonOnHit→${pd}`}); }
     if(type==='MAGE-SPECTER') { if(Math.random()<0.30){bs.e2CurseTurns=2;} passives.push({icon:'🧙',text:`MAGE SCYTHE crit+30%,curse30%→${pd}`}); }
-    if(type==='CRYSTAWOLF-BASTION') { ed=Math.round(ed*0.30); pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'💎',`CRYSTAL BEAM dmgTaken-30%,ATK+50%,+${heal}HP`); }
+    if(type==='CRYSTAWOLF-BASTION') { ed=Math.max(1,Math.round(ed*0.70)); pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'💎',`CRYSTAL BEAM dmgTaken-30%,ATK+50%,+${heal}HP`); }
     bs.odBuff.turnsLeft--;
 
     if(bs.odBuff.turnsLeft<=0) bs.odBuff=null;

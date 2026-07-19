@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1282,7 +1282,7 @@ const ARTIFACTS = {
   antidote_charm:  { name:'Antidote Charm',   nameTh:'เครื่องรางแก้พิษ',    grade:'R', icon:'💊', desc:'In battle: Complete immunity to poison', descTh:'ในการต่อสู้: ป้องกันพิษได้สมบูรณ์' },
   plague_scythe:   { name:'Plague Scythe',    nameTh:'เคียวกาฬโรค',         grade:'E', icon:'☣️', desc:'In battle: On attack, 30% chance to poison; deals +50% damage to an already-poisoned opponent', descTh:'ในการต่อสู้: เมื่อโจมตี 30% โอกาสวางพิษ และดาเมจ +50% ถ้าคู่ต่อสู้ติดพิษอยู่แล้ว' },
   reflect_ward:    { name:'Reflect Ward',     nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🚫🔄', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
-  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'In battle: ATK +25% and attacks pierce enemy DEF, ignoring all damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ Def ของศัตรู ไม่สนใจเอฟเฟกต์ลดดาเมจทั้งหมด' },
+  piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🗡️', desc:'In battle: ATK +25% and attacks pierce 50% of enemy DEF and damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ DEF และเอฟเฟกต์ลดดาเมจของศัตรู 50%' },
   cursed_shackle:  { name:'Cursed Shackle',   nameTh:'ตรวนต้องสาป',         grade:'R', icon:'⛓️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
 };
 // Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
@@ -1839,8 +1839,8 @@ const MAX_OVERDRIVE = 5;
 const OVERDRIVE_INFO = {
   'RAGING-BRAWLER':    {name:'APOCALYPSE',          icon:'💥', desc:'Strike ×2.5 twice (forced crit), then Crit +25% for 3 turns',
     descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) จากนั้น Crit +25% นาน 3 เทิร์น'},
-  'CRIMSON-BRAWLER':   {name:'APOCALYPSE RUSH',     icon:'☯️', desc:'Strike ×2.5, ignoring half of enemy DEF this turn, then ATK +30%, SPD +30% and 15% chance to attack twice for 3 turns',
-    descTh:'โจมตี ×2.5 ทะลุ DEF ครึ่งหนึ่งเทิร์นนี้ จากนั้น ATK+30%, SPD+30% และมีโอกาส 15% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
+  'CRIMSON-BRAWLER':   {name:'APOCALYPSE RUSH',     icon:'☯️', desc:'Strike ×2.5, ignoring all of enemy DEF this turn, then ATK +30%, SPD +30% and 15% chance to attack twice for 3 turns',
+    descTh:'โจมตี ×2.5 ทะลุ DEF ทั้งหมดเทิร์นนี้ จากนั้น ATK+30%, SPD+30% และมีโอกาส 15% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
   'KAIJU-BRAWLER':     {name:'APOCALYPSE WALL',     icon:'💥', desc:'Strike ×2.0 twice + damage taken -50% this turn, then Crit +15% and damage taken -15% for 3 turns',
     descTh:'โจมตี ×2.0 สองครั้ง + ลดดาเมจที่รับ 50% เทิร์นนี้ จากนั้น Crit +15% และลดดาเมจที่รับ 15% นาน 3 เทิร์น'},
 
@@ -1848,8 +1848,8 @@ const OVERDRIVE_INFO = {
     descTh:'โจมตี ×3.0 ทะลุ DEF จากนั้นทะลุ DEF และโอกาสโจมตีกลับ +75% นาน 3 เทิร์น'},
   'PANDA-WARRIOR':     {name:'FORTRESS BREAK RUSH', icon:'🛡', desc:'Strike ×2.5 piercing DEF + dodge this turn, then pierce DEF, +50% counter chance and dodge +20% for 3 turns',
     descTh:'โจมตี ×2.5 ทะลุ DEF + หลบเทิร์นนี้ จากนั้นทะลุ DEF และโอกาสโจมตีกลับ +50% และโอกาสหลบ +20% นาน 3 เทิร์น'},
-  'ARMOR-PANDA':       {name:'FORTRESS BREAK WALL', icon:'🛡', desc:'Strike ×2.0 piercing half DEF + reflect all damage this turn, then reflect 50% and damage taken -15% for 3 turns',
-    descTh:'โจมตี ×2.0 ทะลุ DEF ครึ่งหนึ่ง + สะท้อนดาเมจทั้งหมดเทิร์นนี้ จากนั้นสะท้อน 50% และลดดาเมจที่รับ 15% นาน 3 เทิร์น'},
+  'ARMOR-PANDA':       {name:'FORTRESS BREAK WALL', icon:'🛡', desc:'Strike ×2.0 piercing all DEF + reflect all damage this turn, then reflect 50% and damage taken -15% for 3 turns',
+    descTh:'โจมตี ×2.0 ทะลุ DEF ทั้งหมด + สะท้อนดาเมจทั้งหมดเทิร์นนี้ จากนั้นสะท้อน 50% และลดดาเมจที่รับ 15% นาน 3 เทิร์น'},
 
   'TYRANT-IRONJAW':    {name:'CRIMSON REAPER',      icon:'🩸', desc:'Strike ×2.5 + lifesteal 50% of damage this turn, then ATK +25% and lifesteal +20% for 3 turns',
     descTh:'โจมตี ×2.5 + ดูดเลือด 50% ของดาเมจที่สร้างในเทิร์นนี้ จากนั้น 3 เทิร์น: ATK+25%, ดูดเลือดเพิ่ม +20%'},
@@ -3424,8 +3424,8 @@ function doOverdriveTurn() {
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'💥',text:`APOCALYPSE ×2.5×2→${pd} | Crit+25% (3T)`});
   } else if(ff==='CRIMSON-BRAWLER') {
-    pd=_pierceHit(2.5,0.5); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'☯️',text:`APOCALYPSE RUSH ×2.5 (half-pierce)→${pd} | ATK+30%,SPD+30%,double15% (3T)`});
+    pd=_pierceHit(2.5,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'☯️',text:`APOCALYPSE RUSH ×2.5 (pierce)→${pd} | ATK+30%,SPD+30%,double15% (3T)`});
   } else if(ff==='KAIJU-BRAWLER') {
     const h1=_hit(2.0), h2=_hit(2.0); pd=h1.d+h2.d; ed=Math.round(_ed()*0.5); pdHits=[h1.d,h2.d];
     bs.odBuff={type:ff,turnsLeft:3};
@@ -3437,9 +3437,9 @@ function doOverdriveTurn() {
     pd=_pierceHit(2.5,1.0); ed=0; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🛡',text:`FORTRESS BREAK RUSH ×2.5 (pierce)→${pd} + DODGE | pierce+counter50%,dodge+20% (3T)`});
   } else if(ff==='ARMOR-PANDA') {
-    pd=_pierceHit(2.0,0.5); const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    pd=_pierceHit(2.0,1.0); const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
     bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'🛡',text:`FORTRESS BREAK WALL ×2.0 (half-pierce)→${pd} + Reflect${ref} | reflect50%,dmgTaken-15% (3T)`});
+    passives.push({icon:'🛡',text:`FORTRESS BREAK WALL ×2.0 (pierce)→${pd} + Reflect${ref} | reflect50%,dmgTaken-15% (3T)`});
   } else if(ff==='TYRANT-IRONJAW') {
     const h=_hit(2.5); pd=h.d; ed=_ed(); const ls=Math.max(1,Math.round(pd*0.5)); creature.hp=Math.min(creature.maxHp,creature.hp+ls); playerHeal+=ls;
     bs.odBuff={type:ff,turnsLeft:3};
@@ -3645,7 +3645,7 @@ function doTurn(moveIdx) {
   const minPd = Math.floor(getEffStat('atk') / 6);
   // Piercing Fang (artifact): ignores enemy DEF and all incoming damage-reduction effects below
   const playerIgnoresDef = artId==='piercing_fang' || artId2==='piercing_fang';
-  let pd = Math.max(minPd, Math.round((pm.dmg + getEffStat('atk')/3 + Math.random()*4) * mult * (crit?critMult:1)) - (playerIgnoresDef ? 0 : Math.floor(enemy.def/2)));
+  let pd = Math.max(minPd, Math.round((pm.dmg + getEffStat('atk')/3 + Math.random()*4) * mult * (crit?critMult:1)) - (playerIgnoresDef ? Math.floor(enemy.def/4) : Math.floor(enemy.def/2)));
   const eArtId  = enemy.artifact  || null;
   const eArtId2 = enemy.artifact2 || null;
   const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
@@ -3696,9 +3696,9 @@ function doTurn(moveIdx) {
     // blade_shard: ed +10%
     if(eHasA('blade_shard') && !enemyStunned) { ed=Math.round(ed*1.10); passives.push({icon:'🗡',text:`[E] Blade Shard →${ed}`}); }
     // iron_plate: reduce pd by 15%
-    if(eHasA('iron_plate')) { pd=(playerIgnoresDef?pd:Math.round(pd*0.85)); passives.push({icon:'🛡',text:`[E] Iron Plate →${pd}`}); }
+    if(eHasA('iron_plate')) { pd=(playerIgnoresDef?Math.round(pd*0.925):Math.round(pd*0.85)); passives.push({icon:'🛡',text:`[E] Iron Plate →${pd}`}); }
     // stone_skin: reduce pd 10% when HP > 70%
-    if(eHasA('stone_skin') && enemy.hp > enemy.maxHp*0.70) { pd=(playerIgnoresDef?pd:Math.round(pd*0.90)); passives.push({icon:'🪨',text:`[E] Stone Skin →${pd}`}); }
+    if(eHasA('stone_skin') && enemy.hp > enemy.maxHp*0.70) { pd=(playerIgnoresDef?Math.round(pd*0.95):Math.round(pd*0.90)); passives.push({icon:'🪨',text:`[E] Stone Skin →${pd}`}); }
     // swift_ring: 10% dodge player attack
     if(eHasA('swift_ring') && !ep.includes('true_strike') && Math.random()<0.10) { pd=0; passives.push({icon:'💨',text:'[E] Swift Ring DODGE!'}); }
     // wind_step: 15% dodge player attack
@@ -3739,7 +3739,7 @@ function doTurn(moveIdx) {
     if(eHasA('death_mark') && creature.hp < creature.maxHp*0.30 && !enemyStunned)
       { ed=Math.round(ed*1.75); passives.push({icon:'💀',text:`[E] Death Mark ATK+75% →${ed}`}); }
     // drain_aura: reduces player's pd by 15%/stack (stacks build on the enemy's WIN, applied post-hit above)
-    if(eHasA('drain_aura') && (eas.drainAuraStack||0)>0) { pd=(playerIgnoresDef?pd:Math.round(pd*(1-0.15*eas.drainAuraStack))); passives.push({icon:'🌑',text:`[E] Drain Aura -${15*eas.drainAuraStack}% pd →${pd}`}); }
+    if(eHasA('drain_aura') && (eas.drainAuraStack||0)>0) { pd=(playerIgnoresDef?Math.round(pd*(1-0.075*eas.drainAuraStack)):Math.round(pd*(1-0.15*eas.drainAuraStack))); passives.push({icon:'🌑',text:`[E] Drain Aura -${15*eas.drainAuraStack}% pd →${pd}`}); }
     // execution: ed +200% when enemy HP < 20%
     if(eHasA('execution') && enemy.hp < enemy.maxHp*0.20 && !enemyStunned)
       { ed=Math.round(ed*3.00); passives.push({icon:'☠',text:`[E] Execution ×3 →${ed}`}); }
@@ -4139,9 +4139,9 @@ function doTurn(moveIdx) {
   // ===== PRE-DAMAGE: ENEMY PASSIVES =====
   if(ep.includes('atk_boost'))    { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:T(`ศัตรู ATK×1.25 → ${ed}`,`Enemy ATK×1.25 → ${ed}`)}); }
   if(false) { /* enemy dodge moved before artifact block */ }
-  if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
+  if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
   if(ep.includes('enrage') && enemy.hp<enemy.maxHp*0.5) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`ENRAGE! ATK×1.5 → ${ed}`}); }
-  if(ep.includes('barrier') && bs.turn%3===0) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
+  if(ep.includes('barrier') && bs.turn%3===0) { pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
   if(ep.includes('counter_rush') && pd>0 && Math.random()<0.25) { const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'💨',text:T(`COUNTER RUSH! สวนกลับ -${counter}`,`COUNTER RUSH! -${counter}`)}); }
   if(ep.includes('stun_player') && ed>0 && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาดเทิร์นถัดไป','PARALYZE! Miss next turn')});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาด','PARALYZE! Your attack missed')});} }
   if(ep.includes('crit_boost') && Math.random()<0.25) { const bon=Math.round(ed*0.6); ed+=bon; passives.push({icon:'🎯',text:`CRIT BOOST! +60% → ${ed}`}); }
@@ -4153,12 +4153,12 @@ function doTurn(moveIdx) {
   if(ep.includes('FFW')) { if(Math.random()<0.25) { const bonus=Math.round(ed*0.6); ed+=bonus; passives.push({icon:'🔥',text:`PANDA CRIT+60%→${ed}`}); } }
   if(ep.includes('FFS') && ed>0) { bs.ironjawEd=ed; } // lifesteal resolved post-damage
   if(ep.includes('FWW') && ed>0 && Math.random()<0.25 && !playerStunned) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN! (next turn)'});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:'STORMRAGE STUN!'});} }
-  if(ep.includes('FWS') && cmp==='lose') { ed=Math.round(ed*1.2); pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); passives.push({icon:'🏆',text:`CHAMPION WIN ed+20%→${ed}`}); }
+  if(ep.includes('FWS') && cmp==='lose') { ed=Math.round(ed*1.2); pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8)); passives.push({icon:'🏆',text:`CHAMPION WIN ed+20%→${ed}`}); }
   if(ep.includes('FSS') && pd>0 && !playerReflectImmune) { const ref=Math.max(1,Math.round(pd*0.25)); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🔄',text:`FORTRESS Reflect${ref}`}); }
   if(false) { /* GHOSTCLAW DODGE moved before artifact block */ }
   if(ep.includes('WWS')) { if(Math.random()<0.15) { const h=Math.round(enemy.maxHp*0.2); _eHeal(h,'🌀',`SWIFTGUARD DODGE+Heal+${h}`); pd=0; if(!bs.eSwiftguardDodged)bs.eSwiftguardDodged=false; bs.eSwiftguardDodged=true; } else { if(bs.eSwiftguardDodged){ed=Math.round(ed*1.3);passives.push({icon:'🌀',text:`SWIFTGUARD COUNTER ATK+30%→${ed}`});}bs.eSwiftguardDodged=false; } }
-  if(ep.includes('WSS')) { if(cmp==='lose'){pd=(playerIgnoresDef?pd:Math.round(pd*0.5));passives.push({icon:'🛡',text:`SHIELDWING WIN dmg×0.5→${pd}`});}else if(cmp==='win'){pd=(playerIgnoresDef?pd:Math.round(pd*0.85));passives.push({icon:'🛡',text:`SHIELDWING LOSE dmg×0.85→${pd}`});} }
-  if(ep.includes('SSS') && Math.random()<0.35) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'⬛',text:`IRONHIDE dmg×0.5→${pd}`}); }
+  if(ep.includes('WSS')) { if(cmp==='lose'){pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5));passives.push({icon:'🛡',text:`SHIELDWING WIN dmg×0.5→${pd}`});}else if(cmp==='win'){pd=(playerIgnoresDef?Math.round(pd*0.925):Math.round(pd*0.85));passives.push({icon:'🛡',text:`SHIELDWING LOSE dmg×0.85→${pd}`});} }
+  if(ep.includes('SSS') && Math.random()<0.35) { pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); passives.push({icon:'⬛',text:`IRONHIDE dmg×0.5→${pd}`}); }
 
   // ===== EVOLVE II ENEMY BRANCH SKILL (bespoke mirror of the player's 30 forms — no Overdrive) =====
   // pd/ed and creature/enemy are swapped vs. the player-side block above (the enemy is now the "self").
@@ -4175,7 +4175,7 @@ function doTurn(moveIdx) {
     passives.push({icon:'☯️',text:`[E] CRIMSON BALANCE ATK+10%×${bs.e2StackE},SPD+10%×${bs.e2StackE}→${ed}`});
   }
   if(fk2==='KAIJU-BRAWLER') {
-    if(bs.e2NextBuffE) { ed=Math.round(ed*1.5); pd=(playerIgnoresDef?pd:Math.round(pd*0.67)); bs.e2NextBuffE=false; passives.push({icon:'🦖',text:`[E] KAIJU BUFF→${ed}`}); }
+    if(bs.e2NextBuffE) { ed=Math.round(ed*1.5); pd=(playerIgnoresDef?Math.round(pd*0.835):Math.round(pd*0.67)); bs.e2NextBuffE=false; passives.push({icon:'🦖',text:`[E] KAIJU BUFF→${ed}`}); }
     if(cmp==='win') bs.e2NextBuffE=true;
   }
   if(fk2==='FIGHTER-PANDA' && cmp==='win') { ed=Math.round(ed*1.75); passives.push({icon:'🥊',text:`[E] FIGHTER dmg+75%→${ed}`}); }
@@ -4184,11 +4184,11 @@ function doTurn(moveIdx) {
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextGuaranteeCritE=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA DODGE!'}); }
   }
   if(fk2==='PANDA-WARRIOR' && Math.random()<0.25) {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🐼',text:`[E] PANDA-WARRIOR dmg½ Counter -${counter}`});
   }
   if(fk2==='ARMOR-PANDA') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
     if(Math.random()<0.5) { const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA Counter -${counter}`}); }
     else passives.push({icon:'🛡',text:`[E] ARMOR-PANDA dmg-20%→${pd}`});
   }
@@ -4196,12 +4196,12 @@ function doTurn(moveIdx) {
   if(fk2==='AGILE-IRONJAW' && Math.random()<0.25) { const extra=ed; ed+=extra; passives.push({icon:'⚔',text:`[E] AGILE DOUBLE ATTACK→${ed}`}); }
   if(fk2==='RUNE-IRONJAW') {
     bs.e2RuneTypeE=(Math.random()<0.5?'atk':'def');
-    if(bs.e2RuneTypeE==='atk'){ed=Math.round(ed*1.5);}else{pd=(playerIgnoresDef?pd:Math.round(pd*0.67));}
+    if(bs.e2RuneTypeE==='atk'){ed=Math.round(ed*1.5);}else{pd=(playerIgnoresDef?Math.round(pd*0.835):Math.round(pd*0.67));}
     if(!playerStunned && Math.random()<0.15){if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;}SFX.stun();passives.push({icon:'🔮',text:`[E] RUNE STUN!→${ed}`});}
     else passives.push({icon:'🔮',text:`[E] RUNE→${ed}`});
   }
   if(fk2==='FULLARMOR-IRONJAW' && enemy.hp<enemy.maxHp*0.5) {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
     passives.push({icon:'🛡',text:`[E] FULLARMOR HP<50% Counter -${counter}`});
   }
   if(fk2==='STRONG-BLITZ' && cmp==='lose') {
@@ -4214,7 +4214,7 @@ function doTurn(moveIdx) {
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; passives.push({icon:'🌩',text:'[E] STORM DODGE!'}); }
   }
   if(fk2==='BULWARK-BLITZ') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
     if(pd>0 && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'🛡',text:'[E] BULWARK dmg-20% + STUN!'}); }
     else passives.push({icon:'🛡',text:`[E] BULWARK dmg-20%→${pd}`});
   }
@@ -4224,18 +4224,18 @@ function doTurn(moveIdx) {
     else passives.push({icon:'⚔️',text:`[E] WARLORD dmg+20%→${ed}`});
   }
   if(fk2==='KING-CHAMPION') {
-    if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.10*bs.e2StackE)); pd=(playerIgnoresDef?pd:Math.round(pd*(1-0.10*bs.e2StackE))); }
+    if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.10*bs.e2StackE)); pd=(playerIgnoresDef?Math.round(pd*(1-0.05*bs.e2StackE)):Math.round(pd*(1-0.10*bs.e2StackE))); }
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1); passives.push({icon:'👑',text:`[E] KING DODGE! Stack×${bs.e2StackE}`}); }
     else if(bs.e2StackE>0) passives.push({icon:'👑',text:`[E] KING Stack×${bs.e2StackE}→${ed}`});
   }
   if(fk2==='ROLLING-CHAMPION') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
     if(bs.turn%3===0) { ed=Math.round(ed*1.5); passives.push({icon:'🌀',text:`[E] ROLLING 3T dmg+50%→${ed}`}); }
     else passives.push({icon:'🌀',text:`[E] ROLLING dmg-20%→${pd}`});
   }
   if(fk2==='BLAZING-FORTRESS') {
     if(cmp==='lose') bs.e2StackE=Math.min(3,(bs.e2StackE||0)+1);
-    if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.15*bs.e2StackE)); pd=(playerIgnoresDef?pd:Math.round(pd*(1-0.15*bs.e2StackE))); passives.push({icon:'🔥',text:`[E] BLAZING Stack×${bs.e2StackE}→${ed}`}); }
+    if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.15*bs.e2StackE)); pd=(playerIgnoresDef?Math.round(pd*(1-0.075*bs.e2StackE)):Math.round(pd*(1-0.15*bs.e2StackE))); passives.push({icon:'🔥',text:`[E] BLAZING Stack×${bs.e2StackE}→${ed}`}); }
     if(ed>0 && Math.random()<0.20 && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:'☠️',text:'[E] BLAZING POISON! You are poisoned'}); }
   }
   if(fk2==='SWIFT-FORTRESS' && bs.turn%3===0) {
@@ -4244,7 +4244,7 @@ function doTurn(moveIdx) {
     if(Math.random()<0.50 && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:'☠️',text:'[E] SWIFT POISON! You are poisoned'}); }
   }
   if(fk2==='GUARDIAN-FORTRESS') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.75));
+    pd=(playerIgnoresDef?Math.round(pd*0.875):Math.round(pd*0.75));
     passives.push({icon:'🏰',text:`[E] GUARDIAN dmg-25%→${pd}`});
   }
   if(fk2==='DARK-SPECTER') { ed=Math.round(ed*1.2); passives.push({icon:'🌑',text:`[E] DARK dmg+20%→${ed}`}); }
@@ -4253,7 +4253,7 @@ function doTurn(moveIdx) {
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; passives.push({icon:'👻',text:'[E] SOUL DODGE!'}); }
   }
   if(fk2==='GRAVE-SPECTER') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.75));
+    pd=(playerIgnoresDef?Math.round(pd*0.875):Math.round(pd*0.75));
     if(Math.random()<0.5) { const heal=Math.round(enemy.maxHp*0.05); _eHeal(heal,'⚰️',`[E] GRAVE dmg-25% +Heal${heal}`); }
     else passives.push({icon:'⚰️',text:`[E] GRAVE dmg-25%→${pd}`});
   }
@@ -4268,7 +4268,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='IRON-SWIFTGUARD') {
     if(cmp==='win') bs.e2StackE=Math.min(3,(bs.e2StackE||0)+1);
-    if(bs.e2StackE>0) { pd=(playerIgnoresDef?pd:Math.round(pd*(1-0.15*bs.e2StackE))); passives.push({icon:'🛡',text:`[E] IRON Stack×${bs.e2StackE} dmg-${bs.e2StackE*15}%→${pd}`}); }
+    if(bs.e2StackE>0) { pd=(playerIgnoresDef?Math.round(pd*(1-0.075*bs.e2StackE)):Math.round(pd*(1-0.15*bs.e2StackE))); passives.push({icon:'🛡',text:`[E] IRON Stack×${bs.e2StackE} dmg-${bs.e2StackE*15}%→${pd}`}); }
   }
   if(fk2==='HAMMER-SHIELDWING' && cmp==='lose') {
     ed=Math.round(ed*1.2)+Math.floor(getEffStat('def')/2);
@@ -4280,8 +4280,8 @@ function doTurn(moveIdx) {
     passives.push({icon:'❄️',text:`[E] CHILL 3T DODGE+PIERCE→${ed}`});
   }
   if(fk2==='FATTY-SHIELDWING') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
-    if(enemy.hp>enemy.maxHp*0.7) { ed=Math.round(ed*1.3); pd=(playerIgnoresDef?pd:Math.round(pd/1.3)); passives.push({icon:'🛡',text:`[E] FATTY HP>70%→${ed}`}); }
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
+    if(enemy.hp>enemy.maxHp*0.7) { ed=Math.round(ed*1.3); pd=(playerIgnoresDef?Math.round(pd*0.8846):Math.round(pd/1.3)); passives.push({icon:'🛡',text:`[E] FATTY HP>70%→${ed}`}); }
     else passives.push({icon:'🛡',text:`[E] FATTY dmg-20%→${pd}`});
   }
   if(fk2==='GUANLET-BASTION') {
@@ -4291,7 +4291,7 @@ function doTurn(moveIdx) {
   if(fk2==='IRON-BASTION' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; passives.push({icon:'🎯',text:'[E] IRON-BASTION DODGE!'}); }
   if(fk2==='IRON-BASTION' && bs.turn%3===0) { ed=Math.round(ed*1.5); passives.push({icon:'🎯',text:`[E] IRON-BASTION 3T TRUE STRIKE dmg+50%→${ed}`}); }
   if(fk2==='GOLEM-BASTION') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
     if(enemy.hp<enemy.maxHp*0.3) {
       ed=Math.round(ed*1.3);
       const heal=Math.round(enemy.maxHp*0.05); _eHeal(heal,'🗿',`[E] GOLEM HP<30% +Heal${heal}→${ed}`);
@@ -4306,32 +4306,32 @@ function doTurn(moveIdx) {
     else if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; passives.push({icon:'⛈️',text:'[E] THUNDERCLOUD DODGE!'}); }
   }
   if(fk2==='SOUL-CHAMPION') {
-    if(cmp==='lose') { ed=Math.round(ed*1.25); pd=(playerIgnoresDef?pd:Math.round(pd*0.85)); passives.push({icon:'⚖️',text:`[E] SOUL LOSE ATK+25%,DEF+15%→${ed}`}); }
+    if(cmp==='lose') { ed=Math.round(ed*1.25); pd=(playerIgnoresDef?Math.round(pd*0.925):Math.round(pd*0.85)); passives.push({icon:'⚖️',text:`[E] SOUL LOSE ATK+25%,DEF+15%→${ed}`}); }
     else if(cmp==='win') { if(artId!=='true_sight'&&artId2!=='true_sight'&&Math.random()<0.25){pd=0;} ed=Math.round(ed*1.25); passives.push({icon:'⚖️',text:`[E] SOUL WIN ATK+25%,Dodge+25%→${ed}${pd===0?' DODGE!':''}`}); }
   }
   if(fk2==='POISON-FORTRESS') {
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.9));
+    pd=(playerIgnoresDef?Math.round(pd*0.95):Math.round(pd*0.9));
     if(pd>0 && Math.random()<0.25 && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:'☠️',text:`[E] POISON-FORTRESS dmg-10%→${pd} POISON!`}); }
     else passives.push({icon:'☠️',text:`[E] POISON-FORTRESS dmg-10%→${pd}`});
   }
   if(fk2==='MAGE-SPECTER') {
     if(cmp==='lose') { bs.e2CurseTurnsE=2; passives.push({icon:'🧙',text:'[E] MAGE CURSE! You ATK-25% (2T)'}); }
     else if(cmp==='neutral') { bs.e2NoHealTurnsE=3; passives.push({icon:'🧙',text:'[E] MAGE NO-HEAL! You cannot heal (3T)'}); }
-    else { pd=(playerIgnoresDef?pd:Math.round(pd*0.9)); passives.push({icon:'🧙',text:`[E] MAGE WIN dmg-10%→${pd}`}); }
+    else { pd=(playerIgnoresDef?Math.round(pd*0.95):Math.round(pd*0.9)); passives.push({icon:'🧙',text:`[E] MAGE WIN dmg-10%→${pd}`}); }
   }
   if(fk2==='PHEONIX-SWIFTGUARD') {
     if(!bs.e2PhoenixUsedE && enemy.hp>0 && enemy.hp<enemy.maxHp*0.3) {
       enemy.hp=enemy.maxHp; bs.e2PhoenixUsedE=true; bs.e2PhoenixBuffedE=true;
       passives.push({icon:'🔥',text:'[E] PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+20% (permanent)'});
     }
-    if(bs.e2PhoenixBuffedE) { ed=Math.round(ed*1.2); pd=(playerIgnoresDef?pd:Math.round(pd*0.83)); }
+    if(bs.e2PhoenixBuffedE) { ed=Math.round(ed*1.2); pd=(playerIgnoresDef?Math.round(pd*0.915):Math.round(pd*0.83)); }
   }
   if(fk2==='GAIA-SHIELDWING' && bs.turn%3===0) {
     const heal=Math.round(enemy.maxHp*0.15); _eHeal(heal,'🌿',`[E] GAIA 3T Heal${heal} ATK/DEF+20%`);
-    ed=Math.round(ed*1.2); pd=(playerIgnoresDef?pd:Math.round(pd*0.83));
+    ed=Math.round(ed*1.2); pd=(playerIgnoresDef?Math.round(pd*0.915):Math.round(pd*0.83));
   }
   if(fk2==='CRYSTAWOLF-BASTION') {
-    if(Math.random()<0.25) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c); passives.push({icon:'💎',text:`[E] CRYSTAWOLF dmg½ Counter -${c}`}); }
+    if(Math.random()<0.25) { pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c); passives.push({icon:'💎',text:`[E] CRYSTAWOLF dmg½ Counter -${c}`}); }
     if(pd>0 && Math.random()<0.10) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'[E] CRYSTAWOLF STUN!'}); }
   }
   }
@@ -4350,7 +4350,7 @@ function doTurn(moveIdx) {
   }
   if(enemy.spriteFile==='monster & boss/S-slime-boss.png') {
     // TOXIC OOZE KING: -25% damage taken (poison-on-hit handled post-damage)
-    pd=(playerIgnoresDef?pd:Math.round(pd*0.75)); passives.push({icon:'🟢',text:`TOXIC OOZE KING dmg-25%→${pd}`});
+    pd=(playerIgnoresDef?Math.round(pd*0.875):Math.round(pd*0.75)); passives.push({icon:'🟢',text:`TOXIC OOZE KING dmg-25%→${pd}`});
   }
   if(enemy.spriteFile==='monster & boss/F-werewolf2-miniboss.png' && enemy.hp<enemy.maxHp*0.5) {
     // YOUNG ALPHA: ATK+25% below 50% HP
@@ -8296,7 +8296,7 @@ screenContent.addEventListener('click', e=>{
     if(stopRest) { const p=pets[Number(stopRest.dataset.stopresting)]; if(p){p.resting=false;saveGame();render();} return; }
     const useSym = el.closest('[data-usesym]');
     if(useSym && partyDetailIdx !== null) {
-      useItem(useSym.dataset.usesym, partyDetailIdx); return;
+      useItem(useSym.dataset.usesym, partyDetailIdx); render(); return;
     }
     const discardSym = el.closest('[data-discardsym]');
     if(discardSym && partyDetailIdx !== null) {

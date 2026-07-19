@@ -3583,14 +3583,14 @@ function doOverdriveTurn() {
   setTimeout(()=>{ if(battleState!==bs) return; bs.preAnimCleared=true; render(); }, 300);
   setTimeout(()=>{
     if(battleState!==bs) return;
-    bs.animPhase=ed>0?'e-atk':null; bs.preAnimCleared=false; render();
+    bs.animPhase='e-atk'; bs.preAnimCleared=false; render();
     setTimeout(()=>{ if(battleState!==bs) return; bs.preAnimCleared=true; render(); }, 300);
     setTimeout(()=>{
       if(battleState!==bs) return;
       bs.animPhase=null; bs.waiting=false;
       if(enemy.hp<=0||creature.hp<=0) endBattle(enemy.hp<=0);
       else render();
-    }, ed>0?600:0);
+    }, 600);
   },600);
 }
 
@@ -5396,9 +5396,9 @@ function render() {
   // Preserve scroll position of any overflow-y:auto containers across the full innerHTML
   // re-render below (otherwise every periodic tick — resting regen, stamina, etc. — snaps
   // scrolled lists like Inventory/Collection back to the top).
-  const _scrollPositions = Array.from(screenContent.querySelectorAll('[style*="overflow-y:auto"]')).map(el => el.scrollTop);
+  const _scrollPositions = Array.from(screenContent.querySelectorAll('[style*="overflow-y:auto"],[style*="overflow-y:scroll"]')).map(el => el.scrollTop);
   const _restoreScroll = () => {
-    const els = screenContent.querySelectorAll('[style*="overflow-y:auto"]');
+    const els = screenContent.querySelectorAll('[style*="overflow-y:auto"],[style*="overflow-y:scroll"]');
     els.forEach((el, i) => { if(_scrollPositions[i]) el.scrollTop = _scrollPositions[i]; });
   };
   const accentMap = {

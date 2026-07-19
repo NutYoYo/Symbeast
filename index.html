@@ -1408,7 +1408,7 @@ const RAID_WAVE_MULT = {
 };
 const RAID_WEAPON_GRADE_BY_LEVEL = [
   {N:0.92,R:0.08,E:0.00},{N:0.87,R:0.12,E:0.01},{N:0.80,R:0.18,E:0.02},{N:0.72,R:0.24,E:0.04},{N:0.63,R:0.30,E:0.07},
-  {N:0.54,R:0.35,E:0.11},{N:0.45,R:0.39,E:0.16},{N:0.35,R:0.42,E:0.23},{N:0.25,R:0.43,E:0.32},{N:0.15,R:0.40,E:0.45},
+  {N:0.54,R:0.35,E:0.11},{N:0.45,R:0.39,E:0.16},{N:0.35,R:0.45,E:0.20},{N:0.25,R:0.50,E:0.25},{N:0.15,R:0.55,E:0.30},
 ];
 const RAID_OTHER_DROPS_BY_LEVEL = [
   {artBox:0.10,boxR:0.00,boxE:0.00,essence:0.12,rebirth:0.02},
@@ -5377,6 +5377,14 @@ function render() {
   checkExpeditions();
   bgmPlay(bgmForState());
   if(scoutToast) { showToast(scoutToast); scoutToast=''; }
+  // Preserve scroll position of any overflow-y:auto containers across the full innerHTML
+  // re-render below (otherwise every periodic tick — resting regen, stamina, etc. — snaps
+  // scrolled lists like Inventory/Collection back to the top).
+  const _scrollPositions = Array.from(screenContent.querySelectorAll('[style*="overflow-y:auto"]')).map(el => el.scrollTop);
+  const _restoreScroll = () => {
+    const els = screenContent.querySelectorAll('[style*="overflow-y:auto"]');
+    els.forEach((el, i) => { if(_scrollPositions[i]) el.scrollTop = _scrollPositions[i]; });
+  };
   const accentMap = {
     egg:'', menu:'', title:'',
     scout:'accent-scout', battle:'accent-fight', status:'accent-party',
@@ -5432,6 +5440,7 @@ function render() {
       ri.focus(); ri.setSelectionRange(len, len);
     }
   }
+  _restoreScroll();
 }
 
 function renderStatus() {

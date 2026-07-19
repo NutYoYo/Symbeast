@@ -7430,6 +7430,10 @@ function renderBattleScreen() {
               badges.push(badge(`☠️ POISON ${battleState.playerPoisonTurns}T`,'#88ff44','rgba(20,50,0,0.7)','1.0'));
             if((battleState.playerHealBlockTurns||0)>0)
               badges.push(badge(`🚫💚 HEAL BLOCK ${battleState.playerHealBlockTurns}T`,'#ff4488','rgba(50,0,20,0.7)','0.8'));
+            if((battleState.e2CurseTurnsE||0)>0)
+              badges.push(badge(`🧙 CURSED ATK-25% ${battleState.e2CurseTurnsE}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
+            if((battleState.e2NoHealTurnsE||0)>0)
+              badges.push(badge(`🧙🚫 NO-HEAL ${battleState.e2NoHealTurnsE}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
             // Evolve II Branch Skill conditional/stack status — shows what's currently ACTIVE, not just what exists
             const ff2 = creature.phase==='final' ? creature.finalKey : null;
             const e2Stack = battleState.e2Stack||0;
@@ -7512,6 +7516,10 @@ function renderBattleScreen() {
               ebadges.push(ebadge(`☠️ POISON ${battleState.enemyPoisonTurns}T`,'#88ff44','rgba(20,50,0,0.7)','1.0'));
             if((battleState.enemyHealBlockTurns||0)>0)
               ebadges.push(ebadge(`⛓️ HEAL BLOCK ${battleState.enemyHealBlockTurns}T`,'#ff4488','rgba(50,0,20,0.7)','0.8'));
+            if((battleState.e2CurseTurns||0)>0)
+              ebadges.push(ebadge(`🧙 CURSED ATK-25% ${battleState.e2CurseTurns}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
+            if((battleState.e2NoHealTurns||0)>0)
+              ebadges.push(ebadge(`🧙🚫 NO-HEAL ${battleState.e2NoHealTurns}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
             return ebadges.length?`<div style="display:flex;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap">${ebadges.join('')}</div>`:'';
           })()}
           ${(enemy.passives||[]).length ? `<div style="display:flex;gap:3px;justify-content:flex-end;margin-top:2px">${(enemy.passives).map(id=>{

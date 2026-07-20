@@ -7020,7 +7020,36 @@ function renderMenu() {
             ];
             const BATTLE_SYSTEMS = [
               ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!')],
-              ['⚡','BATTLE STATUS',T('ไอคอนที่เจอบ่อยในสนามรบ: DODGE (หลบไม่โดนตี), CRIT (ดาเมจแรงขึ้น), STUN (ข้ามเทิร์นนั้น), ☠️POISON (โดนดาเมจต่อเนื่องทุกเทิร์น), ⛓️HEAL BLOCK (สกัดกั้นการฟื้นฟู 3 เทิร์น) — ส่วน OVERDRIVE (แถบพลังใต้ HP ของ Pet ขั้น Evolve II) จะสะสมทีละ 1 ทุกครั้งที่แพ้ในเทิร์นนั้น เมื่อเต็ม 5/5 จะใช้ท่าไม้ตายพิเศษได้ในเทิร์นถัดไป','Common battle icons: DODGE (attack missed), CRIT (extra damage), STUN (skips that turn), ☠️POISON (damage over time each turn), ⛓️HEAL BLOCK (prevents healing for 3 turns) — OVERDRIVE (the gauge under an Evolve II Pet\'s HP) charges by 1 every turn you lose, and unleashes a powerful finisher once it hits 5/5')],
+              ['⚡','BATTLE STATUS',T(
+`ไอคอนพื้นฐานที่เจอบ่อย:
+⚡DODGE — โจมตีพลาดสนิท ไม่โดนดาเมจเลย
+🎯CRIT — โจมตีแรงกว่าปกติ
+⚡STUN — ข้ามเทิร์นนั้นไปเลย โจมตีไม่ได้
+
+สถานะผิดปกติ (Status Effects):
+☠️POISON (พิษ) — เสีย HP สูงสุด 6% ทุกเทิร์น นาน 3 เทิร์น (ไม่ซ้อนกัน แต่รีเฟรชเวลาได้ถ้าโดนซ้ำ)
+🔥BURN (เผาไหม้) — เสีย HP สูงสุด 3% ทุกเทิร์น นาน 3 เทิร์น และรับดาเมจเพิ่มขึ้น 25% จากทุกการโจมตีระหว่างติดไฟ
+🧙CURSE (คำสาป) — ATK ลดลง 25% นาน 2 เทิร์น
+🧙🚫NO-HEAL / ⛓️HEAL BLOCK (ล็อคการฟื้นฟู) — ฟื้นฟู HP ไม่ได้เลยจากทุกช่องทาง (ยา/พาสซีฟ/อาติแฟค) นาน 3 เทิร์น
+
+⚡OVERDRIVE — แถบพลังใต้ HP ของ Pet ขั้น Evolve II สะสม +1 ทุกครั้งที่แพ้ในเทิร์นนั้น เมื่อเต็ม 5/5 จะใช้ท่าไม้ตายพิเศษได้ในเทิร์นถัดไป
+
+💡 บางอาติแฟคช่วยป้องกันสถานะเหล่านี้ได้ เช่น Antidote Charm (กันพิษ 100%)`,
+`Common icons you'll see:
+⚡DODGE — the attack missed completely, no damage taken
+🎯CRIT — extra damage on that hit
+⚡STUN — skips that turn entirely, can't attack
+
+Status Effects:
+☠️POISON — lose 6% Max HP each turn for 3 turns (doesn't stack, but refreshes duration if reapplied)
+🔥BURN — lose 3% Max HP each turn for 3 turns, and take +25% more damage from any hit while burning
+🧙CURSE — ATK reduced by 25% for 2 turns
+🧙🚫NO-HEAL / ⛓️HEAL BLOCK — can't recover HP from any source (potions/passives/artifacts) for 3 turns
+
+⚡OVERDRIVE — the gauge under an Evolve II Pet's HP charges by 1 every turn you lose, and unleashes a powerful finisher move once it hits 5/5
+
+💡 Some artifacts guard against these — e.g. Antidote Charm gives 100% poison immunity`
+              )],
               ['🗺','SCOUT',T('สำรวจแผนที่ ต่อสู้กับมอนสเตอร์ เก็บของ และสะสม Symbol — ยิ่ง Stage สูง ของรางวัลยิ่งดี มี HARD MODE และ HELL MODE ให้ท้าทายเพิ่มเติม','Explore the map, battle monsters, collect loot and Symbols — higher Stages yield better rewards. HARD MODE and HELL MODE offer additional challenges')],
               ['🏯','TOWER',T('ปีนหอคอยทีละชั้น ยิ่งขึ้นสูง ศัตรูยิ่งโหด — เคลียร์ชั้นพิเศษ (ทุก 10 ชั้น) ครั้งแรกจะได้รางวัลพิเศษ!','Climb the Tower floor by floor — enemies get tougher the higher you go. First clear of every 10th floor earns a special one-time reward!')],
               ['⚔️','VS MODE',T('โหมดประลองไม่จำกัดครั้ง — ต่อสู้กับศัตรูในรูปแบบ Ladder ยิ่ง Stage สูง ศัตรูยิ่งแข็งแกร่ง ชนะเพื่อเลื่อน Stage และรับรางวัล','Unlimited PvE Ladder — battle increasingly powerful enemies as you climb the Stages. Win to advance and earn rewards')],

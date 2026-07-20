@@ -510,6 +510,8 @@ body::after {
 .dmg-num.stun-tag   { animation:dmg-float 0.9s 0.1s ease-out forwards;font-size:18px;color:#ffdd44;text-shadow:0 0 12px #ff8800,0 2px 4px #000; }
 .dmg-num.poison-enemy { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#aa44ff;right:8%;top:55%;text-shadow:0 0 10px #aa44ff,0 2px 4px #000; }
 .dmg-num.poison-player { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#aa44ff;left:8%;top:55%;text-shadow:0 0 10px #aa44ff,0 2px 4px #000; }
+.dmg-num.burn-enemy { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#ff7722;right:8%;top:55%;text-shadow:0 0 10px #ff7722,0 2px 4px #000; }
+.dmg-num.burn-player { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#ff7722;left:8%;top:55%;text-shadow:0 0 10px #ff7722,0 2px 4px #000; }
 .dmg-num.heal-blocked-enemy { animation:dmg-float 0.9s 0.6s ease-out forwards;font-size:16px;color:#ff4488;right:8%;top:68%;text-shadow:0 0 8px #ff4488,0 2px 4px #000; }
 .dmg-num.heal-blocked-player { animation:dmg-float 0.9s 0.6s ease-out forwards;font-size:16px;color:#ff4488;left:8%;top:68%;text-shadow:0 0 8px #ff4488,0 2px 4px #000; }
 .dmg-num.counter-enemy { animation:dmg-float 0.9s 0.4s ease-out forwards;font-size:18px;color:#ff8800;right:8%;top:62%;text-shadow:0 0 10px #ff8800,0 2px 4px #000; }
@@ -997,8 +999,8 @@ const EVOLVE2_FORMS = {
     passive:'Every round (WIN or LOSE): ATK+10% and SPD+10% (max 3 stacks per battle)',
     passiveTh:'ไม่ว่า WIN หรือ LOSE: ATK+10% และ SPD+10% ทุกรอบ (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้)' },
   'KAIJU-BRAWLER':      { name:'KAIJU-BRAWLER',      color:'#aa2222', hp:137, atk:36, spd:13, def:8,  passiveIcon:'🦖',
-    passive:'On LOSE: next round ATK +50% and DEF +50%',
-    passiveTh:'เมื่อ LOSE รอบถัดไปจะ ATK +50%, DEF +50%' },
+    passive:'On LOSE: next round ATK +50%, DEF +50%, and 25% chance to burn the enemy',
+    passiveTh:'เมื่อ LOSE รอบถัดไปจะ ATK +50%, DEF +50% และมีโอกาส 25% ที่จะทำให้ศัตรูติดเผาไหม้' },
 
   'FIGHTER-PANDA':      { name:'FIGHTER-PANDA',      color:'#ff6a00', hp:111, atk:42, spd:19, def:5,  passiveIcon:'🥊',
     passive:'On LOSE: damage dealt +75% that turn',
@@ -1046,8 +1048,8 @@ const EVOLVE2_FORMS = {
     passive:'20% chance to fully dodge; on dodge, ATK/DEF/SPD +10% (max 5 stacks per battle)',
     passiveTh:'20% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จ ATK+10%, DEF+10%, SPD+10% (สะสมได้สูงสุด 5 ครั้ง/1 การต่อสู้)' },
   'SOUL-CHAMPION':      { name:'SOUL-CHAMPION',      color:'#ccbb44', hp:135, atk:28, spd:22, def:12, passiveIcon:'⚖️',
-    passive:'On WIN: ATK+25% and damage taken -15% that round; on LOSE: dodge +25% and damage dealt +25% that round',
-    passiveTh:'เมื่อ WIN: ATK+25% และรับดาเมจ -15% ในรอบนั้น เมื่อ LOSE: โอกาสหลบ+25% และดาเมจที่สร้างเพิ่ม 25% ในรอบนั้น' },
+    passive:'On WIN: ATK+25% and 25% chance to burn the enemy; on LOSE: dodge +25% and damage dealt +25% that round',
+    passiveTh:'เมื่อ WIN: ATK+25% และมีโอกาส 25% ที่จะทำให้ศัตรูติดเผาไหม้ เมื่อ LOSE: โอกาสหลบ+25% และดาเมจที่สร้างเพิ่ม 25% ในรอบนั้น' },
   'ROLLING-CHAMPION':   { name:'ROLLING-CHAMPION',   color:'#b366ff', hp:158, atk:24, spd:18, def:17, passiveIcon:'🌀',
     passive:'All damage taken -20%; every 3 rounds the attack deals +50% damage and cannot miss',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และทุกๆ 3 รอบจะโจมตีแรงขึ้น 50% และไม่พลาดเป้า (รีเซ็ต)' },
@@ -1085,8 +1087,8 @@ const EVOLVE2_FORMS = {
     passive:'25% chance to fully dodge; on dodge, the next attack pierces DEF and cannot miss',
     passiveTh:'25% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จการโจมตีครั้งถัดไปจะทะลุ DEF ฝั่งตรงข้ามและไม่พลาดเป้า' },
   'PHEONIX-SWIFTGUARD': { name:'PHEONIX-SWIFTGUARD', color:'#ff6644', hp:135, atk:21, spd:28, def:12, passiveIcon:'🔥',
-    passive:'Once per battle when HP < 30%: full heal + ATK/DEF/SPD +20%',
-    passiveTh:'เมื่อ HP<30% (ครั้งเดียว/การต่อสู้): ฟื้น HP 100% ทันที + ATK/DEF/SPD +20%' },
+    passive:'Every attack has a 15% chance to burn the enemy; once per battle when HP < 30%: full heal + ATK/DEF/SPD +15%',
+    passiveTh:'ทุกการโจมตีมีโอกาส 15% ทำให้ศัตรูติดเผาไหม้ เมื่อ HP<30% (ครั้งเดียว/การต่อสู้): ฟื้น HP 100% ทันที + ATK/DEF/SPD +15%' },
   'IRON-SWIFTGUARD':    { name:'IRON-SWIFTGUARD',    color:'#0d6655', hp:158, atk:18, spd:23, def:17, passiveIcon:'🛡',
     passive:'On LOSE: damage taken -15% per stack (max 3 stacks per battle)',
     passiveTh:'เมื่อ LOSE ลดดาเมจที่รับทั้งหมด 15% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้)' },
@@ -1181,6 +1183,7 @@ const ENEMY_PASSIVES = [
   { id:'last_dance',    icon:'💥', name:'LAST DANCE',     desc:'When HP drops below 10%, ATK +150%',                 type:'F' },
   { id:'true_strike',  icon:'🎯', name:'TRUE STRIKE',    desc:'Attacks cannot be dodged',                           type:'F' },
   { id:'venom_bite',    icon:'☠️', name:'VENOM BITE',     desc:'20% chance to poison you on a landed hit (6% MaxHP/turn, 3 turns)', type:'W' },
+  { id:'burn_touch',    icon:'🔥', name:'BURN TOUCH',     desc:'20% chance to burn you on a landed hit (3% MaxHP/turn, 3 turns, +25% dmg taken while burning)', type:'F' },
   { id:'reflect_immune', icon:'🚫🔄', name:'REFLECT WARD',  desc:'Takes no damage from any reflect/counter effect',                   type:'F' },
   { id:'pierce_atk',    icon:'🗡️', name:'PIERCE',         desc:'Attacks ignore DEF and all damage-reduction effects',                type:'W' },
   { id:'heal_block',    icon:'🚫💚', name:'HEAL BLOCK',    desc:'25% chance to prevent enemy healing for 3 turns',                    type:'S' },
@@ -1515,7 +1518,7 @@ function spawnRaidWave(level, wave) {
   battleState.turn = 1; battleState.log = []; battleState.passivesLog = []; battleState.lastResult = null;
   battleState.animPhase = null; battleState.waiting = false;
   battleState.overdriveUsed = false; battleState.odBuff = null; battleState.enemyStunTurns = 0;
-  battleState.e2Stack = 0; battleState.e2NextBuff = false; battleState.enemyPoisonTurns = 0; battleState.playerPoisonTurns = 0; battleState.enemyHealBlockTurns = 0; battleState.playerHealBlockTurns = 0;
+  battleState.e2Stack = 0; battleState.e2NextBuff = false; battleState.enemyPoisonTurns = 0; battleState.playerPoisonTurns = 0; battleState.enemyHealBlockTurns = 0; battleState.playerHealBlockTurns = 0; battleState.enemyBurnTurns = 0; battleState.playerBurnTurns = 0;
   battleState.artifactStacks = {};
   battleState.raidWave = wave;
   // endBattle() set battleState.ended=true when the previous wave was won, and this function reuses
@@ -1921,8 +1924,8 @@ const OVERDRIVE_INFO = {
     descTh:'โจมตี ×2.5 + สะท้อนดาเมจทั้งหมดเทิร์นนี้ + วางพิษ ☠️ ใส่ศัตรู 3 เทิร์น จากนั้นสะท้อน 50%, ATK+20% และโอกาส 25% วางพิษเมื่อถูกโจมตี นาน 3 เทิร์น'},
   'MAGE-SPECTER':      {name:'MAGE SCYTHE',         icon:'💀', desc:'Strike ×4.0 + dodge this turn + curse enemy (ATK-25%, 2 turns), then Crit +30% and 30% chance to curse on hit for 3 turns',
     descTh:'โจมตี ×4.0 + หลบเทิร์นนี้ + สาปศัตรู (ATK-25%, 2 เทิร์น) จากนั้น Crit +30% และโอกาส 30% สาปเมื่อโจมตี นาน 3 เทิร์น'},
-  'PHEONIX-SWIFTGUARD':{name:'PHOENIX STRIKE',      icon:'🔥', desc:'Strike ×3.0 + recover 30% HP this turn, then ATK/DEF +50% and recover 10% HP each turn for 3 turns (once per battle: full heal when HP<30%)',
-    descTh:'โจมตี ×3.0 + ฟื้นฟู HP 30% เทิร์นนี้ จากนั้น ATK/DEF +50% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น (ครั้งเดียว/การต่อสู้: ฟื้น HP เต็มเมื่อ HP<30%)'},
+  'PHEONIX-SWIFTGUARD':{name:'PHOENIX STRIKE',      icon:'🔥', desc:'Strike ×3.0 + recover 30% HP this turn, then for 3 turns: ATK +50%, recover 15% HP each turn, and 50% chance to burn the enemy when hit',
+    descTh:'โจมตี ×3.0 + ฟื้นฟู HP 30% เทิร์นนี้ จากนั้นเป็นเวลา 3 เทิร์น: ATK +50%, ฟื้นฟู HP 15% ต่อเทิร์น และมีโอกาส 50% ทำให้ศัตรูติดเผาไหม้เมื่อโดนโจมตี'},
   'GAIA-SHIELDWING':   {name:'GAIA WRATH',          icon:'🌿', desc:'Strike ×3.0 piercing DEF + recover 20% HP this turn, then ATK/DEF +30% and recover 10% HP each turn for 3 turns',
     descTh:'โจมตี ×3.0 ทะลุ DEF + ฟื้นฟู HP 20% เทิร์นนี้ จากนั้น ATK/DEF +30% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น'},
   'CRYSTAWOLF-BASTION':{name:'CRYSTAL BEAM',        icon:'💎', desc:'Strike ×3.5 + dodge this turn, then ATK +50%, damage taken -30% and recover 10% HP each turn for 3 turns',
@@ -3316,6 +3319,8 @@ function startBattle(battleType) {
     e2NextBuff: false,   // Evolve II "next round" deferred flag
     enemyPoisonTurns: 0, // ☠️ poison on enemy (6% MaxHP/turn)
     playerPoisonTurns: 0,
+    enemyBurnTurns: 0, // 🔥 burn on enemy (3% MaxHP/turn, +25% dmg taken while burning)
+    playerBurnTurns: 0,
     enemyHealBlockTurns: 0, // 🚫 heal block on enemy
     playerHealBlockTurns: 0, // 🚫 heal block on player
     e2CurseTurns: 0, e2CurseTurnsE: 0, // MAGE-SPECTER curse (ATK-25%)
@@ -3554,7 +3559,7 @@ function doOverdriveTurn() {
   } else if(ff==='PHEONIX-SWIFTGUARD') {
     const h=_hit(3.0); pd=h.d; ed=_ed(); const heal=Math.round(creature.maxHp*0.3); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
     bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'🔥',text:`PHOENIX STRIKE ×3.0→${pd} + Heal${heal} | ATK/DEF+50%,heal10%/turn (3T)`});
+    passives.push({icon:'🔥',text:`PHOENIX STRIKE ×3.0→${pd} + Heal${heal} | ATK+50%,heal15%/turn,burn50%onHit (3T)`});
   } else if(ff==='GAIA-SHIELDWING') {
     pd=_pierceHit(3.0,1.0); ed=_ed(); const heal=Math.round(creature.maxHp*0.2); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal;
     bs.odBuff={type:ff,turnsLeft:3};
@@ -3563,6 +3568,9 @@ function doOverdriveTurn() {
     const h=_hit(3.5); pd=h.d; ed=0; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'💎',text:`CRYSTAL BEAM ×3.5→${pd} + DODGE | ATK+50%,dmgTaken-30%,heal10%/turn (3T)`});
   }
+  // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit
+  if(bs.enemyBurnTurns>0 && pd>0) pd = Math.round(pd*1.25);
+  if(bs.playerBurnTurns>0 && ed>0) ed = Math.round(ed*1.25);
   // apply damage
   bs.preAnimPlayerHp = creature.hp;
   bs.preAnimEnemyHp  = enemy.hp;
@@ -3571,7 +3579,7 @@ function doOverdriveTurn() {
   if(ed>0&&playerAlive) creature.hp=Math.max(0,creature.hp-ed);
   const turnNum=bs.turn;
   bs.lastCmp='win';
-  bs.lastResult={pm:{name:OVERDRIVE_INFO[ff]?.name||'OVERDRIVE',icon:OVERDRIVE_INFO[ff]?.icon||'🔥',desc:''},em,cmp:'win',crit:false,enemyCrit:false,pd,ed,playerFirst:true,passives,playerHeal,enemyHeal,reflectDmg,counterDmg,eReflectDmg:0,eCounterDmg:0,poisonDmgEnemy:0,poisonDmgPlayer:0,enemyStunned:false,playerStunned:false,pdHits,extraHits:[]};
+  bs.lastResult={pm:{name:OVERDRIVE_INFO[ff]?.name||'OVERDRIVE',icon:OVERDRIVE_INFO[ff]?.icon||'🔥',desc:''},em,cmp:'win',crit:false,enemyCrit:false,pd,ed,playerFirst:true,passives,playerHeal,enemyHeal,reflectDmg,counterDmg,eReflectDmg:0,eCounterDmg:0,poisonDmgEnemy:0,poisonDmgPlayer:0,burnDmgEnemy:0,burnDmgPlayer:0,enemyStunned:false,playerStunned:false,pdHits,extraHits:[]};
   bs.turn++;
   bs.log.push(`T${turnNum} ★OVERDRIVE★ ${OVERDRIVE_INFO[ff]?.name||ff}`,`  foe -${pd}  you -${ed}`);
   passives.forEach(p=>bs.log.push(`  ${p.icon} ${p.text}`));
@@ -3636,7 +3644,7 @@ function doTurn(moveIdx) {
   const crit = sniperReady ? true : Math.random() < critChance;
   const hasDeathblow = artId==='deathblow' || artId2==='deathblow';
   const critMult = sniperReady ? 2.0 : hasDeathblow ? 2.0 : 1.6;
-  let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], extraHits = [];
+  let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, burnDmgEnemy = 0, burnDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], extraHits = [];
   let healBlockedEnemy = 0, healBlockedPlayer = 0;
   let _dodgeEffectApplied = false; // track if any artifact/weapon dodge should trigger form secondary effects
   const _pHeal = (h, icon, txt) => { if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon,text:txt});return true;} };
@@ -3799,7 +3807,10 @@ function doTurn(moveIdx) {
     if(type==='GOLEM-BASTION') { ed=Math.min(ed,1); pd=Math.round(pd*2.0); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🏰',`DIVINE AEGIS dmgCapped1,ATK×2,+${heal}HP→${pd}`); }
 
     if(type==='WINDBLADE-BRAWLER') { if(!enemyTrueStrike && Math.random()<0.20){ed=0;} passives.push({icon:'🗡',text:`WIND STRIKE crit+20%,dodge+20%→${pd}`}); }
-    if(type==='PHEONIX-SWIFTGUARD') { pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🔥',`PHOENIX STRIKE ATK/DEF+50%,+${heal}HP`); }
+    if(type==='PHEONIX-SWIFTGUARD') {
+      pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.15); _pHeal(heal,'🔥',`PHOENIX STRIKE ATK+50%,+${heal}HP`);
+      if(ed>0 && Math.random()<0.50) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:'PHOENIX BURN! Enemy is on fire (3T)'}); }
+    }
     if(type==='GAIA-SHIELDWING') { pd=Math.round(pd*1.3); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🌿',`GAIA WRATH ATK/DEF+30%,+${heal}HP`); }
     if(type==='PANDA-NINJA') { pd=Math.round(pd*1.5); if(!enemyTrueStrike && Math.random()<0.30){ed=0;} bs.playerGuaranteeCrit=true; passives.push({icon:'🥷',text:`SHADOW STRIKE dodge+30%,guaranteeCrit→${pd}`}); }
     if(type==='RUNE-IRONJAW') { bs.e2RuneType=['atk','def'][Math.floor(Math.random()*2)]; const runeMul=bs.e2RuneType==='atk'?1.5:1.0; const runeDef=bs.e2RuneType==='def'?1.5:1.0; pd=Math.round(pd*runeMul); ed=Math.round(ed/runeDef); const heal=Math.round(pd*0.20); _pHeal(heal,'🔮',`RUNE R.${runeMul>1?'+50%ATK':'+50%DEF'}→${pd},+${heal}HP`); }
@@ -3843,7 +3854,11 @@ function doTurn(moveIdx) {
     passives.push({icon:'☯️',text:`CRIMSON BALANCE ATK+10%×${bs.e2Stack},SPD+10%×${bs.e2Stack}→${pd}`});
   }
   if(ff==='KAIJU-BRAWLER') {
-    if(bs.e2NextBuff) { pd=Math.round(pd*1.5); ed=(enemyIgnoresDef?ed:Math.round(ed*0.67)); bs.e2NextBuff=false; passives.push({icon:'🦖',text:`KAIJU BUFF ATK+50%/DEF+50%→${pd}`}); }
+    if(bs.e2NextBuff) {
+      pd=Math.round(pd*1.5); ed=(enemyIgnoresDef?ed:Math.round(ed*0.67)); bs.e2NextBuff=false;
+      if(pd>0 && Math.random()<0.25) { bs.enemyBurnTurns=3; passives.push({icon:'🦖',text:`KAIJU BUFF ATK+50%/DEF+50%,BURN→${pd}`}); }
+      else passives.push({icon:'🦖',text:`KAIJU BUFF ATK+50%/DEF+50%→${pd}`});
+    }
     if(cmp==='lose') bs.e2NextBuff=true;
   }
   if(ff==='FIGHTER-PANDA' && cmp==='lose') { pd=Math.round(pd*1.75); passives.push({icon:'🥊',text:`FIGHTER LOSE dmg+75%→${pd}`}); }
@@ -3977,7 +3992,11 @@ function doTurn(moveIdx) {
     else if(!enemyTrueStrike && Math.random()<0.25) { ed=0; passives.push({icon:'⛈️',text:'THUNDERCLOUD DODGE!'}); _dodgeEffectApplied=true; }
   }
   if(ff==='SOUL-CHAMPION') {
-    if(cmp==='win') { pd=Math.round(pd*1.25); ed=Math.round(ed*0.85); passives.push({icon:'⚖️',text:`SOUL WIN ATK+25%,DEF+15%→${pd}`}); }
+    if(cmp==='win') {
+      pd=Math.round(pd*1.25);
+      if(pd>0 && Math.random()<0.25) { bs.enemyBurnTurns=3; passives.push({icon:'⚖️',text:`SOUL WIN ATK+25%,BURN→${pd}`}); }
+      else passives.push({icon:'⚖️',text:`SOUL WIN ATK+25%→${pd}`});
+    }
     else if(cmp==='lose') { if(!enemyTrueStrike&&Math.random()<0.25){ed=0;_dodgeEffectApplied=true;} pd=Math.round(pd*1.25); passives.push({icon:'⚖️',text:`SOUL LOSE ATK+25%,Dodge+25%→${pd}${ed===0?' DODGE!':''}`}); }
   }
   if(ff==='POISON-FORTRESS') {
@@ -3993,9 +4012,10 @@ function doTurn(moveIdx) {
   if(ff==='PHEONIX-SWIFTGUARD') {
     if(!bs.e2PhoenixUsed && creature.hp>0 && creature.hp<creature.maxHp*0.3) {
       creature.hp=creature.maxHp; bs.e2PhoenixUsed=true; bs.e2PhoenixBuffed=true;
-      passives.push({icon:'🔥',text:'PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+20% (permanent)'});
+      passives.push({icon:'🔥',text:'PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+15% (permanent)'});
     }
-    if(bs.e2PhoenixBuffed) { pd=Math.round(pd*1.2); ed=(enemyIgnoresDef?ed:Math.round(ed*0.83)); }
+    if(bs.e2PhoenixBuffed) { pd=Math.round(pd*1.15); ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); }
+    if(pd>0 && Math.random()<0.15) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`PHOENIX BURN! Enemy is on fire→${pd}`}); }
   }
   if(ff==='GAIA-SHIELDWING' && bs.turn%3===0) {
     const heal=Math.round(creature.maxHp*0.15); _pHeal(heal,'🌿',`GAIA 3T Heal${heal} ATK/DEF+20%`);
@@ -4184,7 +4204,11 @@ function doTurn(moveIdx) {
     passives.push({icon:'☯️',text:`[E] CRIMSON BALANCE ATK+10%×${bs.e2StackE},SPD+10%×${bs.e2StackE}→${ed}`});
   }
   if(fk2==='KAIJU-BRAWLER') {
-    if(bs.e2NextBuffE) { ed=Math.round(ed*1.5); pd=(playerIgnoresDef?Math.round(pd*0.835):Math.round(pd*0.67)); bs.e2NextBuffE=false; passives.push({icon:'🦖',text:`[E] KAIJU BUFF→${ed}`}); }
+    if(bs.e2NextBuffE) {
+      ed=Math.round(ed*1.5); pd=(playerIgnoresDef?Math.round(pd*0.835):Math.round(pd*0.67)); bs.e2NextBuffE=false;
+      if(ed>0 && Math.random()<0.25) { bs.playerBurnTurns=3; passives.push({icon:'🦖',text:`[E] KAIJU BUFF,BURN→${ed}`}); }
+      else passives.push({icon:'🦖',text:`[E] KAIJU BUFF→${ed}`});
+    }
     if(cmp==='win') bs.e2NextBuffE=true;
   }
   if(fk2==='FIGHTER-PANDA' && cmp==='win') { ed=Math.round(ed*1.75); passives.push({icon:'🥊',text:`[E] FIGHTER dmg+75%→${ed}`}); }
@@ -4315,8 +4339,12 @@ function doTurn(moveIdx) {
     else if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; passives.push({icon:'⛈️',text:'[E] THUNDERCLOUD DODGE!'}); }
   }
   if(fk2==='SOUL-CHAMPION') {
-    if(cmp==='lose') { ed=Math.round(ed*1.25); pd=(playerIgnoresDef?Math.round(pd*0.925):Math.round(pd*0.85)); passives.push({icon:'⚖️',text:`[E] SOUL LOSE ATK+25%,DEF+15%→${ed}`}); }
-    else if(cmp==='win') { if(artId!=='true_sight'&&artId2!=='true_sight'&&Math.random()<0.25){pd=0;} ed=Math.round(ed*1.25); passives.push({icon:'⚖️',text:`[E] SOUL WIN ATK+25%,Dodge+25%→${ed}${pd===0?' DODGE!':''}`}); }
+    if(cmp==='lose') {
+      ed=Math.round(ed*1.25);
+      if(ed>0 && Math.random()<0.25) { bs.playerBurnTurns=3; passives.push({icon:'⚖️',text:`[E] SOUL WIN ATK+25%,BURN→${ed}`}); }
+      else passives.push({icon:'⚖️',text:`[E] SOUL WIN ATK+25%→${ed}`});
+    }
+    else if(cmp==='win') { if(artId!=='true_sight'&&artId2!=='true_sight'&&Math.random()<0.25){pd=0;} ed=Math.round(ed*1.25); passives.push({icon:'⚖️',text:`[E] SOUL LOSE ATK+25%,Dodge+25%→${ed}${pd===0?' DODGE!':''}`}); }
   }
   if(fk2==='POISON-FORTRESS') {
     pd=(playerIgnoresDef?Math.round(pd*0.95):Math.round(pd*0.9));
@@ -4331,9 +4359,10 @@ function doTurn(moveIdx) {
   if(fk2==='PHEONIX-SWIFTGUARD') {
     if(!bs.e2PhoenixUsedE && enemy.hp>0 && enemy.hp<enemy.maxHp*0.3) {
       enemy.hp=enemy.maxHp; bs.e2PhoenixUsedE=true; bs.e2PhoenixBuffedE=true;
-      passives.push({icon:'🔥',text:'[E] PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+20% (permanent)'});
+      passives.push({icon:'🔥',text:'[E] PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+15% (permanent)'});
     }
-    if(bs.e2PhoenixBuffedE) { ed=Math.round(ed*1.2); pd=(playerIgnoresDef?Math.round(pd*0.915):Math.round(pd*0.83)); }
+    if(bs.e2PhoenixBuffedE) { ed=Math.round(ed*1.15); pd=(playerIgnoresDef?Math.round(pd*0.925):Math.round(pd*0.85)); }
+    if(ed>0 && Math.random()<0.15) { bs.playerBurnTurns=3; passives.push({icon:'🔥',text:`[E] PHOENIX BURN! You are on fire→${ed}`}); }
   }
   if(fk2==='GAIA-SHIELDWING' && bs.turn%3===0) {
     const heal=Math.round(enemy.maxHp*0.15); _eHeal(heal,'🌿',`[E] GAIA 3T Heal${heal} ATK/DEF+20%`);
@@ -4583,6 +4612,11 @@ function doTurn(moveIdx) {
       bs.playerPoisonTurns = 3;
       passives.push({icon:'☠️',text:T('ศัตรูกัดพิษใส่คุณ!','Enemy poisoned you with Venom Bite!')});
     }
+    // 🔥 BURN TOUCH (enemy skill, type F): 20% chance to burn the player on a landed hit
+    if(edApplied && ed>0 && ep.includes('burn_touch') && Math.random()<0.20) {
+      bs.playerBurnTurns = 3;
+      passives.push({icon:'🔥',text:T('ศัตรูทำให้คุณติดไฟ!','Enemy burned you with Burn Touch!')});
+    }
     // PHANTASM (special boss): 25% chance to curse the player with poison on a landed hit
     if(edApplied && ed>0 && enemy.spriteFile==='monster & boss/W-phantasm-specialboss.png'
        && !(artId==='antidote_charm' || artId2==='antidote_charm') && Math.random()<0.25) {
@@ -4657,6 +4691,10 @@ function doTurn(moveIdx) {
     if(bs.e2NoHealTurnsE>0) { bs.e2NoHealTurnsE--; if(bs.e2NoHealTurnsE===0) passives.push({icon:'🚫💚',text:T('หมดอายุ No-Heal (ผู้เล่น)!','No-Heal (player) expired!')}); }
   };
 
+  // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit this turn
+  if(bs.enemyBurnTurns>0 && pd>0) pd = Math.round(pd*1.25);
+  if(bs.playerBurnTurns>0 && ed>0) ed = Math.round(ed*1.25);
+
   // ☠️ Poison ticks — applied here (before lastResult) so floating numbers can display them
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='POISON-FORTRESS') bs.enemyPoisonTurns=0; // POISON-FORTRESS: immune to poison
   if(bs.enemyPoisonTurns>0 && enemy.hp>0) {
@@ -4670,10 +4708,21 @@ function doTurn(moveIdx) {
     poisonDmgPlayer = pdmg;
     passives.push({icon:'☠️',text:T(`พิษ! -${pdmg} HP (เหลือ ${bs.playerPoisonTurns} เทิร์น)`,`Poison! -${pdmg} HP (${bs.playerPoisonTurns} turns left)`)});
   }
+  // 🔥 Burn ticks — 3% MaxHP/turn, 3 turns
+  if(bs.enemyBurnTurns>0 && enemy.hp>0) {
+    const bdmg=Math.max(1,Math.round(enemy.maxHp*0.03)); enemy.hp=Math.max(0,enemy.hp-bdmg); bs.enemyBurnTurns--;
+    burnDmgEnemy = bdmg;
+    passives.push({icon:'🔥',text:T(`เผาไหม้! ศัตรู -${bdmg} HP (${bs.enemyBurnTurns} เทิร์น)`,`Burn! Enemy -${bdmg} HP (${bs.enemyBurnTurns} turns left)`)});
+  }
+  if(bs.playerBurnTurns>0 && creature.hp>0) {
+    const bdmg=Math.max(1,Math.round(creature.maxHp*0.03)); creature.hp=Math.max(0,creature.hp-bdmg); bs.playerBurnTurns--;
+    burnDmgPlayer = bdmg;
+    passives.push({icon:'🔥',text:T(`เผาไหม้! -${bdmg} HP (เหลือ ${bs.playerBurnTurns} เทิร์น)`,`Burn! -${bdmg} HP (${bs.playerBurnTurns} turns left)`)});
+  }
 
   const turnNum = battleState.turn;
   battleState.lastCmp = cmp;
-  battleState.lastResult = { pm, em, cmp, crit, enemyCrit, pd, ed, playerFirst, passives, playerHeal, enemyHeal, reflectDmg, counterDmg, eReflectDmg, eCounterDmg, poisonDmgEnemy, poisonDmgPlayer, enemyStunned, playerStunned, pdHits, extraHits, playerHealPre:playerHeal, playerHealP1:0, playerHealP2:0, healBlockedEnemy, healBlockedPlayer };
+  battleState.lastResult = { pm, em, cmp, crit, enemyCrit, pd, ed, playerFirst, passives, playerHeal, enemyHeal, reflectDmg, counterDmg, eReflectDmg, eCounterDmg, poisonDmgEnemy, poisonDmgPlayer, burnDmgEnemy, burnDmgPlayer, enemyStunned, playerStunned, pdHits, extraHits, playerHealPre:playerHeal, playerHealP1:0, playerHealP2:0, healBlockedEnemy, healBlockedPlayer };
   battleState.turn++;
   battleState.log.push(
     `T${turnNum} ${pm.name} vs ${em.name}`+(cmp==='win'?' ▶WIN':cmp==='lose'?' ◀LOSE':''),
@@ -4743,6 +4792,8 @@ function doTurn(moveIdx) {
       _endOfTurn();
       bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
       bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
+      bs.lastResult.burnDmgEnemy = burnDmgEnemy;
+      bs.lastResult.burnDmgPlayer = burnDmgPlayer;
       bs.waiting = false;
       finish();
       bs.weaponRegenFlash = null;
@@ -4773,6 +4824,8 @@ function doTurn(moveIdx) {
       _endOfTurn();
       bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
       bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
+      bs.lastResult.burnDmgEnemy = burnDmgEnemy;
+      bs.lastResult.burnDmgPlayer = burnDmgPlayer;
       bs.waiting = false;
       finish();
       bs.weaponRegenFlash = null;
@@ -5700,7 +5753,7 @@ function startVsBattle(idx) {
     turn:1, log:[], passivesLog:[], lastResult:null,
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
-    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyBurnTurns:0, playerBurnTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
     e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
     isVsBattle:true, artifactStacks:{},
   };
@@ -6221,7 +6274,7 @@ function startDuelBattle(enemyIdx) {
     turn:1, log:[], passivesLog:[], lastResult:null,
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
-    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyBurnTurns:0, playerBurnTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
     e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
     isDuelBattle:true, artifactStacks:{},
   };
@@ -6747,7 +6800,7 @@ function startTowerBattle() {
     turn:1, log:[], passivesLog:[], lastResult:null,
     animPhase:null, waiting:false,
     overdriveUsed:false, odBuff:null, enemyStunTurns:0,
-    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyBurnTurns:0, playerBurnTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
     e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
     isTowerBattle:true,
     artifactStacks: {},
@@ -7434,6 +7487,8 @@ function renderBattleScreen() {
               badges.push(badge(`🧙 CURSED ATK-25% ${battleState.e2CurseTurnsE}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
             if((battleState.e2NoHealTurnsE||0)>0)
               badges.push(badge(`🧙🚫 NO-HEAL ${battleState.e2NoHealTurnsE}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
+            if((battleState.playerBurnTurns||0)>0)
+              badges.push(badge(`🔥 BURN ${battleState.playerBurnTurns}T`,'#ff7722','rgba(60,20,0,0.7)','0.8'));
             // Evolve II Branch Skill conditional/stack status — shows what's currently ACTIVE, not just what exists
             const ff2 = creature.phase==='final' ? creature.finalKey : null;
             const e2Stack = battleState.e2Stack||0;
@@ -7520,6 +7575,8 @@ function renderBattleScreen() {
               ebadges.push(ebadge(`🧙 CURSED ATK-25% ${battleState.e2CurseTurns}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
             if((battleState.e2NoHealTurns||0)>0)
               ebadges.push(ebadge(`🧙🚫 NO-HEAL ${battleState.e2NoHealTurns}T`,'#cc88ff','rgba(40,0,60,0.7)','0.9'));
+            if((battleState.enemyBurnTurns||0)>0)
+              ebadges.push(ebadge(`🔥 BURN ${battleState.enemyBurnTurns}T`,'#ff7722','rgba(60,20,0,0.7)','0.8'));
             return ebadges.length?`<div style="display:flex;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap">${ebadges.join('')}</div>`:'';
           })()}
           ${(enemy.passives||[]).length ? `<div style="display:flex;gap:3px;justify-content:flex-end;margin-top:2px">${(enemy.passives).map(id=>{
@@ -7577,6 +7634,8 @@ function renderBattleScreen() {
           if(!ap) {
             if(lr.poisonDmgPlayer>0) dmgNums += `<div class="dmg-num poison-player">☠️-${lr.poisonDmgPlayer}</div>`;
             if(lr.poisonDmgEnemy>0) dmgNums += `<div class="dmg-num poison-enemy">☠️-${lr.poisonDmgEnemy}</div>`;
+            if(lr.burnDmgPlayer>0) dmgNums += `<div class="dmg-num burn-player">🔥-${lr.burnDmgPlayer}</div>`;
+            if(lr.burnDmgEnemy>0) dmgNums += `<div class="dmg-num burn-enemy">🔥-${lr.burnDmgEnemy}</div>`;
             if(lr.healBlockedEnemy>0) dmgNums += `<div class="dmg-num heal-blocked-enemy">🚫💚+${lr.healBlockedEnemy}</div>`;
             if(lr.healBlockedPlayer>0) dmgNums += `<div class="dmg-num heal-blocked-player">🚫💚+${lr.healBlockedPlayer}</div>`;
           }

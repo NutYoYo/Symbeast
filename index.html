@@ -3368,7 +3368,7 @@ function autoBattleTick() {
 }
 
 function doEnemyOnlyTurn() {
-  if(!battleState || battleState.waiting) return;
+  if(!battleState || battleState.waiting || battleState.animPhase) return;
   const bs = battleState;
   const {enemy} = bs;
   const et = ENEMY_TYPES[enemy.typeKey] || ENEMY_TYPES.F;
@@ -8810,6 +8810,7 @@ screenContent.addEventListener('click', e=>{
     if(battleItemPicker) {
       const useBtn = el.closest('[data-useitem]');
       if(useBtn) {
+        if(battleState.waiting || battleState.animPhase) { battleItemPicker = false; return; }
         useItem(useBtn.dataset.useitem);
         battleItemPicker = false;
         doEnemyOnlyTurn();

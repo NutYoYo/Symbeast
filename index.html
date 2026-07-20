@@ -508,6 +508,7 @@ body::after {
 .dmg-num.crit-tag   { animation:dmg-float 0.9s 0.1s ease-out forwards;font-size:13px;color:#ffdd00;right:8%;top:48%; }
 .dmg-num.miss-tag   { animation:dmg-float 0.9s ease-out forwards;font-size:16px;color:#88aaff; }
 .dmg-num.stun-tag   { animation:dmg-float 0.9s 0.1s ease-out forwards;font-size:18px;color:#ffdd44;text-shadow:0 0 12px #ff8800,0 2px 4px #000; }
+.dmg-num.reflect-tag { animation:dmg-float 0.9s 0.1s ease-out forwards;font-size:18px;color:#88ddff;text-shadow:0 0 12px #4488cc,0 2px 4px #000; }
 .dmg-num.poison-enemy { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#aa44ff;right:8%;top:55%;text-shadow:0 0 10px #aa44ff,0 2px 4px #000; }
 .dmg-num.poison-player { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#aa44ff;left:8%;top:55%;text-shadow:0 0 10px #aa44ff,0 2px 4px #000; }
 .dmg-num.burn-enemy { animation:dmg-float 0.9s 0.5s ease-out forwards;font-size:18px;color:#ff7722;right:8%;top:55%;text-shadow:0 0 10px #ff7722,0 2px 4px #000; }
@@ -3442,7 +3443,7 @@ function doOverdriveTurn() {
   overdriveCharge = 0;
   SFX.overdrive();
   const passives = [];
-  let pd=0, ed=0, playerHeal=0, enemyHeal=0, reflectDmg=0, counterDmg=0, pdHits=[];
+  let pd=0, ed=0, playerHeal=0, enemyHeal=0, reflectDmg=0, counterDmg=0, pdHits=[], fullyReflected=false;
   const atk = getEffStat('atk');
   const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(atk*0.75) : atk;
   const _hit = (mult=1.0, critBonus=0) => {
@@ -3474,7 +3475,7 @@ function doOverdriveTurn() {
     pd=_pierceHit(2.5,1.0); ed=0; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🛡',text:`FORTRESS BREAK RUSH ×2.5 (pierce)→${pd} + DODGE | pierce+counter50%,dodge+20% (3T)`});
   } else if(ff==='ARMOR-PANDA') {
-    pd=_pierceHit(2.0,1.0); const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    pd=_pierceHit(2.0,1.0); const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0; fullyReflected=true;
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🛡',text:`FORTRESS BREAK WALL ×2.0 (pierce)→${pd} + Reflect${ref} | reflect50%,dmgTaken-15% (3T)`});
   } else if(ff==='TYRANT-IRONJAW') {
@@ -3511,14 +3512,14 @@ function doOverdriveTurn() {
     const h=_hit(2.0); pd=h.d; ed=Math.round(_ed()*0.5); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🌀',text:`ROLLING STRIKE ×2.0→${pd} | ATK×2,SPD/DEF×2,doubleAttack+50% (3T)`});
   } else if(ff==='BLAZING-FORTRESS') {
-    const h=_hit(3.0); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    const h=_hit(3.0); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0; fullyReflected=true;
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🏔️',text:`EARTHSHATTER STRIKE ×3.0→${pd} + Reflect${ref} | ATK+20%,reflect+50% (3T)`});
   } else if(ff==='SWIFT-FORTRESS') {
     const h=_hit(2.0); pd=h.d; ed=0; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🏔️',text:`EARTHSHATTER QUAKE ×2.0→${pd} + DODGE | reflect50%,dodge+15%,heal10%/turn (3T)`});
   } else if(ff==='GUARDIAN-FORTRESS') {
-    const h=_hit(2.5); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    const h=_hit(2.5); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0; fullyReflected=true;
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🏔️',text:`EARTHSHATTER ×2.5→${pd} + Reflect${ref} | reflect100% (3T)`});
   } else if(ff==='DARK-SPECTER') {
@@ -3538,7 +3539,7 @@ function doOverdriveTurn() {
     const h=_hit(3.0); pd=h.d; ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'💨',text:`SWIFT STRIKE ×3.0→${pd} | ATK×2,dodge+15%/turn (3T)`});
   } else if(ff==='IRON-SWIFTGUARD') {
-    pd=0; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    pd=0; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0; fullyReflected=true;
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🌀',text:`IRON CURTAIN WALL Shield MAX + Reflect${ref} | dmgTaken-25%,ATK+50%,heal15%/turn (3T)`});
   } else if(ff==='HAMMER-SHIELDWING') {
@@ -3579,7 +3580,7 @@ function doOverdriveTurn() {
     const h=_hit(2.0); pd=h.d; ed=Math.round(_ed()*0.5); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'⚖️',text:`SOUL BALANCE ×2.0→${pd} + half dmg | ATK/DEF+25%,doubleAttack+50% (3T)`});
   } else if(ff==='POISON-FORTRESS') {
-    const h=_hit(2.5); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0;
+    const h=_hit(2.5); pd=h.d; const ref=enemyReflectImmune?0:Math.max(1,Math.round(_ed())); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;} ed=0; fullyReflected=true;
     if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) bs.enemyPoisonTurns=3;
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🏔️',text:`VENOM EARTHSHATTER ×2.5→${pd} + Reflect${ref} + ☠️ POISON | reflect50%,ATK+20%,poisonOnHit25% (3T)`});
@@ -3609,7 +3610,7 @@ function doOverdriveTurn() {
   if(ed>0&&playerAlive) creature.hp=Math.max(0,creature.hp-ed);
   const turnNum=bs.turn;
   bs.lastCmp='win';
-  bs.lastResult={pm:{name:OVERDRIVE_INFO[ff]?.name||'OVERDRIVE',icon:OVERDRIVE_INFO[ff]?.icon||'🔥',desc:''},em,cmp:'win',crit:false,enemyCrit:false,pd,ed,playerFirst:true,passives,playerHeal,enemyHeal,reflectDmg,counterDmg,eReflectDmg:0,eCounterDmg:0,poisonDmgEnemy:0,poisonDmgPlayer:0,burnDmgEnemy:0,burnDmgPlayer:0,enemyStunned:false,playerStunned:false,pdHits,extraHits:[]};
+  bs.lastResult={pm:{name:OVERDRIVE_INFO[ff]?.name||'OVERDRIVE',icon:OVERDRIVE_INFO[ff]?.icon||'🔥',desc:''},em,cmp:'win',crit:false,enemyCrit:false,pd,ed,playerFirst:true,passives,playerHeal,enemyHeal,reflectDmg,counterDmg,eReflectDmg:0,eCounterDmg:0,poisonDmgEnemy:0,poisonDmgPlayer:0,burnDmgEnemy:0,burnDmgPlayer:0,enemyStunned:false,playerStunned:false,fullyReflected,pdHits,extraHits:[]};
   bs.turn++;
   bs.log.push(`T${turnNum} ★OVERDRIVE★ ${OVERDRIVE_INFO[ff]?.name||ff}`,`  foe -${pd}  you -${ed}`);
   passives.forEach(p=>bs.log.push(`  ${p.icon} ${p.text}`));
@@ -7684,7 +7685,7 @@ function renderBattleScreen() {
             if(lr.crit && lr.pd>0) dmgNums += `<div class="dmg-num crit-tag">⚡CRIT!</div>`;
             { const ph = (lr.playerHealPre||0) + (lr.playerFirst ? (lr.playerHealP1||0) : (lr.playerHealP2||0)); if(ph>0) dmgNums += `<div class="dmg-num heal">🩸+${ph}</div>`; }
           } else if(ap==='e-atk') {
-            dmgNums += `<div class="dmg-num ${lr.ed===0?(lr.enemyStunned?'enemy-hit stun-tag':'player-hit miss-tag'):'player-hit'}">${lr.ed>0?'-'+lr.ed:(lr.enemyStunned?'⚡STUNNED!':'DODGE!')}</div>`;
+            dmgNums += `<div class="dmg-num ${lr.ed===0?(lr.enemyStunned?'enemy-hit stun-tag':lr.fullyReflected?'enemy-hit reflect-tag':'player-hit miss-tag'):'player-hit'}">${lr.ed>0?'-'+lr.ed:(lr.enemyStunned?'⚡STUNNED!':lr.fullyReflected?'🪞REFLECTED!':'DODGE!')}</div>`;
             if(lr.enemyCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
             { const ph = lr.playerFirst ? (lr.playerHealP2||0) : (lr.playerHealP1||0); if(ph>0) dmgNums += `<div class="dmg-num heal">💚+${ph}</div>`; }
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;

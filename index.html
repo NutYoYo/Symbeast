@@ -7093,13 +7093,17 @@ function renderGauntlet() {
         </div>
         <div style="padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
           <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;margin-bottom:6px">TEAM (4)</div>
-          <div style="display:flex;gap:6px">
+          <div style="display:flex;gap:6px;overflow-x:auto">
             ${room.pets.map(p=>{
               const ff = EVOLVE2_FORMS[p.evolve2Key];
-              return `<div style="flex:1;text-align:center;padding:6px 2px;border-radius:8px;background:#08080f;border:1px solid #1a1a3a">
+              return `<div style="flex:1;min-width:0;text-align:center;padding:6px 2px;border-radius:8px;background:#08080f;border:1px solid #1a1a3a">
                 <div style="width:34px;height:34px;margin:0 auto;display:flex;align-items:center;justify-content:center">${buildPetSvg({phase:'final',finalKey:p.evolve2Key,shiny:false,symbols:[]},32,false)}</div>
                 <div style="font-size:9px;font-family:Kanit,sans-serif;color:${ff?.color||'#9070c0'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ff?.name||'?'}</div>
                 <div style="font-size:9px;color:#6858a0">${p.maxHp}HP</div>
+                <div style="display:flex;justify-content:center;gap:2px;margin-top:2px">
+                  <span style="font-size:11px;cursor:default" title="${(ff?T(ff.passiveTh,ff.passive):'')||''}">${ff?.passiveIcon||''}</span>
+                  <span style="font-size:11px;cursor:default" title="${T('เมื่อ HP < 30% จะใช้ท่าไม้ตายพิเศษครั้งเดียว แล้วเข้าสู่โหมด ENRAGE','Below 30% HP: unleashes a one-time finisher, then enters ENRAGE mode')}">🔥</span>
+                </div>
               </div>`;
             }).join('')}
           </div>
@@ -8659,6 +8663,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
   else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isRaidBattle){stamina=Math.min(MAX_STAMINA,stamina+RAID_STAMINA_COST);raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){battleState=null;state='menu';}else if(battleState?.isGauntletBattle){battleState=null;state='gauntlet';gauntletScreen='map';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
+  else if(state==='gauntlet')  { if(gauntletResult){ gauntletResult=null; gauntletScreen='map'; } else if(gauntletScreen==='detail'){ gauntletScreen='map'; } else { state='menu'; } render(); }
   else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }
   else if(state==='evolve')    { state='menu'; render(); }

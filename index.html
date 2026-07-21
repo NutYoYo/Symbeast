@@ -2006,6 +2006,7 @@ let gauntletScreen = 'map';       // 'map' | 'detail'
 let gauntletResult = null;        // {won, roomIdx, reward} shown after a room battle ends
 let gauntletChampionBadgeWeek = null; // weekKey of the last full clear, shown as a profile badge
 let gauntletFreeEntryPending = false; // true right after a room win — the next room doesn't cost Stamina again
+let gauntletEntryPaid = false; // true while the in-progress run actually spent Stamina/a quota slot — gates the Back-mid-fight quota refund
 
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
@@ -6792,6 +6793,9 @@ function gauntletStartRun(roomIdx) {
     if(stamina < GAUNTLET_STAMINA_COST) { scoutToast = T('⚡ Stamina ไม่พอ!','⚡ Not enough Stamina!'); render(); return; }
     gauntletRunsToday++; stamina -= GAUNTLET_STAMINA_COST;
     pets.forEach(p => { if(p.phase!=='egg') p.hp = p.maxHp; });
+    gauntletEntryPaid = true;
+  } else {
+    gauntletEntryPaid = false;
   }
   gauntletFreeEntryPending = false;
   gauntletRoomIdx = roomIdx; gauntletEnemyIdx = 0;
@@ -8574,7 +8578,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='idle') { state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
-  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isRaidBattle){stamina=Math.min(MAX_STAMINA,stamina+RAID_STAMINA_COST);raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){battleState=null;state='menu';}else if(battleState?.isGauntletBattle){battleState=null;state='gauntlet';gauntletScreen='map';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
+  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){towerRunsToday=Math.max(0,towerRunsToday-1);battleState=null;state='tower';saveGame();}else if(battleState?.isRaidBattle){raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){battleState=null;state='menu';}else if(battleState?.isGauntletBattle){if(gauntletEntryPaid){gauntletRunsToday=Math.max(0,gauntletRunsToday-1);gauntletEntryPaid=false;}battleState=null;state='gauntlet';gauntletScreen='map';saveGame();}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
   else if(state==='gauntlet')  { if(gauntletResult){ gauntletResult=null; gauntletScreen='map'; } else if(gauntletScreen==='detail'){ gauntletScreen='map'; } else { state='menu'; } render(); }
   else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }

@@ -1233,6 +1233,7 @@ const ITEMS = {
   energy_drink:  { name:'Energy Drink',   nameTh:'เครื่องดื่มพลังงาน', icon:'⚡', color:'#ffe066', desc:'Restores 30 Stamina instantly',          descTh:'ฟื้นฟู Stamina 30 ทันที' },
   mystery_egg:   { name:'Mystery Egg',    nameTh:'ไข่ลึกลับ',         icon:'🥚', color:'#c0ffc0', desc:'Hatches into a new beast',               descTh:'ฟักออกมาเป็นสัตว์ใหม่' },
   shiny_egg:     { name:'Shiny Egg',      nameTh:'ไข่ชายนี่',          icon:'✨🥚', color:'#ffd700', desc:'Hatches into a guaranteed Shiny beast!', descTh:'ฟักออกมาเป็นสัตว์ Shiny การันตี!' },
+  fusion_egg:    { name:'Fusion Egg',     nameTh:'ไข่ฟิวชั่น',         icon:'🥚', color:'#cc88ff', desc:'Hatches into a new beast carrying an inherited passive from its Fusion parents', descTh:'ฟักออกมาเป็นสัตว์ใหม่ พร้อมพาสซีพสืบทอดจากพ่อแม่ที่ใช้ Fusion' },
   super_potion:  { name:'Super Potion',  nameTh:'ยา Super',            icon:'🧬', color:'#00e5ff', desc:'Restores 50% Max HP instantly',          descTh:'ฟื้นฟู HP 50% ของ HP สูงสุด ทันที' },
   artifact_box: { name:'Artifact Box', nameTh:'กล่องอาติแฟค',        icon:'📦', color:'#c0a0ff', desc:'Opens to reveal a random Artifact: Normal (60%), Rare (35%), or Epic (5%)', descTh:'เปิดเพื่อรับ Artifact แบบสุ่ม: Normal (60%), Rare (35%) หรือ Epic (5%)' },
   box_R:        { name:'Artifact Rare Box', nameTh:'กล่อง Artifact Rare', icon:'💜📦', color:'#4488ff', desc:'Opens to reveal a guaranteed Rare [R] Artifact', descTh:'เปิดเพื่อรับ Artifact เกรด Rare [R] การันตี' },
@@ -1353,6 +1354,52 @@ const WEAPONS = {
   phantom_cloak:   { name:'Phantom Cloak',   nameTh:'เสื้อคลุมภูต',     grade:'E', icon:'👻', stats:{spd:80,hp:400},    effect:{type:'poison_when_hit', chance:0.20},           desc:'20% chance to poison the attacker when hit', descTh:'20% โอกาสวางพิษใส่ผู้โจมตีเมื่อถูกโจมตี' },
   titan_gauntlet:  { name:'Titan Gauntlet',  nameTh:'ถุงมือไททัน',      grade:'E', icon:'👊', stats:{atk:80,hp:400},    effect:{type:'stun_on_hit', chance:0.10},               desc:'10% chance to stun enemy', descTh:'10% โอกาสสตันศัตรู' },
   storm_crown:     { name:'Storm Crown',     nameTh:'มงกุฎพายุ',        grade:'E', icon:'⛈️', stats:{def:80,spd:80},    effect:{type:'dmg_reduce', mult:0.90},                  desc:'Damage received -10%', descTh:'ดาเมจที่ได้รับ -10%' },
+  // Quality tiers (Low ×0.75 / High ×1.25 of the Normal weapon above) — same effect type, unchanged
+  // on-proc magnitude, only the flat stats and proc chance scale with tier. Rolled via rollWeaponFromPool().
+  steel_blade_low:     { name:'Steel Blade -',     nameTh:'ดาบเหล็กกล้า -',     grade:'R', icon:'⚔️', stats:{atk:38},           effect:{type:'atk_dmg_boost', chance:0.08, mult:1.50}, desc:'8% chance to attack damage +50%', descTh:'8% โอกาสโจมตีแรงขึ้น 50%' },
+  steel_blade_high:    { name:'Steel Blade +',     nameTh:'ดาบเหล็กกล้า +',     grade:'R', icon:'⚔️', stats:{atk:63},           effect:{type:'atk_dmg_boost', chance:0.13, mult:1.50}, desc:'13% chance to attack damage +50%', descTh:'13% โอกาสโจมตีแรงขึ้น 50%' },
+  steel_wall_low:      { name:'Steel Wall -',      nameTh:'กำแพงเหล็กกล้า -',   grade:'R', icon:'🛡️', stats:{def:38},           effect:{type:'block', chance:0.08},                     desc:'8% chance to block (-50% damage that hit)', descTh:'8% โอกาสบล็อก (ลดดาเมจ 50% ในครั้งนั้น)' },
+  steel_wall_high:     { name:'Steel Wall +',      nameTh:'กำแพงเหล็กกล้า +',   grade:'R', icon:'🛡️', stats:{def:63},           effect:{type:'block', chance:0.13},                     desc:'13% chance to block (-50% damage that hit)', descTh:'13% โอกาสบล็อก (ลดดาเมจ 50% ในครั้งนั้น)' },
+  steel_greaves_low:   { name:'Steel Greaves -',   nameTh:'สนับแข้งเหล็กกล้า -', grade:'R', icon:'🥾', stats:{spd:38},           effect:{type:'dodge', chance:0.04},                     desc:'4% chance to dodge attacks', descTh:'4% โอกาสหลบการโจมตี' },
+  steel_greaves_high:  { name:'Steel Greaves +',   nameTh:'สนับแข้งเหล็กกล้า +', grade:'R', icon:'🥾', stats:{spd:63},           effect:{type:'dodge', chance:0.06},                     desc:'6% chance to dodge attacks', descTh:'6% โอกาสหลบการโจมตี' },
+  steel_heart_low:     { name:'Steel Heart -',     nameTh:'หัวใจเหล็กกล้า -',   grade:'R', icon:'💠', stats:{hp:150},           effect:{type:'regen', chance:0.08, pct:0.05},           desc:'8% chance to regen 5% Max HP at end of turn', descTh:'8% โอกาสฟื้นฟู HP 5% ท้ายเทิร์น' },
+  steel_heart_high:    { name:'Steel Heart +',     nameTh:'หัวใจเหล็กกล้า +',   grade:'R', icon:'💠', stats:{hp:250},           effect:{type:'regen', chance:0.13, pct:0.05},           desc:'13% chance to regen 5% Max HP at end of turn', descTh:'13% โอกาสฟื้นฟู HP 5% ท้ายเทิร์น' },
+  twin_fang_low:       { name:'Twin Fang -',       nameTh:'เขี้ยวคู่ -',        grade:'R', icon:'🗡️', stats:{atk:23,spd:23},    effect:{type:'multi_attack', chance:0.08, hits:2},      desc:'8% chance to attack twice', descTh:'8% โอกาสโจมตี 2 ครั้ง' },
+  twin_fang_high:      { name:'Twin Fang +',       nameTh:'เขี้ยวคู่ +',        grade:'R', icon:'🗡️', stats:{atk:38,spd:38},    effect:{type:'multi_attack', chance:0.13, hits:2},      desc:'13% chance to attack twice', descTh:'13% โอกาสโจมตี 2 ครั้ง' },
+  guardian_plate_low:  { name:'Guardian Plate -',  nameTh:'เกราะผู้พิทักษ์ -',  grade:'R', icon:'🛡️', stats:{def:23,hp:113},    effect:{type:'counter', chance:0.08, mult:0.75},        desc:'8% chance to counter (deal damage 75% that hit)', descTh:'8% โอกาสโจมตีสวนกลับ (ทำดาเมจ 75% ในครั้งนั้น)' },
+  guardian_plate_high: { name:'Guardian Plate +',  nameTh:'เกราะผู้พิทักษ์ +',  grade:'R', icon:'🛡️', stats:{def:38,hp:188},    effect:{type:'counter', chance:0.13, mult:0.75},        desc:'13% chance to counter (deal damage 75% that hit)', descTh:'13% โอกาสโจมตีสวนกลับ (ทำดาเมจ 75% ในครั้งนั้น)' },
+  balanced_crest_low:  { name:'Balanced Crest -',  nameTh:'ตราสมดุล -',         grade:'R', icon:'💍', stats:{atk:15,def:15,spd:15,hp:75}, effect:{type:'on_lose_dr', mult:0.92},        desc:'On LOSE, damage received -8%', descTh:'เมื่อแพ้ ดาเมจที่ได้รับ -8%' },
+  balanced_crest_high: { name:'Balanced Crest +',  nameTh:'ตราสมดุล +',         grade:'R', icon:'💍', stats:{atk:25,def:25,spd:25,hp:125}, effect:{type:'on_lose_dr', mult:0.87},        desc:'On LOSE, damage received -13%', descTh:'เมื่อแพ้ ดาเมจที่ได้รับ -13%' },
+  steel_lance_low:     { name:'Steel Lance -',     nameTh:'ทวนเหล็กกล้า -',     grade:'R', icon:'🔱', stats:{atk:23,def:23},    effect:{type:'poison_on_hit', chance:0.08},             desc:'8% chance to poison on a landed hit', descTh:'8% โอกาสวางพิษเมื่อโจมตีโดน' },
+  steel_lance_high:    { name:'Steel Lance +',     nameTh:'ทวนเหล็กกล้า +',     grade:'R', icon:'🔱', stats:{atk:38,def:38},    effect:{type:'poison_on_hit', chance:0.13},             desc:'13% chance to poison on a landed hit', descTh:'13% โอกาสวางพิษเมื่อโจมตีโดน' },
+  steel_mantle_low:    { name:'Steel Mantle -',    nameTh:'ผ้าคลุมเหล็กกล้า -', grade:'R', icon:'🧥', stats:{spd:23,hp:113},    effect:{type:'reflect', chance:0.08, mult:0.50},        desc:'8% chance to reflect 50% damage to enemy', descTh:'8% โอกาสสะท้อนดาเมจ 50% ใส่ศัตรู' },
+  steel_mantle_high:   { name:'Steel Mantle +',    nameTh:'ผ้าคลุมเหล็กกล้า +', grade:'R', icon:'🧥', stats:{spd:38,hp:188},    effect:{type:'reflect', chance:0.13, mult:0.50},        desc:'13% chance to reflect 50% damage to enemy', descTh:'13% โอกาสสะท้อนดาเมจ 50% ใส่ศัตรู' },
+  steel_fist_low:      { name:'Steel Fist -',      nameTh:'หมัดเหล็กกล้า -',    grade:'R', icon:'🥊', stats:{atk:23,hp:113},    effect:{type:'stun_on_hit', chance:0.04},               desc:'4% chance to stun enemy', descTh:'4% โอกาสสตันศัตรู' },
+  steel_fist_high:     { name:'Steel Fist +',      nameTh:'หมัดเหล็กกล้า +',    grade:'R', icon:'🥊', stats:{atk:38,hp:188},    effect:{type:'stun_on_hit', chance:0.06},               desc:'6% chance to stun enemy', descTh:'6% โอกาสสตันศัตรู' },
+  steel_crown_low:     { name:'Steel Crown -',     nameTh:'มงกุฎเหล็กกล้า -',   grade:'R', icon:'👑', stats:{def:23,spd:23},    effect:{type:'on_win_dmg', mult:1.08},                  desc:'On WIN, damage dealt +8%', descTh:'เมื่อชนะ ดาเมจที่สร้าง +8%' },
+  steel_crown_high:    { name:'Steel Crown +',     nameTh:'มงกุฎเหล็กกล้า +',   grade:'R', icon:'👑', stats:{def:38,spd:38},    effect:{type:'on_win_dmg', mult:1.13},                  desc:'On WIN, damage dealt +13%', descTh:'เมื่อชนะ ดาเมจที่สร้าง +13%' },
+  dragonfang_blade_low:  { name:'Dragonfang Blade -', nameTh:'ดาบเขี้ยวมังกร -',  grade:'E', icon:'🐉', stats:{atk:90},          effect:{type:'atk_dmg_boost', chance:0.19, mult:1.75},  desc:'19% chance to attack damage +75%', descTh:'19% โอกาสโจมตีแรงขึ้น 75%' },
+  dragonfang_blade_high: { name:'Dragonfang Blade +', nameTh:'ดาบเขี้ยวมังกร +',  grade:'E', icon:'🐉', stats:{atk:150},         effect:{type:'atk_dmg_boost', chance:0.31, mult:1.75},  desc:'31% chance to attack damage +75%', descTh:'31% โอกาสโจมตีแรงขึ้น 75%' },
+  aegis_bulwark_low:     { name:'Aegis Bulwark -',    nameTh:'ปราการเอจิส -',     grade:'E', icon:'🏰', stats:{def:90},          effect:{type:'block', chance:0.15},                     desc:'15% chance to block (-50% damage that hit)', descTh:'15% โอกาสบล็อก (ลดดาเมจ 50% ในครั้งนั้น)' },
+  aegis_bulwark_high:    { name:'Aegis Bulwark +',    nameTh:'ปราการเอจิส +',     grade:'E', icon:'🏰', stats:{def:150},         effect:{type:'block', chance:0.25},                     desc:'25% chance to block (-50% damage that hit)', descTh:'25% โอกาสบล็อก (ลดดาเมจ 50% ในครั้งนั้น)' },
+  windwalker_greaves_low:  { name:'Windwalker Greaves -', nameTh:'สนับแข้งจอมพายุ -', grade:'E', icon:'🌪️', stats:{spd:90},     effect:{type:'dodge', chance:0.11},                     desc:'11% chance to dodge attacks', descTh:'11% โอกาสหลบการโจมตี' },
+  windwalker_greaves_high: { name:'Windwalker Greaves +', nameTh:'สนับแข้งจอมพายุ +', grade:'E', icon:'🌪️', stats:{spd:150},    effect:{type:'dodge', chance:0.19},                     desc:'19% chance to dodge attacks', descTh:'19% โอกาสหลบการโจมตี' },
+  titans_heart_low:    { name:"Titan's Heart -",   nameTh:'หัวใจไททัน -',       grade:'E', icon:'💎', stats:{hp:450},          effect:{type:'regen', chance:0.15, pct:0.05},           desc:'15% chance to regen 5% Max HP at end of turn', descTh:'15% โอกาสฟื้นฟู HP 5% ท้ายเทิร์น' },
+  titans_heart_high:   { name:"Titan's Heart +",   nameTh:'หัวใจไททัน +',       grade:'E', icon:'💎', stats:{hp:750},          effect:{type:'regen', chance:0.25, pct:0.05},           desc:'25% chance to regen 5% Max HP at end of turn', descTh:'25% โอกาสฟื้นฟู HP 5% ท้ายเทิร์น' },
+  berserkers_fury_low:  { name:"Berserker's Fury -", nameTh:'โทสะนักรบเถื่อน -', grade:'E', icon:'🔥', stats:{atk:60,spd:60},   effect:{type:'multi_attack', chance:0.08, hits:3},      desc:'8% chance to attack three times', descTh:'8% โอกาสโจมตี 3 ครั้ง' },
+  berserkers_fury_high: { name:"Berserker's Fury +", nameTh:'โทสะนักรบเถื่อน +', grade:'E', icon:'🔥', stats:{atk:100,spd:100}, effect:{type:'multi_attack', chance:0.13, hits:3},      desc:'13% chance to attack three times', descTh:'13% โอกาสโจมตี 3 ครั้ง' },
+  fortress_core_low:   { name:'Fortress Core -',   nameTh:'แก่นป้อมปราการ -',   grade:'E', icon:'🏛️', stats:{def:60,hp:300},   effect:{type:'counter', chance:0.15, mult:0.75},        desc:'15% chance to counter (deal damage 75% that hit)', descTh:'15% โอกาสโจมตีสวนกลับ (ทำดาเมจ 75% ในครั้งนั้น)' },
+  fortress_core_high:  { name:'Fortress Core +',   nameTh:'แก่นป้อมปราการ +',   grade:'E', icon:'🏛️', stats:{def:100,hp:500},  effect:{type:'counter', chance:0.25, mult:0.75},        desc:'25% chance to counter (deal damage 75% that hit)', descTh:'25% โอกาสโจมตีสวนกลับ (ทำดาเมจ 75% ในครั้งนั้น)' },
+  omega_blade_low:     { name:'Omega Blade -',     nameTh:'ดาบโอเมก้า -',       grade:'E', icon:'✨', stats:{atk:38,def:38,spd:38,hp:225}, effect:{type:'on_win_dmg', mult:1.38},        desc:'On WIN, damage dealt +38%', descTh:'เมื่อชนะ ดาเมจที่สร้าง +38%' },
+  omega_blade_high:    { name:'Omega Blade +',     nameTh:'ดาบโอเมก้า +',       grade:'E', icon:'✨', stats:{atk:63,def:63,spd:63,hp:375}, effect:{type:'on_win_dmg', mult:1.63},        desc:'On WIN, damage dealt +63%', descTh:'เมื่อชนะ ดาเมจที่สร้าง +63%' },
+  dragon_spear_low:    { name:'Fire Dragon Spear -', nameTh:'หอกมังกรไฟ -',    grade:'E', icon:'🐲', stats:{atk:60,def:60},    effect:{type:'burn_on_hit', chance:0.11},               desc:'11% chance to burn on a landed hit', descTh:'11% โอกาสทำให้ศัตรูติดเผาไหม้เมื่อโจมตีโดน' },
+  dragon_spear_high:   { name:'Fire Dragon Spear +', nameTh:'หอกมังกรไฟ +',    grade:'E', icon:'🐲', stats:{atk:100,def:100},  effect:{type:'burn_on_hit', chance:0.19},               desc:'19% chance to burn on a landed hit', descTh:'19% โอกาสทำให้ศัตรูติดเผาไหม้เมื่อโจมตีโดน' },
+  phantom_cloak_low:   { name:'Phantom Cloak -',   nameTh:'เสื้อคลุมภูต -',     grade:'E', icon:'👻', stats:{spd:60,hp:300},   effect:{type:'poison_when_hit', chance:0.15},           desc:'15% chance to poison the attacker when hit', descTh:'15% โอกาสวางพิษใส่ผู้โจมตีเมื่อถูกโจมตี' },
+  phantom_cloak_high:  { name:'Phantom Cloak +',   nameTh:'เสื้อคลุมภูต +',     grade:'E', icon:'👻', stats:{spd:100,hp:500},  effect:{type:'poison_when_hit', chance:0.25},           desc:'25% chance to poison the attacker when hit', descTh:'25% โอกาสวางพิษใส่ผู้โจมตีเมื่อถูกโจมตี' },
+  titan_gauntlet_low:  { name:'Titan Gauntlet -',  nameTh:'ถุงมือไททัน -',      grade:'E', icon:'👊', stats:{atk:60,hp:300},   effect:{type:'stun_on_hit', chance:0.08},               desc:'8% chance to stun enemy', descTh:'8% โอกาสสตันศัตรู' },
+  titan_gauntlet_high: { name:'Titan Gauntlet +',  nameTh:'ถุงมือไททัน +',      grade:'E', icon:'👊', stats:{atk:100,hp:500},  effect:{type:'stun_on_hit', chance:0.13},               desc:'13% chance to stun enemy', descTh:'13% โอกาสสตันศัตรู' },
+  storm_crown_low:     { name:'Storm Crown -',     nameTh:'มงกุฎพายุ -',        grade:'E', icon:'⛈️', stats:{def:60,spd:60},   effect:{type:'dmg_reduce', mult:0.92},                  desc:'Damage received -8%', descTh:'ดาเมจที่ได้รับ -8%' },
+  storm_crown_high:    { name:'Storm Crown +',     nameTh:'มงกุฎพายุ +',        grade:'E', icon:'⛈️', stats:{def:100,spd:100}, effect:{type:'dmg_reduce', mult:0.87},                  desc:'Damage received -13%', descTh:'ดาเมจที่ได้รับ -13%' },
 };
 const WEAPON_POOL = {
   N: ['iron_sword','iron_shield','iron_boots','iron_amulet','iron_bow','iron_plate','modest_crest','iron_spear','iron_cloak','iron_gauntlet','iron_circlet'],
@@ -1362,6 +1409,21 @@ const WEAPON_POOL = {
 function rollWeaponGrade() {
   const r = Math.random();
   return r < 0.05 ? 'E' : r < 0.30 ? 'R' : 'N';
+}
+// R/E-grade weapons come in 3 quality tiers (Low/Normal/High) rolled independently of which weapon
+// dropped — N-grade has no tiers. Falls back to the base (Normal) key if a tiered variant is missing.
+function rollWeaponTier() {
+  const r = Math.random();
+  return r < 0.50 ? 'low' : r < 0.85 ? 'normal' : 'high';
+}
+function rollWeaponFromPool(grade) {
+  const pool = WEAPON_POOL[grade];
+  const base = pool[Math.floor(Math.random() * pool.length)];
+  if(grade === 'N') return base;
+  const tier = rollWeaponTier();
+  if(tier === 'normal') return base;
+  const tieredKey = `${base}_${tier}`;
+  return WEAPONS[tieredKey] ? tieredKey : base;
 }
 function rollWeapon() {
   const grade = rollWeaponGrade();
@@ -1962,6 +2024,51 @@ const OVERDRIVE_INFO = {
   'CRYSTAWOLF-BASTION':{name:'CRYSTAL BEAM',        icon:'💎', desc:'Strike ×3.5 + dodge this turn, then ATK +50%, damage taken -30% and recover 10% HP each turn for 3 turns',
     descTh:'โจมตี ×3.5 + หลบเทิร์นนี้ จากนั้น ATK+50%, ลดดาเมจที่รับ 30% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น'},
 };
+// Fusion Echo passives — inherited by a Fusion Egg's hatchling (creature.inheritedPassive), keyed by
+// the Evolve II form it was rolled from. Half-strength, self-contained versions (see doTurn's
+// "FUSION ECHO PASSIVES" block for the implementation).
+const FUSION_ECHO_INFO = {
+  'RAGING-BRAWLER':     {name:'RAGING ECHO',      icon:'💢', desc:'On WIN: damage dealt +8% per stack (max 5 stacks per battle)', descTh:'เมื่อ WIN ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
+  'WINDBLADE-BRAWLER':  {name:'WINDBLADE ECHO',   icon:'🗡', desc:'12% chance to fully dodge; on dodge, counter-attacks for 75% damage', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จโต้กลับดาเมจ 75%'},
+  'CRIMSON-BRAWLER':    {name:'CRIMSON ECHO',     icon:'☯️', desc:'Every round: ATK+5% and SPD+5% (max 3 stacks per battle)', descTh:'ทุกรอบ ATK+5% และ SPD+5% (สะสมสูงสุด 3 ครั้ง)'},
+  'KAIJU-BRAWLER':      {name:'KAIJU ECHO',       icon:'🦖', desc:'On LOSE: next round ATK+25%, DEF+25%, and 12% chance to burn the enemy', descTh:'เมื่อ LOSE รอบถัดไป ATK+25%, DEF+25% และ 12% โอกาสทำให้ศัตรูติดเผาไหม้'},
+  'FIGHTER-PANDA':      {name:'FIGHTER ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +35% that turn', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้น 35% ในเทิร์นนั้น'},
+  'PANDA-NINJA':         {name:'NINJA ECHO',      icon:'🥷', desc:'12% chance to fully dodge; on dodge, crit chance +50% next attack', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ โอกาสคริ+50% ในการโจมตีถัดไป'},
+  'PANDA-WARRIOR':      {name:'WARRIOR ECHO',     icon:'🐼', desc:'12% chance to take half damage and counter-attack for 35% damage', descTh:'12% โอกาสรับดาเมจครึ่งหนึ่งและโต้กลับด้วยดาเมจ 35%'},
+  'ARMOR-PANDA':        {name:'ARMOR ECHO',       icon:'🛡', desc:'Damage taken -10%; 25% chance to counter-attack for 35% damage', descTh:'ลดดาเมจที่รับ 10% และ 25% โอกาสโต้กลับด้วยดาเมจ 35%'},
+  'TYRANT-IRONJAW':     {name:'TYRANT ECHO',      icon:'🩸', desc:'Damage dealt +10% and lifesteal +5%', descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และดูดเลือดเพิ่ม 5%'},
+  'AGILE-IRONJAW':      {name:'AGILE ECHO',       icon:'⚔', desc:'12% chance to attack twice', descTh:'12% โอกาสโจมตี 2 ครั้ง'},
+  'RUNE-IRONJAW':       {name:'RUNE ECHO',        icon:'🔮', desc:'8% chance to stun the enemy; each round gains a random Rune: ATK+25% or DEF+25%', descTh:'8% โอกาสสตันศัตรู และทุกรอบได้รับ Rune สุ่ม: ATK+25% หรือ DEF+25%'},
+  'FULLARMOR-IRONJAW':  {name:'FULLARMOR ECHO',   icon:'🛡', desc:'While HP < 50%: damage taken -10% and counter-attacks for 35% damage', descTh:'เมื่อ HP < 50% ลดดาเมจที่รับ 10% และโต้กลับด้วยดาเมจ 35%'},
+  'STRONG-BLITZ':       {name:'STRONG ECHO',      icon:'⚡', desc:'On WIN: damage dealt +10% and 8% chance to stun the enemy for 1 round', descTh:'เมื่อ WIN ดาเมจเพิ่มขึ้น 10% และ 8% โอกาส Stun ศัตรู 1 รอบ'},
+  'STORM-BLITZ':        {name:'STORM ECHO',       icon:'🌩', desc:'10% chance to fully dodge; on dodge, ATK +25% next round', descTh:'10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ ATK+25% รอบถัดไป'},
+  'THUNDERCLOUD-BLITZ': {name:'THUNDERCLOUD ECHO',icon:'⛈️', desc:'8% chance to stun the enemy; if not stunned, gains 12% dodge that round instead', descTh:'8% โอกาส Stun ศัตรู ถ้าไม่ติดจะได้โอกาสหลบ 12% แทนในรอบนั้น'},
+  'BULWARK-BLITZ':      {name:'BULWARK ECHO',     icon:'🛡', desc:'Damage taken -10%; when hit, 8% chance to stun the attacker for 1 round', descTh:'ลดดาเมจที่รับ 10% และเมื่อถูกโจมตีมีโอกาส 8% ทำให้อีกฝ่าย Stun 1 รอบ'},
+  'WARLORD-CHAMPION':   {name:'WARLORD ECHO',     icon:'⚔️', desc:'Damage dealt +10%; 5% chance to attack 4 times', descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และมีโอกาส 5% ที่จะโจมตี 4 ครั้ง'},
+  'KING-CHAMPION':      {name:'KING ECHO',        icon:'👑', desc:'10% chance to fully dodge; on dodge, ATK/DEF/SPD +5% (max 5 stacks per battle)', descTh:'10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ ATK/DEF/SPD+5% (สะสมสูงสุด 5 ครั้ง)'},
+  'SOUL-CHAMPION':      {name:'SOUL ECHO',        icon:'⚖️', desc:'On WIN: ATK+12% and 12% chance to burn the enemy; on LOSE: dodge +12% and damage dealt +12% that round', descTh:'เมื่อ WIN: ATK+12% และ 12% โอกาสทำให้ศัตรูติดเผาไหม้ เมื่อ LOSE: โอกาสหลบ+12% และดาเมจเพิ่ม 12% ในรอบนั้น'},
+  'ROLLING-CHAMPION':   {name:'ROLLING ECHO',     icon:'🌀', desc:'Damage taken -10%; every 3 rounds the attack deals +25% damage and cannot miss', descTh:'ลดดาเมจที่รับ 10% และทุกๆ 3 รอบจะโจมตีแรงขึ้น 25% และไม่พลาดเป้า'},
+  'BLAZING-FORTRESS':   {name:'BLAZING ECHO',     icon:'🔥', desc:'On WIN: damage dealt +8% and DEF +8% per stack (max 3 stacks), 10% chance to poison the enemy', descTh:'เมื่อ WIN ดาเมจ+8% และ DEF+8% สะสม (สูงสุด 3 ครั้ง) และ 10% โอกาสทำให้ศัตรูติดพิษ'},
+  'SWIFT-FORTRESS':     {name:'SWIFT ECHO',       icon:'🔄', desc:'Every 3 turns: reflects 35% of damage taken, recovers 5% HP, and 25% chance to poison the enemy', descTh:'ทุก 3 เทิร์น สะท้อนดาเมจที่รับ 35% ฟื้นฟู HP 5% และ 25% โอกาสทำให้ศัตรูติดพิษ'},
+  'POISON-FORTRESS':    {name:'POISON ECHO',      icon:'☠️', desc:'Damage taken -5%; 12% chance to poison the enemy when hit (6% MaxHP/turn, 3 turns)', descTh:'ลดดาเมจที่รับ 5% และ 12% โอกาสทำให้ศัตรูติดพิษเมื่อถูกโจมตี (6% MaxHP/เทิร์น นาน 3 เทิร์น)'},
+  'GUARDIAN-FORTRESS':  {name:'GUARDIAN ECHO',    icon:'🏰', desc:'Damage taken -12%; while HP < 50%, reflects an extra 12% of damage taken back', descTh:'ลดดาเมจที่รับ 12% และเมื่อ HP < 50% จะสะท้อนดาเมจเพิ่มอีก 12%'},
+  'DARK-SPECTER':       {name:'DARK ECHO',        icon:'🌑', desc:'Damage dealt +10%, and lifesteal 7%', descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และดูดเลือด 7%'},
+  'SOUL-SPECTER':       {name:'SPECTER ECHO',     icon:'👻', desc:'10% chance to fully dodge; on dodge, the next attack hits twice', descTh:'10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ การโจมตีถัดไปโจมตี 2 ครั้ง'},
+  'MAGE-SPECTER':       {name:'MAGE ECHO',        icon:'🧙', desc:'On WIN: curses the enemy, ATK -12% for 2 turns; on DRAW: enemy cannot heal for 3 turns; on LOSE: damage taken -5%', descTh:'เมื่อ WIN: สาปศัตรู ATK-12% นาน 2 เทิร์น เมื่อ DRAW: สาปให้ศัตรูฟื้นฟู HP ไม่ได้ 3 เทิร์น เมื่อ LOSE: ลดดาเมจที่รับ 5%'},
+  'GRAVE-SPECTER':      {name:'GRAVE ECHO',       icon:'⚰️', desc:'Damage taken -12%; 25% chance to recover 5% HP each round', descTh:'ลดดาเมจที่รับ 12% และมีโอกาส 25% ฟื้นฟู HP 5%'},
+  'FIGHT-SWIFTGUARD':   {name:'FIGHT ECHO',       icon:'🥋', desc:'On WIN: damage dealt +8% per stack (max 3 stacks)', descTh:'เมื่อ WIN ดาเมจ+8% สะสม (สูงสุด 3 ครั้ง)'},
+  'QUICK-SWIFTGUARD':   {name:'QUICK ECHO',       icon:'💨', desc:'12% chance to fully dodge; on dodge, the next attack deals +25% damage and cannot miss', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ การโจมตีถัดไปดาเมจ+25% และไม่พลาดเป้า'},
+  'PHEONIX-SWIFTGUARD': {name:'PHOENIX ECHO',     icon:'🔥', desc:'Every attack has an 8% chance to burn the enemy; once per battle when HP < 30%: heal 50% HP + ATK/DEF/SPD +8%', descTh:'ทุกการโจมตีมีโอกาส 8% ทำให้ศัตรูติดเผาไหม้ เมื่อ HP<30% (ครั้งเดียว): ฟื้น HP 50% + ATK/DEF/SPD +8%'},
+  'IRON-SWIFTGUARD':    {name:'IRON ECHO',        icon:'🛡', desc:'On LOSE: damage taken -8% per stack (max 3 stacks per battle)', descTh:'เมื่อ LOSE ลดดาเมจที่รับ 8% สะสม (สูงสุด 3 ครั้ง)'},
+  'HAMMER-SHIELDWING':  {name:'HAMMER ECHO',      icon:'🔨', desc:'On WIN: damage dealt +10%, 8% chance to stun, and the attack pierces DEF', descTh:'เมื่อ WIN ดาเมจ+10%, 8% โอกาสสตัน และโจมตีทะลุ DEF'},
+  'CHILL-SHIELDWING':   {name:'CHILL ECHO',       icon:'❄️', desc:'Every 3 turns: dodges 50% and attacks through DEF with ATK +25%', descTh:'ทุก 3 เทิร์น: หลบ 50% และโจมตีทะลุ DEF ด้วย ATK+25%'},
+  'GAIA-SHIELDWING':    {name:'GAIA ECHO',        icon:'🌿', desc:'Every 3 rounds: recovers 8% of Max HP and ATK/DEF +10% that round', descTh:'ทุก 3 รอบ: ฟื้น HP 8% ของ Max HP และ ATK/DEF+10% ในรอบนั้น'},
+  'FATTY-SHIELDWING':   {name:'FATTY ECHO',       icon:'🛡', desc:'Damage taken -10%; while HP > 70%, ATK/DEF +15%; while HP < 70%, ATK +25%', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP > 70% ATK/DEF+15% เมื่อ HP < 70% ATK+25%'},
+  'GUANLET-BASTION':    {name:'GUANLET ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +8% per stack (max 5 stacks per battle)', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
+  'IRON-BASTION':       {name:'BASTION ECHO',     icon:'🎯', desc:'10% chance to fully dodge; every 3 turns, attacks cannot miss, deal +25% damage, and guarantee a crit', descTh:'10% โอกาสหลบการโจมตี ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ+25% และติดคริแน่นอน'},
+  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, counter-attacks for 35% damage, 5% chance to stun when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, โต้กลับดาเมจ 35%, 5% โอกาสสตันเมื่อโดนโจมตี'},
+  'GOLEM-BASTION':      {name:'GOLEM ECHO',       icon:'🗿', desc:'Damage taken -10%; while HP < 30%, ATK +15% and recovers 2.5% HP each round', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP < 30% ATK+15% และฟื้นฟู HP 2.5%'},
+};
 // Overdrive-buff crit-chance bonuses that must apply before the crit roll (see doTurn's critChance calc)
 const OD_CRIT_BONUS = {
   'RAGING-BRAWLER':0.25, 'WINDBLADE-BRAWLER':0.20, 'KAIJU-BRAWLER':0.15, 'DARK-SPECTER':0.50,
@@ -2026,6 +2133,9 @@ let partyArtPicker2 = false;
 let partyWeaponPicker = false;
 let shinyStatTooltip = false; // toggled by tapping the ⓘ next to a Shiny pet's stats in Party detail
 let rebirthConfirm = null; // {from, idx}
+let fusionPickA = null; // {from, idx} — first pet picked for Fusion
+let fusionPickB = null; // {from, idx} — second pet picked for Fusion
+let fusionConfirm = false; // true when showing the Fusion confirm modal
 let emptySlotModal = null; // {phase:'choose'|'hatch_confirm'|'storage_pick', slotIdx}
 let storageRemoveConfirm = null; // index ใน storage
 let partyRemoveConfirm = null;   // index ใน party
@@ -2075,7 +2185,8 @@ function newPet() {
            symbols:[], formKey:null,
            hp:60, maxHp:60, atk:12, spd:10, def:4, name:'???',
            buffExpiry:{atk:0,spd:0,def:0}, expedition:null,
-           trainCount:0, trainBonuses:{hp:0,atk:0,spd:0,def:0}, resting:false, deadRestUntil:0, locked:false, shiny:false };
+           trainCount:0, trainBonuses:{hp:0,atk:0,spd:0,def:0}, resting:false, deadRestUntil:0, locked:false, shiny:false,
+           inheritedPassive:null };
 }
 
 function applyShinyStats(pet) {
@@ -2092,6 +2203,8 @@ function applyShinyStats(pet) {
   pet.shinyBonus = { hp:dHp, atk:dAtk, spd:dSpd, def:dDef }; // stored so the UI can show an exact base-vs-bonus breakdown
 }
 
+const FUSION_STONE_COST = 5;
+const FUSION_GOLD_COST = 10000;
 const EVOLVE2_GOLD_COST = 2000;
 const EVOLVE2_SYM_COST = 5;
 const EVOLVE2_BALANCE_SYM_COST = 2; // Balance branch (B): 2x EACH of Symbol F/W/S instead of 5x one type
@@ -2297,7 +2410,7 @@ function useItem(type, petIdx=activePetIdx) {
   }
   if(type==='weapon_box'||type==='weapon_box_n') {
     const grade = type==='weapon_box_n' ? 'N' : rollWeaponGrade();
-    const wepKey = WEAPON_POOL[grade][Math.floor(Math.random()*WEAPON_POOL[grade].length)];
+    const wepKey = rollWeaponFromPool(grade);
     addWeaponToBag(wepKey);
     const wep = WEAPONS[wepKey];
     const gradeIcon = grade==='E'?'✨':grade==='R'?'💜':'';
@@ -2331,6 +2444,17 @@ function useItem(type, petIdx=activePetIdx) {
     const np = newPet(); np.shiny=true; applyShinyStats(np);
     pets.push(np); syncCreature();
     showHatchAnimation(true, () => { scoutToast=T('✨ SHINY EGG ฟัก! สัตว์ Shiny เข้าปาร์ตี้!','✨ SHINY EGG hatched! Shiny beast joined!'); render(); });
+  }
+  if(type==='fusion_egg') {
+    const np = newPet();
+    np.inheritedPassive = slot.inheritedPassive || null;
+    if(slot.fusionBonus) {
+      np.atk += slot.fusionBonus.atk; np.def += slot.fusionBonus.def; np.spd += slot.fusionBonus.spd;
+      np.maxHp += slot.fusionBonus.maxHp; np.hp = np.maxHp;
+    }
+    if(Math.random()<0.03) { np.shiny=true; applyShinyStats(np); }
+    pets.push(np); syncCreature();
+    scoutToast=T('🥚 Fusion Egg ฟัก! สัตว์เลี้ยงใหม่เข้าปาร์ตี้!','🥚 Fusion Egg hatched! New beast joined party!');
   }
   if(type==='essence') {
     const roll = Math.random();
@@ -4413,6 +4537,209 @@ function doTurn(moveIdx) {
   }
   }
 
+  // ===== FUSION ECHO PASSIVES (inherited from Fusion parents, half-strength, self-contained) =====
+  if(creature.inheritedPassive) {
+    const ip = creature.inheritedPassive;
+    if(ip==='RAGING-BRAWLER') {
+      if(cmp==='win') bs.echoRagingStack=Math.min(5,(bs.echoRagingStack||0)+1);
+      if(bs.echoRagingStack>0) { pd=Math.round(pd*(1+0.08*bs.echoRagingStack)); passives.push({icon:'💢',text:`RAGING ECHO ×${bs.echoRagingStack} dmg+${bs.echoRagingStack*8}%→${pd}`}); }
+    }
+    else if(ip==='WINDBLADE-BRAWLER') {
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); _dodgeEffectApplied=true; passives.push({icon:'🗡',text:`WINDBLADE ECHO DODGE! Counter -${c}`}); }
+    }
+    else if(ip==='CRIMSON-BRAWLER') {
+      bs.echoCrimsonStack=Math.min(3,(bs.echoCrimsonStack||0)+1);
+      pd=Math.round(pd*(1+0.05*bs.echoCrimsonStack));
+      passives.push({icon:'☯️',text:`CRIMSON ECHO ×${bs.echoCrimsonStack} ATK+${bs.echoCrimsonStack*5}%→${pd}`});
+    }
+    else if(ip==='KAIJU-BRAWLER') {
+      if(bs.echoKaijuBuff) {
+        pd=Math.round(pd*1.25); ed=(enemyIgnoresDef?ed:Math.round(ed*0.75)); bs.echoKaijuBuff=false;
+        if(pd>0 && Math.random()<0.12) { bs.enemyBurnTurns=3; passives.push({icon:'🦖',text:`KAIJU ECHO BUFF+BURN→${pd}`}); }
+        else passives.push({icon:'🦖',text:`KAIJU ECHO BUFF→${pd}`});
+      }
+      if(cmp==='lose') bs.echoKaijuBuff=true;
+    }
+    else if(ip==='FIGHTER-PANDA') {
+      if(cmp==='lose') { pd=Math.round(pd*1.35); passives.push({icon:'🥊',text:`FIGHTER ECHO LOSE dmg+35%→${pd}`}); }
+    }
+    else if(ip==='PANDA-NINJA') {
+      if(bs.echoNinjaCrit) { bs.playerGuaranteeCrit=Math.random()<0.5; bs.echoNinjaCrit=false; }
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.echoNinjaCrit=true; _dodgeEffectApplied=true; passives.push({icon:'🥷',text:'NINJA ECHO DODGE! Crit chance next'}); }
+    }
+    else if(ip==='PANDA-WARRIOR') {
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🐼',text:`WARRIOR ECHO half-dmg Counter -${c}`}); }
+    }
+    else if(ip==='ARMOR-PANDA') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
+      if(Math.random()<0.25) { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🛡',text:`ARMOR ECHO dmg-10% Counter -${c}`}); }
+      else passives.push({icon:'🛡',text:`ARMOR ECHO dmg-10%→${ed}`});
+    }
+    else if(ip==='TYRANT-IRONJAW') {
+      pd=Math.round(pd*1.10);
+      if(pd>0 && creature.hp>0) { const steal=Math.max(1,Math.round(pd*0.05)); _pHeal(steal,'🩸',`TYRANT ECHO dmg+10% +${steal}HP→${pd}`); }
+    }
+    else if(ip==='AGILE-IRONJAW') {
+      if(Math.random()<0.12) { const extra=pd; pd+=extra; passives.push({icon:'⚔',text:`AGILE ECHO DOUBLE ATTACK→${pd}`}); }
+    }
+    else if(ip==='RUNE-IRONJAW') {
+      if(!enemyStunned && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'🔮',text:'RUNE ECHO STUN!'}); }
+      bs.echoRuneType=['atk','def'][Math.floor(Math.random()*2)];
+      if(bs.echoRuneType==='atk') { pd=Math.round(pd*1.25); passives.push({icon:'🔮',text:`RUNE ECHO ATK+25%→${pd}`}); }
+      else { ed=(enemyIgnoresDef?ed:Math.round(ed*0.75)); passives.push({icon:'🔮',text:`RUNE ECHO DEF+25%→${ed}`}); }
+    }
+    else if(ip==='FULLARMOR-IRONJAW') {
+      if(creature.hp<creature.maxHp*0.5) {
+        ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
+        const c=Math.max(1,Math.round(pCurseAtk/3*0.35)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
+        passives.push({icon:'🛡',text:`FULLARMOR ECHO HP<50% dmg-10% Counter -${c}`});
+      }
+    }
+    else if(ip==='STRONG-BLITZ') {
+      if(cmp==='win') {
+        pd=Math.round(pd*1.10);
+        if(!enemyStunned && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'⚡',text:`STRONG ECHO WIN dmg+10% STUN!→${pd}`}); }
+        else passives.push({icon:'⚡',text:`STRONG ECHO WIN dmg+10%→${pd}`});
+      }
+    }
+    else if(ip==='STORM-BLITZ') {
+      if(bs.echoStormBuff) { pd=Math.round(pd*1.25); bs.echoStormBuff=false; passives.push({icon:'🌩',text:`STORM ECHO BUFF→${pd}`}); }
+      if(!enemyTrueStrike && Math.random()<0.10) { ed=0; bs.echoStormBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🌩',text:'STORM ECHO DODGE! ATK+25% next'}); }
+    }
+    else if(ip==='THUNDERCLOUD-BLITZ') {
+      if(!enemyStunned && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'⛈️',text:'THUNDERCLOUD ECHO STUN!'}); }
+      else if(!enemyTrueStrike && Math.random()<0.12) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⛈️',text:'THUNDERCLOUD ECHO DODGE!'}); }
+    }
+    else if(ip==='BULWARK-BLITZ') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
+      if(ed>0 && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'🛡',text:'BULWARK ECHO dmg-10% + STUN attacker!'}); }
+      else passives.push({icon:'🛡',text:`BULWARK ECHO dmg-10%→${ed}`});
+    }
+    else if(ip==='WARLORD-CHAMPION') {
+      pd=Math.round(pd*1.10);
+      if(Math.random()<0.05) { const extra=pd; pd+=extra*2; passives.push({icon:'⚔️',text:`WARLORD ECHO 4-HIT!→${pd}`}); }
+      else passives.push({icon:'⚔️',text:`WARLORD ECHO dmg+10%→${pd}`});
+    }
+    else if(ip==='KING-CHAMPION') {
+      if(bs.echoKingStack>0) { const s=bs.echoKingStack; pd=Math.round(pd*(1+0.05*s)); ed=(enemyIgnoresDef?ed:Math.round(ed*(1-0.05*s))); passives.push({icon:'👑',text:`KING ECHO Stack×${s}→${pd}`}); }
+      if(!enemyTrueStrike && Math.random()<0.10) { ed=0; bs.echoKingStack=Math.min(5,(bs.echoKingStack||0)+1); _dodgeEffectApplied=true; passives.push({icon:'👑',text:`KING ECHO DODGE! Stack×${bs.echoKingStack}`}); }
+    }
+    else if(ip==='SOUL-CHAMPION') {
+      if(cmp==='win') {
+        pd=Math.round(pd*1.12);
+        if(pd>0 && Math.random()<0.12) { bs.enemyBurnTurns=3; passives.push({icon:'⚖️',text:`SOUL ECHO WIN ATK+12%,BURN→${pd}`}); }
+        else passives.push({icon:'⚖️',text:`SOUL ECHO WIN ATK+12%→${pd}`});
+      } else if(cmp==='lose') {
+        if(!enemyTrueStrike && Math.random()<0.12) { ed=0; _dodgeEffectApplied=true; }
+        pd=Math.round(pd*1.12); passives.push({icon:'⚖️',text:`SOUL ECHO LOSE dmg+12%→${pd}${ed===0?' DODGE!':''}`});
+      }
+    }
+    else if(ip==='ROLLING-CHAMPION') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
+      if(bs.turn%3===0) { pd=Math.round(pd*1.25); bs.playerTrueStrike=true; passives.push({icon:'🌀',text:`ROLLING ECHO 3T TRUE STRIKE dmg+25%→${pd}`}); }
+      else passives.push({icon:'🌀',text:`ROLLING ECHO dmg-10%→${ed}`});
+    }
+    else if(ip==='BLAZING-FORTRESS') {
+      if(cmp==='win') bs.echoBlazingStack=Math.min(3,(bs.echoBlazingStack||0)+1);
+      if(bs.echoBlazingStack>0) { pd=Math.round(pd*(1+0.08*bs.echoBlazingStack)); ed=(enemyIgnoresDef?ed:Math.round(ed*(1-0.08*bs.echoBlazingStack))); passives.push({icon:'🔥',text:`BLAZING ECHO ×${bs.echoBlazingStack}→${pd}`}); }
+      if(pd>0 && Math.random()<0.10 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:'BLAZING ECHO POISON!'}); }
+    }
+    else if(ip==='SWIFT-FORTRESS') {
+      if(bs.turn%3===0) {
+        const ref=enemyReflectImmune?0:Math.max(1,Math.round(ed*0.35)); if(ref>0){enemy.hp=Math.max(0,enemy.hp-ref); reflectDmg+=ref;}
+        const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'🔄',`SWIFT ECHO 3T Reflect${ref} +${heal}HP`);
+        if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm') && Math.random()<0.25) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:'SWIFT ECHO POISON!'}); }
+      }
+    }
+    else if(ip==='POISON-FORTRESS') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.95));
+      if(ed>0 && Math.random()<0.12 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:`POISON ECHO dmg-5%→${ed} POISON!`}); }
+      else passives.push({icon:'☠️',text:`POISON ECHO dmg-5%→${ed}`});
+    }
+    else if(ip==='GUARDIAN-FORTRESS') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
+      if(creature.hp<creature.maxHp*0.5 && ed>0 && !enemyReflectImmune) { const ref=Math.max(1,Math.round(ed*0.12)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🏰',text:`GUARDIAN ECHO HP<50% extra reflect ${ref}`}); }
+      else passives.push({icon:'🏰',text:`GUARDIAN ECHO dmg-12%→${ed}`});
+    }
+    else if(ip==='DARK-SPECTER') {
+      pd=Math.round(pd*1.10);
+      if(pd>0 && creature.hp>0) { const steal=Math.max(1,Math.round(pd*0.07)); _pHeal(steal,'🌑',`DARK ECHO dmg+10% +${steal}HP→${pd}`); }
+    }
+    else if(ip==='SOUL-SPECTER') {
+      if(bs.echoSoulDouble) { const extra=pd; pd+=extra; bs.echoSoulDouble=false; passives.push({icon:'👻',text:`SOUL ECHO DOUBLE HIT→${pd}`}); }
+      if(!enemyTrueStrike && Math.random()<0.10) { ed=0; bs.echoSoulDouble=true; _dodgeEffectApplied=true; passives.push({icon:'👻',text:'SOUL ECHO DODGE! next hits twice'}); }
+    }
+    else if(ip==='MAGE-SPECTER') {
+      if(cmp==='win') { bs.e2CurseTurns=2; passives.push({icon:'🧙',text:'MAGE ECHO CURSE! Enemy ATK-12% (2T)'}); }
+      else if(cmp==='neutral') { bs.e2NoHealTurns=3; passives.push({icon:'🧙',text:'MAGE ECHO NO-HEAL! Enemy cannot heal (3T)'}); }
+      else { ed=(enemyIgnoresDef?ed:Math.round(ed*0.95)); passives.push({icon:'🧙',text:`MAGE ECHO LOSE dmg-5%→${ed}`}); }
+    }
+    else if(ip==='GRAVE-SPECTER') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
+      if(Math.random()<0.25) { const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'⚰️',`GRAVE ECHO +${heal}HP`); }
+    }
+    else if(ip==='FIGHT-SWIFTGUARD') {
+      if(cmp==='win') bs.echoFightStack=Math.min(3,(bs.echoFightStack||0)+1);
+      if(bs.echoFightStack>0) { pd=Math.round(pd*(1+0.08*bs.echoFightStack)); passives.push({icon:'🥋',text:`FIGHT ECHO ×${bs.echoFightStack} dmg+${bs.echoFightStack*8}%→${pd}`}); }
+    }
+    else if(ip==='QUICK-SWIFTGUARD') {
+      if(bs.echoQuickBuff) { pd=Math.round(pd*1.25); bs.playerTrueStrike=true; bs.echoQuickBuff=false; passives.push({icon:'💨',text:`QUICK ECHO BUFF pierce-like→${pd}`}); }
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.echoQuickBuff=true; _dodgeEffectApplied=true; passives.push({icon:'💨',text:'QUICK ECHO DODGE! next empowered'}); }
+    }
+    else if(ip==='PHEONIX-SWIFTGUARD') {
+      if(!bs.echoPhoenixUsed && creature.hp>0 && creature.hp<creature.maxHp*0.3) {
+        const heal=Math.round(creature.maxHp*0.5); creature.hp=Math.min(creature.maxHp,creature.hp+heal); playerHeal+=heal; bs.echoPhoenixUsed=true;
+        pd=Math.round(pd*1.08); ed=(enemyIgnoresDef?ed:Math.round(ed*0.92));
+        passives.push({icon:'🔥',text:`PHOENIX ECHO REBIRTH! +${heal}HP, ATK/DEF/SPD+8%`});
+      }
+      if(pd>0 && Math.random()<0.08) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:'PHOENIX ECHO BURN!'}); }
+    }
+    else if(ip==='IRON-SWIFTGUARD') {
+      if(cmp==='lose') bs.echoIronStack=Math.min(3,(bs.echoIronStack||0)+1);
+      if(bs.echoIronStack>0) { ed=(enemyIgnoresDef?ed:Math.round(ed*(1-0.08*bs.echoIronStack))); passives.push({icon:'🛡',text:`IRON ECHO ×${bs.echoIronStack} dmg-${bs.echoIronStack*8}%→${ed}`}); }
+    }
+    else if(ip==='HAMMER-SHIELDWING') {
+      if(cmp==='win') {
+        pd=Math.round(pd*1.10)+Math.floor(enemy.def/4);
+        if(!enemyStunned && Math.random()<0.08) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'🔨',text:`HAMMER ECHO WIN dmg+10%,pierce,STUN!→${pd}`}); }
+        else passives.push({icon:'🔨',text:`HAMMER ECHO WIN dmg+10%,pierce→${pd}`});
+      }
+    }
+    else if(ip==='CHILL-SHIELDWING') {
+      if(bs.turn%3===0) { ed=0; pd+=Math.floor(enemy.def/4); pd=Math.round(pd*1.25); _dodgeEffectApplied=true; passives.push({icon:'❄️',text:`CHILL ECHO 3T DODGE+pierce ATK+25%→${pd}`}); }
+    }
+    else if(ip==='GAIA-SHIELDWING') {
+      if(bs.turn%3===0) { const heal=Math.round(creature.maxHp*0.08); _pHeal(heal,'🌿',`GAIA ECHO 3T +${heal}HP`); pd=Math.round(pd*1.10); ed=(enemyIgnoresDef?ed:Math.round(ed*0.9)); }
+    }
+    else if(ip==='FATTY-SHIELDWING') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
+      if(creature.hp>creature.maxHp*0.7) { pd=Math.round(pd*1.15); passives.push({icon:'🛡',text:`FATTY ECHO HP>70% ATK/DEF+15%→${pd}`}); }
+      else { pd=Math.round(pd*1.25); passives.push({icon:'🛡',text:`FATTY ECHO HP<70% ATK+25%→${pd}`}); }
+    }
+    else if(ip==='GUANLET-BASTION') {
+      if(cmp==='lose') bs.echoGuanletStack=Math.min(5,(bs.echoGuanletStack||0)+1);
+      if(bs.echoGuanletStack>0) { pd=Math.round(pd*(1+0.08*bs.echoGuanletStack)); passives.push({icon:'🥊',text:`GUANLET ECHO ×${bs.echoGuanletStack} dmg+${bs.echoGuanletStack*8}%→${pd}`}); }
+    }
+    else if(ip==='IRON-BASTION') {
+      if(!enemyTrueStrike && Math.random()<0.10) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'🎯',text:'BASTION ECHO DODGE!'}); }
+      if(bs.turn%3===0) { pd=Math.round(pd*1.25); bs.playerTrueStrike=true; passives.push({icon:'🎯',text:`BASTION ECHO 3T TRUE STRIKE dmg+25%→${pd}`}); }
+    }
+    else if(ip==='CRYSTAWOLF-BASTION') {
+      if(creature.hp>creature.maxHp*0.5) { pd=Math.round(pd*1.12); passives.push({icon:'💎',text:`CRYSTAL ECHO HP>50% ATK+12%→${pd}`}); }
+      else {
+        ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
+        const c=Math.max(1,Math.round(pCurseAtk/3*0.35)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
+        passives.push({icon:'💎',text:`CRYSTAL ECHO HP<50% DEF+12% Counter -${c}`});
+        if(pd>0 && Math.random()<0.05) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'CRYSTAL ECHO STUN!'}); }
+      }
+    }
+    else if(ip==='GOLEM-BASTION') {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
+      if(creature.hp<creature.maxHp*0.3) { pd=Math.round(pd*1.15); const heal=Math.round(creature.maxHp*0.025); _pHeal(heal,'🗿',`GOLEM ECHO HP<30% ATK+15% +${heal}HP→${pd}`); }
+      else passives.push({icon:'🗿',text:`GOLEM ECHO dmg-10%→${ed}`});
+    }
+  }
+
   // ===== BOSS / MINI-BOSS / MIMIC BESPOKE PASSIVES =====
   if(enemy.spriteFile==='monster & boss/F-werewolf-boss.png') {
     // MOON WEREWOLF: each LOSE (i.e. player WIN) stacks ATK+15%, max 4, never resets
@@ -5071,7 +5398,7 @@ function endBattle(won) {
     }
     // Wave 3 (special boss) cleared — final rewards: guaranteed weapon + independent other-drop rolls
     const wGrade = rollRaidWeaponGrade(level);
-    const wKey = WEAPON_POOL[wGrade][Math.floor(Math.random()*WEAPON_POOL[wGrade].length)];
+    const wKey = rollWeaponFromPool(wGrade);
     battleState.raidPendingItems.push(`weapon:${wKey}`);
     const od = RAID_OTHER_DROPS_BY_LEVEL[level-1];
     if(Math.random()<od.artBox)  battleState.raidPendingItems.push('artifact_box');
@@ -7048,6 +7375,7 @@ function renderMenu() {
               ['🐾','PARTY',T('มี Pet ได้สูงสุด 4 ตัว พร้อม Storage อีก 20 ช่อง เลือก Pet ที่ Active เพื่อนำไปต่อสู้ — เปลี่ยน Pet ระหว่างสู้ได้ในโหมด Tower และ VS','Hold up to 4 active pets plus 20 in Storage. Switch pets mid-battle in Tower and VS modes')],
               ['🔮','REBIRTH',T(`Pet ที่ Evolve หรือ Evolve II แล้ว (ต้องถอด Artifact ก่อน) ใช้ Rebirth Stone 1 ชิ้น + Gold ${REBIRTH_GOLD_COST} เพื่อ Rebirth — สเตตัสรีเซ็ตกลับฐาน แต่ได้โบนัสถาวร +25% ของสเตตัสก่อน Rebirth ติดตัวไปตลอด ทำซ้ำได้เรื่อยๆ เพื่อสะสมโบนัส (มีดาว ✦ แสดง rank)\n\n🔮 หา Rebirth Stone ได้จาก: ชนะ Boss (10%) หรือ Mini-Boss (10%) ใน Scout, ซื้อได้ที่ Secret Shop (${REBIRTH_GOLD_COST}G/ครั้ง), First-Clear Tower Floor 70 (การันตี 5 ก้อน), หรือลุ้นจาก Special Boss ใน Raid — โอกาสจะสูงขึ้นมากในโหมด Hard/Hell`,`An Evolved or Evolve II Pet (with no Artifact equipped) can Rebirth using 1 Rebirth Stone + ${REBIRTH_GOLD_COST} Gold — stats reset to base, but you keep a permanent +25% bonus based on stats before the Rebirth. Repeatable to stack more bonuses (shown as ✦ rank stars)\n\n🔮 Get Rebirth Stones from: beating a Boss (10%) or Mini-Boss (10%) in Scout, buying one at the Secret Shop (${REBIRTH_GOLD_COST}G each), Tower Floor 70's First-Clear (guaranteed 5), or a chance from Raid's Special Boss — odds go up a lot in Hard/Hell Mode`)],
               ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัสถาวร +10% ทุกค่า พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว','Some Pets have a rare chance to be Shiny — a permanent +10% bonus on every stat, plus a unique glowing visual effect')],
+              ['🥚','FUSION',T(`เลือก Pet ร่าง Evolve II 2 ตัว (ต้องถอด Artifact/Weapon ก่อน) มา Fusion ด้วย Rebirth Stone ${FUSION_STONE_COST} ชิ้น + Gold ${FUSION_GOLD_COST} — ทั้งคู่จะหายไป ได้ Fusion Egg แทน\n\n🥚 ฟักไข่แบบปกติ ได้สัตว์ใหม่ที่มีสเตตัสเริ่มต้นสูงขึ้น (25% ของค่าเฉลี่ยพ่อแม่) พร้อมพาสซีพ "Echo" ติดตัวมาแบบสุ่มจาก 1 ใน 2 ตัว (พาสซีพครึ่งความแรง ไม่ขึ้นกับร่างที่วิวัฒนาการทีหลัง) ดูได้ที่หน้ารายละเอียด Pet`,`Pick 2 Evolve II Pets (must unequip Artifact/Weapon first) to Fuse using ${FUSION_STONE_COST} Rebirth Stones + ${FUSION_GOLD_COST} Gold — both are consumed, you get a Fusion Egg instead\n\n🥚 Hatches normally into a new beast with a stat head-start (25% of the parents' combined average), plus a random "Echo" passive inherited from one of the two parents (half-strength, independent of whatever form it evolves into later) — check the Pet detail screen to see it`)],
             ];
             const BATTLE_SYSTEMS = [
               ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!')],
@@ -8457,7 +8785,7 @@ screenContent.addEventListener('click', e=>{
     }
     const addPet = el.closest('[data-addpet]');
     if(addPet) {
-      const hasEgg = inventory.some(s=>s.type==='mystery_egg'||s.type==='shiny_egg');
+      const hasEgg = inventory.some(s=>s.type==='mystery_egg'||s.type==='shiny_egg'||s.type==='fusion_egg');
       const hasStorage = storage.length > 0;
       if(!hasEgg && !hasStorage) return;
       emptySlotModal = {phase:'choose', slotIdx: parseInt(addPet.dataset.addpet)};
@@ -8465,15 +8793,23 @@ screenContent.addEventListener('click', e=>{
     }
     if(el.closest('#emSlotShinyHatch')) { emptySlotModal = {...emptySlotModal, phase:'hatch_confirm', eggType:'shiny_egg'}; render(); return; }
     if(el.closest('#emSlotHatch')) { emptySlotModal = {...emptySlotModal, phase:'hatch_confirm', eggType:'mystery_egg'}; render(); return; }
+    if(el.closest('#emSlotFusionHatch')) { emptySlotModal = {...emptySlotModal, phase:'hatch_confirm', eggType:'fusion_egg'}; render(); return; }
     if(el.closest('#emSlotStorage')) { emptySlotModal = {...emptySlotModal, phase:'storage_pick'}; render(); return; }
     if(el.closest('#emSlotCancel')) { emptySlotModal = null; render(); return; }
     if(el.closest('#emSlotHatchOk')) {
       const eggType = emptySlotModal?.eggType || 'mystery_egg';
       const eggSlot = inventory.find(s=>s.type===eggType);
-      if(eggSlot) { eggSlot.qty--; if(eggSlot.qty<=0) inventory.splice(inventory.indexOf(eggSlot),1); }
       const np2 = newPet();
       if(eggType==='shiny_egg') { np2.shiny=true; applyShinyStats(np2); }
+      else if(eggType==='fusion_egg') {
+        if(eggSlot) {
+          np2.inheritedPassive = eggSlot.inheritedPassive || null;
+          if(eggSlot.fusionBonus) { np2.atk+=eggSlot.fusionBonus.atk; np2.def+=eggSlot.fusionBonus.def; np2.spd+=eggSlot.fusionBonus.spd; np2.maxHp+=eggSlot.fusionBonus.maxHp; np2.hp=np2.maxHp; }
+        }
+        if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
+      }
       else if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
+      if(eggSlot) { eggSlot.qty--; if(eggSlot.qty<=0) inventory.splice(inventory.indexOf(eggSlot),1); }
       np2.phase='larva'; np2.name='LARVA'; np2.tapCount=np2.tapTarget;
       pets.push(np2); emptySlotModal=null; saveGame();
       showHatchAnimation(np2.shiny, () => { scoutToast = np2.shiny ? T('✨ SHINY HATCHED!','✨ SHINY HATCHED!') : '🥚 HATCHED!'; render(); });
@@ -8491,6 +8827,7 @@ screenContent.addEventListener('click', e=>{
       partyViewTab = tabBtn.dataset.partytab;
       if(partyViewTab !== 'evolve2') { evolve2PetSource = null; evolve2SymbolPick = null; }
       if(partyViewTab !== 'rebirth') { rebirthConfirm = null; }
+      if(partyViewTab !== 'fusion') { fusionPickA = null; fusionPickB = null; fusionConfirm = false; }
       render(); return;
     }
     // Evolve II tab — pick pet
@@ -8549,6 +8886,52 @@ screenContent.addEventListener('click', e=>{
       syncCreature();
       SFX.rebirth();
       showRebirthEffect(pet);
+      saveGame(); render(); return;
+    }
+    // Fusion tab — pick pets
+    const fusionPickEl = el.closest('[data-fusionpick]');
+    if(fusionPickEl && partyViewTab==='fusion') {
+      const [from, idxStr] = fusionPickEl.dataset.fusionpick.split(':');
+      const idx = parseInt(idxStr);
+      if(fusionPickA && fusionPickA.from===from && fusionPickA.idx===idx) fusionPickA = null;
+      else if(fusionPickB && fusionPickB.from===from && fusionPickB.idx===idx) fusionPickB = null;
+      else if(!fusionPickA) fusionPickA = {from, idx};
+      else if(!fusionPickB) fusionPickB = {from, idx};
+      render(); return;
+    }
+    if(el.closest('#fusionConfirmBtn') && partyViewTab==='fusion') { fusionConfirm = true; render(); return; }
+    if(el.closest('#fusionCancel')) { fusionConfirm = false; render(); return; }
+    if(el.closest('#fusionConfirmYes')) {
+      fusionConfirm = false;
+      const petA = fusionPickA ? (fusionPickA.from==='party'?pets[fusionPickA.idx]:storage[fusionPickA.idx]) : null;
+      const petB = fusionPickB ? (fusionPickB.from==='party'?pets[fusionPickB.idx]:storage[fusionPickB.idx]) : null;
+      if(!petA || !petB || petA===petB) { fusionPickA=null; fusionPickB=null; render(); return; }
+      if(petA.artifact||petA.artifact2||petA.weapon||petB.artifact||petB.artifact2||petB.weapon) { fusionConfirm=false; render(); return; }
+      const stoneIdx2 = inventory.findIndex(i=>i.type==='rebirth_stone');
+      const stoneQty2 = stoneIdx2>=0 ? inventory[stoneIdx2].qty : 0;
+      if(stoneQty2 < FUSION_STONE_COST || gold < FUSION_GOLD_COST) { fusionPickA=null; fusionPickB=null; render(); return; }
+      // Compute inherited data BEFORE removing the parents
+      const inheritedPassive = Math.random()<0.5 ? petA.finalKey : petB.finalKey;
+      const fusionBonus = {
+        atk:   Math.round((petA.atk+petB.atk)/2 * 0.25),
+        def:   Math.round((petA.def+petB.def)/2 * 0.25),
+        spd:   Math.round((petA.spd+petB.spd)/2 * 0.25),
+        maxHp: Math.round((petA.maxHp+petB.maxHp)/2 * 0.25),
+      };
+      // Remove both parents (remove higher index first so the other index stays valid if same array)
+      const removals = [fusionPickA, fusionPickB].sort((a,b)=>b.idx-a.idx);
+      removals.forEach(r => { if(r.from==='party') pets.splice(r.idx,1); else storage.splice(r.idx,1); });
+      if(activePetIdx >= pets.length) activePetIdx = Math.max(0, pets.length-1);
+      // Deduct cost
+      inventory[stoneIdx2].qty -= FUSION_STONE_COST;
+      if(inventory[stoneIdx2].qty<=0) inventory.splice(stoneIdx2,1);
+      gold -= FUSION_GOLD_COST;
+      // Fusion Egg never stacks (each carries its own inherited data) — push directly, bypass addItemToInventory's merge-by-type
+      inventory.push({type:'fusion_egg', qty:1, inheritedPassive, fusionBonus});
+      fusionPickA = null; fusionPickB = null;
+      syncCreature();
+      SFX.evolve();
+      scoutToast = T('🥚 Fusion สำเร็จ! ได้ Fusion Egg แล้ว','🥚 Fusion complete! Got a Fusion Egg');
       saveGame(); render(); return;
     }
     // Evolve II tab — confirm
@@ -9240,9 +9623,10 @@ function renderParty() {
     // Evolve II keeps the pre-evolution form's passive active alongside its own Branch Skill (see baseFormKey in doTurn) —
     // surface that here so players aren't surprised by passives from a form they think they left behind.
     const basePassiveDetail = ff ? (()=>{ const bf=FORMS[pet.baseFormKey]; return bf ? `<div style="margin-top:4px;padding:6px 8px;background:#0a0a1c;border-radius:8px;border:1px solid ${bf.color}33"><div style="font-family:Kanit,sans-serif;font-size:9px;color:#8878b8;margin-bottom:3px;letter-spacing:0.5px">${T('พาสซีฟร่างเดิม (ยังใช้งานอยู่)','BASE PASSIVE — still active')}</div><div style="font-size:10px;color:${bf.color};line-height:1.5">${bf.passiveIcon||''} ${P(bf)}</div></div>` : ''; })() : '';
+    const inheritedPassiveDetail = pet.inheritedPassive ? (()=>{ const ei=FUSION_ECHO_INFO[pet.inheritedPassive]; return ei ? `<div style="margin-top:4px;padding:6px 8px;background:#0a1420;border-radius:8px;border:1px solid #33aacc44"><div style="font-family:Kanit,sans-serif;font-size:9px;color:#88ccff;margin-bottom:3px;letter-spacing:0.5px">🥚 ${T('พาสซีพสืบทอด (Fusion)','INHERITED PASSIVE (Fusion)')}</div><div style="font-size:10px;color:#99ddff;line-height:1.5">${ei.icon} ${D(ei)}</div></div>` : ''; })() : '';
     const passiveInfo = ff
-      ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid ${ff.color}44;font-size:11px;color:${ff.color}">${ff.passiveIcon||''} ${P(ff)}</div>${odDetail}${basePassiveDetail}`
-      : f ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid #2a2a4a;font-size:11px;color:#c0a0ff">${f.passiveIcon||''} ${P(f)}</div>` : '';
+      ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid ${ff.color}44;font-size:11px;color:${ff.color}">${ff.passiveIcon||''} ${P(ff)}</div>${odDetail}${basePassiveDetail}${inheritedPassiveDetail}`
+      : f ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid #2a2a4a;font-size:11px;color:#c0a0ff">${f.passiveIcon||''} ${P(f)}</div>${inheritedPassiveDetail}` : (inheritedPassiveDetail ? `<div style="margin-top:6px">${inheritedPassiveDetail}</div>` : '');
     screenContent.innerHTML = `
       <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;border-radius:12px;padding:0 0 4px 0;overflow-y:auto">
         <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px 8px 8px;border-radius:12px;gap:4px">
@@ -9663,6 +10047,7 @@ function renderParty() {
       <div data-partytab="storage" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='storage'?'rgba(40,80,40,0.3)':'#08080f'};border:1px solid ${partyViewTab==='storage'?'#408040':'#2a2a4a'};color:${partyViewTab==='storage'?'#80cc80':'#4a4a7a'}">📦 BOX</div>
       <div data-partytab="evolve2" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='evolve2'?'rgba(120,40,0,0.4)':'#08080f'};border:1px solid ${partyViewTab==='evolve2'?'#ff6600':'#2a2a4a'};color:${partyViewTab==='evolve2'?'#ff9944':'#4a4a7a'}">🧬 EVOLVE II</div>
       <div data-partytab="rebirth" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='rebirth'?'rgba(80,0,120,0.5)':'#08080f'};border:1px solid ${partyViewTab==='rebirth'?'#cc88ff':'#2a2a4a'};color:${partyViewTab==='rebirth'?'#dd99ff':'#4a4a7a'}">🔮 REBIRTH</div>
+      <div data-partytab="fusion" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='fusion'?'rgba(0,80,120,0.5)':'#08080f'};border:1px solid ${partyViewTab==='fusion'?'#88ccff':'#2a2a4a'};color:${partyViewTab==='fusion'?'#99ddff':'#4a4a7a'}">🥚 FUSION</div>
     </div>`;
 
   const storageDetailOverlay = storageDetailIdx !== null && storage[storageDetailIdx] ? (()=>{
@@ -9916,12 +10301,80 @@ function renderParty() {
     </div>`;
   })();
 
+  const fusionHtml = (()=>{
+    const eligible = [...pets.map((p,i)=>({p,i,from:'party'})), ...storage.map((p,i)=>({p,i,from:'storage'}))]
+      .filter(({p})=>p.phase==='final');
+    const isPicked = (from,i) => (fusionPickA && fusionPickA.from===from && fusionPickA.idx===i) || (fusionPickB && fusionPickB.from===from && fusionPickB.idx===i);
+    const petA = fusionPickA ? (fusionPickA.from==='party'?pets[fusionPickA.idx]:storage[fusionPickA.idx]) : null;
+    const petB = fusionPickB ? (fusionPickB.from==='party'?pets[fusionPickB.idx]:storage[fusionPickB.idx]) : null;
+    const stoneCount2 = inventory.find(s=>s.type==='rebirth_stone')?.qty || 0;
+    const goldOk2 = gold >= FUSION_GOLD_COST;
+    const stoneOk2 = stoneCount2 >= FUSION_STONE_COST;
+    const canFuse = petA && petB && stoneOk2 && goldOk2;
+    return `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:#0a1a20;border:1px solid #3388aa;border-radius:10px;padding:10px 12px">
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#88ccff;margin-bottom:4px">🥚 FUSION SYSTEM</div>
+        <div style="font-size:10px;color:#5090b0;line-height:1.6">${T(`เลือก Pet ร่าง Evolve II 2 ตัว มา Fusion — ทั้งคู่จะหายไป ได้ Fusion Egg แทน<br>สเตตัสสืบทอด <b style="color:#99ddff">25% ของค่าเฉลี่ยทั้งคู่</b> พร้อมพาสซีพสืบทอดสุ่มจาก 1 ใน 2 ตัว<br>ค่าใช้จ่าย: 🔮 Rebirth Stone ×${FUSION_STONE_COST} + 💰 ${FUSION_GOLD_COST}G`,`Pick 2 Evolve II pets to Fuse — both are consumed, you get a Fusion Egg instead<br>Stats inherit <b style="color:#99ddff">25% of their combined average</b>, plus a passive randomly inherited from one of the two<br>Cost: 🔮 Rebirth Stone ×${FUSION_STONE_COST} + 💰 ${FUSION_GOLD_COST}G`)}</div>
+        <div style="margin-top:6px;font-family:Kanit,sans-serif;font-size:11px;color:${stoneOk2?'#99ddff':'#5a7a8a'}">🔮 Rebirth Stone: ${stoneCount2}/${FUSION_STONE_COST}</div>
+      </div>
+      ${eligible.length<2?`<div style="text-align:center;font-family:Kanit,sans-serif;font-size:11px;color:#336655;padding:20px">${T('ต้องมี Pet ร่าง Evolve II อย่างน้อย 2 ตัว','Need at least 2 Evolve II pets')}</div>`
+      :eligible.map(({p,i,from})=>{
+        const f = EVOLVE2_FORMS[p.finalKey];
+        const col = f?.color||'#5090c0';
+        const picked = isPicked(from,i);
+        const hasGear = !!(p.artifact || p.artifact2 || p.weapon);
+        return `
+        <div ${hasGear?'':`data-fusionpick="${from}:${i}"`} style="background:${picked?'rgba(0,120,180,0.18)':'#08080f'};border:2px solid ${picked?'#88ccff':hasGear?'#4a2222':col+'55'};border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:${hasGear?'default':'pointer'};opacity:${hasGear?0.5:1}">
+          <span style="font-size:20px">${f?.icon||'🐾'}</span>
+          <div style="flex:1">
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${petName(p)} <span style="font-size:9px;color:#6a8a9a">(${f?.name||''})</span></div>
+            <div style="font-size:9px;color:#5a7a8a">ATK ${p.atk} DEF ${p.def} SPD ${p.spd} HP ${p.maxHp}</div>
+            ${hasGear?`<div style="font-size:9px;color:#cc6666;margin-top:2px">⚠ ${T('ถอด Artifact/Weapon ออกก่อน Fusion','Remove Artifact/Weapon before Fusion')}</div>`:''}
+          </div>
+          ${picked?`<span style="font-size:14px;color:#88ccff">✓</span>`:''}
+        </div>`;
+      }).join('')}
+      ${petA && petB ? (()=>{
+        const avgAtk=Math.round((petA.atk+petB.atk)/2), avgDef=Math.round((petA.def+petB.def)/2), avgSpd=Math.round((petA.spd+petB.spd)/2), avgHp=Math.round((petA.maxHp+petB.maxHp)/2);
+        const bonusAtk=Math.round(avgAtk*0.25), bonusDef=Math.round(avgDef*0.25), bonusSpd=Math.round(avgSpd*0.25), bonusHp=Math.round(avgHp*0.25);
+        return `
+        <div style="padding:10px;border-radius:10px;background:#04141a;border:2px solid #3388aa;margin-top:4px">
+          <div style="font-family:Kanit,sans-serif;font-size:12px;color:#99ddff;text-align:center;margin-bottom:6px">🥚 FUSION RESULT PREVIEW</div>
+          <div style="font-size:10px;color:#5090b0;text-align:center;line-height:1.7">${T('โบนัสสเตตัสที่จะได้ (25% ของค่าเฉลี่ย)','Stat bonus gained (25% of combined average)')}<br>ATK +${bonusAtk} &nbsp; DEF +${bonusDef} &nbsp; SPD +${bonusSpd} &nbsp; HP +${bonusHp}</div>
+          <div style="font-size:9px;color:#3a6a7a;text-align:center;margin-top:4px">${T('พาสซีพสืบทอดจะสุ่มจาก 1 ใน 2 ตัวตอนยืนยัน','The inherited passive is randomly rolled from one of the two on confirm')}</div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <div style="flex:1;padding:6px;border-radius:8px;background:#04141a;border:1px solid ${stoneOk2?'#88ccff':'#4a2a2a'};font-family:Kanit,sans-serif;font-size:10px;color:${stoneOk2?'#88ccff':'#cc6666'};text-align:center">🔮 ${FUSION_STONE_COST} ${stoneOk2?'✓':'✗'}</div>
+            <div style="flex:1;padding:6px;border-radius:8px;background:#04141a;border:1px solid ${goldOk2?'#ffcc00':'#4a3a00'};font-family:Kanit,sans-serif;font-size:10px;color:${goldOk2?'#ffcc00':'#6a5a00'};text-align:center">💰 ${FUSION_GOLD_COST}G ${goldOk2?'✓':'✗'}</div>
+          </div>
+          ${canFuse ? `<div id="fusionConfirmBtn" style="margin-top:8px;padding:10px;border-radius:10px;background:linear-gradient(135deg,#004a5a,#0a7a9a);border:2px solid #33aacc;font-family:Kanit,sans-serif;font-size:13px;color:#99ddff;text-align:center;cursor:pointer;font-weight:700">🥚 FUSION!</div>`
+          : `<div style="margin-top:8px;padding:10px;border-radius:10px;background:#0a0a0a;border:1px solid #2a2a2a;font-family:Kanit,sans-serif;font-size:12px;color:#3a3a3a;text-align:center">${T('🥚 FUSION (ของไม่พอ)','🥚 FUSION (missing items)')}</div>`}
+        </div>`;
+      })() : ''}
+    ${fusionConfirm ? (()=>{
+      const fA = petA ? EVOLVE2_FORMS[petA.finalKey] : null, fB = petB ? EVOLVE2_FORMS[petB.finalKey] : null;
+      return `
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:16px">
+        <div style="background:#04141a;border:2px solid #33aacc;border-radius:16px;padding:20px;width:240px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 30px #33aacc44">
+          <div style="font-family:Kanit,sans-serif;font-size:14px;color:#99ddff;text-align:center;letter-spacing:2px">🥚 ${T('ยืนยันการ Fusion','Confirm Fusion')}</div>
+          <div style="font-size:11px;color:#5090b0;text-align:center">${petA?.name||''} (${fA?.name||''})<br>+ ${petB?.name||''} (${fB?.name||''})</div>
+          <div style="font-size:10px;color:#cc6666;text-align:center;font-weight:bold">${T('⚠ ทั้ง 2 ตัวจะหายไปถาวร!','⚠ Both beasts will be lost permanently!')}</div>
+          <div style="display:flex;gap:8px">
+            <div id="fusionCancel" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:11px;color:#8080c0;cursor:pointer;text-align:center">${T('ยกเลิก','CANCEL')}</div>
+            <div id="fusionConfirmYes" style="flex:1;padding:9px;border-radius:8px;background:linear-gradient(135deg,#004a5a,#0a7a9a);border:2px solid #33aacc;font-family:Kanit,sans-serif;font-size:11px;color:#99ddff;cursor:pointer;text-align:center;font-weight:bold">${T('✓ FUSION!','✓ FUSION!')}</div>
+          </div>
+        </div>
+      </div>`;
+    })() : ''}
+    </div>`;
+  })();
+
   screenContent.innerHTML = `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:6px;padding:2px 0;position:relative">
       ${tabBar}
-      ${partyViewTab!=='evolve2'&&partyViewTab!=='rebirth' ? swapBanner : ''}
+      ${partyViewTab!=='evolve2'&&partyViewTab!=='rebirth'&&partyViewTab!=='fusion' ? swapBanner : ''}
       <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto">
-        ${partyViewTab==='party' ? slotHtml : partyViewTab==='storage' ? storageHtml : partyViewTab==='rebirth' ? rebirthHtml : evo2Html}
+        ${partyViewTab==='party' ? slotHtml : partyViewTab==='storage' ? storageHtml : partyViewTab==='rebirth' ? rebirthHtml : partyViewTab==='fusion' ? fusionHtml : evo2Html}
       </div>
       <div data-opencollection style="position:absolute;bottom:4px;right:4px;padding:5px 10px;border-radius:20px;background:#0d0d20;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:10px;color:#6858a0;cursor:pointer;z-index:10">📖 COLLECTION</div>
       ${collectionOpen ? collectionHtml : ''}
@@ -9941,13 +10394,16 @@ function renderParty() {
         const em = emptySlotModal;
         const hasMysteryEgg2 = inventory.some(s=>s.type==='mystery_egg');
         const hasShinyEgg2   = inventory.some(s=>s.type==='shiny_egg');
+        const hasFusionEgg2  = inventory.some(s=>s.type==='fusion_egg');
         const eggQty       = inventory.find(s=>s.type==='mystery_egg')?.qty || 0;
         const shinyEggQty2 = inventory.find(s=>s.type==='shiny_egg')?.qty || 0;
+        const fusionEggQty2 = inventory.filter(s=>s.type==='fusion_egg').length;
         if(em.phase==='choose') return `
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:99;border-radius:16px">
           <div style="background:#0d0d1e;border:2px solid #5040a0;border-radius:16px;padding:20px;width:230px;display:flex;flex-direction:column;gap:10px">
             <div style="font-family:Kanit,sans-serif;font-size:12px;color:#a090e0;text-align:center">➕ ${T('เพิ่ม Pet ลงปาร์ตี้','Add Pet to Party')}</div>
             ${hasShinyEgg2?`<div id="emSlotShinyHatch" style="padding:12px;border-radius:10px;background:#1a1500;border:2px solid #ffd700;font-family:Kanit,sans-serif;font-size:12px;color:#ffd700;cursor:pointer;text-align:center">✨🥚 ${T('ฟัก Shiny Egg','Hatch Shiny Egg')} (${shinyEggQty2})</div>`:''}
+            ${hasFusionEgg2?`<div id="emSlotFusionHatch" style="padding:12px;border-radius:10px;background:#0a1420;border:2px solid #88ccff;font-family:Kanit,sans-serif;font-size:12px;color:#99ddff;cursor:pointer;text-align:center">🥚 ${T('ฟัก Fusion Egg','Hatch Fusion Egg')} (${fusionEggQty2})</div>`:''}
             ${hasMysteryEgg2?`<div id="emSlotHatch" style="padding:12px;border-radius:10px;background:#0a1a0a;border:2px solid #50a050;font-family:Kanit,sans-serif;font-size:12px;color:#80d080;cursor:pointer;text-align:center">🥚 ${T('ฟัก Mystery Egg','Hatch Mystery Egg')} (${eggQty})</div>`:''}
             ${storage.length>0?`<div id="emSlotStorage" style="padding:12px;border-radius:10px;background:#0a0a1a;border:2px solid #5040a0;font-family:Kanit,sans-serif;font-size:12px;color:#a090e0;cursor:pointer;text-align:center">📦 ${T('เลือกจาก Storage','Pick from Storage')} (${storage.length})</div>`:''}
             <div id="emSlotCancel" style="padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:11px;color:#6060a0;cursor:pointer;text-align:center">${T('ยกเลิก','CANCEL')}</div>
@@ -9955,15 +10411,19 @@ function renderParty() {
         </div>`;
         if(em.phase==='hatch_confirm') {
           const isSh = em.eggType==='shiny_egg';
+          const isFu = em.eggType==='fusion_egg';
+          const col2 = isSh?'#ffd700':isFu?'#88ccff':'#50a050';
+          const eggSlotPreview = isFu ? inventory.find(s=>s.type==='fusion_egg') : null;
+          const echoInfo = eggSlotPreview?.inheritedPassive ? FUSION_ECHO_INFO[eggSlotPreview.inheritedPassive] : null;
           return `
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:99;border-radius:16px">
-          <div style="background:#0d0d1e;border:2px solid ${isSh?'#ffd700':'#50a050'};border-radius:16px;padding:20px;width:230px;display:flex;flex-direction:column;gap:12px;text-align:center">
+          <div style="background:#0d0d1e;border:2px solid ${col2};border-radius:16px;padding:20px;width:230px;display:flex;flex-direction:column;gap:12px;text-align:center">
             <div style="font-size:36px">${isSh?'✨🥚':'🥚'}</div>
-            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${isSh?'#ffd700':'#80d080'}">${isSh?T('ฟัก Shiny Egg?','Hatch Shiny Egg?'):T('ฟัก Mystery Egg?','Hatch Mystery Egg?')}</div>
-            <div style="font-size:10px;color:${isSh?'#a07800':'#507050'}">${isSh?T('การันตี ✨ Shiny!','Guaranteed ✨ Shiny!'):T('สัตว์ใหม่จะเข้าปาร์ตี้ทันที','A new beast will join your party')}</div>
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col2}">${isSh?T('ฟัก Shiny Egg?','Hatch Shiny Egg?'):isFu?T('ฟัก Fusion Egg?','Hatch Fusion Egg?'):T('ฟัก Mystery Egg?','Hatch Mystery Egg?')}</div>
+            <div style="font-size:10px;color:${isSh?'#a07800':isFu?'#5090b0':'#507050'}">${isSh?T('การันตี ✨ Shiny!','Guaranteed ✨ Shiny!'):isFu?(echoInfo?`${T('พาสซีพสืบทอด','Inherited passive')}: ${echoInfo.icon} ${D(echoInfo)}`:T('สัตว์ใหม่จะเข้าปาร์ตี้ทันที','A new beast will join your party')):T('สัตว์ใหม่จะเข้าปาร์ตี้ทันที','A new beast will join your party')}</div>
             <div style="display:flex;gap:8px">
               <div id="emSlotCancel" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:11px;color:#6060a0;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
-              <div id="emSlotHatchOk" style="flex:1;padding:9px;border-radius:8px;background:${isSh?'#1a1200':'#0a2a0a'};border:2px solid ${isSh?'#ffd700':'#50a050'};font-family:Kanit,sans-serif;font-size:11px;color:${isSh?'#ffd700':'#80d080'};cursor:pointer;font-weight:bold">${isSh?'✨':'🥚'} ${T('ฟักเลย!','HATCH!')}</div>
+              <div id="emSlotHatchOk" style="flex:1;padding:9px;border-radius:8px;background:${isSh?'#1a1200':isFu?'#0a1420':'#0a2a0a'};border:2px solid ${col2};font-family:Kanit,sans-serif;font-size:11px;color:${col2};cursor:pointer;font-weight:bold">${isSh?'✨':'🥚'} ${T('ฟักเลย!','HATCH!')}</div>
             </div>
           </div>
         </div>`;

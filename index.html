@@ -140,7 +140,6 @@ body::after {
 .screen-frame.accent-fight  { border-color:rgba(220,60,60,0.45);  box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 30px rgba(200,50,50,0.18); }
 .screen-frame.accent-scout  { border-color:rgba(60,160,220,0.45); box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 30px rgba(40,140,200,0.18); }
 .screen-frame.accent-party  { border-color:rgba(140,80,220,0.45); box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 30px rgba(120,60,200,0.18); }
-.screen-frame.accent-exp    { border-color:rgba(220,160,40,0.45); box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 30px rgba(200,140,20,0.18); }
 .screen-frame.accent-train  { border-color:rgba(40,180,200,0.45); box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 30px rgba(20,160,180,0.18); }
 .screen-frame.accent-inv    { border-color:rgba(180,140,40,0.45); box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 30px rgba(160,120,20,0.18); }
 .screen-frame.accent-result-win  { border-color:rgba(255,215,0,0.5); box-shadow:inset 0 0 40px rgba(0,0,0,0.95), 0 0 40px rgba(255,200,0,0.22); }
@@ -257,7 +256,6 @@ body::after {
 .menu-icon[data-action="scout"]      { border-color:rgba(60,160,220,0.5); box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px rgba(40,140,200,0.1); }
 .menu-icon[data-action="party"]      { border-color:rgba(140,80,220,0.5); box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px rgba(120,60,200,0.1); }
 .menu-icon[data-action="inventory"]  { border-color:rgba(200,160,40,0.5); box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px rgba(180,140,20,0.1); }
-.menu-icon[data-action="expedition"] { border-color:rgba(220,140,40,0.5); box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px rgba(200,120,20,0.1); }
 .menu-icon[data-action="train"]      { border-color:rgba(40,200,180,0.5); box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px rgba(20,180,160,0.1); }
 .menu-icon.evolve-ready {
   border-color:#c060ff;
@@ -1657,11 +1655,6 @@ function startRaidBattle(level) {
   spawnRaidWave(level, 1);
 }
 
-const EXPEDITIONS = [
-  { type:'quick',  label:'QUICK',  icon:'⚡', duration:30*60*1000,    rewardMin:1, rewardMax:2, tier:'quick'  },
-  { type:'search', label:'SEARCH', icon:'🔍', duration:120*60*1000,   rewardMin:3, rewardMax:5, tier:'search' },
-  { type:'deep',   label:'DEEP',   icon:'🌑', duration:360*60*1000,   rewardMin:5, rewardMax:8, tier:'deep'   },
-];
 const BUFF_DUR = 30 * 60 * 1000;
 const MAX_PETS = 4;
 const MAX_INV  = 40;
@@ -2217,7 +2210,6 @@ let pendingSymbol = null;
 let pendingBattleCell = null;
 let battleItemPicker = false;
 let battleAutoMode = false; // 🤖 auto-battle: picks a random move each turn until the battle ends
-let partyExpSelect = null; // { petIdx, showing expedition chooser }
 let partyDetailIdx = null; // pet index being viewed in detail
 let renamePetPopup = null; // {idx, value} while rename modal is open
 let storageDetailIdx = null; // storage index being viewed in detail
@@ -2280,7 +2272,7 @@ function newPet() {
   return { phase:'egg', tapCount:0, tapTarget:100,
            symbols:[], formKey:null,
            hp:60, maxHp:60, atk:12, spd:10, def:4, name:'???',
-           buffExpiry:{atk:0,spd:0,def:0}, expedition:null,
+           buffExpiry:{atk:0,spd:0,def:0},
            trainCount:0, trainBonuses:{hp:0,atk:0,spd:0,def:0}, resting:false, deadRestUntil:0, locked:false, shiny:false,
            inheritedPassive:null };
 }
@@ -2548,7 +2540,8 @@ function useItem(type, petIdx=activePetIdx) {
       np.atk += slot.fusionBonus.atk; np.def += slot.fusionBonus.def; np.spd += slot.fusionBonus.spd;
       np.maxHp += slot.fusionBonus.maxHp; np.hp = np.maxHp;
     }
-    if(Math.random()<0.03) { np.shiny=true; applyShinyStats(np); }
+    // shinyInherit was rolled at fusion time (3% base +25%/shiny parent); old eggs lack the field → legacy 3% roll
+    if(slot.shinyInherit !== undefined ? slot.shinyInherit : Math.random()<0.03) { np.shiny=true; applyShinyStats(np); }
     pets.push(np); syncCreature();
     scoutToast=T('🥚 Fusion Egg ฟัก! สัตว์เลี้ยงใหม่เข้าปาร์ตี้!','🥚 Fusion Egg hatched! New beast joined party!');
   }
@@ -2568,65 +2561,13 @@ function useItem(type, petIdx=activePetIdx) {
   saveGame(); return true; // render called by caller for repeatable flow
 }
 
-// ============================================================
-// EXPEDITION HELPERS
-// ============================================================
-function startExpedition(petIdx, expType) {
-  const pet = pets[petIdx];
-  if(!pet) return;
-  if(pet.expedition) { scoutToast = T(`⚠ ${pet.name} ออก Expedition อยู่แล้ว!`,`⚠ ${pet.name} is already on Expedition!`); render(); return; }
-  if(pet.resting)    { scoutToast = T(`⚠ ${pet.name} กำลัง REST อยู่ — หยุด Rest ก่อน`,`⚠ ${pet.name} is resting — stop Rest first`); render(); return; }
-  if(pet.hp < pet.maxHp) { scoutToast = T(`⚠ ${pet.name} HP ไม่เต็ม (${pet.hp}/${pet.maxHp}) — REST ก่อนส่ง Expedition`,`⚠ ${pet.name} HP not full (${pet.hp}/${pet.maxHp}) — REST before Expedition`); render(); return; }
-  const exp = EXPEDITIONS.find(e=>e.type===expType);
-  pet.expedition = { type:expType, endTime:Date.now()+exp.duration };
-  saveGame(); render();
-}
-
-function getExpeditionPools() {
-  return hellMode ? {
-    quick:  [{t:'super_potion',w:30},{t:'max_potion',w:20},{t:'power_shard',w:16},{t:'speed_shard',w:12},{t:'guard_shard',w:10},{t:'energy_drink',w:8},{t:'essence',w:4}],
-    search: [{t:'super_potion',w:18},{t:'max_potion',w:19},{t:'power_shard',w:12},{t:'speed_shard',w:12},{t:'guard_shard',w:8},{t:'map_scroll',w:5},{t:'energy_drink',w:10},{t:'essence',w:7},{t:'box_R',w:2}],
-    deep:   [{t:'super_potion',w:10},{t:'max_potion',w:16},{t:'power_shard',w:8},{t:'speed_shard',w:8},{t:'guard_shard',w:6},{t:'map_scroll',w:6},{t:'energy_drink',w:9},{t:'essence',w:13},{t:'revive',w:6},{t:'box_R',w:5}],
-  } : hardMode ? {
-    quick:  [{t:'super_potion',w:35},{t:'max_potion',w:15},{t:'power_shard',w:18},{t:'speed_shard',w:14},{t:'guard_shard',w:10},{t:'energy_drink',w:8}],
-    search: [{t:'super_potion',w:22},{t:'max_potion',w:20},{t:'power_shard',w:14},{t:'speed_shard',w:14},{t:'guard_shard',w:10},{t:'map_scroll',w:5},{t:'energy_drink',w:6},{t:'essence',w:7}],
-    deep:   [{t:'super_potion',w:14},{t:'max_potion',w:12},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:8},{t:'map_scroll',w:8},{t:'energy_drink',w:5},{t:'essence',w:8},{t:'revive',w:8}],
-  } : {
-    quick:  [{t:'hp_potion',w:40},{t:'max_potion',w:10},{t:'power_shard',w:18},{t:'speed_shard',w:14},{t:'guard_shard',w:10},{t:'energy_drink',w:8}],
-    search: [{t:'hp_potion',w:28},{t:'max_potion',w:14},{t:'power_shard',w:16},{t:'speed_shard',w:16},{t:'guard_shard',w:10},{t:'map_scroll',w:5},{t:'energy_drink',w:8},{t:'essence',w:4}],
-    deep:   [{t:'hp_potion',w:18},{t:'max_potion',w:13},{t:'power_shard',w:13},{t:'speed_shard',w:13},{t:'guard_shard',w:10},{t:'map_scroll',w:10},{t:'energy_drink',w:8},{t:'essence',w:15},{t:'revive',w:2}],
-  };
-}
-
+// pickFromPool is shared by the battle-drop reward code (Expedition, its original home, was removed)
 function pickFromPool(pool, total) {
   let r=Math.random()*total, cum=0, item=pool[0].t;
   for(const p of pool){cum+=p.w;if(r<cum){item=p.t;break;}}
   return item;
 }
-function collectExpeditionReward(expType) {
-  const exp = EXPEDITIONS.find(e=>e.type===expType);
-  const count = exp.rewardMin + Math.floor(Math.random()*(exp.rewardMax-exp.rewardMin+1));
-  const pools = getExpeditionPools();
-  const pool = pools[exp.tier] || pools.quick;
-  const total = pool.reduce((s,p)=>s+p.w, 0);
-  const gained = [];
-  for(let i=0;i<count;i++) {
-    let r=Math.random()*total, cum=0, item=pool[0].t;
-    for(const p of pool){cum+=p.w;if(r<cum){item=p.t;break;}}
-    if(item==='essence') item=dropEssence();
-    addItemToInventory(item);
-    gained.push(item);
-  }
-  // Mystery Egg chance
-  const eggChance = expType==='deep' ? 0.08 : expType==='search' ? 0.03 : 0;
-  if(eggChance > 0 && Math.random() < eggChance) {
-    addItemToInventory('mystery_egg');
-    gained.push('mystery_egg');
-  }
-  return gained;
-}
 
-let expeditionCollectPopup = null; // {petIdx, petName, expLbl, gained:[]}
 let _evoAnim = null; // {type:'evolve', petSvg, name, color}
 
 function showHatchAnimation(isShiny, callback) {
@@ -2818,63 +2759,6 @@ function showEvoAnimation(data, callback) {
   frame.appendChild(overlay);
 }
 
-function completeExpedition(petIdx) {
-  const pet = pets[petIdx];
-  if(!pet?.expedition?.ready) return;
-  const expType = pet.expedition.type;
-  const expLbl = EXPEDITIONS.find(e=>e.type===expType)?.label||'';
-  const gained = previewExpeditionReward(expType);
-  const goldGain = expeditionGold(expType);
-  expeditionCollectPopup = { petIdx, petName:pet.name, expLbl, gained, goldGain };
-  render();
-}
-
-function previewExpeditionReward(expType) {
-  const exp = EXPEDITIONS.find(e=>e.type===expType);
-  const count = exp.rewardMin + Math.floor(Math.random()*(exp.rewardMax-exp.rewardMin+1));
-  const pools = getExpeditionPools();
-  const pool = pools[expType] || pools.quick;
-  const total = pool.reduce((s,p)=>s+p.w, 0);
-  const gained = [];
-  for(let i=0;i<count;i++) {
-    let r=Math.random()*total, cum=0, item=pool[0].t;
-    for(const p of pool){cum+=p.w;if(r<cum){item=p.t;break;}}
-    gained.push(item);
-  }
-  const eggChance = expType==='deep'?0.08:expType==='search'?0.03:0;
-  if(eggChance>0 && Math.random()<eggChance) gained.push('mystery_egg');
-  return gained;
-}
-
-function expeditionGold(expType) {
-  const eff = hellMode ? 40 + hellStage : hardMode ? 20 + hardStage : stage;
-  const ranges = { quick:[8,15], search:[25,40], deep:[55,85] };
-  const [mn, mx] = ranges[expType] || [5,10];
-  return Math.round(eff * (mn + Math.random()*(mx-mn)));
-}
-
-function confirmExpeditionCollect() {
-  if(!expeditionCollectPopup) return;
-  const {petIdx, gained, goldGain} = expeditionCollectPopup;
-  const pet = pets[petIdx];
-  gained.forEach(t => addItemToInventory(t));
-  if(goldGain) gold += goldGain;
-  if(pet) pet.expedition = null;
-  expeditionCollectPopup = null;
-  saveGame(); render();
-}
-
-function checkExpeditions() {
-  const now = Date.now();
-  let changed = false;
-  pets.forEach((pet,i)=>{
-    if(pet.expedition && !pet.expedition.ready && now >= pet.expedition.endTime) {
-      pet.expedition.ready = true; changed = true;
-    }
-  });
-  if(changed) saveGame();
-}
-
 // ============================================================
 // SAVE / LOAD
 // ============================================================
@@ -3023,16 +2907,16 @@ function cloudCheckNewerOnLoad(slotNum) {
 // ============================================================
 function pvpDeployTeam() {
   if(!cloudUser || !_cloudDb) { pvpLoadMsg=T('ต้องเข้าสู่ระบบก่อน!','Need to sign in first!'); render(); return; }
-  const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
+  const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0);
   if(alivePets.length < 1) { pvpLoadMsg=T('ต้องการ Pet ที่มีชีวิตอย่างน้อย 1 ตัว!','Need at least 1 alive pet!'); render(); return; }
   // Keep user-selected team; fallback: first 3 alive only if nothing selected
   if(pvpTeam.length === 0) {
     pvpTeam = alivePets.slice(0,3).map(p => pets.indexOf(p));
   } else {
-    // Filter out invalid indices (dead, egg, expedition, or out-of-bounds)
+    // Filter out invalid indices (dead, egg, or out-of-bounds)
     pvpTeam = pvpTeam.filter(i => {
       const p = pets[i];
-      return p && p.phase !== 'egg' && p.hp > 0 && !p.expedition;
+      return p && p.phase !== 'egg' && p.hp > 0;
     });
     // Cap at 3
     if(pvpTeam.length > 3) pvpTeam = pvpTeam.slice(0,3);
@@ -5986,7 +5870,6 @@ function showToast(msg) {
 
 
 function render() {
-  checkExpeditions();
   bgmPlay(bgmForState());
   if(scoutToast) { showToast(scoutToast); scoutToast=''; }
   // Preserve scroll position of any overflow-y:auto containers across the full innerHTML
@@ -6001,7 +5884,7 @@ function render() {
     egg:'', menu:'', title:'',
     scout:'accent-scout', battle:'accent-fight', status:'accent-party',
     result: battleState?.won ? 'accent-result-win' : 'accent-result-lose',
-    party:'accent-party', expedition:'accent-exp',
+    party:'accent-party',
     inventory:'accent-inv', evolve:'accent-party',
     rest:'accent-train', train:'accent-train',
   };
@@ -6348,7 +6231,7 @@ function renderVsLobby() {
             const isActive = i===activePetIdx;
             const dead = p.hp<=0;
             const resting = p.resting && p.hp<p.maxHp;
-            const canSwap = !dead && !p.expedition && p.phase!=='egg';
+            const canSwap = !dead && p.phase!=='egg';
             const f = p.phase==='final'?EVOLVE2_FORMS[p.finalKey]:p.phase==='evolved'?FORMS[p.formKey]:null;
             const col = f?.color||'#8080c0';
             const hpPct = Math.round(p.hp/p.maxHp*100);
@@ -6384,10 +6267,9 @@ function renderVsLobby() {
         ${vsToast?`<div style="font-size:11px;color:#80ee80;margin-top:4px">${vsToast}</div>`:''}
       </div>
       ${(()=>{
-        const restingPet = pets.find(p=>p.phase!=='egg'&&p.resting&&p.hp<p.maxHp);
-        const blocked = restingPet || pets.find(p=>p.phase!=='egg'&&p.expedition);
+        const blocked = pets.find(p=>p.phase!=='egg'&&p.resting&&p.hp<p.maxHp);
         if(blocked) {
-          const reason = blocked.resting ? T(`${blocked.name} กำลัง Rest อยู่`,`${blocked.name} is Resting`) : T(`${blocked.name} อยู่ใน Expedition`,`${blocked.name} is on Expedition`);
+          const reason = T(`${blocked.name} กำลัง Rest อยู่`,`${blocked.name} is Resting`);
           return `<div style="padding:12px;border-radius:12px;background:#1a1008;border:2px solid #555522;font-family:Kanit,sans-serif;font-size:13px;color:#888844;text-align:center">
             🚫 ${T('เข้าต่อสู้ไม่ได้','Cannot enter battle')}<br><span style="font-size:11px;color:#666633">${reason}</span>
           </div>`;
@@ -6437,8 +6319,7 @@ function renderPvPLobby() {
   </div>`;
 
   if(pvpTab === 'deploy') {
-    // Filter alive pets not on expedition
-    const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
+    const alivePets = pets.filter(p=>p.phase!=='egg'&&p.hp>0);
     const selectedIndices = pvpTeam.length ? pvpTeam : [];
     screenContent.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;padding:10px">
@@ -6676,7 +6557,7 @@ function renderDuelSetup() {
   labelStrip.textContent = T('🤝 DUEL MODE','🤝 DUEL MODE');
   const maxSel = duelMode==='1v1' ? 1 : 3;
   const selPets = duelMyTeam.map(t => t.from==='party' ? pets[t.idx] : storage[t.idx]);
-  const allPets = pets.map((p,i)=>({p,i,from:'party'})).filter(({p})=>p.phase!=='egg'&&p.hp>0&&!p.expedition);
+  const allPets = pets.map((p,i)=>({p,i,from:'party'})).filter(({p})=>p.phase!=='egg'&&p.hp>0);
 
   if(duelSelectStep==='lobby') {
     screenContent.innerHTML = renderDuelLobby(); return;
@@ -7347,7 +7228,7 @@ function renderTower() {
             const col = ff?.color || f?.color || '#8080c0';
             const hpPct = Math.round(p.hp/p.maxHp*100);
             const hpColor = hpPct>60?'#44ff88':hpPct>30?'#ffcc44':'#ff4444';
-            const canSwap = !p.resting && !p.expedition && p.phase!=='egg' && p.hp>0;
+            const canSwap = !p.resting && p.phase!=='egg' && p.hp>0;
             const isDead = p.hp<=0;
             const hasRevive = (inventory.find(s=>s.type==='revive')?.qty||0)>0;
             return `<div ${canSwap&&!isActive?`data-tower-swap="${i}"`:''}
@@ -7410,9 +7291,9 @@ function renderTower() {
 
       <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px">
         ${(()=>{
-          const blocked = pets.filter(p=>p.phase!=='egg').find(p=>(p.resting&&p.hp<p.maxHp)||p.expedition);
+          const blocked = pets.filter(p=>p.phase!=='egg').find(p=>p.resting&&p.hp<p.maxHp);
           if(blocked) {
-            const reason = blocked.resting ? T(`${blocked.name} กำลัง Rest`,`${blocked.name} is Resting`) : T(`${blocked.name} อยู่ใน Expedition`,`${blocked.name} is on Expedition`);
+            const reason = T(`${blocked.name} กำลัง Rest`,`${blocked.name} is Resting`);
             return `<div style="padding:12px;border-radius:12px;background:#1a1008;border:2px solid #555522;font-family:Kanit,sans-serif;font-size:13px;color:#888844;text-align:center">
               ${T('🚫 เข้าไม่ได้','🚫 Cannot enter')}<br><span style="font-size:11px;color:#666633">${reason}</span>
             </div>`;
@@ -7585,7 +7466,7 @@ function startTowerBattle() {
 
 function renderTrain() {
   labelStrip.textContent = 'TRAINING';
-  const trainable = pets.filter(p => p.phase !== 'egg' && !p.expedition);
+  const trainable = pets.filter(p => p.phase !== 'egg');
   if(!trainable.find(p=>p===pets[trainPetIdx])) trainPetIdx = pets.indexOf(trainable[0]);
   const pet = getTrainPet();
   const petCost = Math.floor(getTrainCount(pet) / 10 + 1) * 25;
@@ -7792,7 +7673,7 @@ function renderMenu() {
               ['🐾','PARTY',T('มี Pet ได้สูงสุด 4 ตัว พร้อม Storage อีก 20 ช่อง เลือก Pet ที่ Active เพื่อนำไปต่อสู้ — เปลี่ยน Pet ระหว่างสู้ได้ในโหมด Tower และ VS','Hold up to 4 active pets plus 20 in Storage. Switch pets mid-battle in Tower and VS modes')],
               ['🔮','REBIRTH',T(`Pet ที่ Evolve หรือ Evolve II แล้ว (ต้องถอด Artifact ก่อน) ใช้ Rebirth Stone 1 ชิ้น + Gold ${REBIRTH_GOLD_COST} เพื่อ Rebirth — สเตตัสรีเซ็ตกลับฐาน แต่ได้โบนัสถาวร +25% ของสเตตัสก่อน Rebirth ติดตัวไปตลอด ทำซ้ำได้เรื่อยๆ เพื่อสะสมโบนัส (มีดาว ✦ แสดง rank)\n\n🔮 หา Rebirth Stone ได้จาก: ชนะ Boss (10%) หรือ Mini-Boss (10%) ใน Scout, ซื้อได้ที่ Secret Shop (${REBIRTH_GOLD_COST}G/ครั้ง), First-Clear Tower Floor 70 (การันตี 5 ก้อน), หรือลุ้นจาก Special Boss ใน Raid — โอกาสจะสูงขึ้นมากในโหมด Hard/Hell`,`An Evolved or Evolve II Pet (with no Artifact equipped) can Rebirth using 1 Rebirth Stone + ${REBIRTH_GOLD_COST} Gold — stats reset to base, but you keep a permanent +25% bonus based on stats before the Rebirth. Repeatable to stack more bonuses (shown as ✦ rank stars)\n\n🔮 Get Rebirth Stones from: beating a Boss (10%) or Mini-Boss (10%) in Scout, buying one at the Secret Shop (${REBIRTH_GOLD_COST}G each), Tower Floor 70's First-Clear (guaranteed 5), or a chance from Raid's Special Boss — odds go up a lot in Hard/Hell Mode`)],
               ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัสถาวร +10% ทุกค่า พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว','Some Pets have a rare chance to be Shiny — a permanent +10% bonus on every stat, plus a unique glowing visual effect')],
-              ['🥚','FUSION',T(`เลือก Pet ร่าง Evolve II 2 ตัว (ต้องถอด Artifact/Weapon ก่อน) มา Fusion ด้วย Rebirth Stone ${FUSION_STONE_COST} ชิ้น + Gold ${FUSION_GOLD_COST} — ทั้งคู่จะหายไป ได้ Fusion Egg แทน\n\n🥚 ฟักไข่แบบปกติ ได้สัตว์ใหม่ที่มีสเตตัสเริ่มต้นสูงขึ้น (25% ของค่าเฉลี่ยพ่อแม่) พร้อมพาสซีพ "Echo" ติดตัวมาแบบสุ่มจาก 1 ใน 2 ตัว (พาสซีพครึ่งความแรง ไม่ขึ้นกับร่างที่วิวัฒนาการทีหลัง) ดูได้ที่หน้ารายละเอียด Pet`,`Pick 2 Evolve II Pets (must unequip Artifact/Weapon first) to Fuse using ${FUSION_STONE_COST} Rebirth Stones + ${FUSION_GOLD_COST} Gold — both are consumed, you get a Fusion Egg instead\n\n🥚 Hatches normally into a new beast with a stat head-start (25% of the parents' combined average), plus a random "Echo" passive inherited from one of the two parents (half-strength, independent of whatever form it evolves into later) — check the Pet detail screen to see it`)],
+              ['🥚','FUSION',T(`เลือก Pet ร่าง Evolve II 2 ตัว (ต้องถอด Artifact/Weapon ก่อน) มา Fusion ด้วย Rebirth Stone ${FUSION_STONE_COST} ชิ้น + Gold ${FUSION_GOLD_COST} — ทั้งคู่จะหายไป ได้ Fusion Egg แทน\n\n🥚 ฟักไข่แบบปกติ ได้สัตว์ใหม่ที่มีสเตตัสเริ่มต้นสูงขึ้น (25% ของค่าเฉลี่ยพ่อแม่) พร้อมพาสซีพ "Echo" ติดตัวมาแบบสุ่มจาก 1 ใน 2 ตัว (พาสซีพครึ่งความแรง ไม่ขึ้นกับร่างที่วิวัฒนาการทีหลัง) ดูได้ที่หน้ารายละเอียด Pet\n\n✨ ถ้าพ่อแม่เป็น Shiny มีโอกาสสืบทอดความ Shiny ด้วย — พ่อแม่ Shiny 1 ตัว = 28%, ทั้งคู่ = 53% (ปกติ 3%)`,`Pick 2 Evolve II Pets (must unequip Artifact/Weapon first) to Fuse using ${FUSION_STONE_COST} Rebirth Stones + ${FUSION_GOLD_COST} Gold — both are consumed, you get a Fusion Egg instead\n\n🥚 Hatches normally into a new beast with a stat head-start (25% of the parents' combined average), plus a random "Echo" passive inherited from one of the two parents (half-strength, independent of whatever form it evolves into later) — check the Pet detail screen to see it\n\n✨ Shiny parents can pass it on — one Shiny parent = 28%, both = 53% (base 3%)`)],
             ];
             const BATTLE_SYSTEMS = [
               ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!')],
@@ -7970,16 +7851,14 @@ function renderScout() {
   // Pet switcher bar
   const petBarHtml = pets.map((p,i)=>{
     const isActive = i===activePetIdx;
-    const onExp = !!p.expedition;
     const f = p.formKey ? FORMS[p.formKey] : null;
     const hpPct = Math.round(p.hp/p.maxHp*100);
     const nameColor = isActive ? (f?f.color:'#c0a0ff') : '#4040a0';
-    const border = isActive ? '#8060d0' : onExp ? '#554400' : '#1a1a3a';
+    const border = isActive ? '#8060d0' : '#1a1a3a';
     const bg = isActive ? 'rgba(100,60,200,0.15)' : '#08080f';
-    const opacity = onExp ? '0.45' : '1';
     return `
       <div data-switchpet="${i}" style="flex:1;padding:4px 6px;border-radius:8px;border:1px solid ${border};
-        background:${bg};cursor:${onExp?'default':'pointer'};opacity:${opacity};min-width:0">
+        background:${bg};cursor:pointer;min-width:0">
         <div style="font-family:Kanit,sans-serif;font-size:10px;color:${p.shiny?'#ffd700':nameColor};
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
           ${isActive?'▶ ':''}${p.shiny?'✨ ':''}${petName(p)}
@@ -7990,8 +7869,7 @@ function renderScout() {
           </div>
           <span style="font-size:9px;color:#6858a0">${p.hp}</span>
         </div>
-        ${onExp?`<div style="font-size:8px;color:#554400;font-family:Kanit,sans-serif">🌑 EXP</div>`:''}
-        ${(!onExp && p.phase!=='egg' && (p.hp<p.maxHp||p.resting)) ? (()=>{ const waiting=p.resting&&p.hp<=0&&p.deadRestUntil>Date.now(); const waitSec=waiting?Math.ceil((p.deadRestUntil-Date.now())/1000):0; return `<div onclick="event.stopPropagation();toggleRest(${i});render();" style="font-size:11px;font-family:Kanit,sans-serif;margin-top:3px;padding:3px 0;border-radius:4px;text-align:center;cursor:pointer;${p.resting?(waiting?'background:#2a0808;color:#ff8080;border:1px solid #803030':'background:#2a0a50;color:#c0a0ff;border:1px solid #8060d0'):'background:#0f0f20;color:#9080b8;border:1px solid #2a2a5a'}">${p.resting?(waiting?`💀 <span data-countdown="${p.deadRestUntil}">${fmtTime(waitSec*1000)}</span>`:'😴 RESTING'):'🛌 REST'}</div>`; })():''}
+        ${(p.phase!=='egg' && (p.hp<p.maxHp||p.resting)) ? (()=>{ const waiting=p.resting&&p.hp<=0&&p.deadRestUntil>Date.now(); const waitSec=waiting?Math.ceil((p.deadRestUntil-Date.now())/1000):0; return `<div onclick="event.stopPropagation();toggleRest(${i});render();" style="font-size:11px;font-family:Kanit,sans-serif;margin-top:3px;padding:3px 0;border-radius:4px;text-align:center;cursor:pointer;${p.resting?(waiting?'background:#2a0808;color:#ff8080;border:1px solid #803030':'background:#2a0a50;color:#c0a0ff;border:1px solid #8060d0'):'background:#0f0f20;color:#9080b8;border:1px solid #2a2a5a'}">${p.resting?(waiting?`💀 <span data-countdown="${p.deadRestUntil}">${fmtTime(waitSec*1000)}</span>`:'😴 RESTING'):'🛌 REST'}</div>`; })():''}
       </div>`;
   }).join('');
 
@@ -8824,7 +8702,7 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('[data-tower-swap]')) {
       const idx = Number(el.closest('[data-tower-swap]').dataset.towerSwap);
       const p = pets[idx];
-      if(p && p.phase!=='egg' && !p.resting && !p.expedition && p.hp > 0) {
+      if(p && p.phase!=='egg' && !p.resting && p.hp > 0) {
         activePetIdx = idx; syncCreature(); saveGame(); render();
       }
       return;
@@ -9001,7 +8879,7 @@ screenContent.addEventListener('click', e=>{
     if(action==='scout')     { actionMenuOpen=false; enterScout(); return; }
     if(el.closest('[data-action-menu-close]') && !el.closest('.menu-icon')) { actionMenuOpen=false; render(); return; }
     else if(action==='train')     { state='train'; render(); }
-    else if(action==='party')     { partyExpSelect=null; state='party'; render(); }
+    else if(action==='party')     { state='party'; render(); }
     else if(action==='inventory') { state='inventory'; render(); }
     else if(action==='evolve' || action==='symbols') { state='evolve'; render(); }
     else if(action==='rest') { state='rest'; render(); }
@@ -9048,13 +8926,13 @@ screenContent.addEventListener('click', e=>{
     }
     if(el.closest('[data-setactive]')) {
       const i = Number(el.closest('[data-setactive]').dataset.setactive);
-      if(pets[i] && i!==activePetIdx && !pets[i].expedition) {
+      if(pets[i] && i!==activePetIdx) {
         setActivePet(i); scoutToast=T(`${petName(creature)} เป็น active pet!`,`${petName(creature)} is now active!`); saveGame();
       }
       partyDetailIdx = null; render(); return;
     }
     if(el.closest('[data-party-evolve]')) {
-      if(partyDetailIdx !== null && partyDetailIdx !== activePetIdx && !pets[partyDetailIdx]?.expedition) {
+      if(partyDetailIdx !== null && partyDetailIdx !== activePetIdx) {
         setActivePet(partyDetailIdx);
       }
       partyDetailIdx = null;
@@ -9185,7 +9063,7 @@ screenContent.addEventListener('click', e=>{
     if(deletePet) {
       const i = Number(deletePet.dataset.deletepet);
       const p = pets[i];
-      if(p && !p.locked && !p.expedition && pets.length > 1) {
+      if(p && !p.locked && pets.length > 1) {
         partyDetailIdx = null; partyRemoveConfirm = i; render();
       } return;
     }
@@ -9242,7 +9120,7 @@ screenContent.addEventListener('click', e=>{
           np2.inheritedPassive = eggSlot.inheritedPassive || null;
           if(eggSlot.fusionBonus) { np2.atk+=eggSlot.fusionBonus.atk; np2.def+=eggSlot.fusionBonus.def; np2.spd+=eggSlot.fusionBonus.spd; np2.maxHp+=eggSlot.fusionBonus.maxHp; np2.hp=np2.maxHp; }
         }
-        if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
+        if(eggSlot?.shinyInherit !== undefined ? eggSlot.shinyInherit : Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
       }
       else if(Math.random()<0.03) { np2.shiny=true; applyShinyStats(np2); }
       if(eggSlot) { eggSlot.qty--; if(eggSlot.qty<=0) inventory.splice(inventory.indexOf(eggSlot),1); }
@@ -9348,6 +9226,9 @@ screenContent.addEventListener('click', e=>{
       if(stoneQty2 < FUSION_STONE_COST || gold < FUSION_GOLD_COST) { fusionPickA=null; fusionPickB=null; render(); return; }
       // Compute inherited data BEFORE removing the parents
       const inheritedPassive = Math.random()<0.5 ? petA.finalKey : petB.finalKey;
+      // Shiny inheritance: base 3% egg rate + 25% per shiny parent, rolled once here so the
+      // egg's outcome is fixed like its Echo passive (28% one shiny parent, 53% both)
+      const shinyInherit = Math.random() < 0.03 + (petA.shiny?0.25:0) + (petB.shiny?0.25:0);
       const fusionBonus = {
         atk:   Math.round((petA.atk+petB.atk)/2 * 0.25),
         def:   Math.round((petA.def+petB.def)/2 * 0.25),
@@ -9363,7 +9244,7 @@ screenContent.addEventListener('click', e=>{
       if(inventory[stoneIdx2].qty<=0) inventory.splice(stoneIdx2,1);
       gold -= FUSION_GOLD_COST;
       // Fusion Egg never stacks (each carries its own inherited data) — push directly, bypass addItemToInventory's merge-by-type
-      inventory.push({type:'fusion_egg', qty:1, inheritedPassive, fusionBonus});
+      inventory.push({type:'fusion_egg', qty:1, inheritedPassive, fusionBonus, shinyInherit});
       fusionPickA = null; fusionPickB = null;
       syncCreature();
       SFX.evolve();
@@ -9397,7 +9278,7 @@ screenContent.addEventListener('click', e=>{
     if(toStorage) {
       const i = Number(toStorage.dataset.tostorage);
       const p = pets[i];
-      if(p && i !== activePetIdx && !p.expedition) {
+      if(p && i !== activePetIdx) {
         if(storage.length < MAX_STORAGE) {
           p.resting = false;
           storage.push(p);
@@ -9445,7 +9326,7 @@ screenContent.addEventListener('click', e=>{
     if(swapParty && swapStorageIdx !== null) {
       const pi = Number(swapParty.dataset.swapparty);
       const partyPet = pets[pi];
-      if(partyPet && pi !== activePetIdx && !partyPet.expedition) {
+      if(partyPet && pi !== activePetIdx) {
         const storagePet = storage[swapStorageIdx];
         pets[pi] = storagePet;
         storage[swapStorageIdx] = partyPet;
@@ -9973,7 +9854,7 @@ screenContent.addEventListener('click', e=>{
     const switchBtn = el.closest('[data-switchpet]');
     if(switchBtn) {
       const i = Number(switchBtn.dataset.switchpet);
-      if(i !== activePetIdx && !pets[i]?.expedition) {
+      if(i !== activePetIdx) {
         setActivePet(i); scoutToast=`▶ ${petName(creature)}`; saveGame(); render();
       }
       return;
@@ -10048,7 +9929,6 @@ function renderParty() {
     const f  = !ff && pet.formKey ? FORMS[pet.formKey] : null;
     const nameColor = ff ? ff.color : f ? f.color : '#c0a0ff';
     const isActive = partyDetailIdx === activePetIdx;
-    const onExp = !!pet.expedition;
     const hpPct = Math.round(pet.hp/pet.maxHp*100);
     const canEvolve = pet.symbols.length === 3 && pet.phase !== 'evolved' && pet.phase !== 'final';
     const hasSyms = pet.symbols.length > 0;
@@ -10174,17 +10054,16 @@ function renderParty() {
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:auto">
           ${canEvolve?`<div onclick="setActivePet(${partyDetailIdx});partyDetailIdx=null;state='menu';render();" style="padding:10px;border-radius:10px;background:linear-gradient(135deg,#3a1a6a,#5a2a9a);border:2px solid #8040c0;font-family:Kanit,sans-serif;font-size:13px;color:#e0c0ff;text-align:center;cursor:pointer;letter-spacing:1px;animation:pulse 1.2s infinite">🧬 EVOLVE NOW</div>`
           :(hasSyms&&pet.phase==='larva')?`<div data-party-symbols style="padding:10px;border-radius:10px;background:#0e0e22;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:13px;color:#8080c0;text-align:center;cursor:pointer">🔮 VIEW SYMBOLS</div>`:''}
-          ${!isActive&&!onExp?`<div data-setactive="${partyDetailIdx}" style="padding:10px;border-radius:10px;background:#0e0e22;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;text-align:center;cursor:pointer">▶ SET ACTIVE</div>`:''}
-          ${onExp?`<div style="padding:10px;border-radius:10px;background:#0e0e22;border:1px solid #ffaa00;font-family:Kanit,sans-serif;font-size:12px;color:#ffaa00;text-align:center">🌑 ON EXPEDITION</div>`:''}
-          ${!onExp&&pet.hp<pet.maxHp?pet.resting
+          ${!isActive?`<div data-setactive="${partyDetailIdx}" style="padding:10px;border-radius:10px;background:#0e0e22;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;text-align:center;cursor:pointer">▶ SET ACTIVE</div>`:''}
+          ${pet.hp<pet.maxHp?pet.resting
             ?`<div data-stopresting="${partyDetailIdx}" style="padding:10px;border-radius:10px;background:#1a1a0a;border:1px solid #aaaa00;font-family:Kanit,sans-serif;font-size:13px;color:#eeee44;text-align:center;cursor:pointer">⏹ STOP REST</div>`
             :`<div data-startrest="${partyDetailIdx}" style="padding:10px;border-radius:10px;background:#0a1a0a;border:1px solid #40a040;font-family:Kanit,sans-serif;font-size:13px;color:#80ee80;text-align:center;cursor:pointer">🛌 REST</div>`
           :''}
           <div style="display:flex;gap:6px">
             <div data-togglelock="${partyDetailIdx}" style="flex:1;padding:8px;border-radius:10px;background:#080810;border:1px solid ${pet.locked?'#f39c12':'#2a2a4a'};font-family:Kanit,sans-serif;font-size:12px;color:${pet.locked?'#f39c12':'#4a4a8a'};text-align:center;cursor:pointer">${pet.locked?'🔒 LOCKED':'🔓 LOCK'}</div>
-            ${!onExp&&!pet.locked&&pets.length>1?`<div data-deletepet="${partyDetailIdx}" style="padding:8px 12px;border-radius:10px;background:#3a0808;border:2px solid #ff3333;font-family:Kanit,sans-serif;font-size:14px;color:#ff5555;text-align:center;cursor:pointer;box-shadow:0 0 6px #ff333344">🗑</div>`:''}
+            ${!pet.locked&&pets.length>1?`<div data-deletepet="${partyDetailIdx}" style="padding:8px 12px;border-radius:10px;background:#3a0808;border:2px solid #ff3333;font-family:Kanit,sans-serif;font-size:14px;color:#ff5555;text-align:center;cursor:pointer;box-shadow:0 0 6px #ff333344">🗑</div>`:''}
           </div>
-          ${!isActive&&!onExp?`<div data-tostorage="${partyDetailIdx}" style="padding:8px;border-radius:10px;background:#0a1a0a;border:1px solid #408040;font-family:Kanit,sans-serif;font-size:12px;color:#80cc80;text-align:center;cursor:pointer">📦 ${storage.length<MAX_STORAGE?T('ย้ายไป STORAGE','Move to STORAGE'):T('⇄ SWAP กับ STORAGE','⇄ SWAP with STORAGE')}</div>`:''}
+          ${!isActive?`<div data-tostorage="${partyDetailIdx}" style="padding:8px;border-radius:10px;background:#0a1a0a;border:1px solid #408040;font-family:Kanit,sans-serif;font-size:12px;color:#80cc80;text-align:center;cursor:pointer">📦 ${storage.length<MAX_STORAGE?T('ย้ายไป STORAGE','Move to STORAGE'):T('⇄ SWAP กับ STORAGE','⇄ SWAP with STORAGE')}</div>`:''}
           ${pet.phase==='evolved'?`<div onclick="partyDetailIdx=null;partyViewTab='evolve2';render();" style="padding:8px;border-radius:10px;background:#0a0a22;border:2px solid #ff6600;font-family:Kanit,sans-serif;font-size:13px;color:#ff9944;text-align:center;cursor:pointer">${T('🧬 ไปหน้า EVOLVE II','🧬 Go to EVOLVE II')}</div>`:''}
           <div data-party-back style="padding:8px;border-radius:10px;background:#080810;border:1px solid #2a2a4a;font-family:Kanit,sans-serif;font-size:12px;color:#4a4a8a;text-align:center;cursor:pointer">← BACK</div>
         </div>
@@ -10280,12 +10159,11 @@ function renderParty() {
     }
 
     const isActive = i === activePetIdx;
-    const onExp = !!pet.expedition;
     const hpPct = Math.round(pet.hp/pet.maxHp*100);
     const f = pet.formKey ? FORMS[pet.formKey] : null;
     const nameColor = f ? f.color : '#c0a0ff';
     const isResting = !!pet.resting;
-    const border = isActive ? '#8060d0' : onExp ? '#ffaa00' : isResting ? '#40a040' : '#2a2a5a';
+    const border = isActive ? '#8060d0' : isResting ? '#40a040' : '#2a2a5a';
     const bg = isActive ? 'rgba(100,60,200,0.1)' : isResting ? 'rgba(20,40,20,0.4)' : '#0a0a1a';
 
     let statusLine = '';
@@ -10295,17 +10173,10 @@ function renderParty() {
       const waitSec = waiting ? Math.ceil((pet.deadRestUntil-now)/1000) : 0;
       statusLine = `<span style="color:${waiting?'#ff6060':'#80ee80'};font-size:10px;font-family:Kanit,sans-serif">${waiting?`💀 รอ <span data-countdown="${pet.deadRestUntil}">${fmtTime(waitSec*1000)}</span> ก่อน regen`:`🛌 RESTING — ${pet.hp}/${pet.maxHp} HP`}</span>`;
     }
-    else if(onExp) {
-      const rem = pet.expedition.endTime - now;
-      const expLbl = EXPEDITIONS.find(e=>e.type===pet.expedition.type)?.label||'';
-      if(pet.expedition.ready)
-        statusLine = `<span style="color:#00ffaa;font-size:10px;font-family:Kanit,sans-serif;animation:shiny-pulse 1s ease-in-out infinite">✅ ${expLbl} ${T('— กลับแล้ว! กด COLLECT','— returned! Press COLLECT')}</span>`;
-      else
-        statusLine = `<span data-countdown-status="${pet.expedition.endTime}" data-label="${expLbl}" style="color:#ffaa00;font-size:10px;font-family:Kanit,sans-serif">🌑 ${expLbl} — ${fmtTime(rem)}</span>`;
-    } else statusLine = `<span style="font-size:10px;color:#7060aa">TAP = SET ACTIVE</span>`;
+    else statusLine = `<span style="font-size:10px;color:#7060aa">TAP = SET ACTIVE</span>`;
 
     const inSwapMode = swapStorageIdx !== null;
-    const canSwap = inSwapMode && !isActive && !onExp;
+    const canSwap = inSwapMode && !isActive;
     const swapBorder = canSwap ? '#00ffaa' : border;
     const swapBg = canSwap ? 'rgba(0,80,40,0.2)' : bg;
 
@@ -10331,9 +10202,8 @@ function renderParty() {
               : statusLine}
           </div>
           <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px">
-            ${!inSwapMode && (onExp && pet.expedition.ready) ? `<div onclick="event.stopPropagation();state='expedition';render();" style="padding:6px 10px;border-radius:8px;font-family:Kanit,sans-serif;font-size:11px;text-align:center;cursor:pointer;background:#003322;color:#00ffaa;border:2px solid #00ffaa;animation:shiny-pulse 1s ease-in-out infinite">✅<br>COLLECT</div>` : ''}
-            ${!inSwapMode && (!isActive && !onExp && pet.phase!=='egg') ? `<div onclick="event.stopPropagation();setActivePet(${i});render();" style="padding:6px 10px;border-radius:8px;font-family:Kanit,sans-serif;font-size:11px;text-align:center;cursor:pointer;background:#0a0a1a;color:#c0a0ff;border:1px solid #6040a0">▶<br>ACTIVE</div>` : ''}
-            ${!inSwapMode && (!onExp && pet.phase!=='egg' && (pet.hp<pet.maxHp||isResting)) ? `<div onclick="event.stopPropagation();toggleRest(${i});render();" style="padding:6px 10px;border-radius:8px;font-family:Kanit,sans-serif;font-size:11px;text-align:center;cursor:pointer;${isResting?'background:#1a0a30;color:#c0a0ff;border:1px solid #8060d0':'background:#0a0a1a;color:#4a4a7a;border:1px solid #2a2a5a'}">${isResting?'😴<br>STOP':'🛌<br>REST'}</div>` : ''}
+            ${!inSwapMode && (!isActive && pet.phase!=='egg') ? `<div onclick="event.stopPropagation();setActivePet(${i});render();" style="padding:6px 10px;border-radius:8px;font-family:Kanit,sans-serif;font-size:11px;text-align:center;cursor:pointer;background:#0a0a1a;color:#c0a0ff;border:1px solid #6040a0">▶<br>ACTIVE</div>` : ''}
+            ${!inSwapMode && (pet.phase!=='egg' && (pet.hp<pet.maxHp||isResting)) ? `<div onclick="event.stopPropagation();toggleRest(${i});render();" style="padding:6px 10px;border-radius:8px;font-family:Kanit,sans-serif;font-size:11px;text-align:center;cursor:pointer;${isResting?'background:#1a0a30;color:#c0a0ff;border:1px solid #8060d0':'background:#0a0a1a;color:#4a4a7a;border:1px solid #2a2a5a'}">${isResting?'😴<br>STOP':'🛌<br>REST'}</div>` : ''}
             ${!inSwapMode ? `<div style="display:flex;gap:2px">
               <div onclick="event.stopPropagation();movePartyPet(${i},-1)" style="padding:3px 8px;border-radius:6px;font-size:12px;text-align:center;cursor:${i>0?'pointer':'default'};background:#0a0a1a;color:${i>0?'#7060c0':'#2a2a3a'};border:1px solid ${i>0?'#3a2a6a':'#1a1a2a'};user-select:none">▲</div>
               <div onclick="event.stopPropagation();movePartyPet(${i},1)" style="padding:3px 8px;border-radius:6px;font-size:12px;text-align:center;cursor:${i<pets.length-1?'pointer':'default'};background:#0a0a1a;color:${i<pets.length-1?'#7060c0':'#2a2a3a'};border:1px solid ${i<pets.length-1?'#3a2a6a':'#1a1a2a'};user-select:none">▼</div>
@@ -10794,6 +10664,7 @@ function renderParty() {
         <div style="background:#04141a;border:2px solid #33aacc;border-radius:16px;padding:20px;width:240px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 30px #33aacc44">
           <div style="font-family:Kanit,sans-serif;font-size:14px;color:#99ddff;text-align:center;letter-spacing:2px">🥚 ${T('ยืนยันการ Fusion','Confirm Fusion')}</div>
           <div style="font-size:11px;color:#5090b0;text-align:center">${petA?.name||''} (${fA?.name||''})<br>+ ${petB?.name||''} (${fB?.name||''})</div>
+          ${(petA?.shiny||petB?.shiny)?`<div style="font-size:10px;color:#ffd700;text-align:center">✨ ${T(`โอกาสสืบทอด Shiny ${Math.round((0.03+(petA?.shiny?0.25:0)+(petB?.shiny?0.25:0))*100)}%`,`${Math.round((0.03+(petA?.shiny?0.25:0)+(petB?.shiny?0.25:0))*100)}% chance to inherit Shiny`)}</div>`:''}
           <div style="font-size:10px;color:#cc6666;text-align:center;font-weight:bold">${T('⚠ ทั้ง 2 ตัวจะหายไปถาวร!','⚠ Both beasts will be lost permanently!')}</div>
           <div style="display:flex;gap:8px">
             <div id="fusionCancel" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:11px;color:#8080c0;cursor:pointer;text-align:center">${T('ยกเลิก','CANCEL')}</div>
@@ -11904,7 +11775,7 @@ function moveStoragePet(idx, dir) {
 
 function toggleRest(idx) {
   const p = pets[idx];
-  if(!p || p.phase==='egg' || p.expedition) return;
+  if(!p || p.phase==='egg') return;
   p.resting = !p.resting;
   if(p.resting && p.hp<=0) p.deadRestUntil = p.phase==='larva' ? 0 : Date.now() + 5*60*1000;
   if(!p.resting) p.deadRestUntil = 0;
@@ -11912,7 +11783,6 @@ function toggleRest(idx) {
 }
 
 function enterScout() {
-  if(creature.expedition) { scoutToast=T('🌑 ตัวนี้กำลัง Expedition อยู่ เปลี่ยน Active ก่อน!','🌑 This beast is on Expedition — switch Active first!'); render(); return; }
   if(creature.resting) { scoutToast=T('🛌 กำลังพักอยู่ ออกจาก Rest ก่อน!','🛌 Beast is resting — stop Rest first!'); render(); return; }
   if(!scoutGrid.length) { genScoutGrid(); scoutPos={x:0,y:0}; }
   state='scout'; render();
@@ -11991,24 +11861,15 @@ setInterval(() => {
   if(changed) { saveGame(); if((state==='party'||state==='menu') && !helpOpen && !settingsOpen) render(); }
 }, 30000);
 
-// Expedition countdown refresh every second — update text only, no full render
+// Dead-rest countdown refresh every second — update text only, no full render
 setInterval(() => {
-  if(state !== 'expedition' && state !== 'party') return;
+  if(state !== 'party') return;
   const now = Date.now();
-  // update [data-countdown] elements in-place
   document.querySelectorAll('[data-countdown]').forEach(el => {
     const end = parseInt(el.dataset.countdown);
     const rem = Math.max(0, end - now);
     if(rem === 0) { render(); return; } // trigger full render when timer expires
     el.textContent = fmtTime(rem);
-  });
-  // update [data-countdown-status] for party card status lines
-  document.querySelectorAll('[data-countdown-status]').forEach(el => {
-    const end = parseInt(el.dataset.countdownStatus);
-    const lbl = el.dataset.label || '';
-    const rem = Math.max(0, end - now);
-    if(rem === 0) { render(); return; }
-    el.textContent = `🌑 ${lbl} — ${fmtTime(rem)}`;
   });
 }, 1000);
 

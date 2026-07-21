@@ -7662,9 +7662,9 @@ function renderMenu() {
               { action:'idle',       icon:'⏳',  label:'IDLE',   blocked: false, infoKey:'idle' },
               { action:'gauntlet',   icon:'🥊',  label:'GAUNTLET', blocked: gauntletLocked || !!towerBlocked, reason: gauntletLocked?T('ต้องปลดล็อค Hell Mode ก่อน','Unlock Hell Mode first'):(towerBlocked?T('มี pet กำลัง Rest','A pet is Resting'):''), infoKey:'gauntlet' },
             ];
-            return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;justify-items:center">
+            return `<div style="display:grid;grid-template-columns:repeat(3,max-content);gap:4px 10px;justify-content:center">
               ${items.map(it=>`
-                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;width:100%">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
                   <div class="menu-icon" data-action="${it.action}" style="${it.action==='tower'?'border-color:rgba(255,170,0,0.5);':''} opacity:${it.blocked?0.4:1}">
                     ${it.icon}<span>${it.label}${infoIcon(it.infoKey)}</span>
                   </div>

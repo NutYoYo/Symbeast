@@ -1441,14 +1441,21 @@ function rollWeapon() {
 const GAUNTLET_STAMINA_COST = 30;
 const GAUNTLET_DAILY_MAX = 5;
 const GAUNTLET_TRAINERS = {
-  F: { key:'F', name:'Ragnar',   theme:'Fist',    icon:'👊', reward:{gold:20000, essence:5} },
-  W: { key:'W', name:'Zephyr',   theme:'Wing',    icon:'🪽', reward:{gold:35000, weaponBoxGrade:'R'} },
-  S: { key:'S', name:'Thorne',   theme:'Shield',  icon:'🛡️', reward:{gold:50000, artifactBoxGrade:'E'} },
-  B: { key:'B', name:'Solstice', theme:'Balance', icon:'⚖️', reward:{gold:75000, rebirthStone:5} },
+  F: { key:'F', name:'Ragnar',   theme:'Fist',    icon:'👊', portrait:'Trainers/Ragnar.png' },
+  W: { key:'W', name:'Zephyr',   theme:'Wing',    icon:'🪽', portrait:'Trainers/Zephyr.png' },
+  S: { key:'S', name:'Thorne',   theme:'Shield',  icon:'🛡️', portrait:'Trainers/Thorne.png' },
+  B: { key:'B', name:'Solstice', theme:'Balance', icon:'⚖️', portrait:'Trainers/Solstice.png' },
 };
-const GAUNTLET_CHAMPION = { key:'CHAMPION', name:'NutYo', theme:'Champion', icon:'👑',
-  reward:{gold:120000, shinyEgg:true, weaponBoxGrade:'E', badge:true} };
+const GAUNTLET_CHAMPION = { key:'CHAMPION', name:'NutYo', theme:'Champion', icon:'👑', portrait:'Trainers/NutYo.png' };
 const GAUNTLET_ROOM_LEVELS = [80, 83, 87, 90, 100]; // by position, position 4 = Champion
+// Rewards are fixed to ROOM POSITION (difficulty), not to whichever trainer is shuffled into it.
+const GAUNTLET_ROOM_REWARDS = [
+  {gold:20000, essence:5},
+  {gold:35000, weaponBoxGrade:'R'},
+  {gold:50000, artifactBoxGrade:'E'},
+  {gold:75000, rebirthStone:5},
+  {gold:120000, shinyEgg:true, weaponBoxGrade:'E', badge:true},
+];
 const GAUNTLET_GEAR_ODDS = [ // R/E odds by position 0-3; Champion (pos 4) always rolls E
   {R:0.80, E:0.20}, {R:0.65, E:0.35}, {R:0.45, E:0.55}, {R:0.25, E:0.75},
 ];
@@ -6820,10 +6827,10 @@ function generateGauntletChampionTeam() {
 function generateGauntletWeek() {
   const symbols = _gauntletShuffle(['F','W','S','B']);
   const rooms = symbols.map((sym,pos) => ({
-    trainer: GAUNTLET_TRAINERS[sym], symbol: sym, effLevel: GAUNTLET_ROOM_LEVELS[pos],
+    trainer: GAUNTLET_TRAINERS[sym], symbol: sym, pos, effLevel: GAUNTLET_ROOM_LEVELS[pos],
     pets: generateGauntletTeam(sym, pos),
   }));
-  rooms.push({ trainer: GAUNTLET_CHAMPION, symbol:'CHAMPION', effLevel: GAUNTLET_ROOM_LEVELS[4],
+  rooms.push({ trainer: GAUNTLET_CHAMPION, symbol:'CHAMPION', pos:4, effLevel: GAUNTLET_ROOM_LEVELS[4],
     pets: generateGauntletChampionTeam() });
   gauntletRooms = rooms;
   gauntletWeek = gauntletWeekKey();
@@ -6842,7 +6849,7 @@ function enterGauntlet() {
   state = 'gauntlet'; render();
 }
 function grantGauntletReward(room) {
-  const r = room.trainer.reward;
+  const r = GAUNTLET_ROOM_REWARDS[room.pos];
   if(r.gold) gold += r.gold;
   if(r.essence) for(let i=0;i<r.essence;i++) addItemToInventory(dropEssence());
   if(r.weaponBoxGrade) addWeaponToBag(rollWeaponFromPool(r.weaponBoxGrade));
@@ -7030,7 +7037,7 @@ function renderGauntlet() {
     const cleared = i < gauntletCheckpoint;
     const isCurrent = i === gauntletCheckpoint;
     const claimed = gauntletClaimed[i];
-    const r = room.trainer.reward;
+    const r = GAUNTLET_ROOM_REWARDS[room.pos];
     const rewardParts = [];
     if(r.gold) rewardParts.push(`💰 ${r.gold.toLocaleString()}G`);
     if(r.essence) rewardParts.push(`✨ Essence×${r.essence}`);
@@ -7044,7 +7051,7 @@ function renderGauntlet() {
       <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto">
         <div data-gauntlet-back-map style="align-self:flex-start;padding:6px 12px;border-radius:8px;background:#0a0a1a;border:1px solid #2a2a3a;font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">⬅ ${T('กลับ','Back')}</div>
         <div style="text-align:center;padding:16px;border-radius:12px;background:#0a0a1a;border:1px solid ${room.symbol==='CHAMPION'?'#ffd700':'#2a2a3a'}">
-          <div style="font-size:40px">${room.trainer.icon}</div>
+          <img src="${room.trainer.portrait}" style="width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 0 10px ${room.symbol==='CHAMPION'?'#ffd70066':'#8060d066'})" onerror="this.style.display='none'">
           <div style="font-family:Kanit,sans-serif;font-size:16px;color:${room.symbol==='CHAMPION'?'#ffd700':'#c0a0ff'};letter-spacing:1px">${room.trainer.name}</div>
           <div style="font-size:11px;color:#8878b8">${room.trainer.theme} · Lv.${room.effLevel}</div>
           ${cleared?`<div style="font-size:11px;color:#44ff88;margin-top:4px">✅ ${T('เคลียร์แล้ว','Cleared')}</div>`:''}
@@ -7093,7 +7100,7 @@ function renderGauntlet() {
           return `<div>
             <div ${!locked?`data-gauntlet-room="${i}"`:''} style="width:220px;padding:12px;border-radius:12px;background:${locked?'#08080f':'#0e0e22'};border:2px solid ${col};text-align:center;cursor:${locked?'default':'pointer'};opacity:${locked?0.5:1}">
               ${locked ? `<div style="font-size:22px">❓</div><div style="font-size:11px;color:#5a4a8a;font-family:Kanit,sans-serif">${T('ยังไม่ปลดล็อค','Locked')}</div>`
-                : `<div style="font-size:22px">${room.trainer.icon}</div>
+                : `<img src="${room.trainer.portrait}" style="width:48px;height:48px;object-fit:contain" onerror="this.outerHTML='<div style=\\'font-size:22px\\'>${room.trainer.icon}</div>'">
                    <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${room.trainer.name}</div>
                    <div style="font-size:9px;color:#8878b8">${room.trainer.theme} · Lv.${room.effLevel}${cleared?' · ✅':''}</div>`}
             </div>
@@ -7655,9 +7662,9 @@ function renderMenu() {
               { action:'idle',       icon:'⏳',  label:'IDLE',   blocked: false, infoKey:'idle' },
               { action:'gauntlet',   icon:'🥊',  label:'GAUNTLET', blocked: gauntletLocked || !!towerBlocked, reason: gauntletLocked?T('ต้องปลดล็อค Hell Mode ก่อน','Unlock Hell Mode first'):(towerBlocked?T('มี pet กำลัง Rest','A pet is Resting'):''), infoKey:'gauntlet' },
             ];
-            return `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;justify-items:center">
               ${items.map(it=>`
-                <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;width:100%">
                   <div class="menu-icon" data-action="${it.action}" style="${it.action==='tower'?'border-color:rgba(255,170,0,0.5);':''} opacity:${it.blocked?0.4:1}">
                     ${it.icon}<span>${it.label}${infoIcon(it.infoKey)}</span>
                   </div>

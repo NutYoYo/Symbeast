@@ -1430,6 +1430,46 @@ function rollWeapon() {
   const pool = WEAPON_POOL[grade];
   return pool[Math.floor(Math.random() * pool.length)];
 }
+
+// ============================================================
+// WEEKLY BOSS GAUNTLET — Elite-Four-style endgame mode.
+// 4 themed trainers (Fist/Wing/Shield/Balance, one Evolve II branch symbol each) + a
+// Champion (mixed team). Positions 1-4 always use Effective Level 80/83/87/90 respectively —
+// only WHICH trainer occupies which position is reshuffled weekly; Champion is always last
+// at Effective Level 100. No Overdrive for enemies (see GAUNTLET finisher/enrage below instead).
+// ============================================================
+const GAUNTLET_STAMINA_COST = 30;
+const GAUNTLET_DAILY_MAX = 5;
+const GAUNTLET_TRAINERS = {
+  F: { key:'F', name:'Ragnar',   theme:'Fist',    icon:'👊', reward:{gold:20000, essence:5} },
+  W: { key:'W', name:'Zephyr',   theme:'Wing',    icon:'🪽', reward:{gold:35000, weaponBoxGrade:'R'} },
+  S: { key:'S', name:'Thorne',   theme:'Shield',  icon:'🛡️', reward:{gold:50000, artifactBoxGrade:'E'} },
+  B: { key:'B', name:'Solstice', theme:'Balance', icon:'⚖️', reward:{gold:75000, rebirthStone:5} },
+};
+const GAUNTLET_CHAMPION = { key:'CHAMPION', name:'NutYo', theme:'Champion', icon:'👑',
+  reward:{gold:120000, shinyEgg:true, weaponBoxGrade:'E', badge:true} };
+const GAUNTLET_ROOM_LEVELS = [80, 83, 87, 90, 100]; // by position, position 4 = Champion
+const GAUNTLET_GEAR_ODDS = [ // R/E odds by position 0-3; Champion (pos 4) always rolls E
+  {R:0.80, E:0.20}, {R:0.65, E:0.35}, {R:0.45, E:0.55}, {R:0.25, E:0.75},
+];
+function gauntletWeekKey() {
+  const d = new Date(Date.now() + 7*3600000); // Thai tz, same convention as towerRunsDate
+  const day = d.getUTCDay(); // 0=Sun..6=Sat
+  const monday = new Date(d); monday.setUTCDate(d.getUTCDate() - ((day+6)%7));
+  return monday.toISOString().slice(0,10);
+}
+// Rolls a themed Artifact/Weapon loadout for one boss pet: 1-2 Artifacts + 1 Weapon,
+// grade odds escalating by room position (N grade excluded entirely).
+function gauntletRollGear(pos) {
+  const odds = pos>=4 ? {R:0, E:1} : GAUNTLET_GEAR_ODDS[pos];
+  const rollGrade = () => Math.random() < odds.E ? 'E' : 'R';
+  const pickArt = () => { const g=rollGrade(); const p=ARTIFACT_POOL[g]; return p[Math.floor(Math.random()*p.length)]; };
+  const artifact1 = pickArt();
+  let artifact2 = Math.random()<0.5 ? pickArt() : null;
+  if(artifact2===artifact1) artifact2 = null;
+  const weapon = rollWeaponFromPool(rollGrade());
+  return { artifact: artifact1, artifact2, weapon };
+}
 // Applies/reverts a weapon's flat stat bonuses directly on the pet object (same pattern as the
 // old STAT_ART_MULT shards, but additive instead of multiplicative).
 function applyWeaponStat(pet, key, revert=false) {
@@ -1919,6 +1959,19 @@ let duelScanOpen = false;    // แสดง scanner modal
 let duelPasteOpen = false;   // แสดง paste link input
 let _scanStream = null;      // camera stream
 
+// ── WEEKLY BOSS GAUNTLET ──
+let gauntletWeek = null;          // weekKey string this generated team belongs to
+let gauntletRooms = null;         // [{trainer, symbol, effLevel, pets:[...]}, ...] length 5 (4 trainers + champion)
+let gauntletCheckpoint = 0;       // furthest CLEARED room count (0-5)
+let gauntletClaimed = [false,false,false,false,false];
+let gauntletRunsToday = 0;
+let gauntletRunsDate = '';
+let gauntletRoomIdx = null;       // room index currently viewed/fought (0-4)
+let gauntletEnemyIdx = 0;         // which of the 4 pets in that room's team
+let gauntletScreen = 'map';       // 'map' | 'detail'
+let gauntletResult = null;        // {won, roomIdx, reward} shown after a room battle ends
+let gauntletChampionBadgeWeek = null; // weekKey of the last full clear, shown as a profile badge
+
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
 let lastScrollDay = '';
@@ -2165,6 +2218,7 @@ function INFO_TEXT() {
     raid:     T('ปลดล็อคหลังผ่าน Scout Stage 20 — สู้ 3 Wave ลุ้น Special Boss ประจำวัน ใช้ Stamina 20 ต่อรอบ เล่นได้ 5 รอบ/วัน', 'Unlocks after Scout Stage 20 — fight 3 Waves ending in the day\'s Special Boss. Costs 20 Stamina, up to 5 runs/day'),
     vs:       T('ประลองกับศัตรู AI แบบ Ladder ไม่จำกัดจำนวนครั้ง ไม่ใช้ Stamina เหมาะไว้ฝึกทีมหรือฟาร์มรางวัลเพิ่ม', 'Unlimited PvE Ladder battles against AI — no Stamina cost. Good for practicing your team or farming extra rewards'),
     send:     T('ส่ง Pet ออกไปหาทรัพยากรอัตโนมัติโดยไม่ต้องเล่น แต่ตัวที่ออกไปจะใช้ในโหมด Tower/VS ไม่ได้ชั่วคราว', 'Send a Pet out to auto-gather resources without playing — but it can\'t be used in Tower/VS while away'),
+    gauntlet: T('🥊 GAUNTLET ประจำสัปดาห์ — ปลดล็อคหลัง Hell Mode พบ 4 จตุรเทพ + แชมเปี้ยน NutYo เรียงเป็นห้องตามลำดับ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) เคลียร์แล้วไม่ต้องสู้ซ้ำจนกว่าจะรีประจำสัปดาห์', '🥊 Weekly GAUNTLET — unlocks after Hell Mode. Face the 4 Elite Trainers plus Champion NutYo in sequence. Costs 30 Stamina/entry (max 5/day) — cleared rooms stay cleared until the weekly reset'),
     idle:     T('⏳ IDLE HUNT — ระบบสะสมเวลา (ออนไลน์+ออฟไลน์)<br><br>• นับเวลาตั้งแต่เปิดเกม หรือปิดเกมไป<br>• สะสมสูงสุด 8 ชม. ต่อรอบ<br>• ทุก 30 นาที สุ่มไอเทม Potion/Box/Egg/Essence<br>• Gold เพิ่มตาม Scout Stage ที่เล่นถึง<br>• ยิ่ง Stage สูง อัตรา Gold ต่อนาทีก็ยิ่งมากขึ้น<br><br>💡 กดรับของแล้วเวลาเริ่มนับใหม่ วน loop ไปเรื่อยๆ', '⏳ IDLE HUNT — Accumulate time (online + offline)<br><br>• Counts time while playing or away from the game<br>• Max 8 hours per collection<br>• Every 30 min: random drop (Potion/Box/Egg/Essence)<br>• Gold rate scales with your highest Scout Stage<br>• Higher Stage = more Gold per minute<br><br>💡 Claim rewards to reset the timer — loops indefinitely'),
     battleMoves: T('⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (เป่ายิ้งฉุบ) — เลือกท่าที่ชนะได้ดาเมจ ×2, แพ้ได้แค่ ×0.5, เท่ากันดาเมจปกติ 💡 ศัตรูแต่ละ Type มักใช้ท่าที่ตรงธาตุตัวเองบ่อยกว่า', '⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors) — winning deals ×2 damage, losing only ×0.5, matching deals normal damage. 💡 Enemies tend to favor their own themed move'),
   };
@@ -3037,7 +3091,7 @@ function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -3089,6 +3143,8 @@ function loadGame(slotNum) {
         seenEvolved=new Set(); seenFinal=new Set();
         towerFirstClears=new Set(); scoutFirstClears=new Set();
         vsCurrentStage=1; totalPlayTime=0;
+        gauntletWeek=null; gauntletRooms=null; gauntletCheckpoint=0; gauntletClaimed=[false,false,false,false,false];
+        gauntletRunsToday=0; gauntletRunsDate=''; gauntletChampionBadgeWeek=null;
 
         if(Array.isArray(d.scoutGrid)&&d.scoutGrid.length) scoutGrid = d.scoutGrid;
         if(d.scoutPos) scoutPos = d.scoutPos;
@@ -3136,6 +3192,13 @@ function loadGame(slotNum) {
         if(typeof d.pvpRating==='number') pvpRating = d.pvpRating;
         if(Array.isArray(d.pvpHistory)) pvpHistory = d.pvpHistory;
         if(Array.isArray(d.pvpDefenseLog)) pvpDefenseLog = d.pvpDefenseLog;
+        if(typeof d.gauntletWeek==='string') gauntletWeek = d.gauntletWeek;
+        if(Array.isArray(d.gauntletRooms)) gauntletRooms = d.gauntletRooms;
+        if(typeof d.gauntletCheckpoint==='number') gauntletCheckpoint = d.gauntletCheckpoint;
+        if(Array.isArray(d.gauntletClaimed)) gauntletClaimed = d.gauntletClaimed;
+        if(typeof d.gauntletRunsToday==='number') gauntletRunsToday = d.gauntletRunsToday;
+        if(typeof d.gauntletRunsDate==='string') gauntletRunsDate = d.gauntletRunsDate;
+        if(typeof d.gauntletChampionBadgeWeek==='string') gauntletChampionBadgeWeek = d.gauntletChampionBadgeWeek;
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
         pets.concat(storage).forEach(p=>{ if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey); if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey); });
@@ -4298,6 +4361,47 @@ function doTurn(moveIdx) {
     if(we.type==='on_lose_dr' && cmp==='lose') { ed=Math.round(ed*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} dmg-${Math.round((1-we.mult)*100)}% → ${ed}`}); }
     if(we.type==='dmg_reduce') { ed=Math.round(ed*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} dmg-${Math.round((1-we.mult)*100)}% → ${ed}`}); }
   }
+
+  // ===== ENEMY WEAPON EFFECTS (Gauntlet bosses only — mirrors the player weapon block above) =====
+  const ewpn = enemy.weapon ? WEAPONS[enemy.weapon] : null;
+  if(ewpn?.effect && !enemyStunned) {
+    const ewe = ewpn.effect;
+    if(ewe.type==='atk_dmg_boost' && Math.random()<ewe.chance) { ed=Math.round(ed*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} ATK×${ewe.mult} →${ed}`}); }
+    if(ewe.type==='on_win_dmg' && cmp==='lose') { ed=Math.round(ed*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} WIN dmg×${ewe.mult} →${ed}`}); }
+    if(ewe.type==='multi_attack' && Math.random()<ewe.chance) { const ed2=Math.round(ed*(ewe.hits-1)); ed+=ed2; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} ×${ewe.hits} HITS →${ed}`}); }
+    if(ewe.type==='poison_on_hit' && ed>0 && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you!`}); }
+    if(ewe.type==='burn_on_hit' && ed>0 && Math.random()<ewe.chance) { bs.playerBurnTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} burned you!`}); }
+    if(ewe.type==='stun_on_hit' && ed>0 && Math.random()<ewe.chance) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN! (next turn)`});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN!`});} }
+    if(ewe.type==='block' && pd>0 && Math.random()<ewe.chance) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} BLOCK! →${pd}`}); }
+    if(ewe.type==='dodge' && pd>0 && Math.random()<ewe.chance) { pd=0; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} DODGE!`}); }
+    if(ewe.type==='counter' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { const ref=Math.max(1,Math.round(eCurseAtk/3*ewe.mult)); eCounterDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER ${ref} dmg`}); }
+    if(ewe.type==='reflect' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { const ref=Math.round(pd*ewe.mult); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} REFLECT ${ref} dmg`}); }
+    if(ewe.type==='poison_when_hit' && pd>0 && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you back!`}); }
+    if(ewe.type==='on_lose_dr' && cmp==='win') { pd=Math.round(pd*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} dmg-${Math.round((1-ewe.mult)*100)}% →${pd}`}); }
+    if(ewe.type==='dmg_reduce') { pd=Math.round(pd*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} dmg-${Math.round((1-ewe.mult)*100)}% →${pd}`}); }
+  }
+
+  // ===== GAUNTLET BOSS: HP<30% one-time finisher + post-finisher Enrage buff =====
+  if(bs.isGauntletBattle && enemy.evolve2Key) {
+    if(!bs.gauntletFinisherUsed && enemy.hp>0 && enemy.hp < enemy.maxHp*0.30) {
+      bs.gauntletFinisherUsed = true;
+      const odInfo = OVERDRIVE_INFO[enemy.evolve2Key];
+      const burst = Math.max(1, Math.round(ed*1.5));
+      pd = Math.max(0, pd - Math.round(burst*0.5)); // the desperate strike partially interrupts the player's own attack
+      creature.hp = Math.max(0, creature.hp - burst);
+      passives.push({icon:odInfo?.icon||'💥', text:T(`${enemy.name} ใช้ ${odInfo?.name||'ท่าไม้ตาย'}! ดาเมจพิเศษ ${burst}`,`${enemy.name} unleashes ${odInfo?.name||'a desperate finisher'}! Bonus damage ${burst}`)});
+      const ffStat = EVOLVE2_FORMS[enemy.evolve2Key];
+      const cmpAtk = ffStat.atk, cmpDef = ffStat.def*1.8, cmpSpd = ffStat.spd;
+      const top = Math.max(cmpAtk, cmpDef, cmpSpd);
+      bs.gauntletEnrage = { type: top===cmpAtk?'atk':top===cmpDef?'def':'spd' };
+      passives.push({icon:'🔥', text:T(`${enemy.name} เข้าสู่โหมด ENRAGE!`,`${enemy.name} enters ENRAGE mode!`)});
+    }
+    if(bs.gauntletEnrage) {
+      if(bs.gauntletEnrage.type==='atk') { ed=Math.round(ed*1.20); passives.push({icon:'🔥',text:`ENRAGE ATK+20% →${ed}`}); }
+      else if(bs.gauntletEnrage.type==='def') { pd=(playerIgnoresDef?pd:Math.round(pd*0.80)); passives.push({icon:'🔥',text:`ENRAGE DEF+20% →${pd}`}); }
+      else if(bs.gauntletEnrage.type==='spd' && pd>0 && !enemyTrueStrike && Math.random()<0.15) { pd=0; passives.push({icon:'🔥',text:'ENRAGE DODGE+15%!'}); }
+    }
+  }
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
   if(ed===0 && !_dodgeEffectApplied && !enemyTrueStrike) {
     if(fk==='WWS') { const h=Math.round(creature.maxHp*0.10); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
@@ -5258,6 +5362,39 @@ function endBattle(won) {
     saveGame(); state='duel_result'; render(); return;
   }
 
+  // ===== WEEKLY BOSS GAUNTLET RESULT =====
+  if(battleState.isGauntletBattle) {
+    if(!won) {
+      const aliveOthers = pets.filter(p => p !== creature && p.phase !== 'egg' && p.hp > 0);
+      if(aliveOthers.length > 0) {
+        battleState.pendingPetSwitch = true;
+        battleState.won = null;
+        state = 'battle'; render(); return;
+      }
+      gauntletResult = { won:false, roomIdx: gauntletRoomIdx };
+      saveGame(); state='gauntlet'; gauntletScreen='map'; battleState=null; render(); return;
+    }
+    // Won this pet — advance within the room's 4-pet team
+    gauntletEnemyIdx++;
+    if(gauntletEnemyIdx < gauntletRooms[gauntletRoomIdx].pets.length) {
+      const _roomIdx = gauntletRoomIdx, _enemyIdx = gauntletEnemyIdx;
+      setTimeout(()=>{ startGauntletBattle(_roomIdx, _enemyIdx); }, 800);
+      return;
+    }
+    // Room cleared — grant reward once, advance checkpoint
+    const room = gauntletRooms[gauntletRoomIdx];
+    if(!gauntletClaimed[gauntletRoomIdx]) { grantGauntletReward(room); gauntletClaimed[gauntletRoomIdx] = true; }
+    gauntletCheckpoint = Math.max(gauntletCheckpoint, gauntletRoomIdx + 1);
+    if(gauntletRoomIdx + 1 < gauntletRooms.length) {
+      const nextRoomIdx = gauntletRoomIdx + 1;
+      saveGame();
+      setTimeout(()=>{ gauntletRoomIdx = nextRoomIdx; gauntletEnemyIdx = 0; startGauntletBattle(nextRoomIdx, 0); }, 1000);
+      return;
+    }
+    gauntletResult = { won:true, roomIdx: gauntletRoomIdx, fullClear:true };
+    saveGame(); state='gauntlet'; gauntletScreen='map'; battleState=null; render(); return;
+  }
+
   // ===== VS BATTLE RESULT =====
   if(battleState.isVsBattle) {
     if(!won) {
@@ -5836,6 +5973,7 @@ function render() {
   else if(state==='status') renderStatus();
   else if(state==='train') renderTrain();
   else if(state==='tower') renderTower();
+  else if(state==='gauntlet') renderGauntlet();
   else if(state==='raid') renderRaid();
   else if(state==='raid_result') renderRaidResult();
   else if(state==='vs_lobby') renderVsLobby();
@@ -6640,6 +6778,106 @@ function startDuelBattle(enemyIdx) {
   state = 'battle'; render();
 }
 
+// ============================================================
+// WEEKLY BOSS GAUNTLET — generation, entry, and battle wiring.
+// ============================================================
+function _gauntletShuffle(arr) {
+  const a = [...arr];
+  for(let i=a.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function buildGauntletBossPet(formKey, pos) {
+  const ff = EVOLVE2_FORMS[formKey];
+  const lv = GAUNTLET_ROOM_LEVELS[pos];
+  const baseHp = 40 + lv*9 + lv*lv*0.4;
+  const fusScale = baseHp / 135;
+  const spd = Math.round(7 + lv*1.2 + 0.02*lv*lv); // flat formula — NOT fusScale'd (SPD's native range is far smaller than HP's)
+  const gear = gauntletRollGear(pos);
+  const w = WEAPONS[gear.weapon];
+  let maxHp = Math.round(ff.hp * fusScale);
+  let atk = Math.round(ff.atk * fusScale);
+  let def = Math.round(ff.def * fusScale);
+  let finalSpd = spd;
+  if(w?.stats) {
+    maxHp += w.stats.hp||0; atk += w.stats.atk||0; def += w.stats.def||0; finalSpd += w.stats.spd||0;
+  }
+  return {
+    name: ff.name, isEvolve2Enemy:true, evolve2Key:formKey, spriteFile:null,
+    maxHp, hp:maxHp, atk, def, spd:finalSpd,
+    artifact: gear.artifact, artifact2: gear.artifact2, weapon: gear.weapon,
+    passives: [],
+  };
+}
+function generateGauntletTeam(symbol, pos) {
+  const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
+  return bases.map(b => buildGauntletBossPet(EVOLVE2_BRANCHES[b][symbol], pos));
+}
+function generateGauntletChampionTeam() {
+  const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
+  const symbols = ['F','W','S','B'];
+  return bases.map((b,i) => buildGauntletBossPet(EVOLVE2_BRANCHES[b][symbols[i]], 4));
+}
+function generateGauntletWeek() {
+  const symbols = _gauntletShuffle(['F','W','S','B']);
+  const rooms = symbols.map((sym,pos) => ({
+    trainer: GAUNTLET_TRAINERS[sym], symbol: sym, effLevel: GAUNTLET_ROOM_LEVELS[pos],
+    pets: generateGauntletTeam(sym, pos),
+  }));
+  rooms.push({ trainer: GAUNTLET_CHAMPION, symbol:'CHAMPION', effLevel: GAUNTLET_ROOM_LEVELS[4],
+    pets: generateGauntletChampionTeam() });
+  gauntletRooms = rooms;
+  gauntletWeek = gauntletWeekKey();
+  gauntletCheckpoint = 0;
+  gauntletClaimed = [false,false,false,false,false];
+}
+function gauntletResetIfNeeded() {
+  const wk = gauntletWeekKey();
+  if(gauntletWeek !== wk || !gauntletRooms) generateGauntletWeek();
+  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+  if(gauntletRunsDate !== today) { gauntletRunsDate = today; gauntletRunsToday = 0; }
+}
+function enterGauntlet() {
+  gauntletResetIfNeeded();
+  gauntletScreen = 'map'; gauntletResult = null; gauntletRoomIdx = null;
+  state = 'gauntlet'; render();
+}
+function grantGauntletReward(room) {
+  const r = room.trainer.reward;
+  if(r.gold) gold += r.gold;
+  if(r.essence) for(let i=0;i<r.essence;i++) addItemToInventory(dropEssence());
+  if(r.weaponBoxGrade) addWeaponToBag(rollWeaponFromPool(r.weaponBoxGrade));
+  if(r.artifactBoxGrade==='E') addItemToInventory('box_E');
+  else if(r.artifactBoxGrade==='R') addItemToInventory('box_R');
+  if(r.rebirthStone) for(let i=0;i<r.rebirthStone;i++) addItemToInventory('rebirth_stone');
+  if(r.shinyEgg) addItemToInventory('shiny_egg');
+  if(r.badge) gauntletChampionBadgeWeek = gauntletWeek;
+}
+function gauntletStartRun(roomIdx) {
+  if(gauntletRunsToday >= GAUNTLET_DAILY_MAX) { scoutToast = T(`⚔️ เข้า Gauntlet ครบ ${GAUNTLET_DAILY_MAX} ครั้งแล้ววันนี้!`,`⚔️ Gauntlet limit reached! (${GAUNTLET_DAILY_MAX}/day)`); render(); return; }
+  if(stamina < GAUNTLET_STAMINA_COST) { scoutToast = T('⚡ Stamina ไม่พอ!','⚡ Not enough Stamina!'); render(); return; }
+  gauntletRunsToday++; stamina -= GAUNTLET_STAMINA_COST;
+  pets.forEach(p => { if(p.phase!=='egg') p.hp = p.maxHp; });
+  gauntletRoomIdx = roomIdx; gauntletEnemyIdx = 0;
+  saveGame();
+  startGauntletBattle(roomIdx, 0);
+}
+function startGauntletBattle(roomIdx, enemyIdx) {
+  if(enemyIdx === 0) battleAutoMode = false;
+  const enemy = gauntletRooms[roomIdx].pets[enemyIdx];
+  enemy.hp = enemy.maxHp;
+  battleState = {
+    enemy, isBoss: roomIdx===4, isMini:false,
+    turn:1, log:[], passivesLog:[], lastResult:null,
+    animPhase:null, waiting:false,
+    overdriveUsed:false, odBuff:null, enemyStunTurns:0,
+    e2Stack:0, e2NextBuff:false, enemyPoisonTurns:0, playerPoisonTurns:0, enemyBurnTurns:0, playerBurnTurns:0, enemyHealBlockTurns:0, playerHealBlockTurns:0,
+    e2CurseTurns:0, e2CurseTurnsE:0, e2NoHealTurns:0, e2NoHealTurnsE:0, e2PhoenixUsed:false, e2PhoenixUsedE:false, e2RuneType:null, e2RuneTypeE:null,
+    isGauntletBattle:true, artifactStacks:{}, eArtStacks:{},
+    gauntletFinisherUsed:false, gauntletEnrage:null,
+  };
+  state = 'battle'; render();
+}
+
 function renderDuelQrModal(myPets) {
   const url = buildDuelShareUrl(myPets);
   return `
@@ -6767,6 +7005,103 @@ function startDuelFight() {
     if(first.from==='party') { activePetIdx = first.idx; syncCreature(); }
   }
   startDuelBattle(0);
+}
+
+function renderGauntlet() {
+  labelStrip.textContent = '🥊 WEEKLY BOSS GAUNTLET';
+  const rooms = gauntletRooms || [];
+
+  if(gauntletResult) {
+    const r = gauntletResult;
+    const room = rooms[r.roomIdx];
+    screenContent.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;padding:16px;gap:12px;align-items:center;justify-content:center">
+        <div style="font-family:Kanit,sans-serif;font-size:20px;color:${r.won?'#44ff88':'#ff4444'};letter-spacing:2px">${r.won ? (r.fullClear?'👑 FULL CLEAR!':'✅ WIN') : '💀 DEFEAT'}</div>
+        <div style="font-size:12px;color:#8878b8;text-align:center">${room ? `${room.trainer.icon} ${room.trainer.name}` : ''}</div>
+        ${r.won?`<div style="font-size:12px;color:#ffcc44;text-align:center">${T('รางวัลถูกมอบให้แล้ว ตรวจสอบได้ใน Inventory','Rewards already granted — check your Inventory')}</div>`:`<div style="font-size:12px;color:#ff8888;text-align:center">${T('Checkpoint ยังอยู่ที่เดิม ลองใหม่ได้','Your checkpoint is unchanged — try again')}</div>`}
+        <div data-gauntlet-back-map style="margin-top:8px;width:100%;max-width:260px;padding:12px;text-align:center;background:#0a0a1a;border:1px solid #4a3a8a;border-radius:10px;font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;cursor:pointer">${T('⬅ กลับแผนที่ห้อง','⬅ Back to Room Map')}</div>
+      </div>`;
+    return;
+  }
+
+  if(gauntletScreen==='detail' && gauntletRoomIdx!==null && rooms[gauntletRoomIdx]) {
+    const i = gauntletRoomIdx;
+    const room = rooms[i];
+    const cleared = i < gauntletCheckpoint;
+    const isCurrent = i === gauntletCheckpoint;
+    const claimed = gauntletClaimed[i];
+    const r = room.trainer.reward;
+    const rewardParts = [];
+    if(r.gold) rewardParts.push(`💰 ${r.gold.toLocaleString()}G`);
+    if(r.essence) rewardParts.push(`✨ Essence×${r.essence}`);
+    if(r.weaponBoxGrade) rewardParts.push(`🗡️ Weapon [${r.weaponBoxGrade}]`);
+    if(r.artifactBoxGrade) rewardParts.push(`📦 Artifact [${r.artifactBoxGrade}]`);
+    if(r.rebirthStone) rewardParts.push(`🔮 Rebirth×${r.rebirthStone}`);
+    if(r.shinyEgg) rewardParts.push(`✨🥚 Shiny Egg`);
+    if(r.badge) rewardParts.push(`🏅 Gauntlet Champion Badge`);
+    const canEnter = isCurrent;
+    screenContent.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto">
+        <div data-gauntlet-back-map style="align-self:flex-start;padding:6px 12px;border-radius:8px;background:#0a0a1a;border:1px solid #2a2a3a;font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">⬅ ${T('กลับ','Back')}</div>
+        <div style="text-align:center;padding:16px;border-radius:12px;background:#0a0a1a;border:1px solid ${room.symbol==='CHAMPION'?'#ffd700':'#2a2a3a'}">
+          <div style="font-size:40px">${room.trainer.icon}</div>
+          <div style="font-family:Kanit,sans-serif;font-size:16px;color:${room.symbol==='CHAMPION'?'#ffd700':'#c0a0ff'};letter-spacing:1px">${room.trainer.name}</div>
+          <div style="font-size:11px;color:#8878b8">${room.trainer.theme} · Lv.${room.effLevel}</div>
+          ${cleared?`<div style="font-size:11px;color:#44ff88;margin-top:4px">✅ ${T('เคลียร์แล้ว','Cleared')}</div>`:''}
+        </div>
+        <div style="padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
+          <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;margin-bottom:6px">TEAM (4)</div>
+          <div style="display:flex;gap:6px">
+            ${room.pets.map(p=>{
+              const ff = EVOLVE2_FORMS[p.evolve2Key];
+              return `<div style="flex:1;text-align:center;padding:6px 2px;border-radius:8px;background:#08080f;border:1px solid #1a1a3a">
+                <div style="width:34px;height:34px;margin:0 auto;display:flex;align-items:center;justify-content:center">${buildPetSvg({phase:'final',finalKey:p.evolve2Key,shiny:false,symbols:[]},32,false)}</div>
+                <div style="font-size:9px;font-family:Kanit,sans-serif;color:${ff?.color||'#9070c0'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ff?.name||'?'}</div>
+                <div style="font-size:9px;color:#6858a0">${p.maxHp}HP</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div style="padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
+          <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;margin-bottom:6px">${T('รางวัล','Reward')} ${claimed?`<span style="color:#44ff88;font-size:9px">(${T('รับแล้ว','claimed')})</span>`:''}</div>
+          <div style="font-size:11px;color:#ffcc44;line-height:1.6">${rewardParts.join(' &nbsp; ')}</div>
+        </div>
+        ${canEnter?`
+        <div data-gauntlet-enter="${i}" style="padding:14px;text-align:center;background:linear-gradient(135deg,#2a0a0a,#4a0a0a);border:2px solid #cc4444;border-radius:12px;font-family:Kanit,sans-serif;font-size:14px;color:#ff8888;cursor:pointer;letter-spacing:1px">
+          ⚔ ${T('เข้าต่อสู้','ENTER')} (-${GAUNTLET_STAMINA_COST}⚡)
+        </div>
+        <div style="font-size:10px;color:#6858a0;text-align:center">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${gauntletRunsToday}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','today')}</div>
+        `:`<div style="font-size:11px;color:#6858a0;text-align:center">${T('เคลียร์แล้ว ไม่ต้องสู้ซ้ำจนกว่าจะรีประจำสัปดาห์','Already cleared — no need to refight until the weekly reset')}</div>`}
+      </div>`;
+    return;
+  }
+
+  // ── Room Map ──
+  screenContent.innerHTML = `
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto">
+      <div data-gauntlet-back-menu style="align-self:flex-start;padding:6px 12px;border-radius:8px;background:#0a0a1a;border:1px solid #2a2a3a;font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">⬅ ${T('กลับเมนู','Back to Menu')}</div>
+      <div style="text-align:center;padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกสัปดาห์','Resets weekly')}</div>
+        <div style="font-size:10px;color:#6858a0">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${gauntletRunsToday}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','entries today')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        ${rooms.map((room,i)=>{
+          const cleared = i < gauntletCheckpoint;
+          const isCurrent = i === gauntletCheckpoint;
+          const locked = i > gauntletCheckpoint;
+          const col = room.symbol==='CHAMPION' ? '#ffd700' : cleared ? '#44ff88' : isCurrent ? '#c0a0ff' : '#3a3a4a';
+          return `<div>
+            <div ${!locked?`data-gauntlet-room="${i}"`:''} style="width:220px;padding:12px;border-radius:12px;background:${locked?'#08080f':'#0e0e22'};border:2px solid ${col};text-align:center;cursor:${locked?'default':'pointer'};opacity:${locked?0.5:1}">
+              ${locked ? `<div style="font-size:22px">❓</div><div style="font-size:11px;color:#5a4a8a;font-family:Kanit,sans-serif">${T('ยังไม่ปลดล็อค','Locked')}</div>`
+                : `<div style="font-size:22px">${room.trainer.icon}</div>
+                   <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${room.trainer.name}</div>
+                   <div style="font-size:9px;color:#8878b8">${room.trainer.theme} · Lv.${room.effLevel}${cleared?' · ✅':''}</div>`}
+            </div>
+            ${i<rooms.length-1?`<div style="text-align:center;color:#3a3a4a;font-size:14px;letter-spacing:2px">┊</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
 }
 
 function renderRaid() {
@@ -7311,12 +7646,14 @@ function renderMenu() {
           ${(()=>{
             const towerBlocked = pets.filter(p=>p.phase!=='egg').find(p=>(p.resting&&p.hp<p.maxHp));
             const raidLocked = !(hardMode || hellMode || stage > 20);
+            const gauntletLocked = !hellMode;
             const items = [
               { action:'scout',      icon:'🗺',  label:'SCOUT',  blocked: false, infoKey:'scout' },
               { action:'tower',      icon:'🏯',  label:'TOWER',  blocked: !!towerBlocked, reason: towerBlocked?T('มี pet กำลัง Rest','A pet is Resting'):'', infoKey:'tower' },
               { action:'raid',       icon:'☠️',  label:'RAID',   blocked: raidLocked || !!towerBlocked, reason: raidLocked?T('ต้องผ่าน Scout Stage 20 (Normal) ก่อน','Clear Scout Stage 20 (Normal) first'):(towerBlocked?T('มี pet กำลัง Rest','A pet is Resting'):''), infoKey:'raid' },
               { action:'vs',         icon:'⚔️',  label:'VS',     blocked: false, infoKey:'vs' },
               { action:'idle',       icon:'⏳',  label:'IDLE',   blocked: false, infoKey:'idle' },
+              { action:'gauntlet',   icon:'🥊',  label:'GAUNTLET', blocked: gauntletLocked || !!towerBlocked, reason: gauntletLocked?T('ต้องปลดล็อค Hell Mode ก่อน','Unlock Hell Mode first'):(towerBlocked?T('มี pet กำลัง Rest','A pet is Resting'):''), infoKey:'gauntlet' },
             ];
             return `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
               ${items.map(it=>`
@@ -8279,7 +8616,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='idle') { state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
-  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isRaidBattle){stamina=Math.min(MAX_STAMINA,stamina+RAID_STAMINA_COST);raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){battleState=null;state='menu';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
+  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){battleState=null;state='tower';}else if(battleState?.isRaidBattle){stamina=Math.min(MAX_STAMINA,stamina+RAID_STAMINA_COST);raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){battleState=null;state='menu';}else if(battleState?.isGauntletBattle){battleState=null;state='gauntlet';gauntletScreen='map';}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
   else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }
   else if(state==='evolve')    { state='menu'; render(); }
@@ -8352,6 +8689,16 @@ screenContent.addEventListener('click', e=>{
   }
   if(state==='raid_result') {
     if(el.closest('[data-raid-result-back]')) { SFX.click(); raidRunSummary=null; state='raid'; render(); }
+    return;
+  }
+
+  if(state==='gauntlet') {
+    if(el.closest('[data-gauntlet-back-menu]')) { SFX.click(); state='menu'; render(); return; }
+    if(el.closest('[data-gauntlet-back-map]')) { SFX.click(); gauntletResult=null; gauntletScreen='map'; render(); return; }
+    const roomEl = el.closest('[data-gauntlet-room]');
+    if(roomEl) { SFX.click(); gauntletRoomIdx = Number(roomEl.dataset.gauntletRoom); gauntletScreen='detail'; render(); return; }
+    const enterEl = el.closest('[data-gauntlet-enter]');
+    if(enterEl) { SFX.click(); gauntletStartRun(Number(enterEl.dataset.gauntletEnter)); return; }
     return;
   }
 
@@ -8600,6 +8947,11 @@ screenContent.addEventListener('click', e=>{
       actionMenuOpen=false;
       if(!(hardMode || hellMode || stage > 20)) { scoutToast=T('🔒 ต้องผ่าน Scout Stage 20 (Normal) ก่อน!','🔒 Clear Scout Stage 20 (Normal) first!'); render(); return; }
       raidResetIfNewDay(); raidToast=''; state='raid'; render();
+    }
+    else if(action==='gauntlet') {
+      actionMenuOpen=false;
+      if(!hellMode) { scoutToast=T('🔒 ต้องปลดล็อค Hell Mode ก่อน!','🔒 Unlock Hell Mode first!'); render(); return; }
+      enterGauntlet();
     }
   }
 

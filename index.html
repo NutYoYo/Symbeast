@@ -2263,12 +2263,6 @@ function INFO_TEXT() {
   };
 }
 function infoIcon(key) { return `<span data-info-toggle="${key}" style="font-size:12px;color:#8878b8;cursor:pointer;user-select:none;margin-left:4px" title="?">ⓘ</span>`; }
-function infoBox(key) {
-  if(infoTooltip !== key) return '';
-  const txt = INFO_TEXT()[key];
-  if(!txt) return '';
-  return `<div style="margin-top:4px;padding:8px 10px;border-radius:8px;background:#12102a;border:1px solid #4a3a8a;font-size:11px;color:#c0b0e0;line-height:1.5">${txt}</div>`;
-}
 
 // ============================================================
 // PET HELPERS
@@ -5944,6 +5938,18 @@ function render() {
       </div>
     </div>`);
   }
+  if(infoTooltip) {
+    const _infoTxt = INFO_TEXT()[infoTooltip];
+    if(_infoTxt) {
+      screenContent.insertAdjacentHTML('beforeend', `
+      <div data-info-modal-backdrop style="position:absolute;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:95;border-radius:16px;padding:20px">
+        <div style="max-width:280px;width:100%;background:linear-gradient(135deg,#150a2e,#1e1040);border:1px solid #6040c0;border-radius:14px;padding:16px;box-shadow:0 0 24px rgba(96,64,192,0.4);max-height:80%;overflow-y:auto">
+          <div style="font-size:12px;color:#c0b0e0;line-height:1.6">${_infoTxt}</div>
+          <div data-info-modal-close style="margin-top:14px;padding:9px;text-align:center;background:rgba(96,64,192,0.3);border:1px solid #8060d0;border-radius:8px;font-family:Kanit,sans-serif;font-size:12px;color:#d0c0ff;cursor:pointer">${T('ปิด','CLOSE')}</div>
+        </div>
+      </div>`);
+    }
+  }
   // Restore rename input focus/cursor after re-render
   if(renamePetPopup !== null) {
     const ri = document.getElementById('renameInput');
@@ -7642,7 +7648,6 @@ function renderMenu() {
                     ${it.icon}<span>${it.label}${infoIcon(it.infoKey)}</span>
                   </div>
                   ${it.blocked?`<div style="font-size:9px;color:#ff6666;font-family:Kanit,sans-serif;text-align:center;max-width:52px;line-height:1.2">${it.reason}</div>`:''}
-                  ${infoBox(it.infoKey)?`<div style="max-width:120px">${infoBox(it.infoKey)}</div>`:''}
                 </div>`).join('')}
             </div>`;
           })()}
@@ -8404,7 +8409,6 @@ function renderBattleScreen() {
       <div style="flex-shrink:0;display:flex;flex-direction:column;gap:3px">
         ${odInfo ? `<div style="font-size:8px;color:${odBuff?'#00bb77':odReady?'#ff8800':'#383858'};line-height:1.3;padding:2px 4px;border-radius:5px;max-height:28px;overflow:hidden;${odReady?'background:rgba(255,100,0,0.08);border:1px solid #331500;':odBuff?'background:rgba(0,100,60,0.12);border:1px solid #003322;':''}transition:color 0.3s">${odInfo.icon} ${T(odInfo.descTh,odInfo.desc)}</div>` : ''}
         <div style="display:flex;justify-content:flex-end">${infoIcon('battleMoves')}</div>
-        ${infoBox('battleMoves')}
         <div style="display:flex;gap:4px;align-items:flex-end">
           <div style="flex:1;display:flex;gap:3px">${moveBtns}</div>
           <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
@@ -8612,6 +8616,9 @@ screenContent.addEventListener('click', e=>{
     const k = infoBtn.dataset.infoToggle;
     infoTooltip = infoTooltip===k ? null : k;
     render(); return;
+  }
+  if(infoTooltip) {
+    if(el.closest('[data-info-modal-close]') || el===el.closest('[data-info-modal-backdrop]')) { SFX.click(); infoTooltip=null; render(); return; }
   }
 
   if(cloudConflict) {
@@ -10020,7 +10027,6 @@ function renderParty() {
             return `<div style="display:flex;align-items:center;margin-top:6px">
               <span style="font-size:10px;color:#8878b8;font-family:Kanit,sans-serif">ARTIFACT</span>${infoIcon('artifact')}
             </div>
-            ${infoBox('artifact')}
             <div data-party-artifact style="display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border-radius:8px;border:1px solid ${ac};background:#0a0a18;cursor:pointer;margin-top:2px">
               <span style="font-size:16px">${a?a.icon:'➕'}</span>
               <div style="flex:1">
@@ -10044,7 +10050,6 @@ function renderParty() {
               return `<div style="display:flex;align-items:center;margin-top:6px">
               <span style="font-size:10px;color:#8878b8;font-family:Kanit,sans-serif">WEAPON</span>${infoIcon('weapon')}
             </div>
-            ${infoBox('weapon')}
             <div data-party-weapon style="display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border-radius:8px;border:1px solid ${wc};background:#0a0a18;cursor:pointer;margin-top:2px">
               <span style="font-size:16px">${w?w.icon:'➕'}</span>
               <div style="flex:1">
@@ -10058,7 +10063,6 @@ function renderParty() {
         </div>
         ${pet.phase!=='egg' && pet.phase !== 'final' ? `<div style="padding:6px 8px;background:#0a0a1a;border-radius:8px;border:1px solid #2a2a5a">
           <div style="font-size:11px;color:#8878b8;font-family:Kanit,sans-serif;margin-bottom:6px">SYMBOLS ${pet.phase==='evolved'?`<span style="color:#8040c0">— RECIPE 🔒</span>`:pet.symbols.length+'/3'}${infoIcon('symbols')}</div>
-          ${infoBox('symbols')}
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             ${(pet.phase==='evolved' ? (pet.formKey||'').split('') : pet.symbols).map((s,si)=>`
             <div style="position:relative;display:inline-flex">
@@ -10503,7 +10507,7 @@ function renderParty() {
     const item = isWpn ? WEAPONS[key] : ARTIFACTS[key];
     if(!item) return '';
     const ok = isWpn ? seenWeapons.has(key) : seenArtifacts.has(key);
-    const nm = gameLang==='en' ? item.name : (item.nameTh||item.name);
+    const nm = item.name;
     const gradeColor = item.grade==='E' ? '#ffd700' : item.grade==='R' ? '#4488ff' : '#b0b0c0';
     const col = ok ? gradeColor : '#2a2a4a';
     return `
@@ -10550,7 +10554,7 @@ function renderParty() {
 
     const tabBar = `
       <div style="display:flex;gap:6px;padding:8px 12px 0">
-        ${[['pet','🐾',T('มอน','PET')],['weapon','🗡️',T('อาวุธ','WEAPON')],['artifact','🔮',T('อาติแฟค','ARTIFACT')]].map(([k,icon,lbl])=>`
+        ${[['pet','🐾','PET'],['weapon','🗡️','WEAPON'],['artifact','🔮','ARTIFACT']].map(([k,icon,lbl])=>`
           <div data-colltab="${k}" style="flex:1;padding:6px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${collectionTab===k?'rgba(160,144,224,0.18)':'#0e0e1e'};border:1px solid ${collectionTab===k?'#a090e0':'#2a2a4a'};color:${collectionTab===k?'#c0b0ff':'#6a6a8a'}">${icon} ${lbl}</div>
         `).join('')}
       </div>`;
@@ -10600,7 +10604,7 @@ function renderParty() {
         const cards = keys.map(key => {
           const w = WEAPONS[key];
           const ok = seenWeapons.has(key);
-          const nm = gameLang==='en' ? w.name : (w.nameTh||w.name);
+          const nm = w.name;
           return `
           <div data-colldetail="wpn_${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?'#6a5a9a':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
             <div style="flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;${ok?'':'filter:grayscale(1) brightness(0.3)'}">${ok?w.icon:'❔'}</div>
@@ -10621,7 +10625,7 @@ function renderParty() {
         const cards = keys.map(key => {
           const a = ARTIFACTS[key];
           const ok = seenArtifacts.has(key);
-          const nm = gameLang==='en' ? a.name : (a.nameTh||a.name);
+          const nm = a.name;
           return `
           <div data-colldetail="art_${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?'#6a5a9a':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
             <div style="flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;${ok?'':'filter:grayscale(1) brightness(0.3)'}">${ok?a.icon:'❔'}</div>

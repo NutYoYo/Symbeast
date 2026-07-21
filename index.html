@@ -7146,7 +7146,7 @@ function renderGauntlet() {
         <div data-gauntlet-enter="${i}" style="padding:14px;text-align:center;background:${isFree?'linear-gradient(135deg,#0a2a0a,#0a4a1a)':'linear-gradient(135deg,#2a0a0a,#4a0a0a)'};border:2px solid ${isFree?'#44cc44':'#cc4444'};border-radius:12px;font-family:Kanit,sans-serif;font-size:14px;color:${isFree?'#88ff88':'#ff8888'};cursor:pointer;letter-spacing:1px">
           ⚔ ${T('เข้าต่อสู้','ENTER')} ${isFree?`(${T('ฟรี — ต่อเนื่องจากชัยชนะที่แล้ว','FREE — continuing your run')})`:`(-${GAUNTLET_STAMINA_COST}⚡)`}
         </div>
-        <div style="font-size:10px;color:#6858a0;text-align:center">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${gauntletRunsToday}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','today')}</div>
+        <div style="font-size:10px;color:#6858a0;text-align:center">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${Math.max(0,GAUNTLET_DAILY_MAX-gauntletRunsToday)}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','today')}</div>
         `:`<div style="font-size:11px;color:#6858a0;text-align:center">${T('เคลียร์แล้ว ไม่ต้องสู้ซ้ำจนกว่าจะรีประจำสัปดาห์','Already cleared — no need to refight until the weekly reset')}</div>`}
       </div>`;
     return;
@@ -7158,7 +7158,7 @@ function renderGauntlet() {
       <div data-gauntlet-back-menu style="align-self:flex-start;padding:6px 12px;border-radius:8px;background:#0a0a1a;border:1px solid #2a2a3a;font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">⬅ ${T('กลับเมนู','Back to Menu')}</div>
       <div style="text-align:center;padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
         <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกวันอาทิตย์','Resets every Sunday')}</div>
-        <div style="font-size:10px;color:#6858a0">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${gauntletRunsToday}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','entries today')}</div>
+        <div style="font-size:10px;color:#6858a0">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${Math.max(0,GAUNTLET_DAILY_MAX-gauntletRunsToday)}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','entries today')}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
         ${rooms.map((room,i)=>{
@@ -7318,6 +7318,7 @@ function renderTower() {
         <div style="font-family:Kanit,sans-serif;font-size:13px;color:#8878b8;letter-spacing:2px">HIGHEST FLOOR</div>
         <div style="font-family:Kanit,sans-serif;font-size:34px;font-weight:700;color:#ffaa00">${towerHighest}</div>
         ${towerHighest>0?`<div style="font-size:11px;color:#6858a0">${T('บันทึกไว้แล้ว','Best record saved')}</div>`:''}
+        <div style="font-size:10px;color:#5a4a8a;margin-top:4px">${T('ชั้นที่ปีนได้ (Floor/Checkpoint) รีเซ็ตทุกวันอาทิตย์ — สถิติสูงสุดไม่รีเซ็ต','Climb progress (Floor/Checkpoint) resets every Sunday — your best record above is never reset')}</div>
       </div>
       <div style="padding:12px;border-radius:12px;background:#0a0a1a;border:1px solid ${isBossFloor?'#ff4444':'#2a2a3a'}">
         <div style="font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;margin-bottom:4px">${T('ชั้นถัดไป','Next Floor')}</div>

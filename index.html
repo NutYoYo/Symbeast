@@ -1459,12 +1459,15 @@ const GAUNTLET_ROOM_REWARDS = [
 const GAUNTLET_GEAR_ODDS = [ // R/E odds by position 0-3; Champion (pos 4) always rolls E
   {R:0.80, E:0.20}, {R:0.65, E:0.35}, {R:0.45, E:0.55}, {R:0.25, E:0.75},
 ];
-function gauntletWeekKey() {
-  const d = new Date(Date.now() + 7*3600000); // Thai tz, same convention as towerRunsDate
+// Shared Sunday-anchored week key (Thai tz) — the key changes at the start of each Sunday,
+// so "resets every Sunday" is literally true for anything keyed off this.
+function weekKeySunday() {
+  const d = new Date(Date.now() + 7*3600000);
   const day = d.getUTCDay(); // 0=Sun..6=Sat
-  const monday = new Date(d); monday.setUTCDate(d.getUTCDate() - ((day+6)%7));
-  return monday.toISOString().slice(0,10);
+  const sunday = new Date(d); sunday.setUTCDate(d.getUTCDate() - day);
+  return sunday.toISOString().slice(0,10);
 }
+function gauntletWeekKey() { return weekKeySunday(); }
 // Rolls a themed Artifact/Weapon loadout for one boss pet: 1-2 Artifacts + 1 Weapon,
 // grade odds escalating by room position (N grade excluded entirely).
 function gauntletRollGear(pos) {
@@ -1686,6 +1689,7 @@ let towerNeedsEntry = false;
 let towerActive = false;
 let towerRunsToday = 0;
 let towerRunsDate = '';
+let towerWeekKey = ''; // Sunday-anchored — floor/checkpoint progress wipes weekly, separate from the daily run cap above
 let towerAutoX10 = false;
 let towerAutoStopFloor = 0;
 const TOWER_DAILY_MAX = 5;
@@ -3099,7 +3103,7 @@ function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, gauntletFreeEntryPending}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, gauntletFreeEntryPending}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -3146,7 +3150,7 @@ function loadGame(slotNum) {
         stamina=100; firstBossKilled=false; overdriveCharge=0;
         towerFloor=0; towerHighest=0; towerCheckpoint=0; towerPendingGold=0; towerPendingEssence=0;
         towerPendingArtifacts=[]; towerRunSummary=null; towerNeedsEntry=false;
-        towerRunsToday=0; towerRunsDate='';
+        towerRunsToday=0; towerRunsDate=''; towerWeekKey='';
         raidRunsToday=0; raidRunsDate=''; raidDailyBossDate=''; raidDailyBossIdx=0; raidRunSummary=null; raidProgress=[0,0,0,0,0,0];
         seenEvolved=new Set(); seenFinal=new Set();
         towerFirstClears=new Set(); scoutFirstClears=new Set();
@@ -3183,6 +3187,7 @@ function loadGame(slotNum) {
         if(typeof d.vsCurrentStage==='number') vsCurrentStage = d.vsCurrentStage;
         if(typeof d.towerRunsToday==='number') towerRunsToday = d.towerRunsToday;
         if(typeof d.towerRunsDate==='string') towerRunsDate = d.towerRunsDate;
+        if(typeof d.towerWeekKey==='string') towerWeekKey = d.towerWeekKey;
         if(typeof d.raidRunsToday==='number') raidRunsToday = d.raidRunsToday;
         if(typeof d.raidRunsDate==='string') raidRunsDate = d.raidRunsDate;
         if(typeof d.raidDailyBossDate==='string') raidDailyBossDate = d.raidDailyBossDate;
@@ -6866,6 +6871,7 @@ function grantGauntletReward(room) {
   if(r.badge) gauntletChampionBadgeWeek = gauntletWeek;
 }
 function gauntletStartRun(roomIdx) {
+  if(pets.filter(p=>p.phase!=='egg').find(p=>(p.resting&&p.hp<p.maxHp))) { scoutToast=T('🛌 มี pet กำลัง Rest อยู่ รอให้หายก่อน','🛌 A pet is Resting — wait for it to recover'); render(); return; }
   const isFree = gauntletFreeEntryPending && roomIdx === gauntletCheckpoint;
   if(!isFree) {
     if(gauntletRunsToday >= GAUNTLET_DAILY_MAX) { scoutToast = T(`⚔️ เข้า Gauntlet ครบ ${GAUNTLET_DAILY_MAX} ครั้งแล้ววันนี้!`,`⚔️ Gauntlet limit reached! (${GAUNTLET_DAILY_MAX}/day)`); render(); return; }
@@ -7117,7 +7123,7 @@ function renderGauntlet() {
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto">
       <div data-gauntlet-back-menu style="align-self:flex-start;padding:6px 12px;border-radius:8px;background:#0a0a1a;border:1px solid #2a2a3a;font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;cursor:pointer">⬅ ${T('กลับเมนู','Back to Menu')}</div>
       <div style="text-align:center;padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
-        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกสัปดาห์','Resets weekly')}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกวันอาทิตย์','Resets every Sunday')}</div>
         <div style="font-size:10px;color:#6858a0">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${gauntletRunsToday}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้','entries today')}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
@@ -8757,7 +8763,8 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       if(stage < 10 && !hardMode) { towerToast=T('🔒 ต้องผ่าน Scout Stage 10 ก่อน!','🔒 Clear Scout Stage 10 first!'); render(); return; }
       const todayStr = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
-      if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerToast = ''; if(towerFloor===0){ towerCheckpoint=0; towerPendingGold=0; towerPendingArtifacts=[]; towerPendingEssence=0; } towerNeedsEntry = false; }
+      if(towerRunsDate !== todayStr) { towerRunsDate = todayStr; towerRunsToday = 0; towerToast = ''; }
+      if(towerWeekKey !== weekKeySunday()) { towerWeekKey = weekKeySunday(); if(towerFloor===0){ towerCheckpoint=0; towerPendingGold=0; towerPendingArtifacts=[]; towerPendingEssence=0; } towerNeedsEntry = false; }
       if(towerFloor === 0 || towerNeedsEntry) {
         if(towerRunsToday >= TOWER_DAILY_MAX) { towerToast=T(`🏯 เล่น Tower ครบ ${TOWER_DAILY_MAX} ครั้งแล้ววันนี้!`,`🏯 Tower limit reached! (${TOWER_DAILY_MAX}/day)`); saveGame(); render(); return; }
         if(stamina < 30) { towerToast=T('⚡ Stamina ไม่พอ! ต้องการ 30 AP','⚡ Not enough Stamina! Need 30 AP'); render(); return; }
@@ -8965,8 +8972,9 @@ screenContent.addEventListener('click', e=>{
     else if(action==='duel')       { actionMenuOpen=false; enterDuel(); return; }
     else if(action==='tower')      { actionMenuOpen=false;
       const _tToday = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
-      if(towerRunsDate !== _tToday) {
-        towerRunsDate = _tToday; towerRunsToday = 0; towerToast = '';
+      if(towerRunsDate !== _tToday) { towerRunsDate = _tToday; towerRunsToday = 0; towerToast = ''; }
+      if(towerWeekKey !== weekKeySunday()) {
+        towerWeekKey = weekKeySunday();
         towerFloor = 0; towerCheckpoint = 0; towerNeedsEntry = false;
         towerPendingGold = 0; towerPendingArtifacts = []; towerRunSummary = null;
         pets.forEach(p => { if(p.phase!=='egg') p.hp = p.maxHp; });
@@ -8987,6 +8995,7 @@ screenContent.addEventListener('click', e=>{
     else if(action==='gauntlet') {
       actionMenuOpen=false;
       if(!hellMode) { scoutToast=T('🔒 ต้องปลดล็อค Hell Mode ก่อน!','🔒 Unlock Hell Mode first!'); render(); return; }
+      if(pets.filter(p=>p.phase!=='egg').find(p=>(p.resting&&p.hp<p.maxHp))) { scoutToast=T('🛌 มี pet กำลัง Rest อยู่ รอให้หายก่อน','🛌 A pet is Resting — wait for it to recover'); render(); return; }
       enterGauntlet();
     }
   }

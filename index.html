@@ -4417,7 +4417,7 @@ function doTurn(moveIdx) {
     if(ewe.type==='burn_on_hit' && ed>0 && Math.random()<ewe.chance) { bs.playerBurnTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} burned you!`}); }
     if(ewe.type==='stun_on_hit' && ed>0 && Math.random()<ewe.chance) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN! (next turn)`});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN!`});} }
     if(ewe.type==='block' && pd>0 && Math.random()<ewe.chance) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} BLOCK! →${pd}`}); }
-    if(ewe.type==='dodge' && pd>0 && Math.random()<ewe.chance) { pd=0; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} DODGE!`}); }
+    if(ewe.type==='dodge' && pd>0 && !bs.playerTrueStrike && Math.random()<ewe.chance) { pd=0; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} DODGE!`}); }
     if(ewe.type==='counter' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { const ref=Math.max(1,Math.round(eCurseAtk/3*ewe.mult)); eCounterDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER ${ref} dmg`}); }
     if(ewe.type==='reflect' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { const ref=Math.round(pd*ewe.mult); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} REFLECT ${ref} dmg`}); }
     if(ewe.type==='poison_when_hit' && pd>0 && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you back!`}); }
@@ -4443,7 +4443,7 @@ function doTurn(moveIdx) {
     if(bs.gauntletEnrage) {
       if(bs.gauntletEnrage.type==='atk') { ed=Math.round(ed*1.20); passives.push({icon:'🔥',text:`ENRAGE ATK+20% →${ed}`}); }
       else if(bs.gauntletEnrage.type==='def') { pd=(playerIgnoresDef?pd:Math.round(pd*0.80)); passives.push({icon:'🔥',text:`ENRAGE DEF+20% →${pd}`}); }
-      else if(bs.gauntletEnrage.type==='spd' && pd>0 && !enemyTrueStrike && Math.random()<0.15) { pd=0; passives.push({icon:'🔥',text:'ENRAGE DODGE+15%!'}); }
+      else if(bs.gauntletEnrage.type==='spd' && pd>0 && !bs.playerTrueStrike && Math.random()<0.15) { pd=0; passives.push({icon:'🔥',text:'ENRAGE DODGE+15%!'}); }
     }
   }
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
@@ -6881,6 +6881,9 @@ function generateGauntletWeek() {
 function gauntletResetIfNeeded() {
   const wk = gauntletWeekKey();
   if(gauntletWeek !== wk || !gauntletRooms) generateGauntletWeek();
+  // Saves from the first Gauntlet build stored rooms without `pos` (rewards lived on the
+  // trainer back then) — backfill so GAUNTLET_ROOM_REWARDS[room.pos] can't go undefined.
+  gauntletRooms.forEach((r,i) => { if(typeof r.pos !== 'number') r.pos = i; });
   const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
   if(gauntletRunsDate !== today) { gauntletRunsDate = today; gauntletRunsToday = 0; }
 }

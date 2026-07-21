@@ -3017,7 +3017,7 @@ function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, gauntletFreeEntryPending}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, gauntletFreeEntryPending}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -3065,7 +3065,7 @@ function loadGame(slotNum) {
         towerFloor=0; towerHighest=0; towerCheckpoint=0; towerPendingGold=0; towerPendingEssence=0;
         towerPendingArtifacts=[]; towerRunSummary=null; towerNeedsEntry=false;
         towerRunsToday=0; towerRunsDate=''; towerWeekKey='';
-        raidRunsToday=0; raidRunsDate=''; raidDailyBossDate=''; raidDailyBossIdx=0; raidRunSummary=null; raidProgress=[0,0,0,0,0,0];
+        raidRunsToday=0; raidRunsDate=''; raidDailyBossDate=''; raidDailyBossIdx=0; raidRunSummary=null; raidProgress=[0,0,0,0,0,0]; _raidSundayPick=-1;
         seenEvolved=new Set(); seenFinal=new Set(); seenWeapons=new Set(); seenArtifacts=new Set();
         towerFirstClears=new Set(); scoutFirstClears=new Set();
         vsCurrentStage=1; totalPlayTime=0;
@@ -3107,6 +3107,7 @@ function loadGame(slotNum) {
         if(typeof d.raidRunsToday==='number') raidRunsToday = d.raidRunsToday;
         if(typeof d.raidRunsDate==='string') raidRunsDate = d.raidRunsDate;
         if(typeof d.raidDailyBossDate==='string') raidDailyBossDate = d.raidDailyBossDate;
+        if(typeof d._raidSundayPick==='number') _raidSundayPick = d._raidSundayPick;
         if(typeof d.raidDailyBossIdx==='number') raidDailyBossIdx = d.raidDailyBossIdx;
         if(Array.isArray(d.raidProgress)) raidProgress = d.raidProgress;
         else if(typeof d.raidHighestCleared==='number') raidProgress = [d.raidHighestCleared,0,0,0,0,0]; // legacy
@@ -8600,15 +8601,15 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='tower')     { towerActive=false; state='menu'; render(); }
   else if(state==='raid')      { state='menu'; render(); }
   else if(state==='raid_result'){ raidRunSummary=null; state='raid'; render(); }
-  else if(state==='vs_lobby') { state='menu'; render(); }
-  else if(state==='vs_result'){ state='menu'; render(); }
+  else if(state==='vs_lobby') { vsTab='ladder'; pvpTab='deploy'; pvpBattleData=null; state='menu'; render(); }
+  else if(state==='vs_result'){ vsTab='ladder'; pvpTab='deploy'; pvpBattleData=null; state='menu'; render(); }
   else if(state==='duel_result'){ state='menu'; render(); }
   else if(state==='train')     { state='menu'; render(); }
   else if(state==='party')     { if(rebirthConfirm!==null){rebirthConfirm=null;render();}else if(partyDetailIdx!==null){partyDetailIdx=null;render();}else{partyViewTab='party';rebirthConfirm=null;state='menu';render();} }
   else if(state==='idle') { state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
-  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){towerRunsToday=Math.max(0,towerRunsToday-1);battleState=null;state='tower';saveGame();}else if(battleState?.isRaidBattle){raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){battleState=null;state='menu';}else if(battleState?.isGauntletBattle){if(gauntletEntryPaid){gauntletRunsToday=Math.max(0,gauntletRunsToday-1);gauntletEntryPaid=false;}battleState=null;state='gauntlet';gauntletScreen='map';saveGame();}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
+  else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){towerRunsToday=Math.max(0,towerRunsToday-1);battleState=null;state='tower';saveGame();}else if(battleState?.isRaidBattle){raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){if(pvpBattleData){vsTab='ladder';pvpTab='deploy';pvpBattleData=null;}battleState=null;state='menu';}else if(battleState?.isGauntletBattle){if(gauntletEntryPaid){gauntletRunsToday=Math.max(0,gauntletRunsToday-1);gauntletEntryPaid=false;}battleState=null;state='gauntlet';gauntletScreen='map';saveGame();}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
   else if(state==='gauntlet')  { if(gauntletResult){ gauntletResult=null; gauntletScreen='map'; } else if(gauntletScreen==='detail'){ gauntletScreen='map'; } else { state='menu'; } render(); }
   else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }
@@ -8667,6 +8668,7 @@ screenContent.addEventListener('click', e=>{
       _raidSundayPick = idx;
       raidDailyBossIdx = idx;
       raidToast = '';
+      saveGame();
       render();
       return;
     }

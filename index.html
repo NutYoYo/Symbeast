@@ -8582,6 +8582,8 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   if(battleItemPicker) { battleItemPicker=false; render(); return; }
   if(bagArtifactPending) { bagArtifactPending=null; render(); return; }
   if(bagWeaponPending) { bagWeaponPending=null; render(); return; }
+  if(partyArtPicker || partyArtPicker2) { partyArtPicker=false; partyArtPicker2=false; render(); return; }
+  if(partyWeaponPicker) { partyWeaponPicker=false; render(); return; }
   if(invSellConfirm!==null) { invSellConfirm=null; render(); return; }
   if(itemUseConfirm!==null) { itemUseConfirm=null; render(); return; }
   if(infoTooltip) { infoTooltip=null; render(); return; }

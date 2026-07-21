@@ -1495,6 +1495,7 @@ let weaponBag = []; // [{key, qty}] — separate from artifactBag
 function addWeaponToBag(key, qty=1) {
   const slot = weaponBag.find(s=>s.key===key);
   if(slot) slot.qty += qty; else weaponBag.push({key, qty});
+  seenWeapons.add(key.replace(/_low$|_high$/, ''));
 }
 function removeWeaponFromBag(key, qty=1) {
   const slot = weaponBag.find(s=>s.key===key);
@@ -1955,6 +1956,8 @@ let inventory = [];     // [{type, qty}]
 let artifactBag = [];   // [{key, qty}] — แยกจาก inventory
 let seenEvolved = new Set(); // formKeys ที่เคย evolve แล้ว (unlock ถาวร)
 let seenFinal   = new Set(); // finalKeys (Evolve II forms) ที่เคยได้แล้ว (unlock ถาวร)
+let seenWeapons = new Set();   // base weapon keys (no _low/_high suffix) ที่เคยได้ครอบครองแล้ว
+let seenArtifacts = new Set(); // artifact keys ที่เคยได้ครอบครองแล้ว
 let gold = 0;
 let stage = 1;
 let hardMode = false;
@@ -2215,7 +2218,8 @@ let partyDetailIdx = null; // pet index being viewed in detail
 let renamePetPopup = null; // {idx, value} while rename modal is open
 let storageDetailIdx = null; // storage index being viewed in detail
 let collectionOpen = false;
-let collectionDetailKey = null; // formKey or finalKey being viewed in detail
+let collectionTab = 'pet'; // 'pet' | 'weapon' | 'artifact'
+let collectionDetailKey = null; // formKey/finalKey/weapon key/artifact key being viewed in detail
 let partyArtPicker = false;
 let partyArtPicker2 = false;
 let partyWeaponPicker = false;
@@ -2421,6 +2425,7 @@ function addArtifactToBag(artKey, qty=1) {
   const slot = artifactBag.find(s=>s.key===artKey);
   if(slot) slot.qty += qty;
   else artifactBag.push({key:artKey, qty});
+  seenArtifacts.add(artKey);
 }
 // ── Debug helpers (Console) ──────────────────────────────────────────────
 // ────────────────────────────────────────────────────────────────────────
@@ -3018,7 +3023,7 @@ function saveGame() {
   try {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, gauntletFreeEntryPending}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletWeek, gauntletRooms, gauntletCheckpoint, gauntletClaimed, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, gauntletFreeEntryPending}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -3067,7 +3072,7 @@ function loadGame(slotNum) {
         towerPendingArtifacts=[]; towerRunSummary=null; towerNeedsEntry=false;
         towerRunsToday=0; towerRunsDate=''; towerWeekKey='';
         raidRunsToday=0; raidRunsDate=''; raidDailyBossDate=''; raidDailyBossIdx=0; raidRunSummary=null; raidProgress=[0,0,0,0,0,0];
-        seenEvolved=new Set(); seenFinal=new Set();
+        seenEvolved=new Set(); seenFinal=new Set(); seenWeapons=new Set(); seenArtifacts=new Set();
         towerFirstClears=new Set(); scoutFirstClears=new Set();
         vsCurrentStage=1; totalPlayTime=0;
         gauntletWeek=null; gauntletRooms=null; gauntletCheckpoint=0; gauntletClaimed=[false,false,false,false,false];
@@ -3093,6 +3098,8 @@ function loadGame(slotNum) {
         if(d.towerRunSummary && typeof d.towerRunSummary==='object') towerRunSummary = d.towerRunSummary;
         if(Array.isArray(d.seenEvolved)) seenEvolved = new Set(d.seenEvolved);
         if(Array.isArray(d.seenFinal))   seenFinal   = new Set(d.seenFinal);
+        if(Array.isArray(d.seenWeapons)) seenWeapons = new Set(d.seenWeapons);
+        if(Array.isArray(d.seenArtifacts)) seenArtifacts = new Set(d.seenArtifacts);
         if(Array.isArray(d.towerFirstClears)) towerFirstClears = new Set(d.towerFirstClears);
         if(Array.isArray(d.scoutFirstClears)) scoutFirstClears = new Set(d.scoutFirstClears);
         if(typeof d.hardMode==='boolean') hardMode = d.hardMode;
@@ -3131,6 +3138,14 @@ function loadGame(slotNum) {
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
         pets.concat(storage).forEach(p=>{ if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey); if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey); });
+        // backfill weapon/artifact collection from whatever's currently owned/equipped, in case save predates this feature
+        weaponBag.forEach(s=>seenWeapons.add(s.key.replace(/_low$|_high$/, '')));
+        artifactBag.forEach(s=>seenArtifacts.add(s.key));
+        pets.forEach(p=>{
+          if(p.weapon) seenWeapons.add(p.weapon.replace(/_low$|_high$/, ''));
+          if(p.artifact) seenArtifacts.add(p.artifact);
+          if(p.artifact2) seenArtifacts.add(p.artifact2);
+        });
         if(Array.isArray(d.storage)) {
           storage = d.storage.map(p=>({...newPet(),...p}));
           storage.forEach(p=>{ if(!p.buffExpiry) p.buffExpiry={atk:0,spd:0,def:0}; });
@@ -9348,8 +9363,10 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('[data-storagedetailclose]')) { storageDetailIdx=null; render(); return; }
     const storageNav = el.closest('[data-storagenav]');
     if(storageNav) { storageDetailIdx = Math.max(0, Math.min(storage.length-1, storageDetailIdx + Number(storageNav.dataset.storagenav))); render(); return; }
-    if(el.closest('[data-opencollection]')) { SFX.click(); collectionOpen=true; collectionDetailKey=null; render(); return; }
+    if(el.closest('[data-opencollection]')) { SFX.click(); collectionOpen=true; collectionTab='pet'; collectionDetailKey=null; render(); return; }
     if(el.closest('[data-collectionclose]')) { SFX.click(); collectionOpen=false; collectionDetailKey=null; render(); return; }
+    const collTab = el.closest('[data-colltab]');
+    if(collTab) { SFX.click(); collectionTab=collTab.dataset.colltab; collectionDetailKey=null; render(); return; }
     const collDetail = el.closest('[data-colldetail]');
     if(collDetail) { SFX.click(); collectionDetailKey=collDetail.dataset.colldetail; render(); return; }
     if(el.closest('[data-colldetailback]')) { SFX.click(); collectionDetailKey=null; render(); return; }
@@ -10421,7 +10438,7 @@ function renderParty() {
 
   // Collection: build detail overlay for a single form
   const collDetailData = (() => {
-    if(!collectionDetailKey) return null;
+    if(!collectionDetailKey || collectionDetailKey.startsWith('wpn_') || collectionDetailKey.startsWith('art_')) return null;
     const unlockedEvolved = seenEvolved;
     const unlockedFinal   = seenFinal;
     const isFinal = !!EVOLVE2_FORMS[collectionDetailKey];
@@ -10477,57 +10494,160 @@ function renderParty() {
     </div>`;
   })() : '';
 
+  // Collection: Weapon/Artifact detail overlay
+  const gearDetailOverlay = (() => {
+    if(!collectionDetailKey) return '';
+    const isWpn = collectionDetailKey.startsWith('wpn_'), isArt = collectionDetailKey.startsWith('art_');
+    if(!isWpn && !isArt) return '';
+    const key = collectionDetailKey.slice(4);
+    const item = isWpn ? WEAPONS[key] : ARTIFACTS[key];
+    if(!item) return '';
+    const ok = isWpn ? seenWeapons.has(key) : seenArtifacts.has(key);
+    const nm = gameLang==='en' ? item.name : (item.nameTh||item.name);
+    const gradeColor = item.grade==='E' ? '#ffd700' : item.grade==='R' ? '#4488ff' : '#b0b0c0';
+    const col = ok ? gradeColor : '#2a2a4a';
+    return `
+    <div style="position:absolute;inset:0;background:#09091e;z-index:50;border-radius:16px;display:flex;flex-direction:column;border:1px solid #2a2a4a">
+      <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}44">
+        <span style="font-family:Kanit,sans-serif;font-size:12px;font-weight:700;color:${col};flex:1;text-align:center">${ok?nm:'???'}</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="font-size:64px;${ok?'':'filter:grayscale(1) brightness(0.3)'}">${ok?item.icon:'❔'}</div>
+        ${ok ? `
+        <div style="width:100%;padding:6px 14px;border-radius:10px;background:#08080f;border:1px solid ${col}44;text-align:center">
+          <span style="font-family:Kanit,sans-serif;font-size:11px;color:${gradeColor}">${T('เกรด','Grade')} ${item.grade}</span>
+        </div>
+        ${isWpn && item.stats ? `
+        <div style="width:100%;padding:10px 14px;border-radius:10px;background:#08080f;border:1px solid ${col}44">
+          <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;margin-bottom:6px">STATS</div>
+          <div style="font-size:12px;color:#c0b0e0;line-height:1.6">${Object.entries(item.stats).map(([k,v])=>`${k.toUpperCase()} +${v}`).join(' &nbsp; ')}</div>
+        </div>` : ''}
+        <div style="width:100%;padding:10px 14px;border-radius:10px;background:#08080f;border:1px solid ${col}44">
+          <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;margin-bottom:6px">${isWpn ? 'PASSIVE' : 'EFFECT'}</div>
+          <div style="font-size:12px;color:#c0b0e0;line-height:1.5">${item.desc||item.effect ? T(item.descTh, item.desc) : T('สแตทเท่านั้น ไม่มีความสามารถพิเศษ','Stats only, no special effect')}</div>
+        </div>
+        ` : `
+        <div style="padding:16px;text-align:center;color:#3a3a5a;font-size:12px">${T('— ยังไม่ได้รับ —','— Not yet unlocked —')}</div>
+        `}
+      </div>
+    </div>`;
+  })();
+
   // Collection list overlay
   const collectionHtml = (() => {
     // Rebuild from current party+storage to ensure accuracy
     pets.concat(storage).forEach(p=>{
       if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey);
       if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey);
+      if(p.weapon) seenWeapons.add(p.weapon.replace(/_low$|_high$/, ''));
+      if(p.artifact) seenArtifacts.add(p.artifact);
+      if(p.artifact2) seenArtifacts.add(p.artifact2);
     });
+    weaponBag.forEach(s=>seenWeapons.add(s.key.replace(/_low$|_high$/, '')));
+    artifactBag.forEach(s=>seenArtifacts.add(s.key));
     const unlockedEvolved = seenEvolved;
     const unlockedFinal = seenFinal;
 
-    const evolvedCards = Object.entries(FORMS).map(([key, form]) => {
-      const ok = unlockedEvolved.has(key);
-      const symsHtml = key.split('').map(s=>`<span style="color:${SYMS[s].color};display:inline-flex;align-items:center">${symSvg(s,14)}</span>`).join('');
-      return `
-      <div data-colldetail="${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?form.color+'55':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
-        <div style="${ok?'':'filter:brightness(0) invert(1) opacity(0.25)'};flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center">${buildEvolvedSvg(key,40,false)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${ok?form.color:'#2a2a4a'}">${ok?form.name:'???'}</div>
-          <div style="margin:2px 0;letter-spacing:2px">${symsHtml}</div>
-          <div style="font-size:9px;color:${ok?'#5858a0':'#222236'};display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${ok?form.passiveIcon+' '+P(form):'ยังไม่ได้รับ'}</div>
-        </div>
+    const tabBar = `
+      <div style="display:flex;gap:6px;padding:8px 12px 0">
+        ${[['pet','🐾',T('มอน','PET')],['weapon','🗡️',T('อาวุธ','WEAPON')],['artifact','🔮',T('อาติแฟค','ARTIFACT')]].map(([k,icon,lbl])=>`
+          <div data-colltab="${k}" style="flex:1;padding:6px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${collectionTab===k?'rgba(160,144,224,0.18)':'#0e0e1e'};border:1px solid ${collectionTab===k?'#a090e0':'#2a2a4a'};color:${collectionTab===k?'#c0b0ff':'#6a6a8a'}">${icon} ${lbl}</div>
+        `).join('')}
       </div>`;
-    }).join('');
 
-    const finalCard = (key, form) => {
-      const ok = unlockedFinal.has(key);
-      return `
-      <div data-colldetail="${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?form.color+'55':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
-        <div style="${ok?'':'filter:brightness(0) invert(1) opacity(0.25)'};flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center">${buildEvolvedSvg(key,40,false)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${ok?form.color:'#2a2a4a'}">${ok?form.name:'???'}</div>
-          <div style="font-size:9px;color:${ok?'#5858a0':'#222236'};margin-top:2px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${ok?form.passiveIcon+' '+P(form):'EVOLVE II FORM — ยังไม่ได้รับ'}</div>
-        </div>
-      </div>`;
-    };
-    const totalFinal = Object.keys(EVOLVE2_FORMS).length;
-    const finalCards = Object.entries(EVOLVE2_FORMS).map(([key, form]) => finalCard(key, form)).join('');
+    let bodyHtml = '', countHtml = '';
+
+    if(collectionTab === 'pet') {
+      const evolvedCards = Object.entries(FORMS).map(([key, form]) => {
+        const ok = unlockedEvolved.has(key);
+        const symsHtml = key.split('').map(s=>`<span style="color:${SYMS[s].color};display:inline-flex;align-items:center">${symSvg(s,14)}</span>`).join('');
+        return `
+        <div data-colldetail="${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?form.color+'55':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
+          <div style="${ok?'':'filter:brightness(0) invert(1) opacity(0.25)'};flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center">${buildEvolvedSvg(key,40,false)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${ok?form.color:'#2a2a4a'}">${ok?form.name:'???'}</div>
+            <div style="margin:2px 0;letter-spacing:2px">${symsHtml}</div>
+            <div style="font-size:9px;color:${ok?'#5858a0':'#222236'};display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${ok?form.passiveIcon+' '+P(form):'ยังไม่ได้รับ'}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      const finalCard = (key, form) => {
+        const ok = unlockedFinal.has(key);
+        return `
+        <div data-colldetail="${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?form.color+'55':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
+          <div style="${ok?'':'filter:brightness(0) invert(1) opacity(0.25)'};flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center">${buildEvolvedSvg(key,40,false)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${ok?form.color:'#2a2a4a'}">${ok?form.name:'???'}</div>
+            <div style="font-size:9px;color:${ok?'#5858a0':'#222236'};margin-top:2px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${ok?form.passiveIcon+' '+P(form):'EVOLVE II FORM — ยังไม่ได้รับ'}</div>
+          </div>
+        </div>`;
+      };
+      const totalFinal = Object.keys(EVOLVE2_FORMS).length;
+      const finalCards = Object.entries(EVOLVE2_FORMS).map(([key, form]) => finalCard(key, form)).join('');
+
+      countHtml = `${unlockedEvolved.size}/10 · ${unlockedFinal.size}/${totalFinal}`;
+      bodyHtml = `
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px">── EVOLVED FORMS ──</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${evolvedCards}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── EVOLVE II FORMS ──</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${finalCards}</div>`;
+    } else if(collectionTab === 'weapon') {
+      const weaponKeys = [...WEAPON_POOL.N, ...WEAPON_POOL.R, ...WEAPON_POOL.E];
+      countHtml = `${seenWeapons.size}/${weaponKeys.length}`;
+      const gradeSection = (grade, label) => {
+        const keys = WEAPON_POOL[grade];
+        const cards = keys.map(key => {
+          const w = WEAPONS[key];
+          const ok = seenWeapons.has(key);
+          const nm = gameLang==='en' ? w.name : (w.nameTh||w.name);
+          return `
+          <div data-colldetail="wpn_${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?'#6a5a9a':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
+            <div style="flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;${ok?'':'filter:grayscale(1) brightness(0.3)'}">${ok?w.icon:'❔'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${ok?'#c0b0ff':'#2a2a4a'}">${ok?nm:'???'}</div>
+              <div style="font-size:9px;color:${ok?'#5858a0':'#222236'};display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${ok?(w.effect?T(w.descTh,w.desc):T('สแตทเท่านั้น','Stats only')):T('ยังไม่ได้รับ','Not yet unlocked')}</div>
+            </div>
+          </div>`;
+        }).join('');
+        return `<div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── ${label} ──</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${cards}</div>`;
+      };
+      bodyHtml = gradeSection('N','NORMAL') + gradeSection('R','RARE') + gradeSection('E','EPIC');
+    } else { // artifact
+      const artKeys = [...ARTIFACT_POOL.N, ...ARTIFACT_POOL.R, ...ARTIFACT_POOL.E];
+      countHtml = `${seenArtifacts.size}/${artKeys.length}`;
+      const gradeSection = (grade, label) => {
+        const keys = ARTIFACT_POOL[grade];
+        const cards = keys.map(key => {
+          const a = ARTIFACTS[key];
+          const ok = seenArtifacts.has(key);
+          const nm = gameLang==='en' ? a.name : (a.nameTh||a.name);
+          return `
+          <div data-colldetail="art_${key}" style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${ok?'#6a5a9a':'#181828'};display:flex;gap:8px;align-items:center;cursor:pointer">
+            <div style="flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;${ok?'':'filter:grayscale(1) brightness(0.3)'}">${ok?a.icon:'❔'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${ok?'#c0b0ff':'#2a2a4a'}">${ok?nm:'???'}</div>
+              <div style="font-size:9px;color:${ok?'#5858a0':'#222236'};display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${ok?T(a.descTh,a.desc):T('ยังไม่ได้รับ','Not yet unlocked')}</div>
+            </div>
+          </div>`;
+        }).join('');
+        return `<div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── ${label} ──</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${cards}</div>`;
+      };
+      bodyHtml = gradeSection('N','NORMAL') + gradeSection('R','RARE') + gradeSection('E','EPIC');
+    }
 
     return `
     <div style="position:absolute;inset:0;background:rgba(3,2,12,0.88);z-index:30;border-radius:16px;display:flex;flex-direction:column;border:1px solid #2a2a4a">
       <div style="padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a3a">
         <span style="font-family:Kanit,sans-serif;font-size:13px;font-weight:700;color:#a090e0">📖 COLLECTION</span>
-        <span style="font-size:11px;color:#5858a0">${unlockedEvolved.size}/10 · ${unlockedFinal.size}/${totalFinal}</span>
+        <span style="font-size:11px;color:#5858a0">${countHtml}</span>
       </div>
+      ${tabBar}
       <div style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px">
-        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px">── EVOLVED FORMS ──</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${evolvedCards}</div>
-        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── EVOLVE II FORMS ──</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${finalCards}</div>
+        ${bodyHtml}
       </div>
       ${collDetailOverlay}
+      ${gearDetailOverlay}
     </div>`;
   })();
 

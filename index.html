@@ -8584,7 +8584,16 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   if(bagWeaponPending) { bagWeaponPending=null; render(); return; }
   if(invSellConfirm!==null) { invSellConfirm=null; render(); return; }
   if(itemUseConfirm!==null) { itemUseConfirm=null; render(); return; }
-  if(state==='menu' && actionMenuOpen) { actionMenuOpen=false; render(); return; }
+  if(infoTooltip) { infoTooltip=null; render(); return; }
+  if(helpOpen) { helpOpen=false; render(); return; }
+  if(settingsOpen) { settingsOpen=false; render(); return; }
+  if(feedbackModalOpen) { feedbackModalOpen=false; render(); return; }
+  if(privacyOpen) { privacyOpen=false; render(); return; }
+  if(stageSelectOpen) { stageSelectOpen=false; render(); return; }
+  if(duelQrOpen) { duelQrOpen=false; render(); return; }
+  if(duelScanOpen) { stopScanCamera(); duelScanOpen=false; render(); return; }
+  if(duelPasteOpen) { duelPasteOpen=false; render(); return; }
+  if(actionMenuOpen) { actionMenuOpen=false; render(); return; }
   if(state==='status')         { state='menu'; render(); }
   else if(state==='tower')     { towerActive=false; state='menu'; render(); }
   else if(state==='raid')      { state='menu'; render(); }

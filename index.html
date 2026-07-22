@@ -7161,7 +7161,7 @@ function renderGauntlet() {
         <div data-gauntlet-tier="hard" style="flex:1;padding:7px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${gauntletTier==='hard'?'rgba(255,68,68,0.18)':'#0e0e1e'};border:1px solid ${gauntletTier==='hard'?'#ff4444':'#2a2a4a'};color:${gauntletTier==='hard'?'#ff8888':'#6a6a8a'}">🔥 HARD</div>
       </div>` : ''}
       <div style="text-align:center;padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
-        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกวันอาทิตย์','Resets every Sunday')}${gauntletTier==='hard'?T(' — Gold +50%, Essence +5/ห้อง',' — Gold +50%, Essence +5/room'):''}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกวันอาทิตย์','Resets every Sunday')}</div>
         <div style="font-size:10px;color:#6858a0">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${Math.max(0,GAUNTLET_DAILY_MAX-gauntletRunsToday)}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้ (รวมทั้ง 2 เทียร์)','entries today (shared across both tiers)')}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">

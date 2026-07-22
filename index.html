@@ -2023,8 +2023,8 @@ let scoutPos = {x:0, y:0};
 let lastScrollDay = '';
 let lastEnergyDrinkDay = '';
 let currentBiome = 'desert'; // desert / forest / grass
-let stamina = 60;
-const MAX_STAMINA = 60;
+let stamina = 100;
+const MAX_STAMINA = 100;
 let firstBossKilled = false;
 let overdriveCharge = 0;
 const MAX_OVERDRIVE = 5;
@@ -7782,7 +7782,7 @@ function renderMenu() {
           ${(()=>{
             const GAME_SYSTEMS = [
               ['🥚','HATCH',T('แตะไข่ซ้ำๆ เพื่อฟักออกมา — สัตว์ของคุณจะออกมาในรูปแบบ Larva','Tap the egg repeatedly to hatch — your creature starts as a Larva')],
-              ['⚡','STAMINA',T('ใช้เดินสำรวจใน SCOUT (1 AP/ก้าว), เข้า TOWER (30 AP/รอบ), และเข้า RAID (20 AP/รอบ) — ฟื้นฟูอัตโนมัติ 1 AP ทุก 1 นาที (สะสมได้แม้ปิดแอปอยู่) สูงสุด 60 AP หรือดื่ม Energy Drink เพื่อฟื้นทันที +30 AP (ได้ฟรีวันละ 2 อันด้วย!)','Spent moving in SCOUT (1 AP/step), entering TOWER (30 AP/run), and RAID (20 AP/run) — regenerates automatically at 1 AP per minute (accrues even while the app is closed), capped at 60 AP. Or drink an Energy Drink for an instant +30 AP (get 2 free every day!)')],
+              ['⚡','STAMINA',T(`ใช้เดินสำรวจใน SCOUT (1 AP/ก้าว), เข้า TOWER (30 AP/รอบ), และเข้า RAID (20 AP/รอบ) — ฟื้นฟูอัตโนมัติ 1 AP ทุก 1 นาที (สะสมได้แม้ปิดแอปอยู่) สูงสุด ${MAX_STAMINA} AP หรือดื่ม Energy Drink เพื่อฟื้นทันที +30 AP (ได้ฟรีวันละ 2 อันด้วย!)`,`Spent moving in SCOUT (1 AP/step), entering TOWER (30 AP/run), and RAID (20 AP/run) — regenerates automatically at 1 AP per minute (accrues even while the app is closed), capped at ${MAX_STAMINA} AP. Or drink an Energy Drink for an instant +30 AP (get 2 free every day!)`)],
               ['🧬','SYMBOLS & EVOLVE',T('เมื่อชนะการต่อสู้จะได้รับ Symbol (F🔥 / W💨 / S🛡) เป็นไอเทมในกระเป๋าก่อน — ไปที่ ITEMS แล้วเลือกใช้ Symbol กับ Pet ที่ต้องการ (ไม่ติดอัตโนมัติ) เก็บให้ครบ 3 ชิ้น แล้วกด EVOLVE — สัตว์จะเปลี่ยนรูปร่างตามคอมโบสัญลักษณ์ที่เลือก โบนัสพิเศษจากสเตตัสปัจจุบัน x0.25 จะถูกเพิ่มเข้าไปด้วย','Win battles to earn Symbols (F🔥 / W💨 / S🛡) — they land in your inventory as items first. Go to ITEMS and use a Symbol on the Pet you want (they don\'t attach automatically). Collect 3 and tap EVOLVE — your creature transforms based on the symbol combo, plus a bonus of 25% of current stats on top of the new form\'s base stats')],
               ['🧬','EVOLVE II',T('เมื่อ Pet Evolve แล้ว มีสัญลักษณ์ (F/W/S) ให้เลือกอย่างละ 5 ชิ้น พร้อม Rebirth Stone และ Gold — ไปที่ PARTY → EVOLVE II เลือกสายที่ต้องการเพื่อวิวัฒนาการขั้น 2 พาสซีฟเดิมยังคงอยู่ พร้อมโบนัสใหม่ตามสายที่เลือก และปลดล็อกท่า Overdrive','Once a pet is Evolved, feed it 5 of one Symbol type (F/W/S) plus a Rebirth Stone and Gold — go to PARTY → EVOLVE II and pick a branch to evolve further. The original passive stays, plus a new bonus themed to the chosen branch, and an Overdrive move unlocks')],
               ['⏳','IDLE HUNT',T('ระบบ Offline Reward อัตโนมัติ — ยิ่งไม่ได้เข้าเกมนาน ของยิ่งเยอะ (สูงสุด 12 ชม.) ได้ทั้ง Gold, Potion, Artifact Box, Egg และ Essence ตาม Scout Stage ที่คุณไปถึง','Automatic offline rewards — the longer you\'re away, the more you earn (up to 12h). Get Gold, Potions, Artifact Boxes, Eggs, and Essence based on your Scout Stage')],

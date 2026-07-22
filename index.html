@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -8557,7 +8557,7 @@ function renderBattleScreen() {
       </div>
 
 
-      ${(battleState.isTowerBattle || battleState.isVsBattle || battleState.isRaidBattle) ? `
+      ${(battleState.isTowerBattle || battleState.isVsBattle || battleState.isRaidBattle || battleState.isGauntletBattle) ? `
       <div style="display:flex;gap:4px;padding:4px 0">
         ${pets.filter(p=>p.phase!=='egg').map((p,i)=>{
           const realIdx = pets.indexOf(p);
@@ -9760,7 +9760,7 @@ screenContent.addEventListener('click', e=>{
       return;
     }
     const switchEl = el.closest('[data-tower-switch]');
-    if(switchEl && (battleState?.isTowerBattle || battleState?.isVsBattle || battleState?.isDuelBattle || battleState?.isRaidBattle) && !battleState.waiting) {
+    if(switchEl && (battleState?.isTowerBattle || battleState?.isVsBattle || battleState?.isDuelBattle || battleState?.isRaidBattle || battleState?.isGauntletBattle) && !battleState.waiting) {
       const idx = parseInt(switchEl.dataset.towerSwitch);
       const target = pets[idx];
       if(target && target !== creature && target.phase !== 'egg' && target.hp > 0) {

@@ -4325,10 +4325,12 @@ function doTurn(moveIdx) {
     if(!bs.gauntletFinisherUsed && enemy.hp>0 && enemy.hp < enemy.maxHp*0.30) {
       bs.gauntletFinisherUsed = true;
       const odInfo = OVERDRIVE_INFO[enemy.evolve2Key];
-      const burst = Math.max(1, Math.round(ed*1.5));
-      pd = Math.max(0, pd - Math.round(burst*0.5)); // the desperate strike partially interrupts the player's own attack
-      creature.hp = Math.max(0, creature.hp - burst);
-      passives.push({icon:odInfo?.icon||'💥', text:T(`${enemy.name} ใช้ ${odInfo?.name||'ท่าไม้ตาย'}! ดาเมจพิเศษ ${burst}`,`${enemy.name} unleashes ${odInfo?.name||'a desperate finisher'}! Bonus damage ${burst}`)});
+      // Same pattern as Raid's Special Boss finishers (RAGNAROK/PHANTASM/etc): recompute the enemy's
+      // attack from scratch at a big multiplier and REPLACE ed with it, so it flows through the same
+      // single damage-application point as every other attack (line ~4988) instead of a separate
+      // direct creature.hp mutation, which would double-apply damage alongside the normal ed.
+      ed = Math.max(1, Math.round((em.dmg + eCurseAtk/3 + Math.random()*4) * 3.0) - Math.floor(getEffStat('def')/2));
+      passives.push({icon:odInfo?.icon||'💥', text:T(`${enemy.name} ใช้ ${odInfo?.name||'ท่าไม้ตาย'}! ดาเมจ ×3.0 →${ed}`,`${enemy.name} unleashes ${odInfo?.name||'a desperate finisher'}! Damage ×3.0 →${ed}`)});
       const ffStat = EVOLVE2_FORMS[enemy.evolve2Key];
       const cmpAtk = ffStat.atk, cmpDef = ffStat.def*1.8, cmpSpd = ffStat.spd;
       const top = Math.max(cmpAtk, cmpDef, cmpSpd);

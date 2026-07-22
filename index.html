@@ -6842,29 +6842,26 @@ function enterGauntlet() {
   gauntletScreen = 'map'; gauntletResult = null; gauntletRoomIdx = null;
   state = 'gauntlet'; render();
 }
-// Hard tier doubles gold/essence/rebirthStone/box-count rewards, but a Shiny Egg stays a single egg either way.
+// Hard tier: Gold +50%, and +5 Essence on every room (stacking on top of whatever Essence that room
+// already grants) — everything else (box grade/count, Rebirth Stones, Shiny Egg) stays the same as Normal.
 function gauntletScaledReward(room) {
   const base = GAUNTLET_ROOM_REWARDS[room.pos];
   const isHard = gauntletTier === 'hard';
   if(!isHard) return base;
   const r = {...base};
-  if(r.gold) r.gold *= 2;
-  if(r.essence) r.essence *= 2;
-  if(r.rebirthStone) r.rebirthStone *= 2;
-  if(r.weaponBoxGrade) r.weaponBoxCount = 2;
-  if(r.artifactBoxGrade) r.artifactBoxCount = 2;
+  if(r.gold) r.gold = Math.round(r.gold * 1.5);
+  r.essence = (r.essence||0) + 5;
   return r;
 }
 function grantGauntletReward(room) {
   const r = gauntletScaledReward(room);
   if(r.gold) gold += r.gold;
   if(r.essence) for(let i=0;i<r.essence;i++) addItemToInventory(dropEssence());
-  const boxTimes = gauntletTier==='hard' ? 2 : 1;
-  if(r.weaponBoxGrade) for(let i=0;i<boxTimes;i++) addWeaponToBag(rollWeaponFromPool(r.weaponBoxGrade));
-  if(r.artifactBoxGrade==='E') for(let i=0;i<boxTimes;i++) addItemToInventory('box_E');
-  else if(r.artifactBoxGrade==='R') for(let i=0;i<boxTimes;i++) addItemToInventory('box_R');
+  if(r.weaponBoxGrade) addWeaponToBag(rollWeaponFromPool(r.weaponBoxGrade));
+  if(r.artifactBoxGrade==='E') addItemToInventory('box_E');
+  else if(r.artifactBoxGrade==='R') addItemToInventory('box_R');
   if(r.rebirthStone) for(let i=0;i<r.rebirthStone;i++) addItemToInventory('rebirth_stone');
-  if(r.shinyEgg) addItemToInventory('shiny_egg'); // stays a single egg even on Hard tier, by design
+  if(r.shinyEgg) addItemToInventory('shiny_egg');
   if(r.badge) { gauntletChampionBadgeWeek = gauntletWeek; if(gauntletTier!=='hard') gauntletHardUnlocked = true; }
 }
 function gauntletStartRun(roomIdx) {
@@ -7042,8 +7039,8 @@ function renderGauntlet() {
       const rw = r.reward;
       if(rw.gold) rewardParts.push(`💰 ${rw.gold.toLocaleString()}G`);
       if(rw.essence) rewardParts.push(`✨ Essence×${rw.essence}`);
-      if(rw.weaponBoxGrade) rewardParts.push(`🗡️ Weapon [${rw.weaponBoxGrade}]${rw.weaponBoxCount?`×${rw.weaponBoxCount}`:''}`);
-      if(rw.artifactBoxGrade) rewardParts.push(`📦 Artifact [${rw.artifactBoxGrade}]${rw.artifactBoxCount?`×${rw.artifactBoxCount}`:''}`);
+      if(rw.weaponBoxGrade) rewardParts.push(`🗡️ Weapon [${rw.weaponBoxGrade}]`);
+      if(rw.artifactBoxGrade) rewardParts.push(`📦 Artifact [${rw.artifactBoxGrade}]`);
       if(rw.rebirthStone) rewardParts.push(`🔮 Rebirth×${rw.rebirthStone}`);
       if(rw.shinyEgg) rewardParts.push(`✨🥚 Shiny Egg`);
       if(rw.badge) rewardParts.push(`🏅 Champion Badge`);
@@ -7108,6 +7105,37 @@ function renderGauntlet() {
             }).join('')}
           </div>
         </div>
+        ${canEnter?`
+        <div style="padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
+          <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;margin-bottom:6px">${T('ทีมของเรา','OUR TEAM')} <span style="color:#5a4a8a;font-size:9px">— ${T('แตะเพื่อเปลี่ยนตัว','tap to switch')}</span></div>
+          <div style="display:flex;gap:6px">
+            ${pets.map((p,pi)=>{
+              if(p.phase==='egg') return '';
+              const isActive = pi===activePetIdx;
+              const art = p.artifact ? ARTIFACTS[p.artifact] : null;
+              const artColor = art?(art.grade==='E'?'#ff9944':art.grade==='R'?'#4488ff':'#b0b0c0'):'#2a2a4a';
+              const ff2 = p.phase==='final' ? EVOLVE2_FORMS[p.finalKey] : null;
+              const f2  = p.phase==='evolved' ? FORMS[p.formKey] : null;
+              const col = ff2?.color || f2?.color || '#8080c0';
+              const hpPct = Math.round(p.hp/p.maxHp*100);
+              const hpColor = hpPct>60?'#44ff88':hpPct>30?'#ffcc44':'#ff4444';
+              const canSwap = !p.resting && p.phase!=='egg' && p.hp>0;
+              const isDead = p.hp<=0;
+              return `<div ${canSwap&&!isActive?`data-gauntlet-swap="${pi}"`:''}
+                style="flex:0 0 calc(25% - 5px);min-width:0;text-align:center;padding:6px;border-radius:8px;background:${isActive?'#12082a':isDead?'#1a0808':'#08080f'};border:2px solid ${isActive?col:isDead?'#5a1a1a':'#1a1a3a'};cursor:${canSwap&&!isActive?'pointer':'default'}">
+                <div style="width:36px;height:36px;margin:0 auto;display:flex;align-items:center;justify-content:center;${isDead?'opacity:0.4':''}">${buildPetSvg(p,34,true)}</div>
+                <div style="font-size:9px;font-family:Kanit,sans-serif;color:${isActive?col:isDead?'#884444':'#9070c0'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${petName(p)}</div>
+                <div style="font-size:10px;color:${artColor};margin-top:1px">${art?art.icon:'—'}</div>
+                <div style="font-size:9px;color:${hpColor};margin-top:1px">${p.hp}/${p.maxHp}</div>
+                <div style="width:100%;height:3px;background:#1a1a2a;border-radius:2px;margin-top:2px">
+                  <div style="width:${hpPct}%;height:100%;background:${hpColor};border-radius:2px"></div>
+                </div>
+                ${isActive?`<div style="font-size:7px;color:#8040ff;font-family:Kanit,sans-serif;margin-top:2px">ACTIVE</div>`:''}
+                ${isDead?`<div style="font-size:8px;color:#553333;margin-top:3px">💀 KO</div>`:''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
         <div style="padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
           <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;margin-bottom:6px">${T('รางวัล','Reward')} ${claimed?`<span style="color:#44ff88;font-size:9px">(${T('รับแล้ว','claimed')})</span>`:''}</div>
           <div style="font-size:11px;color:#ffcc44;line-height:1.6">${rewardParts.join(' &nbsp; ')}</div>
@@ -7132,7 +7160,7 @@ function renderGauntlet() {
         <div data-gauntlet-tier="hard" style="flex:1;padding:7px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${gauntletTier==='hard'?'rgba(255,68,68,0.18)':'#0e0e1e'};border:1px solid ${gauntletTier==='hard'?'#ff4444':'#2a2a4a'};color:${gauntletTier==='hard'?'#ff8888':'#6a6a8a'}">🔥 HARD</div>
       </div>` : ''}
       <div style="text-align:center;padding:10px;border-radius:10px;background:#0a0a1a;border:1px solid #2a2a3a">
-        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกวันอาทิตย์','Resets every Sunday')}${gauntletTier==='hard'?T(' — รางวัล ×2 (ยกเว้น Shiny Egg)',' — 2× rewards (except Shiny Egg)'):''}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;letter-spacing:1px">${T('รีเซ็ตทุกวันอาทิตย์','Resets every Sunday')}${gauntletTier==='hard'?T(' — Gold +50%, Essence +5/ห้อง',' — Gold +50%, Essence +5/room'):''}</div>
         <div style="font-size:10px;color:#6858a0">⚡${stamina}/${MAX_STAMINA} &nbsp;|&nbsp; ${Math.max(0,GAUNTLET_DAILY_MAX-gauntletRunsToday)}/${GAUNTLET_DAILY_MAX} ${T('ครั้งวันนี้ (รวมทั้ง 2 เทียร์)','entries today (shared across both tiers)')}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
@@ -7805,7 +7833,7 @@ Status Effects:
 `Play against a friend anywhere — no internet required!\n\n📌 How to play:\n1. Go to VS MODE → DUEL tab\n2. Choose 1v1 (1 pet each) or 3v3 (3 pets each)\n3. Pick your pets and tap "Show QR + Link"\n4. Have your friend scan your QR, or send them the link\n5. They pick their team and tap FIGHT!\n\n💡 Scan QR via camera or pick an image from Gallery`
               )],
               ['☠️','RAID',T('ปลดล็อคหลังผ่าน Scout Stage 20 (Normal) — เล่นได้ 5 รอบ/วัน ใช้ Stamina 20 ต่อรอบ แต่ละรอบสู้ 3 Wave: มอนสเตอร์ทั่วไป → Boss ธรรมดา → Special Boss ประจำวัน มี 10 Level ให้เลือก ต้องผ่าน Level ก่อนหน้าก่อนถึงจะปลดล็อค Level ถัดไป ฟาร์มซ้ำได้ทุกวัน ไม่มี First-Clear Bonus','Unlocked after clearing Scout Stage 20 (Normal). Play up to 5 runs per day, costing 20 Stamina each. Each run has 3 Waves: regular monster → normal Boss → that day\'s Special Boss. 10 Levels available — clear the previous Level to unlock the next. No First-Clear bonus, so it\'s meant for daily farming')],
-              ['🥊','CHAMPION GAUNTLET',T(`ปลดล็อคหลัง Hell Mode — โหมด Endgame แบบ Elite Four พบเทรนเนอร์ 4 คน (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance สลับตำแหน่งทุกสัปดาห์) แต่ละคนใช้ทีม 4 ตัว ตามด้วยแชมเปี้ยน NutYo 👑 ทีมผสม เข้าเป็นห้องเรียงตามลำดับ ห้องถัดไปจะไม่เห็นจนกว่าจะเคลียร์ห้องก่อนหน้า\n\n⚡ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) — ต้องรออีกวันถ้าครบโควต้า ห้องที่เคลียร์แล้วรับรางวัลไปแล้วไม่ต้องสู้ซ้ำ เดินหน้าต่อห้องถัดไปได้ฟรีไม่เสีย Stamina จนกว่าจะแพ้หรือเคลียร์ครบ\n\n🔥 บอสแต่ละตัวเมื่อ HP < 30% จะใช้ท่าไม้ตายพิเศษครั้งเดียว แล้วเข้าสู่โหมด ENRAGE (บัฟ ATK, DEF หรือโอกาสหลบ ขึ้นกับสเตตัสเด่นของฟอร์มนั้น)\n\n🏆 รางวัลรวมของสัปดาห์: Gold, Essence, Weapon/Artifact Box การันตีเกรด, Rebirth Stone, และเมื่อเคลียร์ครบทั้ง 5 ห้อง จะได้ Shiny Egg + ป้าย Gauntlet Champion — รีเซ็ตทุกวันอาทิตย์\n\n🔥 HARD TIER — ปลดล็อคถาวรหลังเคลียร์ครบ Normal 1 ครั้ง ทีมจตุรเทพสุ่มใหม่แยกจาก Normal (ธีมเดิม แต่คนละฟอร์ม) Effective Level สูงขึ้นมาก (130-140 จตุรเทพ, 150 แชมเปี้ยน) รางวัล ×2 ทุกอย่าง (ยกเว้น Shiny Egg ยังได้ 1 ใบเท่าเดิม) ใช้โควต้า 5 ครั้ง/วันร่วมกับ Normal`,`Unlocks after Hell Mode — an Elite-Four-style endgame mode. Face 4 trainers (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance — their room order reshuffles weekly), each fielding a team of 4, followed by Champion NutYo 👑 with a mixed team. Rooms are revealed one at a time — you won't see the next room until the current one is cleared\n\n⚡ Costs 30 Stamina per entry (max 5/day) — wait for the next day once you hit the cap. Cleared rooms keep their reward claimed and don't need a rematch; moving on to the next room within the same run is free until you lose or finish\n\n🔥 Every boss drops below 30% HP once and unleashes a one-time finisher move, then enters ENRAGE mode (a buff to ATK, DEF, or dodge chance depending on that form's strongest stat)\n\n🏆 Weekly rewards: Gold, Essence, a guaranteed-grade Weapon/Artifact Box, Rebirth Stones, and a full 5-room clear grants a Shiny Egg plus the Gauntlet Champion badge — resets every Sunday\n\n🔥 HARD TIER — permanently unlocked by fully clearing Normal once. Its trainer teams are re-rolled independently from Normal's (same theme, different forms). Effective Level is much higher (130-140 for trainers, 150 for the Champion), and every reward is doubled (except the Shiny Egg, which stays a single egg). Shares the same 5-entries/day quota with Normal`)],
+              ['🥊','CHAMPION GAUNTLET',T(`ปลดล็อคหลัง Hell Mode — โหมด Endgame แบบ Elite Four พบเทรนเนอร์ 4 คน (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance สลับตำแหน่งทุกสัปดาห์) แต่ละคนใช้ทีม 4 ตัว ตามด้วยแชมเปี้ยน NutYo 👑 ทีมผสม เข้าเป็นห้องเรียงตามลำดับ ห้องถัดไปจะไม่เห็นจนกว่าจะเคลียร์ห้องก่อนหน้า\n\n⚡ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) — ต้องรออีกวันถ้าครบโควต้า ห้องที่เคลียร์แล้วรับรางวัลไปแล้วไม่ต้องสู้ซ้ำ เดินหน้าต่อห้องถัดไปได้ฟรีไม่เสีย Stamina จนกว่าจะแพ้หรือเคลียร์ครบ\n\n🔥 บอสแต่ละตัวเมื่อ HP < 30% จะใช้ท่าไม้ตายพิเศษครั้งเดียว แล้วเข้าสู่โหมด ENRAGE (บัฟ ATK, DEF หรือโอกาสหลบ ขึ้นกับสเตตัสเด่นของฟอร์มนั้น)\n\n🏆 รางวัลรวมของสัปดาห์: Gold, Essence, Weapon/Artifact Box การันตีเกรด, Rebirth Stone, และเมื่อเคลียร์ครบทั้ง 5 ห้อง จะได้ Shiny Egg + ป้าย Gauntlet Champion — รีเซ็ตทุกวันอาทิตย์\n\n🔥 HARD TIER — ปลดล็อคถาวรหลังเคลียร์ครบ Normal 1 ครั้ง ทีมจตุรเทพสุ่มใหม่แยกจาก Normal (ธีมเดิม แต่คนละฟอร์ม) Effective Level สูงขึ้นมาก (130-140 จตุรเทพ, 150 แชมเปี้ยน) รางวัลอื่นเท่า Normal ทุกอย่าง แต่ Gold ได้เพิ่ม 50% และได้ Essence เพิ่มอีกด่านละ 5 อัน ใช้โควต้า 5 ครั้ง/วันร่วมกับ Normal`,`Unlocks after Hell Mode — an Elite-Four-style endgame mode. Face 4 trainers (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance — their room order reshuffles weekly), each fielding a team of 4, followed by Champion NutYo 👑 with a mixed team. Rooms are revealed one at a time — you won't see the next room until the current one is cleared\n\n⚡ Costs 30 Stamina per entry (max 5/day) — wait for the next day once you hit the cap. Cleared rooms keep their reward claimed and don't need a rematch; moving on to the next room within the same run is free until you lose or finish\n\n🔥 Every boss drops below 30% HP once and unleashes a one-time finisher move, then enters ENRAGE mode (a buff to ATK, DEF, or dodge chance depending on that form's strongest stat)\n\n🏆 Weekly rewards: Gold, Essence, a guaranteed-grade Weapon/Artifact Box, Rebirth Stones, and a full 5-room clear grants a Shiny Egg plus the Gauntlet Champion badge — resets every Sunday\n\n🔥 HARD TIER — permanently unlocked by fully clearing Normal once. Its trainer teams are re-rolled independently from Normal's (same theme, different forms). Effective Level is much higher (130-140 for trainers, 150 for the Champion), every other reward matches Normal, but Gold is +50% and every room grants an extra 5 Essence. Shares the same 5-entries/day quota with Normal`)],
             ];
             const renderEntry = ([icon,title,desc])=>`
             <div style="background:rgba(20,10,40,0.8);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
@@ -8764,6 +8792,13 @@ screenContent.addEventListener('click', e=>{
     if(roomEl) { SFX.click(); gauntletRoomIdx = Number(roomEl.dataset.gauntletRoom); gauntletScreen='detail'; render(); return; }
     const enterEl = el.closest('[data-gauntlet-enter]');
     if(enterEl) { SFX.click(); gauntletStartRun(Number(enterEl.dataset.gauntletEnter)); return; }
+    const swapEl = el.closest('[data-gauntlet-swap]');
+    if(swapEl) {
+      const idx = Number(swapEl.dataset.gauntletSwap);
+      const p = pets[idx];
+      if(p && p.phase!=='egg' && !p.resting && p.hp > 0) { SFX.click(); activePetIdx = idx; syncCreature(); saveGame(); render(); }
+      return;
+    }
     return;
   }
 

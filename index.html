@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -2035,6 +2035,7 @@ let gauntletHardUnlocked = false; // permanent, set true the first time Normal t
 // Snapshot of the tier NOT currently active (see gauntletSyncOut/In) — keeps Normal and Hard progress independent
 // without duplicating every variable above into tier-prefixed pairs used throughout the render/battle code.
 let gauntletStash = { normal: null, hard: null };
+let gauntletRewardConfirm = null; // {reward} object shown as confirmation popup after winning a room
 
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
@@ -5364,8 +5365,11 @@ function endBattle(won) {
     // Room cleared — grant reward once, advance checkpoint
     const room = gauntletRooms[gauntletRoomIdx];
     const rewardGranted = !gauntletClaimed[gauntletRoomIdx];
-    if(rewardGranted) { grantGauntletReward(room); gauntletClaimed[gauntletRoomIdx] = true; }
+    let rewardActual = {};
+    if(rewardGranted) { rewardActual = grantGauntletReward(room) || {}; gauntletClaimed[gauntletRoomIdx] = true; }
     gauntletCheckpoint = Math.max(gauntletCheckpoint, gauntletRoomIdx + 1);
+    const rewardObj = gauntletScaledReward(room);
+    if(rewardGranted) gauntletRewardConfirm = {...rewardObj, ...rewardActual};
     if(gauntletRoomIdx + 1 < gauntletRooms.length) {
       // Not a full clear yet — show a "defeated!" screen with the reward, then let the player
       // walk into the next room themselves (still free, no extra Stamina charge).
@@ -6861,7 +6865,7 @@ function gauntletSwitchTier(tier) {
 }
 function enterGauntlet() {
   gauntletResetIfNeeded();
-  gauntletScreen = 'map'; gauntletResult = null; gauntletRoomIdx = null;
+  gauntletScreen = 'map'; gauntletResult = null; gauntletRewardConfirm = null; gauntletRoomIdx = null;
   state = 'gauntlet'; render();
 }
 // Hard tier: Gold +50%, and +5 Essence on every room (stacking on top of whatever Essence that room
@@ -6877,14 +6881,16 @@ function gauntletScaledReward(room) {
 }
 function grantGauntletReward(room) {
   const r = gauntletScaledReward(room);
+  const info = {};
   if(r.gold) gold += r.gold;
   if(r.essence) for(let i=0;i<r.essence;i++) addItemToInventory(dropEssence());
-  if(r.weaponBoxGrade) addWeaponToBag(rollWeaponFromPool(r.weaponBoxGrade));
-  if(r.artifactBoxGrade==='E') addItemToInventory('box_E');
-  else if(r.artifactBoxGrade==='R') addItemToInventory('box_R');
+  if(r.weaponBoxGrade) { const wk = rollWeaponFromPool(r.weaponBoxGrade); addWeaponToBag(wk); info.weaponActual = wk; }
+  if(r.artifactBoxGrade==='E') { addItemToInventory('box_E'); info.artifactBoxType = 'E'; }
+  else if(r.artifactBoxGrade==='R') { addItemToInventory('box_R'); info.artifactBoxType = 'R'; }
   if(r.rebirthStone) for(let i=0;i<r.rebirthStone;i++) addItemToInventory('rebirth_stone');
   if(r.shinyEgg) addItemToInventory('shiny_egg');
   if(r.badge) { gauntletChampionBadgeWeek = gauntletWeek; if(gauntletTier!=='hard') gauntletHardUnlocked = true; }
+  return info;
 }
 function gauntletStartRun(roomIdx) {
   if(pets.filter(p=>p.phase!=='egg').find(p=>(p.resting&&p.hp<p.maxHp))) { scoutToast=T('🛌 มี pet กำลัง Rest อยู่ รอให้หายก่อน','🛌 A pet is Resting — wait for it to recover'); render(); return; }
@@ -6905,6 +6911,7 @@ function gauntletStartRun(roomIdx) {
 }
 function startGauntletBattle(roomIdx, enemyIdx) {
   if(enemyIdx === 0) battleAutoMode = false;
+  gauntletRewardConfirm = null;
   const enemy = gauntletRooms[roomIdx].pets[enemyIdx];
   enemy.hp = enemy.maxHp;
   battleState = {
@@ -7052,6 +7059,39 @@ function startDuelFight() {
 function renderGauntlet() {
   labelStrip.textContent = '🥊 CHAMPION GAUNTLET';
   const rooms = gauntletRooms || [];
+
+  // Reward confirmation popup — requires explicit "รับรางวัล" tap so players know what they got
+  if(gauntletRewardConfirm) {
+    const rw = gauntletRewardConfirm;
+    const parts = [];
+    if(rw.gold) parts.push(`💰 <span style="color:#ffcc44">${rw.gold.toLocaleString()}G</span>`);
+    if(rw.essence) parts.push(`✨ <span style="color:#88ddff">Essence×${rw.essence}</span>`);
+    if(rw.weaponActual) {
+      const w = WEAPONS[rw.weaponActual];
+      if(w) parts.push(`🗡️ <span style="color:#ff9944">${w.icon} ${w.name}</span>`);
+      else parts.push(`🗡️ <span style="color:#ff9944">Weapon [${rw.weaponBoxGrade||'?'}]</span>`);
+    } else if(rw.weaponBoxGrade) {
+      parts.push(`🗡️ <span style="color:#ff9944">Weapon [${rw.weaponBoxGrade}]</span>`);
+    }
+    if(rw.artifactBoxType) {
+      parts.push(`📦 <span style="color:#4488ff">${T('กล่องอาร์ติแฟกต์','Artifact Box')} [${rw.artifactBoxType}]</span>`);
+    } else if(rw.artifactBoxGrade) {
+      parts.push(`📦 <span style="color:#4488ff">Artifact [${rw.artifactBoxGrade}]</span>`);
+    }
+    if(rw.rebirthStone) parts.push(`🔮 <span style="color:#dd88ff">Rebirth×${rw.rebirthStone}</span>`);
+    if(rw.shinyEgg) parts.push(`✨🥚 <span style="color:#ff66ff">Shiny Egg</span>`);
+    if(rw.badge) parts.push(`🏅 <span style="color:#ffdd44">Gauntlet Champion Badge</span>`);
+    screenContent.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;padding:20px;gap:14px;align-items:center;justify-content:center">
+        <div style="font-family:Kanit,sans-serif;font-size:22px;color:#80ddb0;letter-spacing:2px">${T('🎁 ได้รับรางวัล!','🎁 Reward Obtained!')}</div>
+        <div style="width:100%;max-width:300px;padding:16px;border-radius:12px;background:linear-gradient(135deg,#0a0a1a,#12082a);border:1px solid #3a2a5a">
+          <div style="font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;margin-bottom:10px;text-align:center">${T('รายการที่ได้รับ','Items received')}</div>
+          <div style="font-size:13px;line-height:2;text-align:center">${parts.join('<br>')}</div>
+        </div>
+        <div data-gauntlet-claim style="padding:12px 32px;border-radius:10px;background:linear-gradient(135deg,#2ecc71,#27ae60);border:none;font-family:Kanit,sans-serif;font-size:15px;color:#fff;cursor:pointer;letter-spacing:1px;font-weight:700;box-shadow:0 0 16px rgba(46,204,113,0.3)">${T('✅ รับรางวัล','✅ CLAIM')}</div>
+      </div>`;
+    return;
+  }
 
   if(gauntletResult) {
     const r = gauntletResult;
@@ -8725,7 +8765,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
   else if(state==='scout')     { stageSelectOpen=false; state='menu'; render(); }
   else if(state==='battle')    { if(battleState?.waiting) return; if(battleState?.isTowerBattle){towerRunsToday=Math.max(0,towerRunsToday-1);battleState=null;state='tower';saveGame();}else if(battleState?.isRaidBattle){raidRunsToday=Math.max(0,raidRunsToday-1);battleState=null;state='raid';saveGame();}else if(battleState?.isVsBattle){if(pvpBattleData){vsTab='ladder';pvpTab='deploy';pvpBattleData=null;}battleState=null;state='menu';}else if(battleState?.isGauntletBattle){if(gauntletEntryPaid){gauntletRunsToday=Math.max(0,gauntletRunsToday-1);gauntletEntryPaid=false;}battleState=null;state='gauntlet';gauntletScreen='map';saveGame();}else{state='scout';battleState=null;pendingBattleCell=null;} render(); }
-  else if(state==='gauntlet')  { if(gauntletResult){ gauntletResult=null; gauntletScreen='map'; } else if(gauntletScreen==='detail'){ gauntletScreen='map'; } else { state='menu'; } render(); }
+  else if(state==='gauntlet')  { if(gauntletRewardConfirm){ gauntletRewardConfirm=null; } else if(gauntletResult){ gauntletResult=null; gauntletScreen='map'; } else if(gauntletScreen==='detail'){ gauntletScreen='map'; } else { state='menu'; } render(); }
   else if(state==='stageclear') { if(_scDone) return; _scDone=true; clearTimeout(_scTimer); _scTimer=null; state='result'; render(); }
   else if(state==='result')    { state='menu'; render(); }
   else if(state==='evolve')    { state='menu'; render(); }
@@ -8806,10 +8846,11 @@ screenContent.addEventListener('click', e=>{
   }
 
   if(state==='gauntlet') {
+    if(el.closest('[data-gauntlet-claim]')) { SFX.click(); gauntletRewardConfirm=null; render(); return; }
     if(el.closest('[data-gauntlet-back-menu]')) { SFX.click(); state='menu'; render(); return; }
     if(el.closest('[data-gauntlet-back-map]')) { SFX.click(); gauntletResult=null; gauntletScreen='map'; render(); return; }
     const tierEl = el.closest('[data-gauntlet-tier]');
-    if(tierEl) { SFX.click(); gauntletSwitchTier(tierEl.dataset.gauntletTier); gauntletScreen='map'; gauntletResult=null; render(); return; }
+    if(tierEl) { SFX.click(); gauntletSwitchTier(tierEl.dataset.gauntletTier); gauntletScreen='map'; gauntletResult=null; gauntletRewardConfirm=null; render(); return; }
     const roomEl = el.closest('[data-gauntlet-room]');
     if(roomEl) { SFX.click(); gauntletRoomIdx = Number(roomEl.dataset.gauntletRoom); gauntletScreen='detail'; render(); return; }
     const enterEl = el.closest('[data-gauntlet-enter]');

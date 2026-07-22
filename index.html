@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -8530,7 +8530,7 @@ function renderBattleScreen() {
           <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
             ${buildOdBar(83)}
             <div style="display:flex;flex-direction:row;gap:3px">
-              ${battleState.isVsBattle || battleState.isDuelBattle ? `<div style="padding:5px 6px;border-radius:8px;background:#080808;border:1px solid #1a1a1a;text-align:center;width:40px;opacity:0.3">
+              ${battleState.isVsBattle || battleState.isDuelBattle || battleState.isGauntletBattle ? `<div style="padding:5px 6px;border-radius:8px;background:#080808;border:1px solid #1a1a1a;text-align:center;width:40px;opacity:0.3">
                 <div style="font-size:15px">🧪</div>
                 <div style="font-size:7px;color:#2a2a2a;font-family:Kanit,sans-serif">NO ITEM</div>
               </div>` : `<div id="battleItemBtn" style="padding:5px 6px;border-radius:8px;cursor:pointer;user-select:none;background:${hasHealItem?'#0e2218':'#080810'};border:1px solid ${hasHealItem?'#2ecc71':'#1a1a2a'};text-align:center;width:40px">

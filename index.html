@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -5174,6 +5174,16 @@ function doTurn(moveIdx) {
   if(passives.length) passives.forEach(p => battleState.log.push(`  ${p.icon} ${p.text}`));
 
   const finish = () => {
+    // Stalemate breaker: if battle exceeds 60 turns, both sides take ramping MaxHP% damage
+    // to prevent tanky/healing matchups from looping forever.
+    if(turnNum >= 60) {
+      const pct = turnNum < 75 ? 0.10 : 0.25;
+      const pStale = Math.max(1, Math.round(creature.maxHp * pct));
+      const eStale = Math.max(1, Math.round(enemy.maxHp * pct));
+      creature.hp = Math.max(0, creature.hp - pStale);
+      enemy.hp = Math.max(0, enemy.hp - eStale);
+      battleState.log.push(`  ⏰ ${T('เสมอ! ทั้งสองฝั่งเสีย '+Math.round(pct*100)+'% HP','STALEMATE! Both sides lose '+Math.round(pct*100)+'% HP')}`);
+    }
     if(enemy.hp<=0 || creature.hp<=0) {
       // keep animPhase so last-hit damage numbers show on the result screen
       endBattle(enemy.hp<=0);

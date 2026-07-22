@@ -631,8 +631,9 @@ function bgmPlay(key) {
 
 function bgmForState() {
   if(state === 'title') return 'tower';
-  if(state === 'battle') return battleState?.isTowerBattle ? 'tower' : battleState?.isVsBattle ? 'vs' : 'battle';
+  if(state === 'battle') return battleState?.isTowerBattle ? 'tower' : (battleState?.isVsBattle || battleState?.isGauntletBattle) ? 'vs' : 'battle';
   if(state === 'vs_lobby' || state === 'vs_result') return 'vs';
+  if(state === 'gauntlet') return 'vs';
   if(state === 'duel_result') return 'vs';
   if(state === 'battle' && battleState?.isDuelBattle) return 'vs';
   if(state === 'tower') return 'tower';
@@ -2194,8 +2195,8 @@ function getBattleBg() {
   let bg = null;
   if(state === 'tower' || (isBattleActive && battleState.isTowerBattle)) bg = 'Battle Scene/tower-scene.jpg';
   else if(state === 'raid' || state === 'raid_result' || (isBattleActive && battleState.isRaidBattle)) bg = 'Battle Scene/tower-scene.jpg';
-  else if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result') bg = 'Battle Scene/BG-VS-Mode.jpg';
-  else if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
+  else if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result' || state === 'gauntlet') bg = 'Battle Scene/BG-VS-Mode.jpg';
+  else if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle || battleState.isGauntletBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(['battle','result','scout'].includes(state)) {
     const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;

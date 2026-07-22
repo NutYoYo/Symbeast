@@ -1430,7 +1430,7 @@ function rollWeapon() {
 }
 
 // ============================================================
-// WEEKLY BOSS GAUNTLET — Elite-Four-style endgame mode.
+// CHAMPION GAUNTLET — Elite-Four-style endgame mode.
 // 4 themed trainers (Fist/Wing/Shield/Balance, one Evolve II branch symbol each) + a
 // Champion (mixed team). Positions 1-4 always use Effective Level 80/83/87/90 respectively —
 // only WHICH trainer occupies which position is reshuffled weekly; Champion is always last
@@ -1913,7 +1913,7 @@ const PATCH_NOTES = [
     ]
   },
   { ver:'v0.2.0', date:'2026-07-21', th:[
-      '🥊 ระบบใหม่: WEEKLY BOSS GAUNTLET — ปลดล็อคหลัง Hell Mode',
+      '🥊 ระบบใหม่: CHAMPION GAUNTLET — ปลดล็อคหลัง Hell Mode',
       '   • พบเทรนเนอร์ 4 คน (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance) สลับตำแหน่งทุกสัปดาห์ ตามด้วยแชมเปี้ยน NutYo 👑',
       '   • แต่ละคนใช้ทีม 4 ตัว เข้าเป็นห้องเรียงตามลำดับ ห้องถัดไปไม่เห็นจนกว่าจะเคลียร์ห้องก่อนหน้า',
       '   • ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) — เดินหน้าต่อห้องถัดไปฟรีไม่เสีย Stamina จนกว่าจะแพ้หรือเคลียร์ครบ',
@@ -1925,9 +1925,9 @@ const PATCH_NOTES = [
       '🐛 แก้บั๊ก',
       '   • Overdrive สะท้อนดาเมจเต็ม 5 ท่า เคยขึ้น "DODGE!" หลอกแทนที่จะขึ้น "REFLECTED!"',
       '   • Gauntlet เข้าเล่นได้ทั้งที่ทีมกำลัง Rest (และฟื้น HP เต็มให้ฟรี) ทั้งที่โหมดอื่นบล็อคไว้',
-      '📖 เพิ่มข้อมูล FUSION, WEAPON (ระดับคุณภาพ), และ WEEKLY BOSS GAUNTLET ใน Guide',
+      '📖 เพิ่มข้อมูล FUSION, WEAPON (ระดับคุณภาพ), และ CHAMPION GAUNTLET ใน Guide',
     ], en:[
-      '🥊 New system: WEEKLY BOSS GAUNTLET — unlocks after Hell Mode',
+      '🥊 New system: CHAMPION GAUNTLET — unlocks after Hell Mode',
       '   • Face 4 trainers (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance — room order reshuffles weekly), followed by Champion NutYo 👑',
       '   • Each fields a team of 4, entered room by room — the next room stays hidden until the current one is cleared',
       '   • Costs 30 Stamina per entry (max 5/day) — moving on to the next room within the same run is free until you lose or finish',
@@ -1939,7 +1939,7 @@ const PATCH_NOTES = [
       '🐛 Bug Fixes',
       '   • The 5 full-reflect Overdrive moves showed a false "DODGE!" instead of "REFLECTED!"',
       '   • Gauntlet could be entered (and fully healed for free) while the team was Resting, unlike every other mode',
-      '📖 Added FUSION, WEAPON (quality tiers), and WEEKLY BOSS GAUNTLET entries to the Guide',
+      '📖 Added FUSION, WEAPON (quality tiers), and CHAMPION GAUNTLET entries to the Guide',
     ]
   },
 ];
@@ -1997,7 +1997,7 @@ let duelScanOpen = false;    // แสดง scanner modal
 let duelPasteOpen = false;   // แสดง paste link input
 let _scanStream = null;      // camera stream
 
-// ── WEEKLY BOSS GAUNTLET ──
+// ── CHAMPION GAUNTLET ──
 let gauntletWeek = null;          // weekKey string this generated team belongs to
 let gauntletRooms = null;         // [{trainer, symbol, effLevel, pets:[...]}, ...] length 5 (4 trainers + champion)
 let gauntletCheckpoint = 0;       // furthest CLEARED room count (0-5)
@@ -2263,7 +2263,7 @@ function INFO_TEXT() {
     raid:     T('ปลดล็อคหลังผ่าน Scout Stage 20 — สู้ 3 Wave ลุ้น Special Boss ประจำวัน ใช้ Stamina 20 ต่อรอบ เล่นได้ 5 รอบ/วัน', 'Unlocks after Scout Stage 20 — fight 3 Waves ending in the day\'s Special Boss. Costs 20 Stamina, up to 5 runs/day'),
     vs:       T('ประลองกับศัตรู AI แบบ Ladder ไม่จำกัดจำนวนครั้ง ไม่ใช้ Stamina เหมาะไว้ฝึกทีมหรือฟาร์มรางวัลเพิ่ม', 'Unlimited PvE Ladder battles against AI — no Stamina cost. Good for practicing your team or farming extra rewards'),
     send:     T('ส่ง Pet ออกไปหาทรัพยากรอัตโนมัติโดยไม่ต้องเล่น แต่ตัวที่ออกไปจะใช้ในโหมด Tower/VS ไม่ได้ชั่วคราว', 'Send a Pet out to auto-gather resources without playing — but it can\'t be used in Tower/VS while away'),
-    gauntlet: T('🥊 GAUNTLET ประจำสัปดาห์ — ปลดล็อคหลัง Hell Mode พบ 4 จตุรเทพ + แชมเปี้ยน NutYo เรียงเป็นห้องตามลำดับ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) เคลียร์แล้วไม่ต้องสู้ซ้ำจนกว่าจะรีประจำสัปดาห์', '🥊 Weekly GAUNTLET — unlocks after Hell Mode. Face the 4 Elite Trainers plus Champion NutYo in sequence. Costs 30 Stamina/entry (max 5/day) — cleared rooms stay cleared until the weekly reset'),
+    gauntlet: T('🥊 CHAMPION GAUNTLET — ปลดล็อคหลัง Hell Mode พบ 4 จตุรเทพ + แชมเปี้ยน NutYo เรียงเป็นห้องตามลำดับ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) เคลียร์แล้วไม่ต้องสู้ซ้ำจนกว่าจะรีประจำสัปดาห์', '🥊 CHAMPION GAUNTLET — unlocks after Hell Mode. Face the 4 Elite Trainers plus Champion NutYo in sequence. Costs 30 Stamina/entry (max 5/day) — cleared rooms stay cleared until the weekly reset'),
     idle:     T('⏳ IDLE HUNT — ระบบสะสมเวลา (ออนไลน์+ออฟไลน์)<br><br>• นับเวลาตั้งแต่เปิดเกม หรือปิดเกมไป<br>• สะสมสูงสุด 8 ชม. ต่อรอบ<br>• ทุก 30 นาที สุ่มไอเทม Potion/Box/Egg/Essence<br>• Gold เพิ่มตาม Scout Stage ที่เล่นถึง<br>• ยิ่ง Stage สูง อัตรา Gold ต่อนาทีก็ยิ่งมากขึ้น<br><br>💡 กดรับของแล้วเวลาเริ่มนับใหม่ วน loop ไปเรื่อยๆ', '⏳ IDLE HUNT — Accumulate time (online + offline)<br><br>• Counts time while playing or away from the game<br>• Max 8 hours per collection<br>• Every 30 min: random drop (Potion/Box/Egg/Essence)<br>• Gold rate scales with your highest Scout Stage<br>• Higher Stage = more Gold per minute<br><br>💡 Claim rewards to reset the timer — loops indefinitely'),
     battleMoves: T('⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (เป่ายิ้งฉุบ) — เลือกท่าที่ชนะได้ดาเมจ ×2, แพ้ได้แค่ ×0.5, เท่ากันดาเมจปกติ 💡 ศัตรูแต่ละ Type มักใช้ท่าที่ตรงธาตุตัวเองบ่อยกว่า', '⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors) — winning deals ×2 damage, losing only ×0.5, matching deals normal damage. 💡 Enemies tend to favor their own themed move'),
   };
@@ -5319,7 +5319,7 @@ function endBattle(won) {
     saveGame(); state='duel_result'; render(); return;
   }
 
-  // ===== WEEKLY BOSS GAUNTLET RESULT =====
+  // ===== CHAMPION GAUNTLET RESULT =====
   if(battleState.isGauntletBattle) {
     if(!won) {
       const aliveOthers = pets.filter(p => p !== creature && p.phase !== 'egg' && p.hp > 0);
@@ -6748,7 +6748,7 @@ function startDuelBattle(enemyIdx) {
 }
 
 // ============================================================
-// WEEKLY BOSS GAUNTLET — generation, entry, and battle wiring.
+// CHAMPION GAUNTLET — generation, entry, and battle wiring.
 // ============================================================
 function _gauntletShuffle(arr) {
   const a = [...arr];
@@ -7031,7 +7031,7 @@ function startDuelFight() {
 }
 
 function renderGauntlet() {
-  labelStrip.textContent = '🥊 WEEKLY BOSS GAUNTLET';
+  labelStrip.textContent = '🥊 CHAMPION GAUNTLET';
   const rooms = gauntletRooms || [];
 
   if(gauntletResult) {
@@ -7805,7 +7805,7 @@ Status Effects:
 `Play against a friend anywhere — no internet required!\n\n📌 How to play:\n1. Go to VS MODE → DUEL tab\n2. Choose 1v1 (1 pet each) or 3v3 (3 pets each)\n3. Pick your pets and tap "Show QR + Link"\n4. Have your friend scan your QR, or send them the link\n5. They pick their team and tap FIGHT!\n\n💡 Scan QR via camera or pick an image from Gallery`
               )],
               ['☠️','RAID',T('ปลดล็อคหลังผ่าน Scout Stage 20 (Normal) — เล่นได้ 5 รอบ/วัน ใช้ Stamina 20 ต่อรอบ แต่ละรอบสู้ 3 Wave: มอนสเตอร์ทั่วไป → Boss ธรรมดา → Special Boss ประจำวัน มี 10 Level ให้เลือก ต้องผ่าน Level ก่อนหน้าก่อนถึงจะปลดล็อค Level ถัดไป ฟาร์มซ้ำได้ทุกวัน ไม่มี First-Clear Bonus','Unlocked after clearing Scout Stage 20 (Normal). Play up to 5 runs per day, costing 20 Stamina each. Each run has 3 Waves: regular monster → normal Boss → that day\'s Special Boss. 10 Levels available — clear the previous Level to unlock the next. No First-Clear bonus, so it\'s meant for daily farming')],
-              ['🥊','WEEKLY BOSS GAUNTLET',T(`ปลดล็อคหลัง Hell Mode — โหมด Endgame แบบ Elite Four พบเทรนเนอร์ 4 คน (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance สลับตำแหน่งทุกสัปดาห์) แต่ละคนใช้ทีม 4 ตัว ตามด้วยแชมเปี้ยน NutYo 👑 ทีมผสม เข้าเป็นห้องเรียงตามลำดับ ห้องถัดไปจะไม่เห็นจนกว่าจะเคลียร์ห้องก่อนหน้า\n\n⚡ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) — ต้องรออีกวันถ้าครบโควต้า ห้องที่เคลียร์แล้วรับรางวัลไปแล้วไม่ต้องสู้ซ้ำ เดินหน้าต่อห้องถัดไปได้ฟรีไม่เสีย Stamina จนกว่าจะแพ้หรือเคลียร์ครบ\n\n🔥 บอสแต่ละตัวเมื่อ HP < 30% จะใช้ท่าไม้ตายพิเศษครั้งเดียว แล้วเข้าสู่โหมด ENRAGE (บัฟ ATK, DEF หรือโอกาสหลบ ขึ้นกับสเตตัสเด่นของฟอร์มนั้น)\n\n🏆 รางวัลรวมของสัปดาห์: Gold, Essence, Weapon/Artifact Box การันตีเกรด, Rebirth Stone, และเมื่อเคลียร์ครบทั้ง 5 ห้อง จะได้ Shiny Egg + ป้าย Gauntlet Champion — รีเซ็ตทุกวันอาทิตย์\n\n🔥 HARD TIER — ปลดล็อคถาวรหลังเคลียร์ครบ Normal 1 ครั้ง ทีมจตุรเทพสุ่มใหม่แยกจาก Normal (ธีมเดิม แต่คนละฟอร์ม) Effective Level สูงขึ้นมาก (130-140 จตุรเทพ, 150 แชมเปี้ยน) รางวัล ×2 ทุกอย่าง (ยกเว้น Shiny Egg ยังได้ 1 ใบเท่าเดิม) ใช้โควต้า 5 ครั้ง/วันร่วมกับ Normal`,`Unlocks after Hell Mode — an Elite-Four-style endgame mode. Face 4 trainers (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance — their room order reshuffles weekly), each fielding a team of 4, followed by Champion NutYo 👑 with a mixed team. Rooms are revealed one at a time — you won't see the next room until the current one is cleared\n\n⚡ Costs 30 Stamina per entry (max 5/day) — wait for the next day once you hit the cap. Cleared rooms keep their reward claimed and don't need a rematch; moving on to the next room within the same run is free until you lose or finish\n\n🔥 Every boss drops below 30% HP once and unleashes a one-time finisher move, then enters ENRAGE mode (a buff to ATK, DEF, or dodge chance depending on that form's strongest stat)\n\n🏆 Weekly rewards: Gold, Essence, a guaranteed-grade Weapon/Artifact Box, Rebirth Stones, and a full 5-room clear grants a Shiny Egg plus the Gauntlet Champion badge — resets every Sunday\n\n🔥 HARD TIER — permanently unlocked by fully clearing Normal once. Its trainer teams are re-rolled independently from Normal's (same theme, different forms). Effective Level is much higher (130-140 for trainers, 150 for the Champion), and every reward is doubled (except the Shiny Egg, which stays a single egg). Shares the same 5-entries/day quota with Normal`)],
+              ['🥊','CHAMPION GAUNTLET',T(`ปลดล็อคหลัง Hell Mode — โหมด Endgame แบบ Elite Four พบเทรนเนอร์ 4 คน (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance สลับตำแหน่งทุกสัปดาห์) แต่ละคนใช้ทีม 4 ตัว ตามด้วยแชมเปี้ยน NutYo 👑 ทีมผสม เข้าเป็นห้องเรียงตามลำดับ ห้องถัดไปจะไม่เห็นจนกว่าจะเคลียร์ห้องก่อนหน้า\n\n⚡ ใช้ Stamina 30/ครั้ง (สูงสุด 5 ครั้ง/วัน) — ต้องรออีกวันถ้าครบโควต้า ห้องที่เคลียร์แล้วรับรางวัลไปแล้วไม่ต้องสู้ซ้ำ เดินหน้าต่อห้องถัดไปได้ฟรีไม่เสีย Stamina จนกว่าจะแพ้หรือเคลียร์ครบ\n\n🔥 บอสแต่ละตัวเมื่อ HP < 30% จะใช้ท่าไม้ตายพิเศษครั้งเดียว แล้วเข้าสู่โหมด ENRAGE (บัฟ ATK, DEF หรือโอกาสหลบ ขึ้นกับสเตตัสเด่นของฟอร์มนั้น)\n\n🏆 รางวัลรวมของสัปดาห์: Gold, Essence, Weapon/Artifact Box การันตีเกรด, Rebirth Stone, และเมื่อเคลียร์ครบทั้ง 5 ห้อง จะได้ Shiny Egg + ป้าย Gauntlet Champion — รีเซ็ตทุกวันอาทิตย์\n\n🔥 HARD TIER — ปลดล็อคถาวรหลังเคลียร์ครบ Normal 1 ครั้ง ทีมจตุรเทพสุ่มใหม่แยกจาก Normal (ธีมเดิม แต่คนละฟอร์ม) Effective Level สูงขึ้นมาก (130-140 จตุรเทพ, 150 แชมเปี้ยน) รางวัล ×2 ทุกอย่าง (ยกเว้น Shiny Egg ยังได้ 1 ใบเท่าเดิม) ใช้โควต้า 5 ครั้ง/วันร่วมกับ Normal`,`Unlocks after Hell Mode — an Elite-Four-style endgame mode. Face 4 trainers (Ragnar 👊Fist, Zephyr 🪽Wing, Thorne 🛡️Shield, Solstice ⚖️Balance — their room order reshuffles weekly), each fielding a team of 4, followed by Champion NutYo 👑 with a mixed team. Rooms are revealed one at a time — you won't see the next room until the current one is cleared\n\n⚡ Costs 30 Stamina per entry (max 5/day) — wait for the next day once you hit the cap. Cleared rooms keep their reward claimed and don't need a rematch; moving on to the next room within the same run is free until you lose or finish\n\n🔥 Every boss drops below 30% HP once and unleashes a one-time finisher move, then enters ENRAGE mode (a buff to ATK, DEF, or dodge chance depending on that form's strongest stat)\n\n🏆 Weekly rewards: Gold, Essence, a guaranteed-grade Weapon/Artifact Box, Rebirth Stones, and a full 5-room clear grants a Shiny Egg plus the Gauntlet Champion badge — resets every Sunday\n\n🔥 HARD TIER — permanently unlocked by fully clearing Normal once. Its trainer teams are re-rolled independently from Normal's (same theme, different forms). Effective Level is much higher (130-140 for trainers, 150 for the Champion), and every reward is doubled (except the Shiny Egg, which stays a single egg). Shares the same 5-entries/day quota with Normal`)],
             ];
             const renderEntry = ([icon,title,desc])=>`
             <div style="background:rgba(20,10,40,0.8);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">

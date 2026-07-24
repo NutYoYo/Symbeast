@@ -7569,7 +7569,7 @@ function renderRaidResult() {
       ${(r.drops && r.drops.length) ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:280px">
         ${r.drops.map(d=>{
           if(d.startsWith('weapon:')) { const w=WEAPONS[d.slice(7)]; return w?`<span style="font-size:11px;background:#0e0e22;border:1px solid #4488ff;border-radius:6px;padding:3px 8px">${w.icon} ${w.name}</span>`:''; }
-          const it=ITEMS[d]; return it?`<span style="font-size:11px;background:#0e0e22;border:1px solid #3a3a6a;border-radius:6px;padding:3px 8px">${it.icon} ${T(it.nameTh,it.name)}</span>`:'';
+          const it=ITEMS[d]; return it?`<span style="font-size:11px;background:#0e0e22;border:1px solid #3a3a6a;border-radius:6px;padding:3px 8px">${it.icon} ${it.name}</span>`:'';
         }).join('')}
       </div>` : ''}
       <div data-raid-result-back style="margin-top:10px;padding:10px 24px;border-radius:10px;background:#0e0e22;border:1px solid #4a4a8a;font-family:Kanit,sans-serif;font-size:12px;color:#c0a0ff;cursor:pointer">${T('กลับ','BACK')}</div>

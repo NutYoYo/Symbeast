@@ -2268,6 +2268,7 @@ let achGauntletNormalFullClear = false;
 let achGauntletHardFullClear = false;
 let achModesPlayed = new Set(); // 'tower' | 'raid' | 'gauntlet' | 'vs' | 'duel'
 let achievementStatus = {}; // id -> 'unlocked' | 'claimed' (absent = locked)
+let achClaimPopup = null; // {title, cond, parts} shown after claiming an achievement
 
 function weaponTotal() { return WEAPON_POOL.N.length + WEAPON_POOL.R.length + WEAPON_POOL.E.length; }
 function artifactTotal() { return ARTIFACT_POOL.N.length + ARTIFACT_POOL.R.length + ARTIFACT_POOL.E.length; }
@@ -8976,6 +8977,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   if(emptySlotModal!==null)        { emptySlotModal=null; render(); return; }
   if(partyRemoveConfirm!==null)   { partyRemoveConfirm=null; render(); return; }
   if(storageRemoveConfirm!==null) { storageRemoveConfirm=null; render(); return; }
+  if(achClaimPopup) { achClaimPopup=null; render(); return; }
   if(collectionDetailKey!==null) { collectionDetailKey=null; render(); return; }
   if(collectionOpen) { collectionOpen=false; render(); return; }
   if(storageDetailIdx!==null) { storageDetailIdx=null; render(); return; }
@@ -9805,10 +9807,13 @@ screenContent.addEventListener('click', e=>{
     const claimAch = el.closest('[data-claimach]');
     if(claimAch) {
       SFX.click();
-      const parts = claimAchievement(Number(claimAch.dataset.claimach));
-      if(parts) scoutToast = `🏆 ${T('รับรางวัลสำเร็จ!','Achievement claimed!')} ${parts.join(' ')}`;
+      const achId = Number(claimAch.dataset.claimach);
+      const a = ACHIEVEMENTS.find(x=>x.id===achId);
+      const parts = claimAchievement(achId);
+      if(parts && a) achClaimPopup = {title:a.title, cond:a.cond, parts};
       render(); return;
     }
+    if(el.closest('[data-achclaimclose]')) { SFX.click(); achClaimPopup = null; render(); return; }
     if(el.closest('[data-colldetailback]')) { SFX.click(); collectionDetailKey=null; render(); return; }
     // Remove from storage
     const storageRemove = el.closest('[data-storageremove]');
@@ -11125,6 +11130,17 @@ function renderParty() {
       </div>
       ${collDetailOverlay}
       ${gearDetailOverlay}
+      ${achClaimPopup ? `
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.82);z-index:40;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:14px">
+        <div style="font-family:Kanit,sans-serif;font-size:20px;color:#ffd700;letter-spacing:2px">🏆 ${T('ปลดล็อกสำเร็จ!','ACHIEVEMENT UNLOCKED!')}</div>
+        <div style="width:100%;max-width:280px;padding:16px;border-radius:12px;background:linear-gradient(135deg,#1a1200,#2a1e00);border:1px solid #ffd700">
+          <div style="font-family:Kanit,sans-serif;font-size:14px;font-weight:700;color:#ffd700;text-align:center;margin-bottom:8px">${achClaimPopup.title}</div>
+          <div style="font-size:10px;color:#8878b8;text-align:center;margin-bottom:10px">${achClaimPopup.cond}</div>
+          <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;text-align:center;margin-bottom:6px">${T('รางวัลที่ได้รับ','Reward received')}</div>
+          <div style="font-size:14px;line-height:2;text-align:center;color:#ffe8a0">${achClaimPopup.parts.join('<br>')}</div>
+        </div>
+        <div data-achclaimclose style="padding:12px 32px;border-radius:10px;background:linear-gradient(135deg,#8a6a00,#cc9900);border:none;font-family:Kanit,sans-serif;font-size:15px;color:#fff;cursor:pointer;letter-spacing:1px;font-weight:700;box-shadow:0 0 16px rgba(204,153,0,0.4)">${T('✅ รับทราบ','✅ OK')}</div>
+      </div>` : ''}
     </div>`;
   })();
 

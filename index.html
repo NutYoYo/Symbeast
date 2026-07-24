@@ -9804,6 +9804,20 @@ screenContent.addEventListener('click', e=>{
     if(collTab) { SFX.click(); collectionTab=collTab.dataset.colltab; collectionDetailKey=null; render(); return; }
     const collDetail = el.closest('[data-colldetail]');
     if(collDetail) { SFX.click(); collectionDetailKey=collDetail.dataset.colldetail; render(); return; }
+    const collDetailNav = el.closest('[data-colldetailnav]');
+    if(collDetailNav) {
+      SFX.click();
+      const dir = Number(collDetailNav.dataset.colldetailnav);
+      const key = collectionDetailKey;
+      let listKeys;
+      if(key.startsWith('wpn_')) listKeys = [...WEAPON_POOL.N, ...WEAPON_POOL.R, ...WEAPON_POOL.E].map(k=>'wpn_'+k);
+      else if(key.startsWith('art_')) listKeys = [...ARTIFACT_POOL.N, ...ARTIFACT_POOL.R, ...ARTIFACT_POOL.E].map(k=>'art_'+k);
+      else listKeys = Object.keys(EVOLVE2_FORMS[key] ? EVOLVE2_FORMS : FORMS);
+      const idx = listKeys.indexOf(key);
+      const newIdx = Math.max(0, Math.min(listKeys.length-1, idx+dir));
+      collectionDetailKey = listKeys[newIdx];
+      render(); return;
+    }
     const claimAch = el.closest('[data-claimach]');
     if(claimAch) {
       SFX.click();
@@ -10894,6 +10908,10 @@ function renderParty() {
   const collDetailOverlay = collDetailData ? (()=>{
     const { form, isFinal, ok } = collDetailData;
     const col = ok ? form.color : '#2a2a4a';
+    const navListKeys = Object.keys(isFinal ? EVOLVE2_FORMS : FORMS);
+    const navIdx = navListKeys.indexOf(collectionDetailKey);
+    const navPrev = `<div data-colldetailnav="-1" style="padding:4px 10px;border-radius:8px;background:#0e0e22;border:1px solid #3a3a6a;cursor:${navIdx>0?'pointer':'default'};opacity:${navIdx>0?1:0.3};font-size:14px;color:#c0b0ff">‹</div>`;
+    const navNext = `<div data-colldetailnav="1" style="padding:4px 10px;border-radius:8px;background:#0e0e22;border:1px solid #3a3a6a;cursor:${navIdx<navListKeys.length-1?'pointer':'default'};opacity:${navIdx<navListKeys.length-1?1:0.3};font-size:14px;color:#c0b0ff">›</div>`;
     const symChip = s=>`<div style="display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#0a0a18;border:1px solid ${SYMS[s].color}44"><span style="color:${SYMS[s].color};display:inline-flex;align-items:center">${symSvg(s,20)}</span><span style="font-size:11px;color:${SYMS[s].color}">${SYMS[s].name}</span></div>`;
     const symsHtml = !isFinal
       ? collectionDetailKey.split('').map(symChip).join('')
@@ -10901,7 +10919,9 @@ function renderParty() {
     return `
     <div style="position:absolute;inset:0;background:#09091e;z-index:50;border-radius:16px;display:flex;flex-direction:column;border:1px solid #2a2a4a">
       <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}44">
+        ${navPrev}
         <span style="font-family:Kanit,sans-serif;font-size:12px;font-weight:700;color:${col};flex:1;text-align:center">${ok?form.name:'???'}</span>
+        ${navNext}
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px">
         <div style="${ok?'':'filter:brightness(0) invert(1) opacity(0.25)'};width:120px;height:120px;display:flex;align-items:center;justify-content:center">${buildEvolvedSvg(collectionDetailKey,110,ok)}</div>
@@ -10949,10 +10969,16 @@ function renderParty() {
     const nm = item.name;
     const gradeColor = item.grade==='E' ? '#ffd700' : item.grade==='R' ? '#4488ff' : '#b0b0c0';
     const col = ok ? gradeColor : '#2a2a4a';
+    const navListKeys = (isWpn ? [...WEAPON_POOL.N, ...WEAPON_POOL.R, ...WEAPON_POOL.E] : [...ARTIFACT_POOL.N, ...ARTIFACT_POOL.R, ...ARTIFACT_POOL.E]).map(k=>(isWpn?'wpn_':'art_')+k);
+    const navIdx = navListKeys.indexOf(collectionDetailKey);
+    const navPrev = `<div data-colldetailnav="-1" style="padding:4px 10px;border-radius:8px;background:#0e0e22;border:1px solid #3a3a6a;cursor:${navIdx>0?'pointer':'default'};opacity:${navIdx>0?1:0.3};font-size:14px;color:#c0b0ff">‹</div>`;
+    const navNext = `<div data-colldetailnav="1" style="padding:4px 10px;border-radius:8px;background:#0e0e22;border:1px solid #3a3a6a;cursor:${navIdx<navListKeys.length-1?'pointer':'default'};opacity:${navIdx<navListKeys.length-1?1:0.3};font-size:14px;color:#c0b0ff">›</div>`;
     return `
     <div style="position:absolute;inset:0;background:#09091e;z-index:50;border-radius:16px;display:flex;flex-direction:column;border:1px solid #2a2a4a">
       <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}44">
+        ${navPrev}
         <span style="font-family:Kanit,sans-serif;font-size:12px;font-weight:700;color:${col};flex:1;text-align:center">${ok?nm:'???'}</span>
+        ${navNext}
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px">
         <div style="font-size:64px;${ok?'':'filter:grayscale(1) brightness(0.3)'}">${ok?item.icon:'❔'}</div>
@@ -10994,7 +11020,7 @@ function renderParty() {
     const tabBar = `
       <div style="display:flex;gap:6px;padding:8px 12px 0">
         ${[['pet','🐾','PET'],['weapon','🗡️','WEAPON'],['artifact','🔮','ARTIFACT'],['achievement','🏆','ACH.']].map(([k,icon,lbl])=>`
-          <div data-colltab="${k}" style="position:relative;flex:1;padding:6px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${collectionTab===k?'rgba(160,144,224,0.18)':'#0e0e1e'};border:1px solid ${collectionTab===k?'#a090e0':'#2a2a4a'};color:${collectionTab===k?'#c0b0ff':'#6a6a8a'}">${icon} ${lbl}${k==='achievement'&&achPendingCount()>0?`<span style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff4444;color:#fff;font-size:9px;line-height:16px;font-weight:700">${achPendingCount()}</span>`:''}</div>
+          <div data-colltab="${k}" style="position:relative;flex:1;padding:6px 2px;border-radius:8px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:Kanit,sans-serif;font-size:10px;background:${collectionTab===k?'rgba(160,144,224,0.18)':'#0e0e1e'};border:1px solid ${collectionTab===k?'#a090e0':'#2a2a4a'};color:${collectionTab===k?'#c0b0ff':'#6a6a8a'}"><span style="font-size:16px;line-height:1">${icon}</span><span>${lbl}</span>${k==='achievement'&&achPendingCount()>0?`<span style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff4444;color:#fff;font-size:9px;line-height:16px;font-weight:700">${achPendingCount()}</span>`:''}</div>
         `).join('')}
       </div>`;
 

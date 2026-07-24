@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1498,6 +1498,7 @@ function addWeaponToBag(key, qty=1) {
   const slot = weaponBag.find(s=>s.key===key);
   if(slot) slot.qty += qty; else weaponBag.push({key, qty});
   seenWeapons.add(key.replace(/_low$|_high$/, ''));
+  achNoteBoxGrade(weaponGradeOf(key));
 }
 function removeWeaponFromBag(key, qty=1) {
   const slot = weaponBag.find(s=>s.key===key);
@@ -2243,8 +2244,193 @@ let battleAutoMode = false; // 🤖 auto-battle: picks a random move each turn u
 let partyDetailIdx = null; // pet index being viewed in detail
 let renamePetPopup = null; // {idx, value} while rename modal is open
 let storageDetailIdx = null; // storage index being viewed in detail
+// ══════════════════════════════════════════════
+//  🏆 ACHIEVEMENTS
+// ══════════════════════════════════════════════
+let achFuseCount = 0;
+let achRebirthUsedCount = 0;
+let achEssenceCollected = 0;
+let achBoxesOpenedCount = 0;
+let achFirstBoxGradeE = false;
+let achFirstBoxGradeR = false;
+let achSecretShopPurchases = 0;
+let achTotalWinsAll = 0;
+let achWinStreak = 0;
+let achWinStreakBest = 0;
+let achPerfectWinCount = 0;
+let achTrainTotalAll = 0;
+let achTrainMaxSinglePet = 0;
+let achFinalPhaseReachedCount = 0;
+let achFuseShinyInheritFirst = false;
+let achEnrageBossKilled = false;
+let achGauntletFirstRoomWin = false;
+let achGauntletNormalFullClear = false;
+let achGauntletHardFullClear = false;
+let achModesPlayed = new Set(); // 'tower' | 'raid' | 'gauntlet' | 'vs' | 'duel'
+let achievementStatus = {}; // id -> 'unlocked' | 'claimed' (absent = locked)
+
+function weaponTotal() { return WEAPON_POOL.N.length + WEAPON_POOL.R.length + WEAPON_POOL.E.length; }
+function artifactTotal() { return ARTIFACT_POOL.N.length + ARTIFACT_POOL.R.length + ARTIFACT_POOL.E.length; }
+function weaponGradeOf(key) {
+  const base = key.replace(/_low$|_high$/, '');
+  if(WEAPON_POOL.E.includes(base)) return 'E';
+  if(WEAPON_POOL.R.includes(base)) return 'R';
+  return 'N';
+}
+function artifactGradeOf(key) {
+  if(ARTIFACT_POOL.E.includes(key)) return 'E';
+  if(ARTIFACT_POOL.R.includes(key)) return 'R';
+  return 'N';
+}
+function achNoteBoxGrade(grade) {
+  achBoxesOpenedCount++;
+  if(grade==='E') achFirstBoxGradeE = true;
+  if(grade==='R') achFirstBoxGradeR = true;
+}
+
+function achMetric(key) {
+  switch(key) {
+    case 'finalForms': return seenFinal.size;
+    case 'evolvedForms': return seenEvolved.size;
+    case 'weaponPct': return Math.round(seenWeapons.size / weaponTotal() * 100);
+    case 'artifactPct': return Math.round(seenArtifacts.size / artifactTotal() * 100);
+    case 'shinyCount': return [...pets, ...storage].filter(p=>p.shiny).length;
+    case 'fuseCount': return achFuseCount;
+    case 'fuseShinyFirst': return achFuseShinyInheritFirst ? 1 : 0;
+    case 'finalPhaseReached': return achFinalPhaseReachedCount;
+    case 'rebirthUsed': return achRebirthUsedCount;
+    case 'towerHighest': return towerHighest;
+    case 'raidFirstWin': return raidProgress.some(v=>v>=1) ? 1 : 0;
+    case 'raidAllWin': return raidProgress.every(v=>v>=1) ? 1 : 0;
+    case 'raidAllLv10': return raidProgress.every(v=>v>=10) ? 1 : 0;
+    case 'gauntletFirstRoom': return achGauntletFirstRoomWin ? 1 : 0;
+    case 'gauntletNormalClear': return achGauntletNormalFullClear ? 1 : 0;
+    case 'gauntletHardUnlocked': return gauntletHardUnlocked ? 1 : 0;
+    case 'gauntletHardClear': return achGauntletHardFullClear ? 1 : 0;
+    case 'vsWins': return Math.max(0, vsCurrentStage - 1);
+    case 'duelWins': return pvpWins;
+    case 'totalWins': return achTotalWinsAll;
+    case 'gold': return gold;
+    case 'essenceCollected': return achEssenceCollected;
+    case 'secretShopPurchases': return achSecretShopPurchases;
+    case 'boxGradeEFirst': return achFirstBoxGradeE ? 1 : 0;
+    case 'boxGradeRFirst': return achFirstBoxGradeR ? 1 : 0;
+    case 'boxesOpened': return achBoxesOpenedCount;
+    case 'perfectWin': return achPerfectWinCount;
+    case 'enrageKill': return achEnrageBossKilled ? 1 : 0;
+    case 'winStreakBest': return achWinStreakBest;
+    case 'modesPlayedAll': return ['tower','raid','gauntlet','vs','duel'].every(m=>achModesPlayed.has(m)) ? 1 : 0;
+    case 'trainTotalAll': return achTrainTotalAll;
+    case 'trainMaxSingle': return achTrainMaxSinglePet;
+    case 'scoutHell20': return scoutFirstClears.has('hell_20') ? 1 : 0;
+    default: return 0;
+  }
+}
+
+const ACHIEVEMENTS = [
+  {id:1,  cat:'Collection', title:'นักสะสมมือใหม่', cond:'เก็บ Pet final form ครบ 10 ฟอร์ม', reward:{gold:10000}, metric:'finalForms', target:10},
+  {id:2,  cat:'Collection', title:'นักสะสมฝีมือดี', cond:'เก็บ Pet final form ครบ 20 ฟอร์ม', reward:{essence:10}, metric:'finalForms', target:20},
+  {id:3,  cat:'Collection', title:'นักสะสมชั้นเซียน', cond:'เก็บ Pet final form ครบ 30 ฟอร์ม', reward:{weaponBoxGrade:'E'}, metric:'finalForms', target:30},
+  {id:4,  cat:'Collection', title:'นักสะสมสัตว์ในตำนาน', cond:'เก็บ Pet final form ครบทั้ง 40 ฟอร์ม', reward:{shinyEgg:1}, metric:'finalForms', target:40},
+  {id:5,  cat:'Collection', title:'นักสะสมอาวุธ (เริ่มต้น)', cond:'เก็บ Weapon ที่เคยเห็นครบ 25%', reward:{weaponBoxGrade:'R'}, metric:'weaponPct', target:25},
+  {id:6,  cat:'Collection', title:'นักสะสมอาวุธ (ปานกลาง)', cond:'เก็บ Weapon ที่เคยเห็นครบ 50%', reward:{essence:10}, metric:'weaponPct', target:50},
+  {id:7,  cat:'Collection', title:'นักสะสมอาวุธ (ช่ำชอง)', cond:'เก็บ Weapon ที่เคยเห็นครบ 75%', reward:{weaponBoxGrade:'E'}, metric:'weaponPct', target:75},
+  {id:8,  cat:'Collection', title:'จอมสะสมอาวุธ', cond:'เก็บ Weapon ที่เคยเห็นครบ 100%', reward:{gold:100000}, metric:'weaponPct', target:100},
+  {id:9,  cat:'Collection', title:'นักสะสมของวิเศษ (เริ่มต้น)', cond:'เก็บ Artifact ที่เคยเห็นครบ 25%', reward:{artifactBoxGrade:'R'}, metric:'artifactPct', target:25},
+  {id:10, cat:'Collection', title:'นักสะสมของวิเศษ (ปานกลาง)', cond:'เก็บ Artifact ที่เคยเห็นครบ 50%', reward:{essence:10}, metric:'artifactPct', target:50},
+  {id:11, cat:'Collection', title:'นักสะสมของวิเศษ (ช่ำชอง)', cond:'เก็บ Artifact ที่เคยเห็นครบ 75%', reward:{artifactBoxGrade:'E'}, metric:'artifactPct', target:75},
+  {id:12, cat:'Collection', title:'จอมสะสมของวิเศษ', cond:'เก็บ Artifact ที่เคยเห็นครบ 100%', reward:{gold:100000}, metric:'artifactPct', target:100},
+  {id:13, cat:'Collection', title:'โชคชะตา', cond:'ได้ Shiny ตัวแรก', reward:{gold:10000}, metric:'shinyCount', target:1},
+  {id:14, cat:'Collection', title:'ผู้โชคดี', cond:'ได้ Shiny ครบ 5 ตัว', reward:{mysteryEgg:3}, metric:'shinyCount', target:5},
+  {id:15, cat:'Collection', title:'ผู้ล่าความแวววาว', cond:'ได้ Shiny ครบ 10 ตัว', reward:{shinyEgg:1}, metric:'shinyCount', target:10},
+  {id:16, cat:'Collection', title:'เทพแห่งความเปล่งประกาย', cond:'ได้ Shiny ครบ 20 ตัว', reward:{gold:100000}, metric:'shinyCount', target:20},
+  {id:17, cat:'Fusion & Progression', title:'นักทดลอง', cond:'Fuse สำเร็จครั้งแรก', reward:{rebirthStone:5}, metric:'fuseCount', target:1},
+  {id:18, cat:'Fusion & Progression', title:'นักฟิวชั่นมือใหม่', cond:'Fuse สำเร็จครบ 10 ครั้ง', reward:{essence:10}, metric:'fuseCount', target:10},
+  {id:19, cat:'Fusion & Progression', title:'นักฟิวชั่นฝีมือดี', cond:'Fuse สำเร็จครบ 30 ครั้ง', reward:{artifactBoxGrade:'E'}, metric:'fuseCount', target:30},
+  {id:20, cat:'Fusion & Progression', title:'ปรมาจารย์ฟิวชั่น', cond:'Fuse สำเร็จครบ 50 ครั้ง', reward:{gold:500000}, metric:'fuseCount', target:50},
+  {id:22, cat:'Fusion & Progression', title:'โชคช่วยจากฟิวชั่น', cond:'ได้ Shiny จากการ Fuse (inherit) ครั้งแรก', reward:{shinyEgg:1}, metric:'fuseShinyFirst', target:1, oneTime:true},
+  {id:23, cat:'Fusion & Progression', title:'ผู้ตื่นพลัง', cond:'ปั้น Pet ถึง final phase ครั้งแรก', reward:{gold:5000}, metric:'finalPhaseReached', target:1},
+  {id:24, cat:'Fusion & Progression', title:'ผู้ปลุกพลังหลายฟอร์ม', cond:'ปั้น Pet ถึง final phase ครบ 5 ตัว', reward:{essence:10}, metric:'finalPhaseReached', target:5},
+  {id:25, cat:'Fusion & Progression', title:'เทพแห่งการวิวัฒน์', cond:'ปั้น Pet ถึง final phase ครบ 10 ตัว', reward:{rebirthStone:5}, metric:'finalPhaseReached', target:10},
+  {id:26, cat:'Fusion & Progression', title:'ผู้กลับชาติ', cond:'ใช้ Rebirth Stone ครั้งแรก', reward:{gold:5000}, metric:'rebirthUsed', target:1},
+  {id:27, cat:'Fusion & Progression', title:'นายแห่งการเกิดใหม่', cond:'ใช้ Rebirth Stone ครบ 10 ครั้ง', reward:{essence:10}, metric:'rebirthUsed', target:10},
+  {id:28, cat:'Combat: Tower', title:'ผู้เริ่มปีนหอคอย', cond:'ชนะ Tower ครั้งแรก', reward:{gold:2000}, metric:'towerHighest', target:1},
+  {id:29, cat:'Combat: Tower', title:'ผู้พิชิตหอคอย (ต้น)', cond:'ปีน Tower ถึงชั้น 50', reward:{essence:10}, metric:'towerHighest', target:50},
+  {id:30, cat:'Combat: Tower', title:'ผู้พิชิตหอคอย (กลาง)', cond:'ปีน Tower ถึงชั้น 100', reward:{weaponBoxGrade:'E'}, metric:'towerHighest', target:100},
+  {id:31, cat:'Combat: Tower', title:'จอมพิชิตหอคอย', cond:'ปีน Tower ถึงชั้น 200', reward:{gold:100000, shinyEgg:1}, metric:'towerHighest', target:200},
+  {id:32, cat:'Combat: Raid', title:'นักล่าบอส', cond:'ชนะ Raid Special Boss ครั้งแรก', reward:{essence:10}, metric:'raidFirstWin', target:1, oneTime:true},
+  {id:33, cat:'Combat: Raid', title:'นักล่าบอสครบวงจร', cond:'ชนะ Raid Special Boss ครบทุกตัว (อย่างละ 1 ครั้ง)', reward:{gold:100000}, metric:'raidAllWin', target:1, oneTime:true},
+  {id:34, cat:'Combat: Raid', title:'นายพรานบอสระดับตำนาน', cond:'ชนะ Raid Special Boss LV10 ครบทุกตัว (อย่างละ 1 ครั้ง)', reward:{gold:100000, shinyEgg:1}, metric:'raidAllLv10', target:1, oneTime:true},
+  {id:35, cat:'Combat: Gauntlet Normal', title:'นักท้าทายจตุรเทพ', cond:'ชนะห้องแรกใน Gauntlet', reward:{gold:10000}, metric:'gauntletFirstRoom', target:1, oneTime:true},
+  {id:36, cat:'Combat: Gauntlet Normal', title:'จตุรเทพหน้าใหม่', cond:'เคลียร์ครบ 5 ห้อง ได้ Champion Badge ครั้งแรก', reward:{weaponBoxGrade:'E'}, metric:'gauntletNormalClear', target:1, oneTime:true},
+  {id:38, cat:'Combat: Gauntlet Hard', title:'ผู้เปิดประตูนรก', cond:'ปลดล็อก Hard Tier ครั้งแรก', reward:{essence:10}, metric:'gauntletHardUnlocked', target:1, oneTime:true},
+  {id:39, cat:'Combat: Gauntlet Hard', title:'ผู้พิชิตจตุรเทพ (Hard)', cond:'เคลียร์ Hard ครบ 5 ห้องครั้งแรก', reward:{gold:100000, shinyEgg:1}, metric:'gauntletHardClear', target:1, oneTime:true},
+  {id:41, cat:'Combat: VS Mode', title:'นักสู้หน้าใหม่', cond:'ชนะ VS Mode ครั้งแรก', reward:{gold:2000}, metric:'vsWins', target:1},
+  {id:42, cat:'Combat: VS Mode', title:'นักสู้ผู้ช่ำชอง', cond:'ชนะ VS Mode สะสม 50 ครั้ง', reward:{essence:10}, metric:'vsWins', target:50},
+  {id:43, cat:'Combat: VS Mode', title:'จ้าวแห่ง VS Mode', cond:'ชนะ VS Mode สะสม 200 ครั้ง', reward:{gold:100000}, metric:'vsWins', target:200},
+  {id:44, cat:'Combat: Duel (PvP)', title:'นักสู้ตัวจริง', cond:'ชนะ Duel ครั้งแรก', reward:{gold:5000}, metric:'duelWins', target:1},
+  {id:45, cat:'Combat: Duel (PvP)', title:'นักดวลผู้กระหายชัย', cond:'ชนะ Duel สะสม 10 ครั้ง', reward:{essence:10}, metric:'duelWins', target:10},
+  {id:46, cat:'Combat: Duel (PvP)', title:'จ้าวสังเวียน PvP', cond:'ชนะ Duel สะสม 50 ครั้ง', reward:{gold:100000}, metric:'duelWins', target:50},
+  {id:47, cat:'Combat: Overall', title:'นักรบผู้มุ่งมั่น', cond:'ชนะสะสมรวมทุกโหมด 100 ครั้ง', reward:{gold:5000}, metric:'totalWins', target:100},
+  {id:48, cat:'Combat: Overall', title:'นักรบผู้ช่ำชอง', cond:'ชนะสะสมรวมทุกโหมด 500 ครั้ง', reward:{rebirthStone:3}, metric:'totalWins', target:500},
+  {id:49, cat:'Combat: Overall', title:'ตำนานนักรบ', cond:'ชนะสะสมรวมทุกโหมด 1000 ครั้ง', reward:{rebirthStone:10}, metric:'totalWins', target:1000},
+  {id:50, cat:'Economy', title:'นักเก็บเงินมือใหม่', cond:'สะสม Gold ถึง 10,000', reward:{essence:5}, metric:'gold', target:10000},
+  {id:51, cat:'Economy', title:'นักธุรกิจ', cond:'สะสม Gold ถึง 100,000', reward:{essence:10}, metric:'gold', target:100000},
+  {id:52, cat:'Economy', title:'เศรษฐี', cond:'สะสม Gold ถึง 1,000,000', reward:{artifactBoxN:5}, metric:'gold', target:1000000},
+  {id:53, cat:'Economy', title:'มหาเศรษฐี', cond:'สะสม Gold ถึง 10,000,000', reward:{weaponBoxGrade:'E'}, metric:'gold', target:10000000},
+  {id:54, cat:'Economy', title:'ผู้ใช้ทรัพยากรมือใหม่', cond:'เก็บ Essence สะสม 100 หน่วย', reward:{gold:10000}, metric:'essenceCollected', target:100},
+  {id:55, cat:'Economy', title:'ผู้บริหารทรัพยากร', cond:'เก็บ Essence สะสม 1,000 หน่วย', reward:{gold:50000}, metric:'essenceCollected', target:1000},
+  {id:56, cat:'Economy', title:'นายแห่งทรัพยากร', cond:'เก็บ Essence สะสม 5,000 หน่วย', reward:{essence:30}, metric:'essenceCollected', target:5000},
+  {id:57, cat:'Economy', title:'นักช้อปลับ', cond:'ซื้อของจาก Secret Shop ครั้งแรก', reward:{gold:1000}, metric:'secretShopPurchases', target:1},
+  {id:58, cat:'Economy', title:'ขาประจำร้านลับ', cond:'ซื้อของจาก Secret Shop สะสม 20 ครั้ง', reward:{essence:10}, metric:'secretShopPurchases', target:20},
+  {id:59, cat:'Economy', title:'นักเปิดกล่องมือใหม่', cond:'เปิดกล่องอาวุธ/อาร์ติแฟกต์เกรด E ครั้งแรก', reward:{essence:10}, metric:'boxGradeEFirst', target:1, oneTime:true},
+  {id:60, cat:'Economy', title:'ผู้โชคดีเกรด R', cond:'เปิดกล่องอาวุธ/อาร์ติแฟกต์เกรด R ครั้งแรก', reward:{gold:10000}, metric:'boxGradeRFirst', target:1, oneTime:true},
+  {id:61, cat:'Economy', title:'จอมเปิดกล่อง', cond:'เปิดกล่องสะสมรวม 100 ใบ', reward:{rebirthStone:3}, metric:'boxesOpened', target:100},
+  {id:62, cat:'Skill / Challenge', title:'ไร้ที่ติ', cond:'ชนะไฟต์แบบ Perfect Win (ไม่โดนตีเลย) ครั้งแรก', reward:{gold:5000}, metric:'perfectWin', target:1},
+  {id:63, cat:'Skill / Challenge', title:'ผู้ไร้จุดอ่อน', cond:'ชนะแบบ Perfect Win สะสม 10 ครั้ง', reward:{rebirthStone:3}, metric:'perfectWin', target:10},
+  {id:64, cat:'Skill / Challenge', title:'ผู้เอาชนะความคลั่ง', cond:'เอาชนะบอสหลังเข้าสู่ Enrage Mode', reward:{essence:15}, metric:'enrageKill', target:1, oneTime:true},
+  {id:66, cat:'Skill / Challenge', title:'สายลุยไฟ (เริ่มต้น)', cond:'ชนะติดต่อกัน (win streak) 5 ครั้ง', reward:{gold:5000}, metric:'winStreakBest', target:5},
+  {id:67, cat:'Skill / Challenge', title:'สายลุยไฟ (กลาง)', cond:'ชนะติดต่อกัน (win streak) 10 ครั้ง', reward:{essence:10}, metric:'winStreakBest', target:10},
+  {id:68, cat:'Skill / Challenge', title:'จ้าวแห่งสายชนะ', cond:'ชนะติดต่อกัน (win streak) 20 ครั้ง', reward:{rebirthStone:5}, metric:'winStreakBest', target:20},
+  {id:72, cat:'Misc / Retention', title:'ผู้สำรวจ', cond:'เล่นครบทุกโหมด (Tower/Raid/Gauntlet/VS/Duel) อย่างน้อยคนละ 1 ครั้ง', reward:{artifactBoxN:5}, metric:'modesPlayedAll', target:1, oneTime:true},
+  {id:73, cat:'Collection', title:'ผู้ปลุกพลังขั้นต้น', cond:'เก็บ Pet Evolve ร่างแรก (Evolve I) ครบทั้ง 10 ฟอร์ม', reward:{rebirthStone:5}, metric:'evolvedForms', target:10},
+  {id:74, cat:'Train', title:'นักฝึกฝนมือใหม่', cond:'Train สะสมครบ 1000 ครั้ง (รวมทุกตัว)', reward:{gold:10000}, metric:'trainTotalAll', target:1000},
+  {id:75, cat:'Train', title:'นักฝึกฝนทุ่มเท', cond:'Train มอนสเตอร์ 1 ตัวครบ 500 ครั้ง', reward:{gold:100000}, metric:'trainMaxSingle', target:500},
+  {id:76, cat:'Train', title:'ปรมาจารย์การฝึก', cond:'Train มอนสเตอร์ 1 ตัวครบ 1010 ครั้ง', reward:{gold:100000, shinyEgg:1}, metric:'trainMaxSingle', target:1010},
+  {id:77, cat:'Combat: Scout', title:'ผู้ท้าทายนรก', cond:'เคลียร์ Scout Hell Mode ด่านที่ 20 (ครั้งแรก)', reward:{gold:100000}, metric:'scoutHell20', target:1, oneTime:true},
+];
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if(achievementStatus[a.id]) return; // already unlocked or claimed
+    if(achMetric(a.metric) >= a.target) achievementStatus[a.id] = 'unlocked';
+  });
+}
+function achPendingCount() { return ACHIEVEMENTS.filter(a=>achievementStatus[a.id]==='unlocked').length; }
+function grantAchievementReward(reward) {
+  const parts = [];
+  if(reward.gold) { gold += reward.gold; parts.push(`💰 +${reward.gold.toLocaleString()}G`); }
+  if(reward.essence) { for(let i=0;i<reward.essence;i++) addItemToInventory('essence'); parts.push(`${ITEMS.essence.icon} Essence ×${reward.essence}`); }
+  if(reward.rebirthStone) { for(let i=0;i<reward.rebirthStone;i++) addItemToInventory('rebirth_stone'); parts.push(`🔮 Rebirth Stone ×${reward.rebirthStone}`); }
+  if(reward.shinyEgg) { for(let i=0;i<reward.shinyEgg;i++) addItemToInventory('shiny_egg'); parts.push(`✨🥚 Shiny Egg ×${reward.shinyEgg}`); }
+  if(reward.mysteryEgg) { for(let i=0;i<reward.mysteryEgg;i++) addItemToInventory('mystery_egg'); parts.push(`🥚 Mystery Egg ×${reward.mysteryEgg}`); }
+  if(reward.weaponBoxGrade) { addWeaponToBag(rollWeaponFromPool(reward.weaponBoxGrade)); parts.push(`⚔️ Weapon [${reward.weaponBoxGrade}]`); }
+  if(reward.artifactBoxGrade==='E') { addItemToInventory('box_E'); parts.push('📦 Artifact Box [E]'); }
+  if(reward.artifactBoxGrade==='R') { addItemToInventory('box_R'); parts.push('📦 Artifact Box [R]'); }
+  if(reward.artifactBoxN) { for(let i=0;i<reward.artifactBoxN;i++) addItemToInventory('artifact_box'); parts.push(`📦 Artifact Box ×${reward.artifactBoxN}`); }
+  return parts;
+}
+function claimAchievement(id) {
+  const a = ACHIEVEMENTS.find(x=>x.id===id);
+  if(!a || achievementStatus[id] !== 'unlocked') return null;
+  const parts = grantAchievementReward(a.reward);
+  achievementStatus[id] = 'claimed';
+  saveGame();
+  return parts;
+}
+
 let collectionOpen = false;
-let collectionTab = 'pet'; // 'pet' | 'weapon' | 'artifact'
+let collectionTab = 'pet'; // 'pet' | 'weapon' | 'artifact' | 'achievement'
 let collectionDetailKey = null; // formKey/finalKey/weapon key/artifact key being viewed in detail
 let partyArtPicker = false;
 let partyArtPicker2 = false;
@@ -2368,6 +2554,7 @@ function doEvolve2(petIdx, fromList, symbol) {
   pet.formKey   = null;
   pet.evolve2Symbol = symbol;
   seenFinal.add(branchKey);
+  achFinalPhaseReachedCount++;
   pet.name      = ff.name;
   pet.maxHp     = ff.hp  + bonusHp;
   pet.hp        = pet.maxHp;
@@ -2446,6 +2633,7 @@ function addArtifactToBag(artKey, qty=1) {
   if(slot) slot.qty += qty;
   else artifactBag.push({key:artKey, qty});
   seenArtifacts.add(artKey);
+  achNoteBoxGrade(artifactGradeOf(artKey));
 }
 // ── Debug helpers (Console) ──────────────────────────────────────────────
 // ────────────────────────────────────────────────────────────────────────
@@ -2462,6 +2650,7 @@ function dropEssence() { return ESSENCE_POOL[Math.floor(Math.random()*ESSENCE_PO
 
 function addItemToInventory(type, qty=1) {
   if(type.startsWith('artifact_') && type !== 'artifact_box') { addArtifactToBag(type.slice('artifact_'.length), qty); return; }
+  if(type==='essence') achEssenceCollected += qty;
   const slot = inventory.find(s=>s.type===type);
   if(slot) { slot.qty += qty; }
   else if(inventory.length < MAX_INV) { inventory.push({type, qty}); }
@@ -3041,10 +3230,11 @@ function pvpRecordBattle(defenderUid, defenderName, won) {
 
 function saveGame() {
   try {
+    checkAchievements();
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
     gauntletSyncOut();
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, achievementStatus, achFuseCount, achRebirthUsedCount, achEssenceCollected, achBoxesOpenedCount, achFirstBoxGradeE, achFirstBoxGradeR, achSecretShopPurchases, achTotalWinsAll, achWinStreak, achWinStreakBest, achPerfectWinCount, achTrainTotalAll, achTrainMaxSinglePet, achFinalPhaseReachedCount, achFuseShinyInheritFirst, achEnrageBossKilled, achGauntletFirstRoomWin, achGauntletNormalFullClear, achGauntletHardFullClear, achModesPlayed:[...achModesPlayed]}));
     cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -3099,6 +3289,12 @@ function loadGame(slotNum) {
         gauntletWeek=null; gauntletRooms=null; gauntletCheckpoint=0; gauntletClaimed=[false,false,false,false,false];
         gauntletRunsToday=0; gauntletRunsDate=''; gauntletChampionBadgeWeek=null; gauntletFreeEntryPending=false;
         gauntletTier='normal'; gauntletHardUnlocked=false; gauntletStash={normal:null,hard:null};
+        achievementStatus={}; achFuseCount=0; achRebirthUsedCount=0; achEssenceCollected=0; achBoxesOpenedCount=0;
+        achFirstBoxGradeE=false; achFirstBoxGradeR=false; achSecretShopPurchases=0; achTotalWinsAll=0;
+        achWinStreak=0; achWinStreakBest=0; achPerfectWinCount=0; achTrainTotalAll=0; achTrainMaxSinglePet=0;
+        achFinalPhaseReachedCount=0; achFuseShinyInheritFirst=false; achEnrageBossKilled=false;
+        achGauntletFirstRoomWin=false; achGauntletNormalFullClear=false; achGauntletHardFullClear=false;
+        achModesPlayed=new Set();
 
         if(Array.isArray(d.scoutGrid)&&d.scoutGrid.length) scoutGrid = d.scoutGrid;
         if(d.scoutPos) scoutPos = d.scoutPos;
@@ -3166,6 +3362,27 @@ function loadGame(slotNum) {
           }, hard: null };
         }
         gauntletSyncIn(typeof d.gauntletTier==='string' ? d.gauntletTier : 'normal');
+        if(d.achievementStatus && typeof d.achievementStatus==='object') achievementStatus = d.achievementStatus;
+        if(typeof d.achFuseCount==='number') achFuseCount = d.achFuseCount;
+        if(typeof d.achRebirthUsedCount==='number') achRebirthUsedCount = d.achRebirthUsedCount;
+        if(typeof d.achEssenceCollected==='number') achEssenceCollected = d.achEssenceCollected;
+        if(typeof d.achBoxesOpenedCount==='number') achBoxesOpenedCount = d.achBoxesOpenedCount;
+        if(typeof d.achFirstBoxGradeE==='boolean') achFirstBoxGradeE = d.achFirstBoxGradeE;
+        if(typeof d.achFirstBoxGradeR==='boolean') achFirstBoxGradeR = d.achFirstBoxGradeR;
+        if(typeof d.achSecretShopPurchases==='number') achSecretShopPurchases = d.achSecretShopPurchases;
+        if(typeof d.achTotalWinsAll==='number') achTotalWinsAll = d.achTotalWinsAll;
+        if(typeof d.achWinStreak==='number') achWinStreak = d.achWinStreak;
+        if(typeof d.achWinStreakBest==='number') achWinStreakBest = d.achWinStreakBest;
+        if(typeof d.achPerfectWinCount==='number') achPerfectWinCount = d.achPerfectWinCount;
+        if(typeof d.achTrainTotalAll==='number') achTrainTotalAll = d.achTrainTotalAll;
+        if(typeof d.achTrainMaxSinglePet==='number') achTrainMaxSinglePet = d.achTrainMaxSinglePet;
+        if(typeof d.achFinalPhaseReachedCount==='number') achFinalPhaseReachedCount = d.achFinalPhaseReachedCount;
+        if(typeof d.achFuseShinyInheritFirst==='boolean') achFuseShinyInheritFirst = d.achFuseShinyInheritFirst;
+        if(typeof d.achEnrageBossKilled==='boolean') achEnrageBossKilled = d.achEnrageBossKilled;
+        if(typeof d.achGauntletFirstRoomWin==='boolean') achGauntletFirstRoomWin = d.achGauntletFirstRoomWin;
+        if(typeof d.achGauntletNormalFullClear==='boolean') achGauntletNormalFullClear = d.achGauntletNormalFullClear;
+        if(typeof d.achGauntletHardFullClear==='boolean') achGauntletHardFullClear = d.achGauntletHardFullClear;
+        if(Array.isArray(d.achModesPlayed)) achModesPlayed = new Set(d.achModesPlayed);
         _playTimeRef = Date.now();
         // backfill from current pets/storage in case save predates this feature
         pets.concat(storage).forEach(p=>{ if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey); if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey); });
@@ -5300,6 +5517,17 @@ function flashWeaponRegen(bs) {
 function endBattle(won) {
   if(!battleState || battleState.ended) return; // guard against a stray auto-battle tick re-firing endBattle during the delayed next-enemy transition
   battleState.ended = true; // idempotency only — do NOT also force battleState.waiting here: if any transition path below doesn't fully replace battleState, a stuck `waiting:true` would permanently block doTurn() on both sides
+  // ─ Achievement tracking (uniform across every mode/every battle end) ─
+  const achMode = battleState.isDuelBattle ? 'duel' : battleState.isVsBattle ? 'vs' : battleState.isTowerBattle ? 'tower' : battleState.isRaidBattle ? 'raid' : battleState.isGauntletBattle ? 'gauntlet' : 'scout';
+  if(['tower','raid','gauntlet','vs','duel'].includes(achMode)) achModesPlayed.add(achMode);
+  if(won) {
+    achTotalWinsAll++;
+    achWinStreak++;
+    if(achWinStreak > achWinStreakBest) achWinStreakBest = achWinStreak;
+    if(creature.hp === creature.maxHp) achPerfectWinCount++;
+  } else {
+    achWinStreak = 0;
+  }
   if(won) { SFX.victory(); } else { SFX.death(); setTimeout(()=>SFX.defeat(), 600); }
   battleState.won = won;
   logAnalyticsEvent('battle_end', {
@@ -5366,6 +5594,7 @@ function endBattle(won) {
       saveGame(); state='gauntlet'; gauntletScreen='map'; battleState=null; render(); return;
     }
     // Won this pet — advance within the room's 4-pet team
+    if(battleState.gauntletEnrage) achEnrageBossKilled = true;
     gauntletEnemyIdx++;
     if(gauntletEnemyIdx < gauntletRooms[gauntletRoomIdx].pets.length) {
       const _roomIdx = gauntletRoomIdx, _enemyIdx = gauntletEnemyIdx;
@@ -5373,6 +5602,10 @@ function endBattle(won) {
       return;
     }
     // Room cleared — grant reward once, advance checkpoint
+    achGauntletFirstRoomWin = true;
+    if(gauntletRoomIdx + 1 >= gauntletRooms.length) {
+      if(gauntletTier==='hard') achGauntletHardFullClear = true; else achGauntletNormalFullClear = true;
+    }
     const room = gauntletRooms[gauntletRoomIdx];
     const rewardGranted = !gauntletClaimed[gauntletRoomIdx];
     let rewardActual = {};
@@ -6070,6 +6303,8 @@ function doTrain(type) {
   if(left <= 0) { scoutToast = T(`⛔ Train ครบ ${trainCap()} ครั้งแล้ว ชนะบอสเพื่อ Train เพิ่ม`,`⛔ Train limit ${trainCap()} reached! Beat the boss for more`); render(); return; }
   gold -= cost;
   pet.trainCount = getTrainCount(pet) + 1;
+  achTrainTotalAll++;
+  if(pet.trainCount > achTrainMaxSinglePet) achTrainMaxSinglePet = pet.trainCount;
   if(!pet.trainBonuses) pet.trainBonuses = {hp:0,atk:0,spd:0,def:0};
   if(type==='hp') {
     pet.maxHp += t.gain;
@@ -9392,6 +9627,7 @@ screenContent.addEventListener('click', e=>{
       if(stoneIdx<0 || gold<REBIRTH_GOLD_COST) { render(); return; }
       if(inventory[stoneIdx].qty<=1) inventory.splice(stoneIdx,1); else inventory[stoneIdx].qty--;
       gold -= REBIRTH_GOLD_COST;
+      achRebirthUsedCount++;
       if(!pet.rebirthBonus) pet.rebirthBonus={atk:0,def:0,spd:0,maxHp:0};
       pet.rebirthBonus.atk   += Math.round(pet.atk   * 0.25);
       pet.rebirthBonus.def   += Math.round(pet.def   * 0.25);
@@ -9459,6 +9695,8 @@ screenContent.addEventListener('click', e=>{
       gold -= FUSION_GOLD_COST;
       // Fusion Egg never stacks (each carries its own inherited data) — push directly, bypass addItemToInventory's merge-by-type
       inventory.push({type:'fusion_egg', qty:1, inheritedPassive, fusionBonus, shinyInherit});
+      achFuseCount++;
+      if(shinyInherit) achFuseShinyInheritFirst = true;
       fusionPickA = null; fusionPickB = null;
       syncCreature();
       SFX.evolve();
@@ -9564,6 +9802,13 @@ screenContent.addEventListener('click', e=>{
     if(collTab) { SFX.click(); collectionTab=collTab.dataset.colltab; collectionDetailKey=null; render(); return; }
     const collDetail = el.closest('[data-colldetail]');
     if(collDetail) { SFX.click(); collectionDetailKey=collDetail.dataset.colldetail; render(); return; }
+    const claimAch = el.closest('[data-claimach]');
+    if(claimAch) {
+      SFX.click();
+      const parts = claimAchievement(Number(claimAch.dataset.claimach));
+      if(parts) scoutToast = `🏆 ${T('รับรางวัลสำเร็จ!','Achievement claimed!')} ${parts.join(' ')}`;
+      render(); return;
+    }
     if(el.closest('[data-colldetailback]')) { SFX.click(); collectionDetailKey=null; render(); return; }
     // Remove from storage
     const storageRemove = el.closest('[data-storageremove]');
@@ -10032,6 +10277,7 @@ screenContent.addEventListener('click', e=>{
       if(gold < price) { scoutToast=T('💰 Gold ไม่พอ!','💰 Not enough Gold!'); render(); return; }
       gold -= price;
       secretShopBought[type] = bought + 1;
+      achSecretShopPurchases++;
       addItemToInventory(type);
       scoutToast=T(`✅ ซื้อ ${ITEMS[type]?.icon||''} ${ITEMS[type]?.name||type} สำเร็จ!`,`✅ Bought ${ITEMS[type]?.icon||''} ${ITEMS[type]?.name||type}!`);
       saveGame(); render(); return;
@@ -10742,8 +10988,8 @@ function renderParty() {
 
     const tabBar = `
       <div style="display:flex;gap:6px;padding:8px 12px 0">
-        ${[['pet','🐾','PET'],['weapon','🗡️','WEAPON'],['artifact','🔮','ARTIFACT']].map(([k,icon,lbl])=>`
-          <div data-colltab="${k}" style="flex:1;padding:6px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${collectionTab===k?'rgba(160,144,224,0.18)':'#0e0e1e'};border:1px solid ${collectionTab===k?'#a090e0':'#2a2a4a'};color:${collectionTab===k?'#c0b0ff':'#6a6a8a'}">${icon} ${lbl}</div>
+        ${[['pet','🐾','PET'],['weapon','🗡️','WEAPON'],['artifact','🔮','ARTIFACT'],['achievement','🏆','ACH.']].map(([k,icon,lbl])=>`
+          <div data-colltab="${k}" style="position:relative;flex:1;padding:6px;border-radius:8px;text-align:center;cursor:pointer;font-family:Kanit,sans-serif;font-size:11px;background:${collectionTab===k?'rgba(160,144,224,0.18)':'#0e0e1e'};border:1px solid ${collectionTab===k?'#a090e0':'#2a2a4a'};color:${collectionTab===k?'#c0b0ff':'#6a6a8a'}">${icon} ${lbl}${k==='achievement'&&achPendingCount()>0?`<span style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff4444;color:#fff;font-size:9px;line-height:16px;font-weight:700">${achPendingCount()}</span>`:''}</div>
         `).join('')}
       </div>`;
 
@@ -10805,6 +11051,45 @@ function renderParty() {
         return `<div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── ${label} ──</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${cards}</div>`;
       };
       bodyHtml = gradeSection('N','NORMAL') + gradeSection('R','RARE') + gradeSection('E','EPIC');
+    } else if(collectionTab === 'achievement') {
+      checkAchievements();
+      const unlockedCount = ACHIEVEMENTS.filter(a=>achievementStatus[a.id]).length;
+      countHtml = `${unlockedCount}/${ACHIEVEMENTS.length}`;
+      const rewardIcons = (r) => {
+        const parts = [];
+        if(r.gold) parts.push(`💰${r.gold.toLocaleString()}`);
+        if(r.essence) parts.push(`${ITEMS.essence.icon}×${r.essence}`);
+        if(r.rebirthStone) parts.push(`🔮×${r.rebirthStone}`);
+        if(r.shinyEgg) parts.push(`✨🥚×${r.shinyEgg}`);
+        if(r.mysteryEgg) parts.push(`🥚×${r.mysteryEgg}`);
+        if(r.weaponBoxGrade) parts.push(`⚔️[${r.weaponBoxGrade}]`);
+        if(r.artifactBoxGrade) parts.push(`📦[${r.artifactBoxGrade}]`);
+        if(r.artifactBoxN) parts.push(`📦×${r.artifactBoxN}`);
+        return parts.join(' ');
+      };
+      const catOrder = ['Collection','Fusion & Progression','Combat: Tower','Combat: Raid','Combat: Gauntlet Normal','Combat: Gauntlet Hard','Combat: VS Mode','Combat: Duel (PvP)','Combat: Overall','Combat: Scout','Economy','Skill / Challenge','Train','Misc / Retention'];
+      const catSection = (cat) => {
+        const items = ACHIEVEMENTS.filter(a=>a.cat===cat);
+        if(!items.length) return '';
+        const cards = items.map(a => {
+          const st = achievementStatus[a.id] || 'locked';
+          const cur = achMetric(a.metric);
+          const showProgress = !a.oneTime && st==='locked';
+          const col = st==='claimed' ? '#4a4a7a' : st==='unlocked' ? '#ffd700' : '#6a5a9a';
+          return `
+          <div style="padding:8px;border-radius:10px;background:#080810;border:1px solid ${st==='unlocked'?'#ffd700':st==='claimed'?'#2a2a4a':'#181828'};display:flex;gap:8px;align-items:center">
+            <div style="flex-shrink:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:20px">${st==='claimed'?'✅':st==='unlocked'?'🏆':'🔒'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:${col}">${a.title}</div>
+              <div style="font-size:9px;color:#5858a0;margin-top:1px">${a.cond}${showProgress?` (${cur}/${a.target})`:''}</div>
+              <div style="font-size:9px;color:#8878b8;margin-top:1px">${T('รางวัล','Reward')}: ${rewardIcons(a.reward)}</div>
+            </div>
+            ${st==='unlocked'?`<div data-claimach="${a.id}" style="flex-shrink:0;padding:6px 10px;border-radius:8px;background:linear-gradient(135deg,#8a6a00,#cc9900);border:1px solid #ffd700;font-family:Kanit,sans-serif;font-size:10px;color:#fff;cursor:pointer;font-weight:700">${T('รับ','CLAIM')}</div>`:''}
+          </div>`;
+        }).join('');
+        return `<div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── ${cat.toUpperCase()} ──</div><div style="display:flex;flex-direction:column;gap:6px">${cards}</div>`;
+      };
+      bodyHtml = catOrder.map(catSection).join('');
     } else { // artifact
       const artKeys = [...ARTIFACT_POOL.N, ...ARTIFACT_POOL.R, ...ARTIFACT_POOL.E];
       countHtml = `${seenArtifacts.size}/${artKeys.length}`;
@@ -10999,7 +11284,7 @@ function renderParty() {
       <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto">
         ${partyViewTab==='party' ? slotHtml : partyViewTab==='storage' ? storageHtml : partyViewTab==='rebirth' ? rebirthHtml : partyViewTab==='fusion' ? fusionHtml : evo2Html}
       </div>
-      <div data-opencollection style="position:absolute;bottom:4px;right:4px;padding:5px 10px;border-radius:20px;background:#0d0d20;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:10px;color:#6858a0;cursor:pointer;z-index:10">📖 COLLECTION</div>
+      <div data-opencollection style="position:absolute;bottom:4px;right:4px;padding:5px 10px;border-radius:20px;background:#0d0d20;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:10px;color:#6858a0;cursor:pointer;z-index:10">📖 COLLECTION${achPendingCount()>0?`<span style="position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff4444;color:#fff;font-size:9px;line-height:16px;font-weight:700">${achPendingCount()}</span>`:''}</div>
       ${collectionOpen ? collectionHtml : ''}
       ${storageDetailOverlay}
       ${partyRemoveConfirm!==null?`

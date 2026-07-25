@@ -128,17 +128,13 @@ section.section-bg > * { position:relative; z-index:1; }
 .mode-card-info .card-desc { font-size:14px; }
 .mode-card-icon { font-size:40px; margin-bottom:10px; }
 
-/* Training bars */
-.train-visual {
-  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
-  padding:30px; margin-top:20px;
-}
-.train-bar { width:200px; height:12px; border-radius:6px; background:rgba(255,255,255,0.05); overflow:hidden; }
-.train-fill { height:100%; border-radius:6px; transition:width 1.5s ease; }
-.train-fill.hp { background:linear-gradient(90deg, #ff4466, #ff6688); }
-.train-fill.atk { background:linear-gradient(90deg, #ff8800, #ffaa44); }
-.train-fill.def { background:linear-gradient(90deg, #44aaff, #66ccff); }
-.train-fill.spd { background:linear-gradient(90deg, #ffdd44, #ffef88); }
+/* Radar Chart */
+.radar-wrap { display:flex; justify-content:center; padding:10px 0; }
+.radar-chart { width:100%; max-width:220px; filter:drop-shadow(0 0 12px rgba(255,140,0,0.15)); }
+.radar-data { fill:rgba(255,140,0,0.12); stroke:#ff8c00; stroke-width:2; }
+.radar-grid { fill:none; stroke:rgba(255,255,255,0.06); }
+.radar-axis { stroke:rgba(255,255,255,0.06); }
+.radar-dot { fill:#ff8c00; }
 
 /* Evolve Flow Chart */
 .evo-flow { display:flex; flex-direction:column; align-items:center; margin-top:20px; }
@@ -377,14 +373,28 @@ footer {
       <div class="card-icon">📈</div>
       <div class="card-title">เพิ่มค่าพลังได้ไม่จำกัด</div>
       <div class="card-desc">ต่อสู้เพื่อสะสมค่าประสบการณ์ เพิ่ม HP, ATK, DEF, SPD ของแต่ละตัวตามสไตล์ที่คุณต้องการ</div>
-      <div class="train-visual">
-        <div style="text-align:right;font-size:11px;color:#8878b8;line-height:2.2">❤️HP<br>⚔️ATK<br>🛡️DEF<br>💨SPD</div>
-        <div style="line-height:2.2">
-          <div class="train-bar"><div class="train-fill hp" style="width:75%"></div></div>
-          <div class="train-bar"><div class="train-fill atk" style="width:60%"></div></div>
-          <div class="train-bar"><div class="train-fill def" style="width:45%"></div></div>
-          <div class="train-bar"><div class="train-fill spd" style="width:80%"></div></div>
-        </div>
+      <div class="radar-wrap">
+        <svg viewBox="0 0 200 200" class="radar-chart">
+          <!-- Grid -->
+          <polygon points="100,81 119,100 100,119 81,100" class="radar-grid"/>
+          <polygon points="100,63 138,100 100,138 63,100" class="radar-grid"/>
+          <polygon points="100,44 156,100 100,156 44,100" class="radar-grid"/>
+          <polygon points="100,25 175,100 100,175 25,100" class="radar-grid"/>
+          <!-- Axes -->
+          <line x1="100" y1="25" x2="100" y2="175" class="radar-axis"/>
+          <line x1="25" y1="100" x2="175" y2="100" class="radar-axis"/>
+          <!-- Data -->
+          <polygon points="100,44 145,100 100,134 40,100" class="radar-data"/>
+          <circle cx="100" cy="44" r="4" class="radar-dot"/>
+          <circle cx="145" cy="100" r="4" class="radar-dot"/>
+          <circle cx="100" cy="134" r="4" class="radar-dot"/>
+          <circle cx="40" cy="100" r="4" class="radar-dot"/>
+          <!-- Labels -->
+          <text x="100" y="16" text-anchor="middle" fill="#ff4466" font-size="13" font-weight="700">❤️ HP</text>
+          <text x="182" y="105" text-anchor="start" fill="#ff8800" font-size="13" font-weight="700">⚔️ ATK</text>
+          <text x="100" y="194" text-anchor="middle" fill="#44aaff" font-size="13" font-weight="700">🛡️ DEF</text>
+          <text x="18" y="105" text-anchor="end" fill="#ffdd44" font-size="13" font-weight="700">💨 SPD</text>
+        </svg>
       </div>
     </div>
     <div class="feature-card fade-up delay-2" style="--accent:#ffaa00">

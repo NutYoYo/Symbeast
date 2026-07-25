@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symbeast — Collect • Evolve • Fusion • Battle</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #06060f;
+  color: #e0d8f0;
+  font-family: 'Kanit', sans-serif;
+  overflow-x: hidden;
+}
+/* Stars */
+.stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
+.star { position:absolute; background:#fff; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; animation-delay:var(--dl); }
+@keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:0.9} }
+
+/* Hero */
+.hero {
+  position:relative; min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center; padding:40px 20px;
+  background:radial-gradient(ellipse at 50% 30%, rgba(120,80,200,0.15) 0%, transparent 70%),
+             radial-gradient(ellipse at 20% 80%, rgba(255,180,40,0.08) 0%, transparent 50%);
+}
+.hero-bg { position:absolute; inset:0; z-index:0; opacity:0.25; }
+.hero-bg img { width:100%; height:100%; object-fit:cover; filter:blur(2px) brightness(0.6); }
+.hero-content { position:relative; z-index:2; }
+.hero-logo {
+  font-size:clamp(48px,10vw,96px); font-weight:900; letter-spacing:4px;
+  background:linear-gradient(180deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 40px rgba(255,180,0,0.4));
+  margin-bottom:8px;
+}
+.hero-sub {
+  font-size:clamp(14px,2.5vw,20px); font-weight:300; letter-spacing:8px;
+  color:#a088c8; margin-bottom:40px; text-transform:uppercase;
+}
+.hero-tagline {
+  font-size:clamp(16px,2vw,24px); color:#c0b0e0; max-width:600px; margin:0 auto 50px;
+  line-height:1.6; font-weight:300;
+}
+
+/* Monster showcase row */
+.monster-row {
+  display:flex; gap:clamp(8px,2vw,24px); justify-content:center; flex-wrap:wrap;
+  margin-bottom:60px;
+}
+.monster-row img {
+  height:clamp(60px,12vw,130px); filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  transition:transform 0.4s, filter 0.4s; animation:float var(--fd) ease-in-out infinite;
+  animation-delay:var(--fdl);
+}
+.monster-row img:hover { transform:translateY(-12px) scale(1.15); filter:drop-shadow(0 16px 40px rgba(255,180,0,0.5)); }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+.cta-btn {
+  display:inline-block; padding:16px 48px; font-size:18px; font-weight:700;
+  background:linear-gradient(135deg, #ff8c00, #ffd700); color:#0a0a1a;
+  border-radius:50px; text-decoration:none; letter-spacing:2px;
+  transition:all 0.3s; box-shadow:0 8px 32px rgba(255,140,0,0.3);
+  cursor:pointer;
+}
+.cta-btn:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(255,180,0,0.5); }
+
+/* Sections */
+section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; margin:0 auto; }
+.section-tag { font-size:13px; letter-spacing:6px; color:#ff8c00; text-transform:uppercase; margin-bottom:8px; }
+.section-title { font-size:clamp(32px,5vw,56px); font-weight:900; margin-bottom:16px; line-height:1.1; }
+.section-desc { font-size:16px; color:#8878b8; max-width:600px; line-height:1.7; margin-bottom:40px; font-weight:300; }
+
+/* Feature cards */
+.feature-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:24px; }
+.feature-card {
+  background:linear-gradient(135deg, rgba(40,20,60,0.6), rgba(20,10,40,0.8));
+  border:1px solid rgba(160,120,220,0.15); border-radius:20px; padding:32px;
+  backdrop-filter:blur(12px); transition:all 0.4s; position:relative; overflow:hidden;
+}
+.feature-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, transparent, var(--accent, #ff8c00), transparent);
+}
+.feature-card:hover { transform:translateY(-6px); border-color:rgba(200,160,255,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.4); }
+.card-icon { font-size:48px; margin-bottom:16px; }
+.card-title { font-size:22px; font-weight:700; margin-bottom:10px; color:#e8d8ff; }
+.card-desc { font-size:14px; color:#8878b8; line-height:1.6; font-weight:300; }
+.card-imgs { display:flex; gap:12px; margin-top:20px; justify-content:center; flex-wrap:wrap; }
+.card-imgs img {
+  height:80px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  transition:transform 0.3s;
+}
+.card-imgs img:hover { transform:scale(1.1); }
+
+/* Shiny showcase */
+.shiny-showcase {
+  display:flex; gap:40px; align-items:center; justify-content:center; flex-wrap:wrap;
+}
+.shiny-card {
+  text-align:center; padding:40px; border-radius:24px;
+  background:linear-gradient(135deg, rgba(30,15,50,0.8), rgba(15,5,30,0.9));
+  border:1px solid rgba(150,100,220,0.2); position:relative; overflow:hidden;
+  transition:transform 0.5s;
+}
+.shiny-card:hover { transform:scale(1.03); }
+.shiny-card.normal { --glow:rgba(160,140,200,0.3); }
+.shiny-card.shiny { --glow:rgba(255,215,0,0.4); }
+.shiny-card img { height:140px; filter:drop-shadow(0 8px 24px var(--glow)); }
+.shiny-badge {
+  display:inline-block; padding:4px 16px; border-radius:20px; font-size:13px; font-weight:700;
+  margin-top:12px; letter-spacing:2px;
+}
+.shiny-badge.normal { background:rgba(160,140,200,0.15); color:#a088c8; }
+.shiny-badge.shiny { background:linear-gradient(135deg, rgba(255,200,0,0.2), rgba(255,140,0,0.2)); color:#ffd700; }
+
+/* Ghost secret section */
+.ghost-section { background:linear-gradient(135deg, rgba(30,15,50,0.6), rgba(10,5,25,0.8)); border-radius:32px; padding:60px 40px; position:relative; overflow:hidden; border:1px solid rgba(255,215,0,0.15); }
+.ghost-section::after {
+  content:'?'; position:absolute; right:40px; top:50%; transform:translateY(-50%);
+  font-size:200px; font-weight:900; color:rgba(255,215,0,0.03); pointer-events:none;
+}
+.ghost-grid { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-top:30px; }
+.ghost-grid img { height:70px; filter:drop-shadow(0 4px 12px rgba(255,215,0,0.2)); transition:transform 0.3s; }
+.ghost-grid img:hover { transform:translateY(-6px) scale(1.1); filter:drop-shadow(0 8px 20px rgba(255,215,0,0.4)); }
+
+/* Battle modes */
+.mode-row { display:flex; gap:16px; flex-wrap:wrap; }
+.mode-chip {
+  padding:10px 24px; border-radius:30px; font-size:14px; font-weight:600;
+  border:1px solid rgba(160,120,220,0.25); background:rgba(30,15,50,0.6);
+  color:#c0b0e0; letter-spacing:1px; transition:all 0.3s;
+}
+.mode-chip:hover { background:rgba(255,140,0,0.1); border-color:rgba(255,140,0,0.4); color:#ffd700; }
+
+/* Footer */
+footer {
+  text-align:center; padding:60px 20px; position:relative; z-index:1;
+  border-top:1px solid rgba(160,120,220,0.1);
+}
+.footer-logo { font-size:36px; font-weight:900; color:#ffd700; margin-bottom:8px; letter-spacing:4px; }
+.footer-link { color:#8878b8; text-decoration:none; font-size:14px; transition:color 0.3s; }
+.footer-link:hover { color:#ffd700; }
+
+/* Fade animations */
+.fade-up {
+  opacity:0; transform:translateY(40px);
+  animation:fadeInUp 0.8s ease forwards;
+  animation-play-state:paused;
+}
+.fade-up.visible { animation-play-state:running; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+
+.delay-1 { animation-delay:0.1s; } .delay-2 { animation-delay:0.2s; }
+.delay-3 { animation-delay:0.3s; } .delay-4 { animation-delay:0.4s; }
+
+/* Divider */
+.divider {
+  width:60px; height:3px; background:linear-gradient(90deg, #ff8c00, #ffd700, #ff8c00);
+  border-radius:2px; margin:0 auto 0;
+}
+
+@media (max-width:768px) {
+  .feature-grid { grid-template-columns:1fr; }
+  .ghost-grid img { height:50px; }
+  .card-imgs img { height:60px; }
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-bg"><img src="Battle Scene/Title-symbeast.png" alt=""></div>
+  <div class="hero-content">
+    <h1 class="hero-logo">SYMBEAST</h1>
+    <p class="hero-sub">Collect • Evolve • Fusion • Battle</p>
+    <p class="hero-tagline">เกมแนวสะสมมอนสเตอร์และต่อสู้ ที่มีระบบวิวัฒนาการล้ำลึก ฟิวชั่น และตัวละครลับให้ค้นหา</p>
+    <div class="monster-row">
+      <img src="Pet/LARVA.png" alt="LARVA" style="--fd:3s;--fdl:0s">
+      <img src="Pet/CHAMPION.png" alt="CHAMPION" style="--fd:3.5s;--fdl:0.4s">
+      <img src="Pet/KING-CHAMPION.png" alt="KING CHAMPION" style="--fd:2.8s;--fdl:0.8s">
+      <img src="Pet/DARK-SPECTER.png" alt="DARK SPECTER" style="--fd:3.2s;--fdl:0.2s">
+      <img src="Pet/KAIJU-BRAWLER.png" alt="KAIJU BRAWLER" style="--fd:3.6s;--fdl:0.6s">
+      <img src="Pet/PHOENIX-GHOST.png" alt="PHOENIX GHOST" style="--fd:3s;--fdl:1s">
+    </div>
+    <a href="index.html" class="cta-btn">PLAY NOW</a>
+  </div>
+</header>
+
+<!-- Evolve System -->
+<section>
+  <div class="section-tag fade-up">Core System</div>
+  <h2 class="section-title fade-up delay-1">EVOLVE <span style="color:#ff8c00">SYSTEM</span></h2>
+  <p class="section-desc fade-up delay-2">
+    เริ่มจาก LARVA สะสม Symbol 3 อันเพื่อวิวัฒนาการเป็น 8 ร่าง Evolve I
+    และพัฒนาเป็น Evolve II ได้ถึง <strong style="color:#ffd700">40+ ร่าง</strong>
+    แบ่งเป็น 4 สาย — FIST, WING, SHIELD, BALANCE
+  </p>
+  <div class="feature-grid">
+    <div class="feature-card fade-up delay-1" style="--accent:#ff4444">
+      <div class="card-icon">👊</div>
+      <div class="card-title">FIST — สายโจมตี</div>
+      <div class="card-desc">พลังโจมตีสูง คริติคอลรุนแรง สายที่เน้นดาเมจเป็นหลัก</div>
+      <div class="card-imgs">
+        <img src="Pet/BRAWLER.png" alt=""><img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt="">
+      </div>
+    </div>
+    <div class="feature-card fade-up delay-2" style="--accent:#44ccff">
+      <div class="card-icon">🪽</div>
+      <div class="card-title">WING — สายความเร็ว</div>
+      <div class="card-desc">SPD สูงสุด โอกาสหลบและสตัน โจมตีหลายครั้งในเทิร์นเดียว</div>
+      <div class="card-imgs">
+        <img src="Pet/BLITZ.png" alt=""><img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt="">
+      </div>
+    </div>
+    <div class="feature-card fade-up delay-3" style="--accent:#44ff44">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">SHIELD — สายป้องกัน</div>
+      <div class="card-desc">HP สูง ลดดาเมจ สะท้อนกลับ ศัตรูปราบยากที่สุด</div>
+      <div class="card-imgs">
+        <img src="Pet/BASTION.png" alt=""><img src="Pet/IRON-BASTION.png" alt=""><img src="Pet/GOLEM-BASTION.png" alt="">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Fusion -->
+<section>
+  <div class="section-tag fade-up">Gameplay</div>
+  <h2 class="section-title fade-up delay-1"><span style="color:#ff8c00">FUSION</span> SYSTEM</h2>
+  <p class="section-desc fade-up delay-2">
+    รวมมอนสเตอร์ Evolve II 2 ตัว สร้าง <strong style="color:#ffd700">Fusion Egg</strong>
+    สืบทอด Echo Passive จากพ่อแม่ และมีโอกาสสืบทอด Shiny!<br>
+    คราฟต์มอนสเตอร์ในฝันที่แข็งแกร่งที่สุด
+  </p>
+  <div style="display:flex;gap:30px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:30px">
+    <div class="fade-up delay-1" style="text-align:center">
+      <img src="Pet/FIGHTER-PANDA.png" style="height:120px;filter:drop-shadow(0 8px 24px rgba(255,140,0,0.3))"><br>
+      <span style="font-size:13px;color:#8878b8">Parent A</span>
+    </div>
+    <div class="fade-up delay-2" style="font-size:40px;color:#ff8c00">+</div>
+    <div class="fade-up delay-3" style="text-align:center">
+      <img src="Pet/ARMOR-PANDA.png" style="height:120px;filter:drop-shadow(0 8px 24px rgba(100,160,255,0.3))"><br>
+      <span style="font-size:13px;color:#8878b8">Parent B</span>
+    </div>
+    <div class="fade-up delay-2" style="font-size:40px;color:#ff8c00">→</div>
+    <div class="fade-up delay-4" style="text-align:center">
+      <div style="width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#ffd70022,#ff8c0011);display:flex;align-items:center;justify-content:center;font-size:60px;">🥚</div>
+      <span style="font-size:13px;color:#ffd700;font-weight:600">Fusion Egg</span>
+    </div>
+  </div>
+</section>
+
+<!-- Shiny -->
+<section>
+  <div class="section-tag fade-up">Rarity</div>
+  <h2 class="section-title fade-up delay-1">SHINY <span style="color:#ffd700">RARITY</span></h2>
+  <p class="section-desc fade-up delay-2">
+    มอนสเตอร์ทุกตัวมีโอกาสเกิดเป็น Shiny — สีพิเศษที่หายากและค่าสถานะสูงกว่า
+    เพิ่มความภูมิใจในการสะสมและความแข็งแกร่งในการต่อสู้
+  </p>
+  <div class="shiny-showcase">
+    <div class="shiny-card normal fade-up delay-1">
+      <img src="Pet/CHAMPION.png" alt="Normal">
+      <div class="shiny-badge normal">NORMAL</div>
+    </div>
+    <div class="shiny-card shiny fade-up delay-2">
+      <img src="Pet/PHOENIX-GHOST.png" alt="Shiny" style="filter:drop-shadow(0 8px 24px rgba(255,215,0,0.5)) hue-rotate(-30deg) saturate(1.5)">
+      <div class="shiny-badge shiny">✦ SHINY ✦</div>
+    </div>
+    <div class="shiny-card normal fade-up delay-3">
+      <img src="Pet/GOLEM-BASTION.png" alt="Normal">
+      <div class="shiny-badge normal">NORMAL</div>
+    </div>
+  </div>
+</section>
+
+<!-- Ghost Secret -->
+<section>
+  <div class="ghost-section fade-up">
+    <div class="section-tag">Secret</div>
+    <h2 class="section-title" style="color:#ffd700">ตัวละครลับ <span style="font-size:24px">👻</span></h2>
+    <p class="section-desc" style="color:#c0b0e0">
+      <strong style="color:#ffd700">มีโอกาสสุ่มได้จากการ Evolve</strong> — ตัวละครลับที่สามารถแปลงร่างได้
+      <strong style="color:#ffd700">24 รูปแบบ</strong> ครอบคลุมทั้ง 4 สาย FIST • WING • SHIELD • BALANCE
+    </p>
+    <div class="ghost-grid">
+      <img src="Pet/RAGEBEAR-GHOST.png" alt=""><img src="Pet/LION-GHOST.png" alt="">
+      <img src="Pet/TIGER-GHOST.png" alt=""><img src="Pet/SHARK-GHOST.png" alt="">
+      <img src="Pet/PHOENIX-GHOST.png" alt=""><img src="Pet/DRAGON-GHOST.png" alt="">
+      <img src="Pet/UNICORN-GHOST.png" alt=""><img src="Pet/PANDA-GHOST.png" alt="">
+      <img src="Pet/OCTOPUS-GHOST.png" alt=""><img src="Pet/GRIFFON-GHOST.png" alt="">
+      <img src="Pet/OWL-GHOST.png" alt=""><img src="Pet/CAT-GHOST.png" alt="">
+    </div>
+  </div>
+</section>
+
+<!-- Battle Modes -->
+<section>
+  <div class="section-tag fade-up">Modes</div>
+  <h2 class="section-title fade-up delay-1">BATTLE <span style="color:#ff8c00">MODES</span></h2>
+  <p class="section-desc fade-up delay-2">
+    ต่อสู้ในโหมดที่หลากหลาย ทดสอบความแข็งแกร่งของทีมคุณ
+  </p>
+  <div class="feature-grid">
+    <div class="feature-card fade-up delay-1" style="--accent:#ff4444">
+      <div class="card-icon">⚔️</div>
+      <div class="card-title">VS Mode</div>
+      <div class="card-desc">ต่อสู้กับเพื่อนแบบเรียลไทม์ — วัดทีมใครเจ๋งกว่ากัน</div>
+    </div>
+    <div class="feature-card fade-up delay-2" style="--accent:#ff8c00">
+      <div class="card-icon">🏆</div>
+      <div class="card-title">Champion Gauntlet</div>
+      <div class="card-desc">โหมด Endgame สไตล์ Elite Four — 2 Tier (Normal / Hard) ปลดล็อกหลัง Hell Mode</div>
+    </div>
+    <div class="feature-card fade-up delay-3" style="--accent:#cc44ff">
+      <div class="card-icon">🔥</div>
+      <div class="card-title">Hell Mode</div>
+      <div class="card-desc">ศัตรูระดับสูง ทดสอบขีดจำกัดของทีมคุณ</div>
+    </div>
+  </div>
+  <div class="mode-row fade-up delay-4" style="justify-content:center;margin-top:24px">
+    <span class="mode-chip">⚔️ VS Mode</span>
+    <span class="mode-chip">🏆 Champion Gauntlet</span>
+    <span class="mode-chip">🔥 Hell Mode</span>
+    <span class="mode-chip">🗼 Tower</span>
+    <span class="mode-chip">🎯 Achievement (70+)</span>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">SYMBEAST</div>
+  <p style="color:#8878b8;font-size:14px;margin-bottom:8px">Collect • Evolve • Fusion • Battle</p>
+  <a href="index.html" class="footer-link">Play Now →</a>
+</footer>
+
+<script>
+// Stars
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const x=Math.random()*100, y=Math.random()*100;
+    const size=Math.random()*2+1;
+    s.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;--d:${2+Math.random()*4}s;--dl:${Math.random()*4}s`;
+    c.appendChild(s);
+  }
+})();
+
+// Scroll fade
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

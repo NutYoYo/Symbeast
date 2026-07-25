@@ -13,7 +13,6 @@ body {
   font-family: 'Kanit', sans-serif;
   overflow-x: hidden;
 }
-/* Stars */
 .stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
 .star { position:absolute; background:#fff; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; animation-delay:var(--dl); }
 @keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:0.9} }
@@ -40,7 +39,7 @@ body {
   color:#a088c8; margin-bottom:40px; text-transform:uppercase;
 }
 .hero-tagline {
-  font-size:clamp(16px,2vw,24px); color:#c0b0e0; max-width:600px; margin:0 auto 50px;
+  font-size:clamp(16px,2vw,24px); color:#c0b0e0; max-width:720px; margin:0 auto 50px;
   line-height:1.6; font-weight:300;
 }
 
@@ -70,10 +69,12 @@ body {
 section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; margin:0 auto; }
 .section-tag { font-size:13px; letter-spacing:6px; color:#ff8c00; text-transform:uppercase; margin-bottom:8px; }
 .section-title { font-size:clamp(32px,5vw,56px); font-weight:900; margin-bottom:16px; line-height:1.1; }
-.section-desc { font-size:16px; color:#8878b8; max-width:600px; line-height:1.7; margin-bottom:40px; font-weight:300; }
+.section-desc { font-size:16px; color:#8878b8; max-width:700px; line-height:1.7; margin-bottom:40px; font-weight:300; }
 
 /* Feature cards */
 .feature-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:24px; }
+.feature-grid.col3 { grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+.feature-grid.col4 { grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
 .feature-card {
   background:linear-gradient(135deg, rgba(40,20,60,0.6), rgba(20,10,40,0.8));
   border:1px solid rgba(160,120,220,0.15); border-radius:20px; padding:32px;
@@ -115,26 +116,78 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
 .shiny-badge.normal { background:rgba(160,140,200,0.15); color:#a088c8; }
 .shiny-badge.shiny { background:linear-gradient(135deg, rgba(255,200,0,0.2), rgba(255,140,0,0.2)); color:#ffd700; }
 
-/* Ghost secret section */
+/* Ghost section */
 .ghost-section { background:linear-gradient(135deg, rgba(30,15,50,0.6), rgba(10,5,25,0.8)); border-radius:32px; padding:60px 40px; position:relative; overflow:hidden; border:1px solid rgba(255,215,0,0.15); }
 .ghost-section::after {
   content:'?'; position:absolute; right:40px; top:50%; transform:translateY(-50%);
   font-size:200px; font-weight:900; color:rgba(255,215,0,0.03); pointer-events:none;
 }
-.ghost-grid { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-top:30px; }
-.ghost-grid img { height:70px; filter:drop-shadow(0 4px 12px rgba(255,215,0,0.2)); transition:transform 0.3s; }
-.ghost-grid img:hover { transform:translateY(-6px) scale(1.1); filter:drop-shadow(0 8px 20px rgba(255,215,0,0.4)); }
-
-/* Battle modes */
-.mode-row { display:flex; gap:16px; flex-wrap:wrap; }
-.mode-chip {
-  padding:10px 24px; border-radius:30px; font-size:14px; font-weight:600;
-  border:1px solid rgba(160,120,220,0.25); background:rgba(30,15,50,0.6);
-  color:#c0b0e0; letter-spacing:1px; transition:all 0.3s;
+.ghost-row { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:30px; }
+.ghost-row img { height:80px; filter:drop-shadow(0 4px 16px rgba(255,215,0,0.25)); transition:transform 0.3s; }
+.ghost-row img:hover { transform:translateY(-6px) scale(1.1); filter:drop-shadow(0 8px 24px rgba(255,215,0,0.5)); }
+.ghost-silhouette {
+  width:72px; height:72px; border-radius:14px;
+  background:rgba(255,215,0,0.06); border:1px dashed rgba(255,215,0,0.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; transition:all 0.3s;
 }
-.mode-chip:hover { background:rgba(255,140,0,0.1); border-color:rgba(255,140,0,0.4); color:#ffd700; }
+.ghost-silhouette:hover { background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.4); }
+.ghost-count {
+  display:inline-block; padding:8px 20px; border-radius:20px;
+  background:rgba(255,215,0,0.08); color:#ffd700; font-size:13px;
+  font-weight:600; letter-spacing:2px; margin-top:20px;
+}
 
-/* Footer */
+/* Training */
+.train-visual {
+  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  padding:30px; margin-top:20px;
+}
+.train-bar {
+  width:200px; height:12px; border-radius:6px;
+  background:rgba(255,255,255,0.05); overflow:hidden;
+}
+.train-fill {
+  height:100%; border-radius:6px; transition:width 1.5s ease;
+}
+.train-fill.hp { background:linear-gradient(90deg, #ff4466, #ff6688); }
+.train-fill.atk { background:linear-gradient(90deg, #ff8800, #ffaa44); }
+.train-fill.def { background:linear-gradient(90deg, #44aaff, #66ccff); }
+.train-fill.spd { background:linear-gradient(90deg, #ffdd44, #ffef88); }
+
+/* Gauntlet */
+.gauntlet-path {
+  display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+  margin-top:24px;
+}
+.gauntlet-boss {
+  text-align:center; padding:16px 20px; border-radius:16px;
+  background:rgba(40,20,60,0.6); border:1px solid rgba(160,120,220,0.2);
+  transition:all 0.3s;
+}
+.gauntlet-boss:hover { transform:translateY(-4px); border-color:rgba(255,140,0,0.4); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+.gauntlet-boss img { height:64px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
+.gauntlet-arrow { font-size:24px; color:#ff8c00; }
+.gauntlet-final {
+  text-align:center; padding:20px 28px; border-radius:16px;
+  background:linear-gradient(135deg, rgba(255,140,0,0.1), rgba(255,40,40,0.08));
+  border:2px solid rgba(255,140,0,0.3);
+}
+.gauntlet-final img { height:80px; filter:drop-shadow(0 6px 20px rgba(255,100,0,0.5)); }
+
+/* Two column layout */
+.two-col {
+  display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;
+}
+.two-col-reverse { direction:rtl; }
+.two-col-reverse > * { direction:ltr; }
+
+/* Dividers */
+.section-divider {
+  width:80px; height:3px; background:linear-gradient(90deg, transparent, #ff8c00, transparent);
+  margin:0 auto 60px; border-radius:2px;
+}
+
 footer {
   text-align:center; padding:60px 20px; position:relative; z-index:1;
   border-top:1px solid rgba(160,120,220,0.1);
@@ -154,17 +207,17 @@ footer {
 
 .delay-1 { animation-delay:0.1s; } .delay-2 { animation-delay:0.2s; }
 .delay-3 { animation-delay:0.3s; } .delay-4 { animation-delay:0.4s; }
-
-/* Divider */
-.divider {
-  width:60px; height:3px; background:linear-gradient(90deg, #ff8c00, #ffd700, #ff8c00);
-  border-radius:2px; margin:0 auto 0;
-}
+.delay-5 { animation-delay:0.5s; } .delay-6 { animation-delay:0.6s; }
 
 @media (max-width:768px) {
   .feature-grid { grid-template-columns:1fr; }
-  .ghost-grid img { height:50px; }
+  .two-col { grid-template-columns:1fr; }
+  .ghost-row img { height:55px; }
   .card-imgs img { height:60px; }
+  .gauntlet-path { gap:4px; }
+  .gauntlet-boss { padding:12px; }
+  .gauntlet-boss img { height:48px; }
+  .gauntlet-final img { height:60px; }
 }
 </style>
 </head>
@@ -177,7 +230,7 @@ footer {
   <div class="hero-content">
     <h1 class="hero-logo">SYMBEAST</h1>
     <p class="hero-sub">Collect • Evolve • Fusion • Battle</p>
-    <p class="hero-tagline">เกมแนวสะสมมอนสเตอร์และต่อสู้ ที่มีระบบวิวัฒนาการล้ำลึก ฟิวชั่น และตัวละครลับให้ค้นหา</p>
+    <p class="hero-tagline">เกมแนวสะสมมอนสเตอร์และต่อสู้ ฝึกฝนทีมของคุณอย่างอิสระ วิวัฒนาการสู่ 4 สาย สะสมอาวุธและอาติแฟกต์จากหอคอย ท้าประลอง 4 จตุรเทพใน Champion Gauntlet</p>
     <div class="monster-row">
       <img src="Pet/LARVA.png" alt="LARVA" style="--fd:3s;--fdl:0s">
       <img src="Pet/CHAMPION.png" alt="CHAMPION" style="--fd:3.5s;--fdl:0.4s">
@@ -190,50 +243,164 @@ footer {
   </div>
 </header>
 
-<!-- Evolve System -->
+<!-- 1. Train Pet -->
+<section>
+  <div class="section-tag fade-up">Gameplay</div>
+  <h2 class="section-title fade-up delay-1">TRAIN <span style="color:#ff8c00">YOUR PET</span></h2>
+  <p class="section-desc fade-up delay-2">
+    ฝึกฝนมอนสเตอร์ของคุณให้แข็งแกร่งได้<strong style="color:#ffd700">อย่างอิสระ</strong>
+    — พาคู่หูของคุณออกต่อสู้เพื่อเพิ่มค่าพลัง ATK, DEF, SPD, HP
+    ไม่มีข้อจำกัดในการเทรนนิ่ง ยิ่งสู้ยิ่งแกร่ง!
+  </p>
+  <div class="feature-grid col3">
+    <div class="feature-card fade-up delay-1" style="--accent:#ff4466">
+      <div class="card-icon">📈</div>
+      <div class="card-title">เพิ่มค่าพลังได้ไม่จำกัด</div>
+      <div class="card-desc">ต่อสู้เพื่อสะสมค่าประสบการณ์ เพิ่ม ATK, DEF, SPD, HP ของมอนสเตอร์แต่ละตัวอย่างอิสระ</div>
+      <div class="train-visual">
+        <div style="text-align:right;font-size:11px;color:#8878b8;line-height:2.2">
+          ❤️HP<br>⚔️ATK<br>🛡️DEF<br>💨SPD
+        </div>
+        <div style="line-height:2.2">
+          <div class="train-bar"><div class="train-fill hp" style="width:75%"></div></div>
+          <div class="train-bar"><div class="train-fill atk" style="width:60%"></div></div>
+          <div class="train-bar"><div class="train-fill def" style="width:45%"></div></div>
+          <div class="train-bar"><div class="train-fill spd" style="width:80%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="feature-card fade-up delay-2" style="--accent:#ffaa00">
+      <div class="card-icon">🧬</div>
+      <div class="card-title">ระบบ Overdrive</div>
+      <div class="card-desc">มอนสเตอร์ Evolve II ทุกตัวมีท่าไม้ตายเฉพาะตัว ใช้ 1 ครั้งต่อการต่อสู้เพื่อพลิกเกม</div>
+      <div class="card-imgs">
+        <img src="Pet/FULLARMOR-IRONJAW.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""><img src="Pet/PHOENIX-GHOST.png" alt="">
+      </div>
+    </div>
+    <div class="feature-card fade-up delay-3" style="--accent:#44ccff">
+      <div class="card-icon">✨</div>
+      <div class="card-title">Build ได้หลากหลาย</div>
+      <div class="card-desc">เลือกสาย Evolve สร้างทีมที่ใช่ — สายตี สายเร็ว สายแทงค์ หรือสายสมดุล ตามสไตล์คุณ</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- 2. Evolve 4 Branches -->
 <section>
   <div class="section-tag fade-up">Core System</div>
-  <h2 class="section-title fade-up delay-1">EVOLVE <span style="color:#ff8c00">SYSTEM</span></h2>
+  <h2 class="section-title fade-up delay-1">4 EVOLVE <span style="color:#ff8c00">BRANCHES</span></h2>
   <p class="section-desc fade-up delay-2">
-    เริ่มจาก LARVA สะสม Symbol 3 อันเพื่อวิวัฒนาการเป็น 8 ร่าง Evolve I
-    และพัฒนาเป็น Evolve II ได้ถึง <strong style="color:#ffd700">40+ ร่าง</strong>
-    แบ่งเป็น 4 สาย — FIST, WING, SHIELD, BALANCE
+    ร่างหลักแต่ละตัวละครสามารถเลือก Evolve ได้ถึง <strong style="color:#ffd700">4 สาย</strong>
+    — FIST, WING, SHIELD, BALANCE แต่ละสายมีสไตล์การต่อสู้และพาสซีฟเฉพาะตัว
+    รวมแล้วมี Evolve II มากถึง <strong style="color:#ffd700">40+ ร่าง</strong>!
   </p>
-  <div class="feature-grid">
+  <div class="feature-grid col4">
     <div class="feature-card fade-up delay-1" style="--accent:#ff4444">
       <div class="card-icon">👊</div>
-      <div class="card-title">FIST — สายโจมตี</div>
-      <div class="card-desc">พลังโจมตีสูง คริติคอลรุนแรง สายที่เน้นดาเมจเป็นหลัก</div>
+      <div class="card-title">FIST</div>
+      <div class="card-desc">สายโจมตีหนัก คริติคอลรุนแรง ATK สูง ปราบศัตรูได้ไวที่สุด</div>
       <div class="card-imgs">
-        <img src="Pet/BRAWLER.png" alt=""><img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt="">
+        <img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt="">
       </div>
     </div>
     <div class="feature-card fade-up delay-2" style="--accent:#44ccff">
       <div class="card-icon">🪽</div>
-      <div class="card-title">WING — สายความเร็ว</div>
-      <div class="card-desc">SPD สูงสุด โอกาสหลบและสตัน โจมตีหลายครั้งในเทิร์นเดียว</div>
+      <div class="card-title">WING</div>
+      <div class="card-desc">SPD สูงสุด หลบเก่ง โจมตีหลายครั้ง คริติคอลบ่อย</div>
       <div class="card-imgs">
-        <img src="Pet/BLITZ.png" alt=""><img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt="">
+        <img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt="">
       </div>
     </div>
     <div class="feature-card fade-up delay-3" style="--accent:#44ff44">
       <div class="card-icon">🛡️</div>
-      <div class="card-title">SHIELD — สายป้องกัน</div>
-      <div class="card-desc">HP สูง ลดดาเมจ สะท้อนกลับ ศัตรูปราบยากที่สุด</div>
+      <div class="card-title">SHIELD</div>
+      <div class="card-desc">HP หนา DEF สูง สะท้อนดาเมจ ฮีลตัวเอง ยืนนานที่สุด</div>
       <div class="card-imgs">
-        <img src="Pet/BASTION.png" alt=""><img src="Pet/IRON-BASTION.png" alt=""><img src="Pet/GOLEM-BASTION.png" alt="">
+        <img src="Pet/GOLEM-BASTION.png" alt=""><img src="Pet/FULLARMOR-IRONJAW.png" alt="">
+      </div>
+    </div>
+    <div class="feature-card fade-up delay-4" style="--accent:#ff88cc">
+      <div class="card-icon">☯️</div>
+      <div class="card-title">BALANCE</div>
+      <div class="card-desc">ค่าพลังสมดุล ปรับตัวได้ทุกสถานการณ์ สายอเนกประสงค์</div>
+      <div class="card-imgs">
+        <img src="Pet/FIGHTER-PANDA.png" alt=""><img src="Pet/ARMOR-PANDA.png" alt="">
       </div>
     </div>
   </div>
 </section>
 
+<div class="section-divider"></div>
+
+<!-- 3. Tower & Raid — Weapons & Artifacts -->
+<section>
+  <div class="section-tag fade-up">Loot & Gear</div>
+  <h2 class="section-title fade-up delay-1">TOWER <span style="color:#ff8c00">& RAID</span></h2>
+  <p class="section-desc fade-up delay-2">
+    ลง<strong style="color:#ffd700">หอคอย</strong>และ<strong style="color:#ffd700">Raid Boss</strong>
+    เพื่อล่าอาวุธและอาติแฟกต์สุดแข็งแกร่ง<br>
+    อาวุธทุกชิ้นมี 3 เกรดคุณภาพ (Low / Normal / High) 
+    และอาติแฟกต์หายากที่เปลี่ยนเกมการต่อสู้ได้ทั้งเกม
+  </p>
+  <div class="feature-grid">
+    <div class="feature-card fade-up delay-1" style="--accent:#ff4466">
+      <div class="card-icon">⚔️</div>
+      <div class="card-title">Weapon System</div>
+      <div class="card-desc">อาวุธ 3 ระดับคุณภาพ (Low / Normal / High) — ค่าพลังต่างกันตามเกรด อัปเกรดอาวุธให้คู่หูของคุณ</div>
+      <div class="mode-row" style="margin-top:16px">
+        <span class="mode-chip" style="font-size:12px;padding:6px 14px">🔸 LOW</span>
+        <span class="mode-chip" style="font-size:12px;padding:6px 14px">🔶 NORMAL</span>
+        <span class="mode-chip" style="font-size:12px;padding:6px 14px;border-color:rgba(255,215,0,0.4);color:#ffd700">🌟 HIGH</span>
+      </div>
+    </div>
+    <div class="feature-card fade-up delay-2" style="--accent:#ffaa00">
+      <div class="card-icon">💎</div>
+      <div class="card-title">Artifact — ไอเทมเปลี่ยนเกม</div>
+      <div class="card-desc">อาติแฟกต์หายากที่ให้บัฟพิเศษ เช่น Moon Veil (+ATK/DEF/SPD 10% + ฮีล), Sniper Eye (คริแรง 2x ทุก 3 เทิร์น) เป็นต้น</div>
+    </div>
+    <div class="feature-card fade-up delay-3" style="--accent:#cc44ff">
+      <div class="card-icon">🗼</div>
+      <div class="card-title">Tower — หอคอยทดสอบ</div>
+      <div class="card-desc">ไต่หอคอยฝ่าด่านศัตรูระดับสูงเพื่อรับรางวัลอาวุธและ Essence สำหรับอัปเกรด</div>
+    </div>
+  </div>
+</section>
+
+<!-- Ghost Secret -->
+<section>
+  <div class="ghost-section fade-up">
+    <div class="section-tag">Secret</div>
+    <h2 class="section-title" style="color:#ffd700">ตัวละครลับ <span style="font-size:24px">👻</span></h2>
+    <p class="section-desc" style="color:#c0b0e0">
+      <strong style="color:#ffd700">มีโอกาสสุ่มได้จากการ Evolve</strong> — ตัวละครลับที่สามารถแปลงร่างได้
+      <strong style="color:#ffd700">24 รูปแบบ</strong> ครอบคลุมทั้ง 4 สาย
+    </p>
+    <div class="ghost-row fade-up delay-1">
+      <img src="Pet/DRAGON-GHOST.png" alt="DRAGON">
+      <img src="Pet/PHOENIX-GHOST.png" alt="PHOENIX">
+      <img src="Pet/UNICORN-GHOST.png" alt="UNICORN">
+      <img src="Pet/PANDA-GHOST.png" alt="PANDA">
+      <div class="ghost-silhouette">?</div>
+      <div class="ghost-silhouette">?</div>
+      <div class="ghost-silhouette">?</div>
+      <div class="ghost-silhouette">?</div>
+      <div class="ghost-silhouette">?</div>
+    </div>
+    <div style="text-align:center"><span class="ghost-count fade-up delay-2">👻 +20 ร่างให้ค้นหา</span></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
 <!-- Fusion -->
 <section>
-  <div class="section-tag fade-up">Gameplay</div>
+  <div class="section-tag fade-up">Crafting</div>
   <h2 class="section-title fade-up delay-1"><span style="color:#ff8c00">FUSION</span> SYSTEM</h2>
   <p class="section-desc fade-up delay-2">
     รวมมอนสเตอร์ Evolve II 2 ตัว สร้าง <strong style="color:#ffd700">Fusion Egg</strong>
-    สืบทอด Echo Passive จากพ่อแม่ และมีโอกาสสืบทอด Shiny!<br>
+    สืบทอด Echo Passive จากพ่อแม่ และมีโอกาสสืบทอด <strong style="color:#ffd700">Shiny</strong>!<br>
     คราฟต์มอนสเตอร์ในฝันที่แข็งแกร่งที่สุด
   </p>
   <div style="display:flex;gap:30px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:30px">
@@ -257,7 +424,7 @@ footer {
 <!-- Shiny -->
 <section>
   <div class="section-tag fade-up">Rarity</div>
-  <h2 class="section-title fade-up delay-1">SHINY <span style="color:#ffd700">RARITY</span></h2>
+  <h2 class="section-title fade-up delay-1">SHINY <span style="color:#ffd700">HUNT</span></h2>
   <p class="section-desc fade-up delay-2">
     มอนสเตอร์ทุกตัวมีโอกาสเกิดเป็น Shiny — สีพิเศษที่หายากและค่าสถานะสูงกว่า
     เพิ่มความภูมิใจในการสะสมและความแข็งแกร่งในการต่อสู้
@@ -278,56 +445,73 @@ footer {
   </div>
 </section>
 
-<!-- Ghost Secret -->
+<div class="section-divider"></div>
+
+<!-- Champion Gauntlet -->
 <section>
-  <div class="ghost-section fade-up">
-    <div class="section-tag">Secret</div>
-    <h2 class="section-title" style="color:#ffd700">ตัวละครลับ <span style="font-size:24px">👻</span></h2>
-    <p class="section-desc" style="color:#c0b0e0">
-      <strong style="color:#ffd700">มีโอกาสสุ่มได้จากการ Evolve</strong> — ตัวละครลับที่สามารถแปลงร่างได้
-      <strong style="color:#ffd700">24 รูปแบบ</strong> ครอบคลุมทั้ง 4 สาย FIST • WING • SHIELD • BALANCE
-    </p>
-    <div class="ghost-grid">
-      <img src="Pet/RAGEBEAR-GHOST.png" alt=""><img src="Pet/LION-GHOST.png" alt="">
-      <img src="Pet/TIGER-GHOST.png" alt=""><img src="Pet/SHARK-GHOST.png" alt="">
-      <img src="Pet/PHOENIX-GHOST.png" alt=""><img src="Pet/DRAGON-GHOST.png" alt="">
-      <img src="Pet/UNICORN-GHOST.png" alt=""><img src="Pet/PANDA-GHOST.png" alt="">
-      <img src="Pet/OCTOPUS-GHOST.png" alt=""><img src="Pet/GRIFFON-GHOST.png" alt="">
-      <img src="Pet/OWL-GHOST.png" alt=""><img src="Pet/CAT-GHOST.png" alt="">
+  <div class="section-tag fade-up">Endgame</div>
+  <h2 class="section-title fade-up delay-1">CHAMPION <span style="color:#ff8c00">GAUNTLET</span></h2>
+  <p class="section-desc fade-up delay-2">
+    ท้าทาย<strong style="color:#ffd700">4 จตุรเทพ</strong>และ<strong style="color:#ffd700">บอสใหญ่</strong>ของเกม
+    ในโหมด Endgame สไตล์ Elite Four — ต่อสู้ต่อเนื่อง 5 ห้อง แพ้แล้วเริ่มใหม่<br>
+    มี 2 Tier: <strong style="color:#44ccff">Normal</strong> (Level 100-120) 
+    และ <strong style="color:#ff4444">Hard</strong> (Level 130-150) — 
+    ปลดล็อกหลังเคลียร์ Normal ครบ!
+  </p>
+  <div class="gauntlet-path fade-up delay-3">
+    <div class="gauntlet-boss">
+      <img src="Pet/RAGING-BRAWLER.png" alt=""><br>
+      <span style="font-size:12px;color:#8878b8">จตุรเทพ 1</span>
     </div>
+    <span class="gauntlet-arrow">→</span>
+    <div class="gauntlet-boss">
+      <img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""><br>
+      <span style="font-size:12px;color:#8878b8">จตุรเทพ 2</span>
+    </div>
+    <span class="gauntlet-arrow">→</span>
+    <div class="gauntlet-boss">
+      <img src="Pet/GOLEM-BASTION.png" alt=""><br>
+      <span style="font-size:12px;color:#8878b8">จตุรเทพ 3</span>
+    </div>
+    <span class="gauntlet-arrow">→</span>
+    <div class="gauntlet-boss">
+      <img src="Pet/ARMOR-PANDA.png" alt=""><br>
+      <span style="font-size:12px;color:#8878b8">จตุรเทพ 4</span>
+    </div>
+    <span class="gauntlet-arrow">→</span>
+    <div class="gauntlet-final">
+      <img src="Pet/DARK-SPECTER.png" alt=""><br>
+      <span style="font-size:14px;color:#ffd700;font-weight:700">🔥 FINAL BOSS</span>
+    </div>
+  </div>
+  <div class="mode-row fade-up delay-4" style="justify-content:center;margin-top:28px">
+    <span class="mode-chip">🏆 Normal Tier</span>
+    <span class="mode-chip" style="border-color:rgba(255,60,60,0.4);color:#ff6666">💀 Hard Tier</span>
+    <span class="mode-chip">💰 Gold +50% (Hard)</span>
+    <span class="mode-chip">💎 Essence +5/Hard</span>
   </div>
 </section>
 
 <!-- Battle Modes -->
 <section>
   <div class="section-tag fade-up">Modes</div>
-  <h2 class="section-title fade-up delay-1">BATTLE <span style="color:#ff8c00">MODES</span></h2>
-  <p class="section-desc fade-up delay-2">
-    ต่อสู้ในโหมดที่หลากหลาย ทดสอบความแข็งแกร่งของทีมคุณ
-  </p>
+  <h2 class="section-title fade-up delay-1">MORE <span style="color:#ff8c00">MODES</span></h2>
   <div class="feature-grid">
-    <div class="feature-card fade-up delay-1" style="--accent:#ff4444">
+    <div class="feature-card fade-up delay-1" style="--accent:#ff4466">
       <div class="card-icon">⚔️</div>
       <div class="card-title">VS Mode</div>
-      <div class="card-desc">ต่อสู้กับเพื่อนแบบเรียลไทม์ — วัดทีมใครเจ๋งกว่ากัน</div>
+      <div class="card-desc">ต่อสู้กับเพื่อนแบบเรียลไทม์ — วัดทีมใครเจ๋งกว่ากัน มีระบบ Defense Log ดูประวัติการโดนบุก</div>
     </div>
-    <div class="feature-card fade-up delay-2" style="--accent:#ff8c00">
-      <div class="card-icon">🏆</div>
-      <div class="card-title">Champion Gauntlet</div>
-      <div class="card-desc">โหมด Endgame สไตล์ Elite Four — 2 Tier (Normal / Hard) ปลดล็อกหลัง Hell Mode</div>
-    </div>
-    <div class="feature-card fade-up delay-3" style="--accent:#cc44ff">
+    <div class="feature-card fade-up delay-2" style="--accent:#ff8844">
       <div class="card-icon">🔥</div>
       <div class="card-title">Hell Mode</div>
-      <div class="card-desc">ศัตรูระดับสูง ทดสอบขีดจำกัดของทีมคุณ</div>
+      <div class="card-desc">ศัตรูระดับสูง ทดสอบขีดจำกัดของทีมคุณ ปลดล็อก Champion Gauntlet</div>
     </div>
-  </div>
-  <div class="mode-row fade-up delay-4" style="justify-content:center;margin-top:24px">
-    <span class="mode-chip">⚔️ VS Mode</span>
-    <span class="mode-chip">🏆 Champion Gauntlet</span>
-    <span class="mode-chip">🔥 Hell Mode</span>
-    <span class="mode-chip">🗼 Tower</span>
-    <span class="mode-chip">🎯 Achievement (70+)</span>
+    <div class="feature-card fade-up delay-3" style="--accent:#44ccff">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Achievement</div>
+      <div class="card-desc">70+ ความสำเร็จให้ท้าทาย เก็บครบทุกรายการเพื่อเป็นสุดยอดผู้ฝึกฝน</div>
+    </div>
   </div>
 </section>
 
@@ -338,7 +522,6 @@ footer {
 </footer>
 
 <script>
-// Stars
 (function(){
   const c = document.getElementById('stars');
   for(let i=0;i<80;i++){
@@ -351,7 +534,6 @@ footer {
   }
 })();
 
-// Scroll fade
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.15 });

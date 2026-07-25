@@ -63,6 +63,17 @@ body {
 
 /* Sections */
 section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; margin:0 auto; }
+section.section-bg { overflow:hidden; border-radius:24px; margin-top:40px; margin-bottom:40px; padding-left:28px; padding-right:28px; }
+section.section-bg::before {
+  content:''; position:absolute; inset:0; background-image:var(--bg); background-size:cover; background-position:center;
+  opacity:0.12; z-index:0; border-radius:24px;
+}
+section.section-bg::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 30%, transparent 30%, rgba(6,6,15,0.85) 100%);
+  z-index:0; border-radius:24px; pointer-events:none;
+}
+section.section-bg > * { position:relative; z-index:1; }
 .section-tag { font-size:13px; letter-spacing:6px; color:#ff8c00; text-transform:uppercase; margin-bottom:8px; }
 .section-title { font-size:clamp(32px,5vw,56px); font-weight:900; margin-bottom:16px; line-height:1.1; }
 .section-desc { font-size:16px; color:#8878b8; max-width:700px; line-height:1.7; margin-bottom:40px; font-weight:300; }
@@ -314,6 +325,8 @@ footer {
 .delay-1 { animation-delay:0.1s; } .delay-2 { animation-delay:0.2s; } .delay-3 { animation-delay:0.3s; } .delay-4 { animation-delay:0.4s; } .delay-5 { animation-delay:0.5s; } .delay-6 { animation-delay:0.6s; }
 
 @media (max-width:768px) {
+  section.section-bg { margin-top:20px; margin-bottom:20px; padding-left:16px; padding-right:16px; border-radius:16px; }
+  section.section-bg::before, section.section-bg::after { border-radius:16px; }
   .feature-grid, .mode-grid { grid-template-columns:1fr; }
   .evo-branch-row { grid-template-columns:repeat(2,1fr); }
   .evo-branch-connector::after { left:6%; right:6%; }
@@ -351,7 +364,7 @@ footer {
 </header>
 
 <!-- ═══════════ 1. TRAIN YOUR PET ═══════════ -->
-<section>
+<section class="section-bg" style="--bg:url('Battle Scene/Battle-scene-meadowt-day.jpg')">
   <div class="section-tag fade-up">Core Gameplay</div>
   <h2 class="section-title fade-up delay-1">TRAIN <span style="color:#ff8c00">YOUR PET</span></h2>
   <p class="section-desc fade-up delay-2">
@@ -449,7 +462,7 @@ footer {
 <div class="section-divider"></div>
 
 <!-- ═══════════ 3. IDLE HUNT ═══════════ -->
-<section>
+<section class="section-bg" style="--bg:url('Battle Scene/Battle-scene-forest-day.jpg')">
   <div class="section-tag fade-up">Passive Progression</div>
   <h2 class="section-title fade-up delay-1">IDLE <span style="color:#ff8c00">HUNT</span></h2>
   <p class="section-desc fade-up delay-2">
@@ -550,7 +563,7 @@ footer {
 <div class="section-divider"></div>
 
 <!-- ═══════════ 6. SHINY ═══════════ -->
-<section>
+<section class="section-bg" style="--bg:url('Battle Scene/Battle-scene-meadow-night.jpg')">
   <div class="section-tag fade-up">Rarity</div>
   <h2 class="section-title fade-up delay-1">SHINY <span style="color:#ffd700">HUNT</span></h2>
   <p class="section-desc fade-up delay-2">
@@ -592,7 +605,7 @@ footer {
 <div class="section-divider"></div>
 
 <!-- ═══════════ 8. CHAMPION GAUNTLET ═══════════ -->
-<section>
+<section class="section-bg" style="--bg:url('Battle Scene/Battle-scene-desert-night.jpg')">
   <div class="section-tag fade-up">Endgame</div>
   <h2 class="section-title fade-up delay-1">CHAMPION <span style="color:#ff8c00">GAUNTLET</span></h2>
   <p class="section-desc fade-up delay-2">

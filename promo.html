@@ -129,12 +129,49 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
 .train-fill.def { background:linear-gradient(90deg, #44aaff, #66ccff); }
 .train-fill.spd { background:linear-gradient(90deg, #ffdd44, #ffef88); }
 
-/* Evolve Branch */
-.branch-hero {
-  display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;
-  margin:-20px 0 30px;
+/* Evolve Flow Chart */
+.evo-flow { display:flex; flex-direction:column; align-items:center; margin-top:20px; }
+.evo-node { text-align:center; position:relative; }
+.evo-node img { height:100px; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4)); }
+.evo-node-label { font-size:12px; color:#8878b8; margin-top:4px; letter-spacing:1px; }
+.evo-arrow-down { font-size:24px; color:#ff8c00; line-height:1; margin:4px 0; }
+.evo-arrow-down.big { font-size:30px; }
+
+/* Branch connector tree */
+.evo-branch-connector {
+  position:relative; width:100%; max-width:900px; height:36px; margin:0 auto;
 }
-.branch-hero img { height:100px; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4)); }
+.evo-branch-connector::before {
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:2px; height:100%; background:linear-gradient(180deg, #ff8c00, #ff8c0066);
+}
+.evo-branch-connector::after {
+  content:''; position:absolute; bottom:0; left:12%; right:12%; height:2px;
+  background:linear-gradient(90deg, transparent, #ff8c00 15%, #ff8c00 85%, transparent);
+}
+.evo-branch-row {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:16px; position:relative;
+}
+.evo-branch-row::before {
+  content:''; position:absolute; top:-12px; left:12.5%; right:12.5%; height:2px;
+  background:linear-gradient(90deg, transparent 5%, #ff8c0033 20%, #ff8c0033 80%, transparent 95%);
+}
+.evo-branch-card {
+  text-align:center; padding:28px 20px; border-radius:20px; position:relative;
+  background:linear-gradient(135deg, rgba(30,15,50,0.6), rgba(15,5,30,0.8));
+  border:1px solid rgba(160,120,220,0.15); transition:all 0.4s;
+}
+.evo-branch-card::before {
+  content:''; position:absolute; top:0; left:50%; transform:translate(-50%,-100%);
+  width:2px; height:12px; background:var(--bc, #ff8c00);
+}
+.evo-branch-card:hover { transform:translateY(-5px); border-color:var(--bc, #ff8c00); box-shadow:0 12px 32px rgba(0,0,0,0.3); }
+.evo-branch-card .branch-icon { font-size:36px; margin-bottom:8px; }
+.evo-branch-card .branch-name { font-size:20px; font-weight:700; color:#e8d8ff; margin-bottom:8px; }
+.evo-branch-card .branch-desc { font-size:13px; color:#8878b8; line-height:1.5; margin-bottom:14px; }
+.evo-branch-card .branch-imgs { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.evo-branch-card .branch-imgs img { height:70px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3)); transition:transform 0.3s; }
+.evo-branch-card .branch-imgs img:hover { transform:scale(1.1); }
 
 /* IDLE Hunt */
 .idle-hero {
@@ -278,6 +315,8 @@ footer {
 
 @media (max-width:768px) {
   .feature-grid, .mode-grid { grid-template-columns:1fr; }
+  .evo-branch-row { grid-template-columns:repeat(2,1fr); }
+  .evo-branch-connector::after { left:6%; right:6%; }
   .ghost-row img { height:55px; }
   .card-imgs img { height:60px; }
   .gauntlet-path { gap:4px; }
@@ -362,39 +401,47 @@ footer {
     — FIST, WING, SHIELD, BALANCE แต่ละสายมีสไตล์การต่อสู้และพาสซีฟเฉพาะตัว
     รวมแล้วมี Evolve II มากถึง <strong style="color:#ffd700">40+ ร่าง</strong>!
   </p>
-  <div class="branch-hero fade-up delay-1">
-    <img src="Pet/LARVA.png" alt="">
-    <span style="font-size:28px;color:#ff8c00">→</span>
-    <img src="Pet/CHAMPION.png" alt="">
-    <span style="font-size:28px;color:#ff8c00">→</span>
-    <img src="Pet/CHAMPION.png" alt="" style="opacity:0.5">
-    <span style="font-size:28px;color:#a088c8">→</span>
-    <span style="font-size:13px;color:#8878b8;text-align:center;line-height:1.4">Evolve I<br>→<br>Evolve II<br><span style="color:#ffd700">2nd Awakening</span></span>
-  </div>
-  <div class="feature-grid col4">
-    <div class="feature-card fade-up delay-1" style="--accent:#ff4444">
-      <div class="card-icon">👊</div>
-      <div class="card-title">FIST</div>
-      <div class="card-desc">สายโจมตีหนัก คริติคอลรุนแรง ATK สูง ปราบศัตรูได้ไวที่สุด</div>
-      <div class="card-imgs"><img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt=""></div>
+  <div class="evo-flow">
+    <!-- Stage 1: Base Form -->
+    <div class="evo-node fade-up delay-1">
+      <img src="Pet/LARVA.png" alt="LARVA">
+      <div class="evo-node-label">Base Form</div>
     </div>
-    <div class="feature-card fade-up delay-2" style="--accent:#44ccff">
-      <div class="card-icon">🪽</div>
-      <div class="card-title">WING</div>
-      <div class="card-desc">SPD สูงสุด หลบเก่ง โจมตีหลายครั้ง คริติคอลบ่อย</div>
-      <div class="card-imgs"><img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""></div>
+    <div class="evo-arrow-down fade-up delay-1">▼</div>
+    <!-- Stage 2: Evolve I -->
+    <div class="evo-node fade-up delay-2">
+      <img src="Pet/CHAMPION.png" alt="CHAMPION">
+      <div class="evo-node-label" style="color:#ffd700;font-weight:600">Evolve I</div>
     </div>
-    <div class="feature-card fade-up delay-3" style="--accent:#44ff44">
-      <div class="card-icon">🛡️</div>
-      <div class="card-title">SHIELD</div>
-      <div class="card-desc">HP หนา DEF สูง สะท้อนดาเมจ ฮีลตัวเอง ยืนนานที่สุด</div>
-      <div class="card-imgs"><img src="Pet/GOLEM-BASTION.png" alt=""><img src="Pet/FULLARMOR-IRONJAW.png" alt=""></div>
-    </div>
-    <div class="feature-card fade-up delay-4" style="--accent:#ff88cc">
-      <div class="card-icon">☯️</div>
-      <div class="card-title">BALANCE</div>
-      <div class="card-desc">ค่าพลังสมดุล ปรับตัวได้ทุกสถานการณ์ สายอเนกประสงค์</div>
-      <div class="card-imgs"><img src="Pet/FIGHTER-PANDA.png" alt=""><img src="Pet/ARMOR-PANDA.png" alt=""></div>
+    <div class="evo-arrow-down big fade-up delay-2">▼</div>
+    <!-- Branch Connector -->
+    <div class="evo-branch-connector fade-up delay-3"></div>
+    <!-- Stage 3: 4 Branches -->
+    <div class="evo-branch-row fade-up delay-3">
+      <div class="evo-branch-card" style="--bc:#ff4444">
+        <div class="branch-icon">👊</div>
+        <div class="branch-name" style="color:#ff6666">FIST</div>
+        <div class="branch-desc">สายโจมตีหนัก คริติคอลรุนแรง ATK สูง ปราบศัตรูได้ไวที่สุด</div>
+        <div class="branch-imgs"><img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt=""></div>
+      </div>
+      <div class="evo-branch-card" style="--bc:#44aaff">
+        <div class="branch-icon">🪽</div>
+        <div class="branch-name" style="color:#66bbff">WING</div>
+        <div class="branch-desc">SPD สูงสุด หลบเก่ง โจมตีหลายครั้ง คริติคอลบ่อย</div>
+        <div class="branch-imgs"><img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""></div>
+      </div>
+      <div class="evo-branch-card" style="--bc:#44dd44">
+        <div class="branch-icon">🛡️</div>
+        <div class="branch-name" style="color:#66ee66">SHIELD</div>
+        <div class="branch-desc">HP หนา DEF สูง สะท้อนดาเมจ ฮีลตัวเอง ยืนนานที่สุด</div>
+        <div class="branch-imgs"><img src="Pet/GOLEM-BASTION.png" alt=""><img src="Pet/FULLARMOR-IRONJAW.png" alt=""></div>
+      </div>
+      <div class="evo-branch-card" style="--bc:#ee88cc">
+        <div class="branch-icon">☯️</div>
+        <div class="branch-name" style="color:#ff99dd">BALANCE</div>
+        <div class="branch-desc">ค่าพลังสมดุล ปรับตัวได้ทุกสถานการณ์ สายอเนกประสงค์</div>
+        <div class="branch-imgs"><img src="Pet/FIGHTER-PANDA.png" alt=""><img src="Pet/ARMOR-PANDA.png" alt=""></div>
+      </div>
     </div>
   </div>
 </section>

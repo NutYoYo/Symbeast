@@ -61,6 +61,20 @@ body {
 }
 .cta-btn:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(255,180,0,0.5); }
 
+/* Stats Bar */
+.stats-bar {
+  display:flex; gap:clamp(16px,4vw,48px); justify-content:center; flex-wrap:wrap;
+  padding:40px 20px; position:relative; z-index:1; max-width:1000px; margin:0 auto;
+}
+.stat-item { text-align:center; }
+.stat-num {
+  font-size:clamp(28px,4vw,48px); font-weight:900;
+  background:linear-gradient(180deg, #ffd700, #ff8c00);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.stat-label { font-size:13px; color:#8878b8; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+.stat-divider { width:1px; background:rgba(160,120,220,0.2); align-self:stretch; }
+
 /* Sections */
 section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; margin:0 auto; }
 section.section-bg { overflow:hidden; border-radius:24px; margin-top:40px; margin-bottom:40px; padding-left:28px; padding-right:28px; }
@@ -346,7 +360,7 @@ footer {
   <div class="hero-content">
     <h1 class="hero-logo">SYMBEAST</h1>
     <p class="hero-sub">Collect • Evolve • Fusion • Battle</p>
-    <p class="hero-tagline">เกมแนวสะสมมอนสเตอร์และต่อสู้ ฝึกฝนทีมของคุณอย่างอิสระ วิวัฒนาการสู่ 4 สาย สะสมอาวุธและอาติแฟกต์จากหอคอย ท้าประลอง 4 จตุรเทพใน Champion Gauntlet</p>
+    <p class="hero-tagline"><strong style="color:#ffd700">70+ มอนสเตอร์</strong>ให้สะสม ฝึกฝนทีมของคุณอย่างอิสระ วิวัฒนาการสู่ 4 สาย สะสมอาวุธและอาติแฟกต์จากหอคอย ท้าประลอง 4 จตุรเทพใน Champion Gauntlet</p>
     <div class="monster-row">
       <img src="Pet/LARVA.png" alt="LARVA" style="--fd:3s;--fdl:0s">
       <img src="Pet/CHAMPION.png" alt="CHAMPION" style="--fd:3.5s;--fdl:0.4s">
@@ -358,6 +372,17 @@ footer {
     <a href="index.html" class="cta-btn">PLAY NOW</a>
   </div>
 </header>
+
+<!-- Stats Bar -->
+<div class="stats-bar fade-up">
+  <div class="stat-item"><div class="stat-num">70+</div><div class="stat-label">มอนสเตอร์</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">สาย Evolve</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><div class="stat-num">40+</div><div class="stat-label">ร่าง Evolve II</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat-item"><div class="stat-num">24</div><div class="stat-label">ร่างลับ</div></div>
+</div>
 
 <!-- ═══════════ 1. TRAIN YOUR PET ═══════════ -->
 <section class="section-bg" style="--bg:url('Battle Scene/Battle-scene-meadowt-day.jpg')">

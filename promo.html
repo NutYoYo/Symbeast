@@ -43,15 +43,12 @@ body {
   line-height:1.6; font-weight:300;
 }
 
-/* Monster showcase row */
 .monster-row {
-  display:flex; gap:clamp(8px,2vw,24px); justify-content:center; flex-wrap:wrap;
-  margin-bottom:60px;
+  display:flex; gap:clamp(8px,2vw,24px); justify-content:center; flex-wrap:wrap; margin-bottom:60px;
 }
 .monster-row img {
   height:clamp(60px,12vw,130px); filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
-  transition:transform 0.4s, filter 0.4s; animation:float var(--fd) ease-in-out infinite;
-  animation-delay:var(--fdl);
+  transition:transform 0.4s, filter 0.4s; animation:float var(--fd) ease-in-out infinite; animation-delay:var(--fdl);
 }
 .monster-row img:hover { transform:translateY(-12px) scale(1.15); filter:drop-shadow(0 16px 40px rgba(255,180,0,0.5)); }
 @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
@@ -60,8 +57,7 @@ body {
   display:inline-block; padding:16px 48px; font-size:18px; font-weight:700;
   background:linear-gradient(135deg, #ff8c00, #ffd700); color:#0a0a1a;
   border-radius:50px; text-decoration:none; letter-spacing:2px;
-  transition:all 0.3s; box-shadow:0 8px 32px rgba(255,140,0,0.3);
-  cursor:pointer;
+  transition:all 0.3s; box-shadow:0 8px 32px rgba(255,140,0,0.3); cursor:pointer;
 }
 .cta-btn:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(255,180,0,0.5); }
 
@@ -70,6 +66,11 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
 .section-tag { font-size:13px; letter-spacing:6px; color:#ff8c00; text-transform:uppercase; margin-bottom:8px; }
 .section-title { font-size:clamp(32px,5vw,56px); font-weight:900; margin-bottom:16px; line-height:1.1; }
 .section-desc { font-size:16px; color:#8878b8; max-width:700px; line-height:1.7; margin-bottom:40px; font-weight:300; }
+
+.section-divider {
+  width:80px; height:3px; background:linear-gradient(90deg, transparent, #ff8c00, transparent);
+  margin:0 auto 60px; border-radius:2px;
+}
 
 /* Feature cards */
 .feature-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:24px; }
@@ -95,10 +96,98 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
 }
 .card-imgs img:hover { transform:scale(1.1); }
 
-/* Shiny showcase */
-.shiny-showcase {
-  display:flex; gap:40px; align-items:center; justify-content:center; flex-wrap:wrap;
+/* Mode cards with battle scene background */
+.mode-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:24px; }
+.mode-card {
+  position:relative; border-radius:20px; overflow:hidden; min-height:260px;
+  border:1px solid rgba(160,120,220,0.15); transition:all 0.4s;
 }
+.mode-card:hover { transform:translateY(-6px); border-color:rgba(200,160,255,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.4); }
+.mode-card-bg {
+  position:absolute; inset:0; background-size:cover; background-position:center;
+  opacity:0.25; transition:opacity 0.5s, transform 0.5s;
+}
+.mode-card:hover .mode-card-bg { opacity:0.4; transform:scale(1.05); }
+.mode-card-info {
+  position:relative; z-index:1; padding:32px;
+  background:linear-gradient(180deg, rgba(20,10,40,0.75), rgba(15,8,30,0.95));
+  height:100%; display:flex; flex-direction:column; justify-content:flex-end;
+}
+.mode-card-info .card-title { margin-bottom:8px; font-size:24px; }
+.mode-card-info .card-desc { font-size:14px; }
+.mode-card-icon { font-size:40px; margin-bottom:10px; }
+
+/* Training bars */
+.train-visual {
+  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  padding:30px; margin-top:20px;
+}
+.train-bar { width:200px; height:12px; border-radius:6px; background:rgba(255,255,255,0.05); overflow:hidden; }
+.train-fill { height:100%; border-radius:6px; transition:width 1.5s ease; }
+.train-fill.hp { background:linear-gradient(90deg, #ff4466, #ff6688); }
+.train-fill.atk { background:linear-gradient(90deg, #ff8800, #ffaa44); }
+.train-fill.def { background:linear-gradient(90deg, #44aaff, #66ccff); }
+.train-fill.spd { background:linear-gradient(90deg, #ffdd44, #ffef88); }
+
+/* Evolve Branch */
+.branch-hero {
+  display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;
+  margin:-20px 0 30px;
+}
+.branch-hero img { height:100px; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4)); }
+
+/* IDLE Hunt */
+.idle-hero {
+  display:flex; align-items:center; justify-content:center; gap:30px; flex-wrap:wrap;
+  margin-bottom:30px;
+}
+.idle-clock {
+  position:relative; width:140px; height:140px; border-radius:50%;
+  border:3px solid rgba(255,215,0,0.3); 
+  background:radial-gradient(circle, rgba(255,215,0,0.06), transparent 70%);
+  display:flex; align-items:center; justify-content:center;
+}
+.idle-clock-inner { font-size:48px; animation:pulse-clock 2s ease-in-out infinite; }
+@keyframes pulse-clock { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.idle-rewards { display:flex; gap:16px; flex-wrap:wrap; }
+.idle-reward {
+  text-align:center; padding:12px 16px; border-radius:14px;
+  background:rgba(30,15,50,0.6); border:1px solid rgba(160,120,220,0.15);
+  transition:all 0.3s;
+}
+.idle-reward:hover { transform:translateY(-3px); border-color:rgba(255,215,0,0.3); }
+.idle-reward-icon { font-size:32px; margin-bottom:4px; }
+.idle-reward-name { font-size:12px; color:#c0b0e0; font-weight:600; }
+
+.idle-tiers { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:30px; }
+.idle-tier {
+  text-align:center; padding:20px 22px; border-radius:16px; min-width:130px;
+  border:1px solid rgba(160,120,220,0.15); transition:all 0.3s; position:relative; overflow:hidden;
+}
+.idle-tier::before {
+  content:''; position:absolute; inset:0; opacity:0.08;
+}
+.idle-tier.t1 { background:linear-gradient(135deg, rgba(100,200,100,0.15), rgba(30,80,30,0.4)); border-color:rgba(100,200,100,0.2); }
+.idle-tier.t2 { background:linear-gradient(135deg, rgba(80,160,220,0.15), rgba(20,60,100,0.4)); border-color:rgba(80,160,220,0.2); }
+.idle-tier.t3 { background:linear-gradient(135deg, rgba(160,80,220,0.15), rgba(60,20,100,0.4)); border-color:rgba(160,80,220,0.2); }
+.idle-tier.t4 { background:linear-gradient(135deg, rgba(255,150,50,0.15), rgba(100,50,10,0.4)); border-color:rgba(255,150,50,0.2); }
+.idle-tier.t5 { background:linear-gradient(135deg, rgba(255,80,80,0.15), rgba(100,20,20,0.4)); border-color:rgba(255,80,80,0.25); }
+.idle-tier:hover { transform:translateY(-4px); }
+.idle-tier.t1:hover { border-color:rgba(100,200,100,0.5); box-shadow:0 8px 24px rgba(100,200,100,0.1); }
+.idle-tier.t2:hover { border-color:rgba(80,160,220,0.5); box-shadow:0 8px 24px rgba(80,160,220,0.1); }
+.idle-tier.t3:hover { border-color:rgba(160,80,220,0.5); box-shadow:0 8px 24px rgba(160,80,220,0.1); }
+.idle-tier.t4:hover { border-color:rgba(255,150,50,0.5); box-shadow:0 8px 24px rgba(255,150,50,0.1); }
+.idle-tier.t5:hover { border-color:rgba(255,80,80,0.5); box-shadow:0 8px 24px rgba(255,80,80,0.1); }
+.idle-tier .tier-icon { font-size:32px; margin-bottom:8px; }
+.idle-tier .tier-name { font-size:14px; font-weight:700; color:#e8d8ff; margin-bottom:4px; }
+.idle-tier .tier-gold { font-size:13px; font-weight:600; margin-bottom:6px; }
+.idle-tier.t1 .tier-gold { color:#6f6; } .idle-tier.t2 .tier-gold { color:#6af; }
+.idle-tier.t3 .tier-gold { color:#c8f; } .idle-tier.t4 .tier-gold { color:#fa3; }
+.idle-tier.t5 .tier-gold { color:#f66; }
+.idle-tier .tier-range { font-size:11px; color:#8878b8; }
+
+/* Shiny */
+.shiny-showcase { display:flex; gap:40px; align-items:center; justify-content:center; flex-wrap:wrap; }
 .shiny-card {
   text-align:center; padding:40px; border-radius:24px;
   background:linear-gradient(135deg, rgba(30,15,50,0.8), rgba(15,5,30,0.9));
@@ -116,19 +205,15 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
 .shiny-badge.normal { background:rgba(160,140,200,0.15); color:#a088c8; }
 .shiny-badge.shiny { background:linear-gradient(135deg, rgba(255,200,0,0.2), rgba(255,140,0,0.2)); color:#ffd700; }
 
-/* Ghost section */
+/* Ghost */
 .ghost-section { background:linear-gradient(135deg, rgba(30,15,50,0.6), rgba(10,5,25,0.8)); border-radius:32px; padding:60px 40px; position:relative; overflow:hidden; border:1px solid rgba(255,215,0,0.15); }
-.ghost-section::after {
-  content:'?'; position:absolute; right:40px; top:50%; transform:translateY(-50%);
-  font-size:200px; font-weight:900; color:rgba(255,215,0,0.03); pointer-events:none;
-}
+.ghost-section::after { content:'?'; position:absolute; right:40px; top:50%; transform:translateY(-50%); font-size:200px; font-weight:900; color:rgba(255,215,0,0.03); pointer-events:none; }
 .ghost-row { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:30px; }
 .ghost-row img { height:80px; filter:drop-shadow(0 4px 16px rgba(255,215,0,0.25)); transition:transform 0.3s; }
 .ghost-row img:hover { transform:translateY(-6px) scale(1.1); filter:drop-shadow(0 8px 24px rgba(255,215,0,0.5)); }
 .ghost-silhouette {
-  width:72px; height:72px; border-radius:14px;
-  background:rgba(255,215,0,0.06); border:1px dashed rgba(255,215,0,0.2);
-  display:flex; align-items:center; justify-content:center;
+  width:72px; height:72px; border-radius:14px; background:rgba(255,215,0,0.06);
+  border:1px dashed rgba(255,215,0,0.2); display:flex; align-items:center; justify-content:center;
   font-size:28px; transition:all 0.3s;
 }
 .ghost-silhouette:hover { background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.4); }
@@ -138,32 +223,11 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
   font-weight:600; letter-spacing:2px; margin-top:20px;
 }
 
-/* Training */
-.train-visual {
-  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
-  padding:30px; margin-top:20px;
-}
-.train-bar {
-  width:200px; height:12px; border-radius:6px;
-  background:rgba(255,255,255,0.05); overflow:hidden;
-}
-.train-fill {
-  height:100%; border-radius:6px; transition:width 1.5s ease;
-}
-.train-fill.hp { background:linear-gradient(90deg, #ff4466, #ff6688); }
-.train-fill.atk { background:linear-gradient(90deg, #ff8800, #ffaa44); }
-.train-fill.def { background:linear-gradient(90deg, #44aaff, #66ccff); }
-.train-fill.spd { background:linear-gradient(90deg, #ffdd44, #ffef88); }
-
 /* Gauntlet */
-.gauntlet-path {
-  display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
-  margin-top:24px;
-}
+.gauntlet-path { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:24px; }
 .gauntlet-boss {
   text-align:center; padding:16px 20px; border-radius:16px;
-  background:rgba(40,20,60,0.6); border:1px solid rgba(160,120,220,0.2);
-  transition:all 0.3s;
+  background:rgba(40,20,60,0.6); border:1px solid rgba(160,120,220,0.2); transition:all 0.3s;
 }
 .gauntlet-boss:hover { transform:translateY(-4px); border-color:rgba(255,140,0,0.4); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
 .gauntlet-boss img { height:64px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
@@ -175,18 +239,28 @@ section { position:relative; z-index:1; padding:80px 20px; max-width:1200px; mar
 }
 .gauntlet-final img { height:80px; filter:drop-shadow(0 6px 20px rgba(255,100,0,0.5)); }
 
-/* Two column layout */
-.two-col {
-  display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;
+/* Chips */
+.mode-row { display:flex; gap:16px; flex-wrap:wrap; }
+.mode-chip {
+  padding:10px 24px; border-radius:30px; font-size:14px; font-weight:600;
+  border:1px solid rgba(160,120,220,0.25); background:rgba(30,15,50,0.6);
+  color:#c0b0e0; letter-spacing:1px; transition:all 0.3s;
 }
-.two-col-reverse { direction:rtl; }
-.two-col-reverse > * { direction:ltr; }
+.mode-chip:hover { background:rgba(255,140,0,0.1); border-color:rgba(255,140,0,0.4); color:#ffd700; }
 
-/* Dividers */
-.section-divider {
-  width:80px; height:3px; background:linear-gradient(90deg, transparent, #ff8c00, transparent);
-  margin:0 auto 60px; border-radius:2px;
+/* Tower */
+.tower-card {
+  background:linear-gradient(135deg, rgba(40,20,60,0.6), rgba(20,10,40,0.8));
+  border:1px solid rgba(160,120,220,0.15); border-radius:20px; padding:36px;
+  backdrop-filter:blur(12px); transition:all 0.4s; position:relative; overflow:hidden;
+  text-align:center;
 }
+.tower-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, transparent, #ff8c00, transparent);
+}
+.tower-card:hover { transform:translateY(-6px); border-color:rgba(200,160,255,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.4); }
+.tower-card img { height:100px; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4)); margin:0 auto 16px; display:block; }
 
 footer {
   text-align:center; padding:60px 20px; position:relative; z-index:1;
@@ -196,35 +270,29 @@ footer {
 .footer-link { color:#8878b8; text-decoration:none; font-size:14px; transition:color 0.3s; }
 .footer-link:hover { color:#ffd700; }
 
-/* Fade animations */
-.fade-up {
-  opacity:0; transform:translateY(40px);
-  animation:fadeInUp 0.8s ease forwards;
-  animation-play-state:paused;
-}
+/* Fade */
+.fade-up { opacity:0; transform:translateY(40px); animation:fadeInUp 0.8s ease forwards; animation-play-state:paused; }
 .fade-up.visible { animation-play-state:running; }
 @keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
-
-.delay-1 { animation-delay:0.1s; } .delay-2 { animation-delay:0.2s; }
-.delay-3 { animation-delay:0.3s; } .delay-4 { animation-delay:0.4s; }
-.delay-5 { animation-delay:0.5s; } .delay-6 { animation-delay:0.6s; }
+.delay-1 { animation-delay:0.1s; } .delay-2 { animation-delay:0.2s; } .delay-3 { animation-delay:0.3s; } .delay-4 { animation-delay:0.4s; } .delay-5 { animation-delay:0.5s; } .delay-6 { animation-delay:0.6s; }
 
 @media (max-width:768px) {
-  .feature-grid { grid-template-columns:1fr; }
-  .two-col { grid-template-columns:1fr; }
+  .feature-grid, .mode-grid { grid-template-columns:1fr; }
   .ghost-row img { height:55px; }
   .card-imgs img { height:60px; }
   .gauntlet-path { gap:4px; }
   .gauntlet-boss { padding:12px; }
   .gauntlet-boss img { height:48px; }
   .gauntlet-final img { height:60px; }
+  .idle-hero { gap:16px; }
+  .idle-clock { width:100px; height:100px; }
 }
 </style>
 </head>
 <body>
 <div class="stars" id="stars"></div>
 
-<!-- Hero -->
+<!-- ═══════════ HERO ═══════════ -->
 <header class="hero">
   <div class="hero-bg"><img src="Battle Scene/Title-symbeast.png" alt=""></div>
   <div class="hero-content">
@@ -243,24 +311,22 @@ footer {
   </div>
 </header>
 
-<!-- 1. Train Pet -->
+<!-- ═══════════ 1. TRAIN YOUR PET ═══════════ -->
 <section>
-  <div class="section-tag fade-up">Gameplay</div>
+  <div class="section-tag fade-up">Core Gameplay</div>
   <h2 class="section-title fade-up delay-1">TRAIN <span style="color:#ff8c00">YOUR PET</span></h2>
   <p class="section-desc fade-up delay-2">
     ฝึกฝนมอนสเตอร์ของคุณให้แข็งแกร่งได้<strong style="color:#ffd700">อย่างอิสระ</strong>
-    — พาคู่หูของคุณออกต่อสู้เพื่อเพิ่มค่าพลัง ATK, DEF, SPD, HP
-    ไม่มีข้อจำกัดในการเทรนนิ่ง ยิ่งสู้ยิ่งแกร่ง!
+    — พาคู่หูออกต่อสู้เพื่อเพิ่มค่าพลัง ATK, DEF, SPD, HP
+    ไม่มีข้อจำกัด ยิ่งสู้ยิ่งแกร่ง!
   </p>
   <div class="feature-grid col3">
     <div class="feature-card fade-up delay-1" style="--accent:#ff4466">
       <div class="card-icon">📈</div>
       <div class="card-title">เพิ่มค่าพลังได้ไม่จำกัด</div>
-      <div class="card-desc">ต่อสู้เพื่อสะสมค่าประสบการณ์ เพิ่ม ATK, DEF, SPD, HP ของมอนสเตอร์แต่ละตัวอย่างอิสระ</div>
+      <div class="card-desc">ต่อสู้เพื่อสะสมค่าประสบการณ์ เพิ่ม HP, ATK, DEF, SPD ของแต่ละตัวตามสไตล์ที่คุณต้องการ</div>
       <div class="train-visual">
-        <div style="text-align:right;font-size:11px;color:#8878b8;line-height:2.2">
-          ❤️HP<br>⚔️ATK<br>🛡️DEF<br>💨SPD
-        </div>
+        <div style="text-align:right;font-size:11px;color:#8878b8;line-height:2.2">❤️HP<br>⚔️ATK<br>🛡️DEF<br>💨SPD</div>
         <div style="line-height:2.2">
           <div class="train-bar"><div class="train-fill hp" style="width:75%"></div></div>
           <div class="train-bar"><div class="train-fill atk" style="width:60%"></div></div>
@@ -287,7 +353,7 @@ footer {
 
 <div class="section-divider"></div>
 
-<!-- 2. Evolve 4 Branches -->
+<!-- ═══════════ 2. 4 EVOLVE BRANCHES ═══════════ -->
 <section>
   <div class="section-tag fade-up">Core System</div>
   <h2 class="section-title fade-up delay-1">4 EVOLVE <span style="color:#ff8c00">BRANCHES</span></h2>
@@ -296,105 +362,129 @@ footer {
     — FIST, WING, SHIELD, BALANCE แต่ละสายมีสไตล์การต่อสู้และพาสซีฟเฉพาะตัว
     รวมแล้วมี Evolve II มากถึง <strong style="color:#ffd700">40+ ร่าง</strong>!
   </p>
+  <div class="branch-hero fade-up delay-1">
+    <img src="Pet/LARVA.png" alt="">
+    <span style="font-size:28px;color:#ff8c00">→</span>
+    <img src="Pet/CHAMPION.png" alt="">
+    <span style="font-size:28px;color:#ff8c00">→</span>
+    <img src="Pet/CHAMPION.png" alt="" style="opacity:0.5">
+    <span style="font-size:28px;color:#a088c8">→</span>
+    <span style="font-size:13px;color:#8878b8;text-align:center;line-height:1.4">Evolve I<br>→<br>Evolve II<br><span style="color:#ffd700">2nd Awakening</span></span>
+  </div>
   <div class="feature-grid col4">
     <div class="feature-card fade-up delay-1" style="--accent:#ff4444">
       <div class="card-icon">👊</div>
       <div class="card-title">FIST</div>
       <div class="card-desc">สายโจมตีหนัก คริติคอลรุนแรง ATK สูง ปราบศัตรูได้ไวที่สุด</div>
-      <div class="card-imgs">
-        <img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt="">
-      </div>
+      <div class="card-imgs"><img src="Pet/RAGING-BRAWLER.png" alt=""><img src="Pet/KAIJU-BRAWLER.png" alt=""></div>
     </div>
     <div class="feature-card fade-up delay-2" style="--accent:#44ccff">
       <div class="card-icon">🪽</div>
       <div class="card-title">WING</div>
       <div class="card-desc">SPD สูงสุด หลบเก่ง โจมตีหลายครั้ง คริติคอลบ่อย</div>
-      <div class="card-imgs">
-        <img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt="">
-      </div>
+      <div class="card-imgs"><img src="Pet/STORM-BLITZ.png" alt=""><img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""></div>
     </div>
     <div class="feature-card fade-up delay-3" style="--accent:#44ff44">
       <div class="card-icon">🛡️</div>
       <div class="card-title">SHIELD</div>
       <div class="card-desc">HP หนา DEF สูง สะท้อนดาเมจ ฮีลตัวเอง ยืนนานที่สุด</div>
-      <div class="card-imgs">
-        <img src="Pet/GOLEM-BASTION.png" alt=""><img src="Pet/FULLARMOR-IRONJAW.png" alt="">
-      </div>
+      <div class="card-imgs"><img src="Pet/GOLEM-BASTION.png" alt=""><img src="Pet/FULLARMOR-IRONJAW.png" alt=""></div>
     </div>
     <div class="feature-card fade-up delay-4" style="--accent:#ff88cc">
       <div class="card-icon">☯️</div>
       <div class="card-title">BALANCE</div>
       <div class="card-desc">ค่าพลังสมดุล ปรับตัวได้ทุกสถานการณ์ สายอเนกประสงค์</div>
-      <div class="card-imgs">
-        <img src="Pet/FIGHTER-PANDA.png" alt=""><img src="Pet/ARMOR-PANDA.png" alt="">
-      </div>
+      <div class="card-imgs"><img src="Pet/FIGHTER-PANDA.png" alt=""><img src="Pet/ARMOR-PANDA.png" alt=""></div>
     </div>
   </div>
 </section>
 
 <div class="section-divider"></div>
 
-<!-- 3. Tower & Raid — Weapons & Artifacts -->
+<!-- ═══════════ 3. IDLE HUNT ═══════════ -->
+<section>
+  <div class="section-tag fade-up">Passive Progression</div>
+  <h2 class="section-title fade-up delay-1">IDLE <span style="color:#ff8c00">HUNT</span></h2>
+  <p class="section-desc fade-up delay-2">
+    <strong style="color:#ffd700">รับทรัพยากรได้แม้ไม่ได้เล่น!</strong><br>
+    ระบบสะสมเวลาทั้งตอนออนไลน์และออฟไลน์ — สะสมสูงสุด 8 ชั่วโมงต่อรอบ
+    ทุก 30 นาทีสุ่มไอเทม Gold เพิ่มตาม Scout Stage ยิ่งเล่นไกลยิ่งได้เยอะ
+  </p>
+  <div class="idle-hero fade-up delay-1">
+    <div class="idle-clock"><div class="idle-clock-inner">⏳</div></div>
+    <div class="idle-rewards">
+      <div class="idle-reward"><div class="idle-reward-icon">🧪</div><div class="idle-reward-name">Potion</div></div>
+      <div class="idle-reward"><div class="idle-reward-icon">📦</div><div class="idle-reward-name">Artifact Box</div></div>
+      <div class="idle-reward"><div class="idle-reward-icon">🥚</div><div class="idle-reward-name">Mystery Egg</div></div>
+      <div class="idle-reward"><div class="idle-reward-icon">💎</div><div class="idle-reward-name">Essence</div></div>
+      <div class="idle-reward"><div class="idle-reward-icon">💰</div><div class="idle-reward-name">Gold</div></div>
+    </div>
+  </div>
+  <div class="feature-grid col3">
+    <div class="feature-card fade-up delay-1" style="--accent:#ffaa00">
+      <div class="card-icon">⏳</div>
+      <div class="card-title">สะสมเวลาอัตโนมัติ</div>
+      <div class="card-desc">นับเวลาทั้งตอนเล่นและตอนปิดเกม — กลับมาเมื่อไหร่ก็มีของรอรับ สูงสุด 8 ชม.ต่อรอบ กดรับแล้วนับใหม่วน loop</div>
+    </div>
+    <div class="feature-card fade-up delay-2" style="--accent:#cc44ff">
+      <div class="card-icon">🎁</div>
+      <div class="card-title">สุ่มไอเทมทุก 30 นาที</div>
+      <div class="card-desc">Potion, Artifact Box, Mystery Egg และ Essence — ยิ่ง Stage สูง ยิ่งได้ของดี โอกาสสุ่มตามรอบเวลาที่สะสม</div>
+    </div>
+    <div class="feature-card fade-up delay-3" style="--accent:#ffd700">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Gold เพิ่มตามความก้าวหน้า</div>
+      <div class="card-desc">อัตรา Gold ต่อนาทีเพิ่มตาม Scout Stage จาก 6 ไปจนถึง 55 Gold/นาที — ปลดล็อก Tier ใหม่ยิ่งได้เยอะ</div>
+    </div>
+  </div>
+  <div class="idle-tiers fade-up delay-4">
+    <div class="idle-tier t1"><div class="tier-icon">🟢</div><div class="tier-name">Beginner</div><div class="tier-gold">6 Gold/นาที</div><div class="tier-range">Stage 1-9</div></div>
+    <div class="idle-tier t2"><div class="tier-icon">🔵</div><div class="tier-name">Novice</div><div class="tier-gold">10 Gold/นาที</div><div class="tier-range">Stage 10-19</div></div>
+    <div class="idle-tier t3"><div class="tier-icon">🟣</div><div class="tier-name">Adept</div><div class="tier-gold">20 Gold/นาที</div><div class="tier-range">Stage 20-29</div></div>
+    <div class="idle-tier t4"><div class="tier-icon">🟠</div><div class="tier-name">Expert</div><div class="tier-gold">35 Gold/นาที</div><div class="tier-range">Stage 30-39</div></div>
+    <div class="idle-tier t5"><div class="tier-icon">🔴</div><div class="tier-name">Master</div><div class="tier-gold">55 Gold/นาที</div><div class="tier-range">Stage 40+</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════ 4. TOWER & RAID ═══════════ -->
 <section>
   <div class="section-tag fade-up">Loot & Gear</div>
   <h2 class="section-title fade-up delay-1">TOWER <span style="color:#ff8c00">& RAID</span></h2>
   <p class="section-desc fade-up delay-2">
     ลง<strong style="color:#ffd700">หอคอย</strong>และ<strong style="color:#ffd700">Raid Boss</strong>
     เพื่อล่าอาวุธและอาติแฟกต์สุดแข็งแกร่ง<br>
-    อาวุธทุกชิ้นมี 3 เกรดคุณภาพ (Low / Normal / High) 
-    และอาติแฟกต์หายากที่เปลี่ยนเกมการต่อสู้ได้ทั้งเกม
+    อาวุธทุกชิ้นมี 3 เกรดคุณภาพ และอาติแฟกต์หายากที่เปลี่ยนเกมการต่อสู้ได้ทั้งเกม
   </p>
   <div class="feature-grid">
-    <div class="feature-card fade-up delay-1" style="--accent:#ff4466">
+    <div class="tower-card fade-up delay-1" style="--accent:#ff4466">
+      <img src="Battle Scene/tower-scene.jpg" alt="" style="border-radius:12px;height:120px;width:100%;object-fit:cover;opacity:0.7">
+      <div class="card-icon">🗼</div>
+      <div class="card-title">Tower — หอคอยทดสอบ</div>
+      <div class="card-desc">ไต่หอคอยฝ่าด่านศัตรูระดับสูงเพื่อรับรางวัลอาวุธและ Essence สำหรับอัปเกรด</div>
+    </div>
+    <div class="feature-card fade-up delay-2" style="--accent:#ff4466">
       <div class="card-icon">⚔️</div>
-      <div class="card-title">Weapon System</div>
-      <div class="card-desc">อาวุธ 3 ระดับคุณภาพ (Low / Normal / High) — ค่าพลังต่างกันตามเกรด อัปเกรดอาวุธให้คู่หูของคุณ</div>
+      <div class="card-title">Weapon — 3 ระดับคุณภาพ</div>
+      <div class="card-desc">อาวุธทุกชิ้นมี 3 เกรด (Low / Normal / High) — ค่าพลังต่างกันตามเกรด อัปเกรดอาวุธให้คู่หูของคุณ</div>
       <div class="mode-row" style="margin-top:16px">
         <span class="mode-chip" style="font-size:12px;padding:6px 14px">🔸 LOW</span>
         <span class="mode-chip" style="font-size:12px;padding:6px 14px">🔶 NORMAL</span>
         <span class="mode-chip" style="font-size:12px;padding:6px 14px;border-color:rgba(255,215,0,0.4);color:#ffd700">🌟 HIGH</span>
       </div>
     </div>
-    <div class="feature-card fade-up delay-2" style="--accent:#ffaa00">
+    <div class="feature-card fade-up delay-3" style="--accent:#ffaa00">
       <div class="card-icon">💎</div>
       <div class="card-title">Artifact — ไอเทมเปลี่ยนเกม</div>
-      <div class="card-desc">อาติแฟกต์หายากที่ให้บัฟพิเศษ เช่น Moon Veil (+ATK/DEF/SPD 10% + ฮีล), Sniper Eye (คริแรง 2x ทุก 3 เทิร์น) เป็นต้น</div>
+      <div class="card-desc">อาติแฟกต์หายากที่ให้บัฟพิเศษ เช่น Moon Veil (+ATK/DEF/SPD 10% + ฮีล), Sniper Eye (คริแรง 2x ทุก 3 เทิร์น) และอีกมากมาย</div>
     </div>
-    <div class="feature-card fade-up delay-3" style="--accent:#cc44ff">
-      <div class="card-icon">🗼</div>
-      <div class="card-title">Tower — หอคอยทดสอบ</div>
-      <div class="card-desc">ไต่หอคอยฝ่าด่านศัตรูระดับสูงเพื่อรับรางวัลอาวุธและ Essence สำหรับอัปเกรด</div>
-    </div>
-  </div>
-</section>
-
-<!-- Ghost Secret -->
-<section>
-  <div class="ghost-section fade-up">
-    <div class="section-tag">Secret</div>
-    <h2 class="section-title" style="color:#ffd700">ตัวละครลับ <span style="font-size:24px">👻</span></h2>
-    <p class="section-desc" style="color:#c0b0e0">
-      <strong style="color:#ffd700">มีโอกาสสุ่มได้จากการ Evolve</strong> — ตัวละครลับที่สามารถแปลงร่างได้
-      <strong style="color:#ffd700">24 รูปแบบ</strong> ครอบคลุมทั้ง 4 สาย
-    </p>
-    <div class="ghost-row fade-up delay-1">
-      <img src="Pet/DRAGON-GHOST.png" alt="DRAGON">
-      <img src="Pet/PHOENIX-GHOST.png" alt="PHOENIX">
-      <img src="Pet/UNICORN-GHOST.png" alt="UNICORN">
-      <img src="Pet/PANDA-GHOST.png" alt="PANDA">
-      <div class="ghost-silhouette">?</div>
-      <div class="ghost-silhouette">?</div>
-      <div class="ghost-silhouette">?</div>
-      <div class="ghost-silhouette">?</div>
-      <div class="ghost-silhouette">?</div>
-    </div>
-    <div style="text-align:center"><span class="ghost-count fade-up delay-2">👻 +20 ร่างให้ค้นหา</span></div>
   </div>
 </section>
 
 <div class="section-divider"></div>
 
-<!-- Fusion -->
+<!-- ═══════════ 5. FUSION ═══════════ -->
 <section>
   <div class="section-tag fade-up">Crafting</div>
   <h2 class="section-title fade-up delay-1"><span style="color:#ff8c00">FUSION</span> SYSTEM</h2>
@@ -421,7 +511,9 @@ footer {
   </div>
 </section>
 
-<!-- Shiny -->
+<div class="section-divider"></div>
+
+<!-- ═══════════ 6. SHINY ═══════════ -->
 <section>
   <div class="section-tag fade-up">Rarity</div>
   <h2 class="section-title fade-up delay-1">SHINY <span style="color:#ffd700">HUNT</span></h2>
@@ -431,23 +523,39 @@ footer {
   </p>
   <div class="shiny-showcase">
     <div class="shiny-card normal fade-up delay-1">
-      <img src="Pet/CHAMPION.png" alt="Normal">
-      <div class="shiny-badge normal">NORMAL</div>
+      <img src="Pet/CHAMPION.png" alt="Normal"><div class="shiny-badge normal">NORMAL</div>
     </div>
     <div class="shiny-card shiny fade-up delay-2">
       <img src="Pet/PHOENIX-GHOST.png" alt="Shiny" style="filter:drop-shadow(0 8px 24px rgba(255,215,0,0.5)) hue-rotate(-30deg) saturate(1.5)">
       <div class="shiny-badge shiny">✦ SHINY ✦</div>
     </div>
     <div class="shiny-card normal fade-up delay-3">
-      <img src="Pet/GOLEM-BASTION.png" alt="Normal">
-      <div class="shiny-badge normal">NORMAL</div>
+      <img src="Pet/GOLEM-BASTION.png" alt="Normal"><div class="shiny-badge normal">NORMAL</div>
     </div>
+  </div>
+</section>
+
+<!-- ═══════════ 7. GHOST SECRET ═══════════ -->
+<section>
+  <div class="ghost-section fade-up">
+    <div class="section-tag">Secret</div>
+    <h2 class="section-title" style="color:#ffd700">ตัวละครลับ <span style="font-size:24px">👻</span></h2>
+    <p class="section-desc" style="color:#c0b0e0">
+      <strong style="color:#ffd700">มีโอกาสสุ่มได้จากการ Evolve</strong> — ตัวละครลับที่สามารถแปลงร่างได้
+      <strong style="color:#ffd700">24 รูปแบบ</strong> ครอบคลุมทั้ง 4 สาย FIST • WING • SHIELD • BALANCE
+    </p>
+    <div class="ghost-row fade-up delay-1">
+      <img src="Pet/DRAGON-GHOST.png" alt="DRAGON"><img src="Pet/PHOENIX-GHOST.png" alt="PHOENIX">
+      <img src="Pet/UNICORN-GHOST.png" alt="UNICORN"><img src="Pet/PANDA-GHOST.png" alt="PANDA">
+      <div class="ghost-silhouette">?</div><div class="ghost-silhouette">?</div><div class="ghost-silhouette">?</div><div class="ghost-silhouette">?</div><div class="ghost-silhouette">?</div>
+    </div>
+    <div style="text-align:center"><span class="ghost-count fade-up delay-2">👻 +20 ร่างให้ค้นหา</span></div>
   </div>
 </section>
 
 <div class="section-divider"></div>
 
-<!-- Champion Gauntlet -->
+<!-- ═══════════ 8. CHAMPION GAUNTLET ═══════════ -->
 <section>
   <div class="section-tag fade-up">Endgame</div>
   <h2 class="section-title fade-up delay-1">CHAMPION <span style="color:#ff8c00">GAUNTLET</span></h2>
@@ -455,34 +563,18 @@ footer {
     ท้าทาย<strong style="color:#ffd700">4 จตุรเทพ</strong>และ<strong style="color:#ffd700">บอสใหญ่</strong>ของเกม
     ในโหมด Endgame สไตล์ Elite Four — ต่อสู้ต่อเนื่อง 5 ห้อง แพ้แล้วเริ่มใหม่<br>
     มี 2 Tier: <strong style="color:#44ccff">Normal</strong> (Level 100-120) 
-    และ <strong style="color:#ff4444">Hard</strong> (Level 130-150) — 
-    ปลดล็อกหลังเคลียร์ Normal ครบ!
+    และ <strong style="color:#ff4444">Hard</strong> (Level 130-150) — ปลดล็อกหลังเคลียร์ Normal ครบ!
   </p>
   <div class="gauntlet-path fade-up delay-3">
-    <div class="gauntlet-boss">
-      <img src="Pet/RAGING-BRAWLER.png" alt=""><br>
-      <span style="font-size:12px;color:#8878b8">จตุรเทพ 1</span>
-    </div>
+    <div class="gauntlet-boss"><img src="Pet/RAGING-BRAWLER.png" alt=""><br><span style="font-size:12px;color:#8878b8">จตุรเทพ 1</span></div>
     <span class="gauntlet-arrow">→</span>
-    <div class="gauntlet-boss">
-      <img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""><br>
-      <span style="font-size:12px;color:#8878b8">จตุรเทพ 2</span>
-    </div>
+    <div class="gauntlet-boss"><img src="Pet/THUNDERCLOUD-BLITZ.png" alt=""><br><span style="font-size:12px;color:#8878b8">จตุรเทพ 2</span></div>
     <span class="gauntlet-arrow">→</span>
-    <div class="gauntlet-boss">
-      <img src="Pet/GOLEM-BASTION.png" alt=""><br>
-      <span style="font-size:12px;color:#8878b8">จตุรเทพ 3</span>
-    </div>
+    <div class="gauntlet-boss"><img src="Pet/GOLEM-BASTION.png" alt=""><br><span style="font-size:12px;color:#8878b8">จตุรเทพ 3</span></div>
     <span class="gauntlet-arrow">→</span>
-    <div class="gauntlet-boss">
-      <img src="Pet/ARMOR-PANDA.png" alt=""><br>
-      <span style="font-size:12px;color:#8878b8">จตุรเทพ 4</span>
-    </div>
+    <div class="gauntlet-boss"><img src="Pet/ARMOR-PANDA.png" alt=""><br><span style="font-size:12px;color:#8878b8">จตุรเทพ 4</span></div>
     <span class="gauntlet-arrow">→</span>
-    <div class="gauntlet-final">
-      <img src="Pet/DARK-SPECTER.png" alt=""><br>
-      <span style="font-size:14px;color:#ffd700;font-weight:700">🔥 FINAL BOSS</span>
-    </div>
+    <div class="gauntlet-final"><img src="Pet/DARK-SPECTER.png" alt=""><br><span style="font-size:14px;color:#ffd700;font-weight:700">🔥 FINAL BOSS</span></div>
   </div>
   <div class="mode-row fade-up delay-4" style="justify-content:center;margin-top:28px">
     <span class="mode-chip">🏆 Normal Tier</span>
@@ -492,25 +584,43 @@ footer {
   </div>
 </section>
 
-<!-- Battle Modes -->
+<!-- ═══════════ 9. MORE BATTLE MODES ═══════════ -->
 <section>
-  <div class="section-tag fade-up">Modes</div>
-  <h2 class="section-title fade-up delay-1">MORE <span style="color:#ff8c00">MODES</span></h2>
-  <div class="feature-grid">
-    <div class="feature-card fade-up delay-1" style="--accent:#ff4466">
-      <div class="card-icon">⚔️</div>
-      <div class="card-title">VS Mode</div>
-      <div class="card-desc">ต่อสู้กับเพื่อนแบบเรียลไทม์ — วัดทีมใครเจ๋งกว่ากัน มีระบบ Defense Log ดูประวัติการโดนบุก</div>
+  <div class="section-tag fade-up">More Ways to Play</div>
+  <h2 class="section-title fade-up delay-1">MORE <span style="color:#ff8c00">BATTLE MODES</span></h2>
+  <p class="section-desc fade-up delay-2">ต่อสู้ในโหมดที่หลากหลาย ทดสอบความแข็งแกร่งของทีมคุณในทุกมิติ</p>
+  <div class="mode-grid">
+    <div class="mode-card fade-up delay-1">
+      <div class="mode-card-bg" style="background-image:url('Battle Scene/BG-VS-Mode.jpg')"></div>
+      <div class="mode-card-info">
+        <div class="mode-card-icon">⚔️</div>
+        <div class="card-title">VS Mode</div>
+        <div class="card-desc">ต่อสู้กับเพื่อนแบบเรียลไทม์ วัดทีมใครเจ๋งกว่ากัน — มีระบบ Defense Log ดูประวัติการโดนบุก</div>
+      </div>
     </div>
-    <div class="feature-card fade-up delay-2" style="--accent:#ff8844">
-      <div class="card-icon">🔥</div>
-      <div class="card-title">Hell Mode</div>
-      <div class="card-desc">ศัตรูระดับสูง ทดสอบขีดจำกัดของทีมคุณ ปลดล็อก Champion Gauntlet</div>
+    <div class="mode-card fade-up delay-2">
+      <div class="mode-card-bg" style="background-image:url('Battle Scene/Battle-scene-desert-night.jpg')"></div>
+      <div class="mode-card-info">
+        <div class="mode-card-icon">🔥</div>
+        <div class="card-title">Hell Mode</div>
+        <div class="card-desc">ศัตรูระดับสูง ทดสอบขีดจำกัดของทีมคุณ — ปลดล็อก Champion Gauntlet หลังผ่านด่าน</div>
+      </div>
     </div>
-    <div class="feature-card fade-up delay-3" style="--accent:#44ccff">
-      <div class="card-icon">🎯</div>
-      <div class="card-title">Achievement</div>
-      <div class="card-desc">70+ ความสำเร็จให้ท้าทาย เก็บครบทุกรายการเพื่อเป็นสุดยอดผู้ฝึกฝน</div>
+    <div class="mode-card fade-up delay-3">
+      <div class="mode-card-bg" style="background-image:url('Battle Scene/Battle-scene-meadow-night.jpg')"></div>
+      <div class="mode-card-info">
+        <div class="mode-card-icon">🎯</div>
+        <div class="card-title">Achievement System</div>
+        <div class="card-desc">70+ ความสำเร็จให้ท้าทาย เก็บครบทุกรายการเพื่อเป็นสุดยอดผู้ฝึกฝน</div>
+      </div>
+    </div>
+    <div class="mode-card fade-up delay-4">
+      <div class="mode-card-bg" style="background-image:url('Battle Scene/Battle-scene-forest-day.jpg')"></div>
+      <div class="mode-card-info">
+        <div class="mode-card-icon">🗺️</div>
+        <div class="card-title">Scout Mode</div>
+        <div class="card-desc">โหมดเนื้อเรื่องหลัก ฝ่าด่านต่อสู้ไปเรื่อยๆ ปลดล็อกระบบใหม่ไปทีละขั้น</div>
+      </div>
     </div>
   </div>
 </section>

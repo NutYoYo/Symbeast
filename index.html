@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -6079,6 +6079,45 @@ function doTurn(moveIdx) {
       enemy.hp = Math.max(0, enemy.hp - eStale);
       battleState.log.push(`  ⏰ ${T('เสมอ! ทั้งสองฝั่งเสีย '+Math.round(pct*100)+'% HP','STALEMATE! Both sides lose '+Math.round(pct*100)+'% HP')}`);
     }
+
+    // ===== GHOST SURVIVAL/REVIVAL — final safety net =====
+    // The earlier ed/pd-based checks only catch death from the main combat hit. HP can also
+    // reach 0 via enemy reflect/counter, poison/burn DOT ticks, or the stalemate breaker above —
+    // none of which run through ed/pd. This catches those remaining cases so the passive always fires.
+    if(ff==='COCKROACH-GHOST' && !bs.ghostCockroachUsed && creature.hp<=0) {
+      creature.hp=1; bs.ghostCockroachUsed=true; bs.ghostCockroachActive=true; creature.spd=Math.round(creature.spd*2);
+      battleState.log.push(`  🪳 ROACH SURVIVE! HP→1, DEF+100%,SPD+100%`);
+    }
+    if(enemy.isEvolve2Enemy && enemy.evolve2Key==='COCKROACH-GHOST' && !bs.eGhostCockroachUsed && enemy.hp<=0) {
+      enemy.hp=1; bs.eGhostCockroachUsed=true; bs.eGhostCockroachActive=true; enemy.spd=Math.round(enemy.spd*2);
+      battleState.log.push(`  🪳 [E] ROACH SURVIVE! HP→1, DEF+100%,SPD+100%`);
+    }
+    if(creature.inheritedPassive==='COCKROACH-GHOST' && !bs.echoCockroachUsed && creature.hp<=0) {
+      creature.hp=1; bs.echoCockroachUsed=true; bs.echoCockroachActive=true;
+      battleState.log.push(`  🪳 ROACH ECHO SURVIVE! HP→1, DEF/SPD+50%`);
+    }
+    if(ff==='PHOENIX-GHOST' && !bs.ghostPhoenixUsed && creature.hp<=0) {
+      creature.hp=Math.round(creature.maxHp*0.5); bs.ghostPhoenixUsed=true; bs.enemyBurnTurns=10;
+      battleState.log.push(`  🔱 PHOENIX REBIRTH! HP→50%, BURN 10T`);
+    }
+    if(enemy.isEvolve2Enemy && enemy.evolve2Key==='PHOENIX-GHOST' && !bs.eGhostPhoenixUsed && enemy.hp<=0) {
+      enemy.hp=Math.round(enemy.maxHp*0.5); bs.eGhostPhoenixUsed=true; bs.playerBurnTurns=10;
+      battleState.log.push(`  🔱 [E] PHOENIX REBIRTH! HP→50%, BURN 10T`);
+    }
+    if(creature.inheritedPassive==='PHOENIX-GHOST' && !bs.echoPhoenixUsed && creature.hp<=0) {
+      creature.hp=Math.round(creature.maxHp*0.25); bs.echoPhoenixUsed=true; bs.enemyBurnTurns=5;
+      battleState.log.push(`  🔱 PHOENIX ECHO REBIRTH! HP→25%, BURN 5T`);
+    }
+    // Iron Will — same safety net: the early check only catches the main combat hit
+    if(hasIronWill && iwStacks && !iwStacks.ironWillUsed && creature.hp<=0) {
+      creature.hp=1; iwStacks.ironWillUsed=true; iwStacks.ironWillBoostReady=true;
+      battleState.log.push(`  💎 ${T('Iron Will กันตาย! ATK×4 รอบถัดไป!','Iron Will — survived! ATK×4 next round!')}`);
+    }
+    if(eHasIronWill && !bs.eIronWillUsed && enemy.hp<=0) {
+      enemy.hp=1; bs.eIronWillUsed=true; bs.eIronWillBoostReady=true;
+      battleState.log.push(`  💎 ${T('ศัตรู Iron Will กันตาย! ATK×4 รอบถัดไป!','Enemy Iron Will — survived! ATK×4 next round!')}`);
+    }
+
     if(enemy.hp<=0 || creature.hp<=0) {
       // keep animPhase so last-hit damage numbers show on the result screen
       endBattle(enemy.hp<=0);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1275,6 +1275,7 @@ const ENEMY_PASSIVES = [
   { id:'pierce_atk',    icon:'🗡️', name:'PIERCE',         desc:'Attacks ignore DEF and all damage-reduction effects',                type:'W' },
   { id:'heal_block',    icon:'🚫💚', name:'HEAL BLOCK',    desc:'25% chance to prevent enemy healing for 3 turns',                    type:'S' },
   { id:'blind_gaze',    icon:'👁️', name:'BLIND GAZE',    desc:'20% chance to blind you on a landed hit (50% miss chance for 3 turns)', type:'W' },
+  { id:'regen_cleanse', icon:'💚', name:'REGENERATION',   desc:'Heals 3% MaxHP and cleanses its own debuffs every turn', type:'S' },
 ];
 
 function pickEnemyPassives(typeKey, count) {
@@ -4333,6 +4334,7 @@ function doTurn(moveIdx) {
   let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, burnDmgEnemy = 0, burnDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], extraHits = [];
   let healBlockedEnemy = 0, healBlockedPlayer = 0;
   let _dodgeEffectApplied = false; // track if any artifact/weapon dodge should trigger form secondary effects
+  let _eDodgeEffectApplied = false; // same, but for the enemy side (enemy artifact/weapon dodge → enemy form secondary effect)
   const _pHeal = (h, icon, txt) => { if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon,text:txt});return true;} };
   const _eHeal = (h, icon, txt) => { if(bs.enemyHealBlockTurns>0||bs.e2NoHealTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon,text:txt});return true;} };
   const spdBoost = (artId==='moon_veil'||artId2==='moon_veil') ? 1.10 : 1.0;
@@ -4998,6 +5000,17 @@ function doTurn(moveIdx) {
     else if(ff==='KING-CHAMPION') { bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); passives.push({icon:'👑',text:`KING Stack from dodge! ×${bs.e2Stack}`}); _dodgeEffectApplied=true; }
     else if(ff==='SOUL-SPECTER') { bs.e2NextBuff=true; passives.push({icon:'👻',text:'SOUL BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
     else if(ff==='QUICK-SWIFTGUARD') { bs.e2NextBuff=true; passives.push({icon:'💨',text:'QUICK BUFF from dodge! next pierce+true strike'}); _dodgeEffectApplied=true; }
+    else if(ff==='PANDA-NINJA') { bs.e2NextGuaranteeCrit=true; passives.push({icon:'🥷',text:'PANDA-NINJA next crit GUARANTEED from dodge!'}); _dodgeEffectApplied=true; }
+    else if(ff==='BUNNY-GHOST') { bs.ghostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ATK+50% next from dodge!'}); _dodgeEffectApplied=true; }
+    else if(ff==='CAT-GHOST') { bs.ghostCatAtkBuff=true; passives.push({icon:'😼',text:'CAT ATK+50% next from dodge!'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`WINDBLADE ECHO Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='STORM-BLITZ') { bs.echoStormBuff=true; passives.push({icon:'🌩',text:'STORM ECHO BUFF from dodge! ATK+25% next'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='KING-CHAMPION') { bs.echoKingStack=Math.min(5,(bs.echoKingStack||0)+1); passives.push({icon:'👑',text:`KING ECHO Stack from dodge! ×${bs.echoKingStack}`}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='SOUL-SPECTER') { bs.echoSoulDouble=true; passives.push({icon:'👻',text:'SOUL ECHO BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='QUICK-SWIFTGUARD') { bs.echoQuickBuff=true; passives.push({icon:'💨',text:'QUICK ECHO BUFF from dodge! next empowered'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='PANDA-NINJA') { bs.echoNinjaCrit=true; passives.push({icon:'🥷',text:'PANDA-NINJA ECHO next crit chance from dodge!'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='BUNNY-GHOST') { bs.echoBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ECHO ATK+25% next from dodge!'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='CAT-GHOST') { bs.echoCatAtkBuff=true; passives.push({icon:'😼',text:'CAT ECHO ATK+25% next from dodge!'}); _dodgeEffectApplied=true; }
   }
 
   // Enemy stun procs — run AFTER player dodge is finalized (ed=0 if player dodged)
@@ -5025,6 +5038,19 @@ function doTurn(moveIdx) {
   if(ep.includes('double_strike') && Math.random()<0.25) { const hit2=ed; ed+=hit2; passives.push({icon:'⚔️',text:`DOUBLE STRIKE! ×2 → ${ed}`}); }
   if(ep.includes('berserker')) { if(!bs.eBerserkerStacks)bs.eBerserkerStacks=0; bs.eBerserkerStacks=Math.min(5,bs.eBerserkerStacks+1); const mult=1+bs.eBerserkerStacks*0.10; ed=Math.round(ed*mult); passives.push({icon:'🔺',text:`BERSERKER ×${bs.eBerserkerStacks} ATK+${bs.eBerserkerStacks*10}% → ${ed}`}); }
   if(ep.includes('last_dance') && enemy.hp<enemy.maxHp*0.10) { ed=Math.round(ed*2.5); passives.push({icon:'💥',text:`LAST DANCE! ATK×2.5 → ${ed}`}); }
+  if(ep.includes('regen_cleanse')) {
+    const regenHeal=Math.max(1,Math.round(enemy.maxHp*0.03));
+    _eHeal(regenHeal,'💚',T(`REGENERATION! ฟื้นฟู +${regenHeal} HP`,`REGENERATION! +${regenHeal} HP`));
+    let eCleansed=false;
+    if(bs.e2CurseTurns>0) { bs.e2CurseTurns=0; eCleansed=true; }
+    if(!eCleansed && bs.e2NoHealTurns>0) { bs.e2NoHealTurns=0; eCleansed=true; }
+    if(!eCleansed && bs.enemyBurnTurns>0) { bs.enemyBurnTurns=0; eCleansed=true; }
+    if(!eCleansed && bs.enemyPoisonTurns>0) { bs.enemyPoisonTurns=0; eCleansed=true; }
+    if(!eCleansed && bs.enemyStunnedNextTurn) { bs.enemyStunnedNextTurn=false; eCleansed=true; }
+    if(!eCleansed && bs.eBlindTurns>0) { bs.eBlindTurns=0; eCleansed=true; }
+    if(!eCleansed && bs.enemyHealBlockTurns>0) { bs.enemyHealBlockTurns=0; eCleansed=true; }
+    if(eCleansed) passives.push({icon:'💚',text:T('REGENERATION ล้างดีบัพ!','REGENERATION cleansed a debuff!')});
+  }
   // ===== EVOLVED ENEMY FORM PASSIVES =====
   if(ep.includes('FFF')) { ed=Math.round(ed*1.25); passives.push({icon:'💢',text:`BLAZEWOLF ATK×1.25→${ed}`}); }
   if(ep.includes('FFW')) { if(Math.random()<0.25) { const bonus=Math.round(ed*0.6); ed+=bonus; passives.push({icon:'🔥',text:`PANDA CRIT+60%→${ed}`}); } }
@@ -5062,7 +5088,7 @@ function doTurn(moveIdx) {
   if(fk2==='FIGHTER-PANDA' && cmp==='win') { ed=Math.round(ed*1.75); passives.push({icon:'🥊',text:`[E] FIGHTER dmg+75%→${ed}`}); }
   if(fk2==='PANDA-NINJA') {
     if(bs.e2NextGuaranteeCritE) { ed=Math.round(ed*1.6); bs.e2NextGuaranteeCritE=false; passives.push({icon:'🥷',text:'[E] PANDA-NINJA GUARANTEED CRIT!'}); }
-    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextGuaranteeCritE=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA DODGE!'}); }
+    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextGuaranteeCritE=true; _eDodgeEffectApplied=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA DODGE!'}); }
   }
   if(fk2==='PANDA-WARRIOR' && Math.random()<0.25) {
     pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
@@ -5092,7 +5118,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='STORM-BLITZ') {
     if(bs.e2NextBuffE) { ed=Math.round(ed*1.5); bs.e2NextBuffE=false; passives.push({icon:'🌩',text:`[E] STORM BUFF→${ed}`}); }
-    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; passives.push({icon:'🌩',text:'[E] STORM DODGE!'}); }
+    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; _eDodgeEffectApplied=true; passives.push({icon:'🌩',text:'[E] STORM DODGE!'}); }
   }
   if(fk2==='BULWARK-BLITZ') {
     pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
@@ -5106,7 +5132,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='KING-CHAMPION') {
     if(bs.e2StackE>0) { ed=Math.round(ed*(1+0.10*bs.e2StackE)); pd=(playerIgnoresDef?Math.round(pd*(1-0.05*bs.e2StackE)):Math.round(pd*(1-0.10*bs.e2StackE))); }
-    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1); passives.push({icon:'👑',text:`[E] KING DODGE! Stack×${bs.e2StackE}`}); }
+    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1); _eDodgeEffectApplied=true; passives.push({icon:'👑',text:`[E] KING DODGE! Stack×${bs.e2StackE}`}); }
     else if(bs.e2StackE>0) passives.push({icon:'👑',text:`[E] KING Stack×${bs.e2StackE}→${ed}`});
   }
   if(fk2==='ROLLING-CHAMPION') {
@@ -5131,7 +5157,7 @@ function doTurn(moveIdx) {
   if(fk2==='DARK-SPECTER') { ed=Math.round(ed*1.2); passives.push({icon:'🌑',text:`[E] DARK dmg+20%→${ed}`}); }
   if(fk2==='SOUL-SPECTER') {
     if(bs.e2NextBuffE) { const extra=ed; ed+=extra; bs.e2NextBuffE=false; passives.push({icon:'👻',text:`[E] SOUL DOUBLE HIT!→${ed}`}); }
-    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; passives.push({icon:'👻',text:'[E] SOUL DODGE!'}); }
+    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; _eDodgeEffectApplied=true; passives.push({icon:'👻',text:'[E] SOUL DODGE!'}); }
   }
   if(fk2==='GRAVE-SPECTER') {
     pd=(playerIgnoresDef?Math.round(pd*0.875):Math.round(pd*0.75));
@@ -5145,7 +5171,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='QUICK-SWIFTGUARD') {
     if(bs.e2NextBuffE) { ed+=Math.floor(getEffStat('def')/2); bs.e2NextBuffE=false; passives.push({icon:'💨',text:`[E] QUICK PIERCE→${ed}`}); }
-    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextBuffE=true; passives.push({icon:'💨',text:'[E] QUICK DODGE!'}); }
+    if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextBuffE=true; _eDodgeEffectApplied=true; passives.push({icon:'💨',text:'[E] QUICK DODGE!'}); }
   }
   if(fk2==='IRON-SWIFTGUARD') {
     if(cmp==='win') bs.e2StackE=Math.min(3,(bs.e2StackE||0)+1);
@@ -5180,6 +5206,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='WINDBLADE-BRAWLER' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) {
     pd=0; const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    _eDodgeEffectApplied=true;
     passives.push({icon:'🗡',text:`[E] WINDBLADE DODGE! Counter -${counter}`});
   }
   if(fk2==='THUNDERCLOUD-BLITZ') {
@@ -5256,7 +5283,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='BUNNY-GHOST') {
     if(bs.eGhostBunnyAtkBuff) { ed=Math.round(ed*1.5); bs.eGhostBunnyAtkBuff=false; passives.push({icon:'🐰',text:`[E] BUNNY BUFF ATK+50%→${ed}`}); }
-    if(!bs.playerTrueStrike && Math.random()<0.20) { pd=0; bs.eGhostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'[E] BUNNY DODGE! ATK+50% next'}); }
+    if(!bs.playerTrueStrike && Math.random()<0.20) { pd=0; bs.eGhostBunnyAtkBuff=true; _eDodgeEffectApplied=true; passives.push({icon:'🐰',text:'[E] BUNNY DODGE! ATK+50% next'}); }
   }
   if(fk2==='TRICKFOX-GHOST' && ed>0 && Math.random()<0.5) { bs.playerBurnTurns=3; passives.push({icon:'🎭',text:'[E] TRICKFOX BURN! (3T)'}); }
   if(fk2==='OWL-GHOST') {
@@ -5297,7 +5324,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='CAT-GHOST') {
     if(bs.eGhostCatAtkBuff) { ed=Math.round(ed*1.5); bs.eGhostCatAtkBuff=false; passives.push({icon:'😼',text:`[E] CAT BUFF ATK+50%→${ed}`}); }
-    if(!bs.playerTrueStrike && Math.random()<0.25) { pd=0; passives.push({icon:'😼',text:'[E] CAT DODGE!'}); }
+    if(!bs.playerTrueStrike && Math.random()<0.25) { pd=0; _eDodgeEffectApplied=true; passives.push({icon:'😼',text:'[E] CAT DODGE!'}); }
     else if(pd>0) { bs.eGhostCatAtkBuff=true; passives.push({icon:'😼',text:'[E] CAT HIT! ATK+50% next'}); }
   }
   if(fk2==='DRAGON-GHOST') {
@@ -5327,6 +5354,17 @@ function doTurn(moveIdx) {
   }
   if(fk2==='PANDA-GHOST' && !playerStunned && ed>0 && Math.random()<0.15) {
     if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'☯️',text:'[E] PANDA STUN!'});
+  }
+  // ── Deferred dodge effect (enemy side): artifact/weapon dodge triggers form secondary effect ──
+  if(pd===0 && !_eDodgeEffectApplied && !bs.playerTrueStrike) {
+    if(fk2==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c); passives.push({icon:'🗡',text:`[E] WINDBLADE Counter from dodge! -${c}`}); _eDodgeEffectApplied=true; }
+    else if(fk2==='STORM-BLITZ') { bs.e2NextBuffE=true; passives.push({icon:'🌩',text:'[E] STORM BUFF from dodge! next round'}); _eDodgeEffectApplied=true; }
+    else if(fk2==='KING-CHAMPION') { bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1); passives.push({icon:'👑',text:`[E] KING Stack from dodge! ×${bs.e2StackE}`}); _eDodgeEffectApplied=true; }
+    else if(fk2==='SOUL-SPECTER') { bs.e2NextBuffE=true; passives.push({icon:'👻',text:'[E] SOUL BUFF from dodge! next ×2'}); _eDodgeEffectApplied=true; }
+    else if(fk2==='QUICK-SWIFTGUARD') { bs.e2NextBuffE=true; passives.push({icon:'💨',text:'[E] QUICK BUFF from dodge! next pierce'}); _eDodgeEffectApplied=true; }
+    else if(fk2==='PANDA-NINJA') { bs.e2NextGuaranteeCritE=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA next crit GUARANTEED from dodge!'}); _eDodgeEffectApplied=true; }
+    else if(fk2==='BUNNY-GHOST') { bs.eGhostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'[E] BUNNY ATK+50% next from dodge!'}); _eDodgeEffectApplied=true; }
+    else if(fk2==='CAT-GHOST') { bs.eGhostCatAtkBuff=true; passives.push({icon:'😼',text:'[E] CAT ATK+50% next from dodge!'}); _eDodgeEffectApplied=true; }
   }
   }
 
@@ -6831,6 +6869,52 @@ function buildShinySparkles(count=8, radius=60) {
     </div>`;
   }
   return html;
+}
+
+// Diamond/radar stat chart — HP top, ATK right, DEF bottom, SPD left, with numeric labels.
+// Training is unbounded in this game (trainCap keeps growing with hell stage), so a linear cap
+// always eventually gets outgrown and every well-trained pet ends up looking identically "maxed".
+// A pure log scale fixed that but over-compressed the low end (a weak pet still filled ~40%+ of the
+// ring). Square-root scaling is the middle ground: it still leaves headroom at the high end for
+// growth, but a weak pet's stat visibly shrinks toward the center instead of looking "half full".
+function buildStatRadar(hp, atk, spd, def, width=170) {
+  const vw=380, vh=230, cx=190, cy=115, R=62;
+  const ref = { hp:8000, atk:2000, spd:1000, def:1000 };
+  const frac = (v,r) => Math.max(0.05, Math.min(1, Math.sqrt(Math.max(0,v)) / Math.sqrt(r)));
+  const fHp = frac(hp,ref.hp), fAtk = frac(atk,ref.atk), fSpd = frac(spd,ref.spd), fDef = frac(def,ref.def);
+  const ring = f => `M ${cx},${(cy-R*f).toFixed(1)} L ${(cx+R*f).toFixed(1)},${cy} L ${cx},${(cy+R*f).toFixed(1)} L ${(cx-R*f).toFixed(1)},${cy} Z`;
+  const dataPts = [
+    `${cx},${(cy-R*fHp).toFixed(1)}`,
+    `${(cx+R*fAtk).toFixed(1)},${cy}`,
+    `${cx},${(cy+R*fDef).toFixed(1)}`,
+    `${(cx-R*fSpd).toFixed(1)},${cy}`
+  ].join(' ');
+  const height = Math.round(width*vh/vw);
+  // Label + number on separate lines so each line only needs to fit the shorter half of the text,
+  // freeing up room to use a larger font without widening the chart.
+  const lblSize=15, numSize=19;
+  return `<svg viewBox="0 0 ${vw} ${vh}" width="${width}" height="${height}" style="filter:drop-shadow(0 0 10px rgba(255,140,0,0.15))">
+    <path d="${ring(0.2)}" fill="none" stroke="rgba(200,180,255,0.35)" stroke-width="1.5"/>
+    <path d="${ring(0.4)}" fill="none" stroke="rgba(200,180,255,0.35)" stroke-width="1.5"/>
+    <path d="${ring(0.6)}" fill="none" stroke="rgba(200,180,255,0.35)" stroke-width="1.5"/>
+    <path d="${ring(0.8)}" fill="none" stroke="rgba(200,180,255,0.35)" stroke-width="1.5"/>
+    <path d="${ring(1)}" fill="none" stroke="rgba(220,200,255,0.6)" stroke-width="2"/>
+    <line x1="${cx}" y1="${cy-R}" x2="${cx}" y2="${cy+R}" stroke="rgba(220,200,255,0.45)" stroke-width="1.5"/>
+    <line x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="rgba(220,200,255,0.45)" stroke-width="1.5"/>
+    <polygon points="${dataPts}" fill="rgba(255,140,0,0.18)" stroke="#ff8c00" stroke-width="2"/>
+    <circle cx="${cx}" cy="${(cy-R*fHp).toFixed(1)}" r="4" fill="#ff8c00"/>
+    <circle cx="${(cx+R*fAtk).toFixed(1)}" cy="${cy}" r="4" fill="#ff8c00"/>
+    <circle cx="${cx}" cy="${(cy+R*fDef).toFixed(1)}" r="4" fill="#ff8c00"/>
+    <circle cx="${(cx-R*fSpd).toFixed(1)}" cy="${cy}" r="4" fill="#ff8c00"/>
+    <text x="${cx}" y="18" text-anchor="middle" fill="#ff4466" font-size="${lblSize}" font-weight="700">❤️ HP</text>
+    <text x="${cx}" y="37" text-anchor="middle" fill="#ff4466" font-size="${numSize}" font-weight="700">${hp}</text>
+    <text x="${(cx+R+8).toFixed(1)}" y="${cy-4}" text-anchor="start" fill="#ff8800" font-size="${lblSize}" font-weight="700">⚔️ ATK</text>
+    <text x="${(cx+R+8).toFixed(1)}" y="${cy+17}" text-anchor="start" fill="#ff8800" font-size="${numSize}" font-weight="700">${atk}</text>
+    <text x="${cx}" y="${(cy+R+22).toFixed(1)}" text-anchor="middle" fill="#44aaff" font-size="${numSize}" font-weight="700">${def}</text>
+    <text x="${cx}" y="${vh-9}" text-anchor="middle" fill="#44aaff" font-size="${lblSize}" font-weight="700">🛡️ DEF</text>
+    <text x="${(cx-R-8).toFixed(1)}" y="${cy-4}" text-anchor="end" fill="#ffdd44" font-size="${lblSize}" font-weight="700">💨 SPD</text>
+    <text x="${(cx-R-8).toFixed(1)}" y="${cy+17}" text-anchor="end" fill="#ffdd44" font-size="${numSize}" font-weight="700">${spd}</text>
+  </svg>`;
 }
 
 function buildPetSvg(pet, size=80, glow=false) {
@@ -9380,6 +9464,8 @@ function renderBattleScreen() {
               ebadges.push(ebadge('💥 LAST DANCE','#ff2222','rgba(80,0,0,0.7)','0.7'));
             if(ep.includes('berserker') && battleState.eBerserkerStacks>0)
               ebadges.push(ebadge(`🔺 ATK+${battleState.eBerserkerStacks*10}%`,'#ff6600','rgba(60,20,0,0.7)','1.2'));
+            if(ep.includes('regen_cleanse'))
+              ebadges.push(ebadge('💚 REGEN','#44ff88','rgba(0,50,20,0.7)','1.2'));
             // artifact badges (mirror player side)
             const ea1=enemy.artifact, ea2=enemy.artifact2;
             const eas=battleState.eArtStacks||{};
@@ -11154,34 +11240,36 @@ function renderParty() {
       : f ? `<div style="margin-top:6px;padding:6px 8px;background:#0e0e22;border-radius:8px;border:1px solid #2a2a4a;font-size:11px;color:#c0a0ff">${f.passiveIcon||''} ${P(f)}</div>${inheritedPassiveDetail}` : (inheritedPassiveDetail ? `<div style="margin-top:6px">${inheritedPassiveDetail}</div>` : '');
     screenContent.innerHTML = `
       <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;border-radius:12px;padding:0 0 4px 0;overflow-y:auto">
-        <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px 8px 8px;border-radius:12px;gap:4px">
-          <div style="display:flex;align-items:center;width:100%;gap:4px">
-            ${partyDetailIdx>0?`<div onclick="switchPartyDetail(-1)" style="flex-shrink:0;width:32px;height:64px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#8060d0;cursor:pointer;user-select:none;background:#0a0a20;border-radius:8px;border:1px solid #2a2a4a">◀</div>`:'<div style="flex-shrink:0;width:32px"></div>'}
-            <div id="pet-sprite-box" style="position:relative;flex:1;display:flex;justify-content:center;align-items:center;border-radius:12px;overflow:hidden">
-            ${(()=>{
-              const _glowC = pet.phase==='larva'?'#9b59b6':nameColor;
-              const _shinyAnim = pet.shiny ? 'animation:bob 2s ease-in-out infinite, shiny-aura-pulse 2s ease-in-out infinite;' : `filter:drop-shadow(0 0 4px ${_glowC});`;
-              return pet.phase==='egg'
-              ? buildEggSvg(pet.tapCount/pet.tapTarget)
-              : pet.phase==='larva'
-                ? `<div style="position:relative;width:100%"><img src="${petImg('LARVA')}" class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated;${_shinyAnim}">${pet.shiny?buildShinySparkles(8,60):''}</div>`
-                : (()=>{const _n=(FORMS[pet.formKey]||EVOLVE2_FORMS[pet.finalKey||''])?.name||pet.name; return `<div style="position:relative;width:100%">
-                    <img src="${petImg(_n)}" class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated;object-fit:contain;${_shinyAnim}">
-                    ${pet.shiny?buildShinySparkles(10,90):''}
-                  </div>`;})();
-            })()}
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 3px 8px 3px;border-radius:12px;gap:4px">
+          <div style="position:relative;display:flex;align-items:center;width:100%;gap:0px">
+            <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:0px">
+              <div id="pet-sprite-box" style="position:relative;flex:1;min-width:0;display:flex;justify-content:center;align-items:center;border-radius:12px;overflow:hidden">
+              ${(()=>{
+                const _glowC = pet.phase==='larva'?'#9b59b6':nameColor;
+                const _shinyAnim = pet.shiny ? 'animation:bob 2s ease-in-out infinite, shiny-aura-pulse 2s ease-in-out infinite;' : `filter:drop-shadow(0 0 4px ${_glowC});`;
+                return pet.phase==='egg'
+                ? buildEggSvg(pet.tapCount/pet.tapTarget)
+                : pet.phase==='larva'
+                  ? `<div style="position:relative;width:100%"><img src="${petImg('LARVA')}" class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated;${_shinyAnim}">${pet.shiny?buildShinySparkles(8,60):''}</div>`
+                  : (()=>{const _n=(FORMS[pet.formKey]||EVOLVE2_FORMS[pet.finalKey||''])?.name||pet.name; return `<div style="position:relative;width:100%">
+                      <img src="${petImg(_n)}" class="anim-bob" style="width:100%;height:auto;image-rendering:pixelated;object-fit:contain;${_shinyAnim}">
+                      ${pet.shiny?buildShinySparkles(10,90):''}
+                    </div>`;})();
+              })()}
+              </div>
+              ${pet.phase!=='egg'?`<div style="flex-shrink:0">${buildStatRadar(pet.maxHp, pet.atk, pet.spd, pet.def, 170)}</div>`:''}
             </div>
-            ${partyDetailIdx<pets.length-1?`<div onclick="switchPartyDetail(1)" style="flex-shrink:0;width:32px;height:64px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#8060d0;cursor:pointer;user-select:none;background:#0a0a20;border-radius:8px;border:1px solid #2a2a4a">▶</div>`:'<div style="flex-shrink:0;width:32px"></div>'}
+            ${partyDetailIdx>0?`<div onclick="switchPartyDetail(-1)" style="position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:5;width:26px;height:56px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#8060d0;cursor:pointer;user-select:none;background:rgba(10,10,32,0.7);border-radius:8px;border:1px solid #2a2a4a">◀</div>`:''}
+            ${partyDetailIdx<pets.length-1?`<div onclick="switchPartyDetail(1)" style="position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:5;width:26px;height:56px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#8060d0;cursor:pointer;user-select:none;background:rgba(10,10,32,0.7);border-radius:8px;border:1px solid #2a2a4a">▶</div>`:''}
           </div>
           <div style="display:flex;align-items:center;justify-content:center;gap:6px">
             <div style="font-family:Kanit,sans-serif;font-size:15px;font-weight:700;color:${pet.shiny?'#ffd700':nameColor};text-align:center;${pet.shiny?'animation:shiny-glow 1.5s ease-in-out infinite':''}">${pet.shiny?'✨ ':''}${petName(pet)}</div>
             <div data-rename="${partyDetailIdx}" style="font-size:14px;cursor:pointer;opacity:0.6;user-select:none" title="เปลี่ยนชื่อ">✏️</div>
           </div>
           ${pet.nickname?`<div style="font-size:10px;color:#5a4a8a;font-family:monospace">(${pet.name})</div>`:''}
-          ${isActive?`<span style="font-family:Kanit,sans-serif;font-size:10px;color:#8060d0">▶ ACTIVE</span>`:''}
-          <div style="display:flex;align-items:center;justify-content:center;gap:4px">
-            <div style="font-size:11px;color:#8878b8">ATK ${pet.atk} ● SPD ${pet.spd} ● DEF ${pet.def}</div>
-            ${pet.shiny?`<div data-shiny-stat-toggle style="font-size:11px;color:#ffd700;cursor:pointer;user-select:none" title="${T('ดูโบนัส Shiny','View Shiny bonus')}">ⓘ</div>`:''}
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+            ${isActive?`<span style="font-family:Kanit,sans-serif;font-size:10px;color:#8060d0">▶ ACTIVE</span>`:''}
+            ${pet.shiny?`<div data-shiny-stat-toggle style="font-size:11px;color:#ffd700;cursor:pointer;user-select:none" title="${T('ดูโบนัส Shiny','View Shiny bonus')}">ⓘ ${T('โบนัส Shiny','Shiny Bonus')}</div>`:''}
           </div>
           ${pet.shiny && shinyStatTooltip ? (()=>{
             const b = pet.shinyBonus || { hp:Math.round(pet.maxHp-pet.maxHp/1.1), atk:Math.round(pet.atk-pet.atk/1.1), spd:Math.round(pet.spd-pet.spd/1.1), def:Math.round(pet.def-pet.def/1.1) };

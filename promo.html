@@ -150,6 +150,21 @@ section.section-bg > * { position:relative; z-index:1; }
 .radar-axis { stroke:rgba(255,255,255,0.06); }
 .radar-dot { fill:#ff8c00; }
 
+.train-showcase {
+  position:relative; display:flex; align-items:center; justify-content:center;
+  height:300px; max-width:700px; margin:10px auto 40px;
+}
+.train-showcase-pet {
+  height:250px; filter:drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+  opacity:0.9; z-index:1; position:relative;
+}
+.train-showcase-radar {
+  position:absolute; width:260px; z-index:2; right:10%; top:50%; transform:translateY(-50%);
+  filter:drop-shadow(0 0 20px rgba(255,140,0,0.3));
+}
+.train-showcase-radar .radar-data { fill:rgba(255,140,0,0.18); stroke:#ff8c00; stroke-width:2.5; }
+.train-showcase-radar .radar-dot { r:5; }
+
 /* Evolve Flow Chart */
 .evo-flow { display:flex; flex-direction:column; align-items:center; margin-top:20px; }
 .evo-node { text-align:center; position:relative; }

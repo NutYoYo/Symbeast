@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4246,8 +4246,11 @@ function doOverdriveTurn() {
     passives.push({icon:'☯️',text:`PANDA STRIKE ×4.0 forced crit→${pd} + STUN | Crit+30%,stun+20% (3T)`});
   }
   // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit
-  if(bs.enemyBurnTurns>0 && pd>0) pd = Math.round(pd*1.25);
-  if(bs.playerBurnTurns>0 && ed>0) ed = Math.round(ed*1.25);
+  // 🔥 Fire Absorb: Phoenix-form monsters absorb fire — take -25% dmg instead of +25%
+  const eFireAbsorbOD = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION');
+  const pFireAbsorbOD = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION';
+  if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorbOD ? Math.round(pd*0.75) : Math.round(pd*1.25);
+  if(bs.playerBurnTurns>0 && ed>0) ed = pFireAbsorbOD ? Math.round(ed*0.75) : Math.round(ed*1.25);
   // apply damage
   bs.preAnimPlayerHp = creature.hp;
   bs.preAnimEnemyHp  = enemy.hp;
@@ -6068,8 +6071,11 @@ function doTurn(moveIdx) {
   };
 
   // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit this turn
-  if(bs.enemyBurnTurns>0 && pd>0) pd = Math.round(pd*1.25);
-  if(bs.playerBurnTurns>0 && ed>0) ed = Math.round(ed*1.25);
+  // 🔥 Fire Absorb: Phoenix-form monsters absorb fire — take -25% dmg instead of +25%
+  const fireAbsorb = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION';
+  const eFireAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION');
+  if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorb ? Math.round(pd*0.75) : Math.round(pd*1.25);
+  if(bs.playerBurnTurns>0 && ed>0) ed = fireAbsorb ? Math.round(ed*0.75) : Math.round(ed*1.25);
 
   // ☠️ Poison ticks — applied here (before lastResult) so floating numbers can display them
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='POISON-FORTRESS') bs.enemyPoisonTurns=0; // POISON-FORTRESS: immune to poison
@@ -6084,16 +6090,28 @@ function doTurn(moveIdx) {
     poisonDmgPlayer = pdmg;
     passives.push({icon:'☠️',text:T(`พิษ! -${pdmg} HP (เหลือ ${bs.playerPoisonTurns} เทิร์น)`,`Poison! -${pdmg} HP (${bs.playerPoisonTurns} turns left)`)});
   }
-  // 🔥 Burn ticks — 3% MaxHP/turn, 3 turns
+  // 🔥 Burn ticks — 3% MaxHP/turn, 3 turns (Fire Absorb: heal instead)
   if(bs.enemyBurnTurns>0 && enemy.hp>0) {
-    const bdmg=Math.max(1,Math.round(enemy.maxHp*0.03)); enemy.hp=Math.max(0,enemy.hp-bdmg); bs.enemyBurnTurns--;
-    burnDmgEnemy = bdmg;
-    passives.push({icon:'🔥',text:T(`เผาไหม้! ศัตรู -${bdmg} HP (${bs.enemyBurnTurns} เทิร์น)`,`Burn! Enemy -${bdmg} HP (${bs.enemyBurnTurns} turns left)`)});
+    const bdmg=Math.max(1,Math.round(enemy.maxHp*0.03));
+    if(eFireAbsorb) {
+      const heal=Math.min(bdmg, enemy.maxHp-enemy.hp); enemy.hp=Math.min(enemy.maxHp, enemy.hp+bdmg);
+      passives.push({icon:'🔥',text:T(`ดูดซับไฟ! ศัตรู +${heal} HP (${bs.enemyBurnTurns} เทิร์น)`,`Fire Absorb! Enemy +${heal} HP (${bs.enemyBurnTurns} turns left)`)});
+    } else {
+      enemy.hp=Math.max(0,enemy.hp-bdmg); burnDmgEnemy=bdmg;
+      passives.push({icon:'🔥',text:T(`เผาไหม้! ศัตรู -${bdmg} HP (${bs.enemyBurnTurns} เทิร์น)`,`Burn! Enemy -${bdmg} HP (${bs.enemyBurnTurns} turns left)`)});
+    }
+    bs.enemyBurnTurns--;
   }
   if(bs.playerBurnTurns>0 && creature.hp>0) {
-    const bdmg=Math.max(1,Math.round(creature.maxHp*0.03)); creature.hp=Math.max(0,creature.hp-bdmg); bs.playerBurnTurns--;
-    burnDmgPlayer = bdmg;
-    passives.push({icon:'🔥',text:T(`เผาไหม้! -${bdmg} HP (เหลือ ${bs.playerBurnTurns} เทิร์น)`,`Burn! -${bdmg} HP (${bs.playerBurnTurns} turns left)`)});
+    const bdmg=Math.max(1,Math.round(creature.maxHp*0.03));
+    if(fireAbsorb) {
+      const heal=Math.min(bdmg, creature.maxHp-creature.hp); creature.hp=Math.min(creature.maxHp, creature.hp+bdmg);
+      passives.push({icon:'🔥',text:T(`ดูดซับไฟ! +${heal} HP (เหลือ ${bs.playerBurnTurns} เทิร์น)`,`Fire Absorb! +${heal} HP (${bs.playerBurnTurns} turns left)`)});
+    } else {
+      creature.hp=Math.max(0,creature.hp-bdmg); burnDmgPlayer=bdmg;
+      passives.push({icon:'🔥',text:T(`เผาไหม้! -${bdmg} HP (เหลือ ${bs.playerBurnTurns} เทิร์น)`,`Burn! -${bdmg} HP (${bs.playerBurnTurns} turns left)`)});
+    }
+    bs.playerBurnTurns--;
   }
 
   const turnNum = battleState.turn;
@@ -11223,14 +11241,19 @@ function renderParty() {
     const ff = pet.phase==='final' ? EVOLVE2_FORMS[pet.finalKey||''] : null;
     const f  = !ff && pet.formKey ? FORMS[pet.formKey] : null;
     const nameColor = ff ? ff.color : f ? f.color : '#c0a0ff';
-    const _nc = (pet.shiny?'#ffd700':nameColor).replace('#','');
+    const _nc = nameColor.replace('#','');
     const _r = parseInt(_nc.substring(0,2),16), _g = parseInt(_nc.substring(2,4),16), _b = parseInt(_nc.substring(4,6),16);
-    const _lum = 0.299*_r + 0.587*_g + 0.114*_b; // perceived brightness
-    const _factor = _lum < 80 ? 2.2 : 0.35; // dark color → brighten stroke, light color → darken stroke
+    // lighten color for text (pastel)
+    const nameColorLight = '#' + [
+      Math.round(_r + (255-_r)*0.65),
+      Math.round(_g + (255-_g)*0.65),
+      Math.round(_b + (255-_b)*0.65)
+    ].map(v=>v.toString(16).padStart(2,'0')).join('');
+    // dark stroke
     const nameColorDark = '#' + [
-      Math.min(255, Math.round(_r*_factor)),
-      Math.min(255, Math.round(_g*_factor)),
-      Math.min(255, Math.round(_b*_factor))
+      Math.round(_r*0.35),
+      Math.round(_g*0.35),
+      Math.round(_b*0.35)
     ].map(v=>v.toString(16).padStart(2,'0')).join('');
     const isActive = partyDetailIdx === activePetIdx;
     const hpPct = Math.round(pet.hp/pet.maxHp*100);
@@ -11272,7 +11295,7 @@ function renderParty() {
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%">
             ${partyDetailIdx>0?`<div onclick="switchPartyDetail(-1)" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#8060d0;cursor:pointer;user-select:none;background:rgba(10,10,32,0.7);border-radius:8px;border:1px solid #2a2a4a">◀</div>`:'<div style="width:28px"></div>'}
             <div style="display:flex;align-items:center;gap:6px">
-              <div style="font-family:Kanit,sans-serif;font-size:15px;font-weight:700;color:${pet.shiny?'#ffd700':nameColor};text-align:center;text-shadow:-1px -1px 0 ${nameColorDark},1px -1px 0 ${nameColorDark},-1px 1px 0 ${nameColorDark},1px 1px 0 ${nameColorDark};${pet.shiny?'animation:shiny-glow 1.5s ease-in-out infinite':''}">${pet.shiny?'✨ ':''}${petName(pet)}</div>
+              <div style="font-family:Kanit,sans-serif;font-size:15px;font-weight:700;color:${pet.shiny?'#ffe680':nameColorLight};text-align:center;text-shadow:-1px -1px 0 ${pet.shiny?'#594b00':nameColorDark},1px -1px 0 ${pet.shiny?'#594b00':nameColorDark},-1px 1px 0 ${pet.shiny?'#594b00':nameColorDark},1px 1px 0 ${pet.shiny?'#594b00':nameColorDark};${pet.shiny?'animation:shiny-glow 1.5s ease-in-out infinite':''}">${pet.shiny?'✨ ':''}${petName(pet)}</div>
               <div data-rename="${partyDetailIdx}" style="font-size:14px;cursor:pointer;opacity:0.6;user-select:none" title="เปลี่ยนชื่อ">✏️</div>
             </div>
             ${partyDetailIdx<pets.length-1?`<div onclick="switchPartyDetail(1)" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#8060d0;cursor:pointer;user-select:none;background:rgba(10,10,32,0.7);border-radius:8px;border:1px solid #2a2a4a">▶</div>`:'<div style="width:28px"></div>'}
@@ -11467,6 +11490,13 @@ function renderParty() {
     const hpPct = Math.round(pet.hp/pet.maxHp*100);
     const f = pet.formKey ? FORMS[pet.formKey] : null;
     const nameColor = f ? f.color : '#c0a0ff';
+    const _nc2 = nameColor.replace('#','');
+    const _r2 = parseInt(_nc2.substring(0,2),16), _g2 = parseInt(_nc2.substring(2,4),16), _b2 = parseInt(_nc2.substring(4,6),16);
+    const nameColorLight = '#' + [
+      Math.round(_r2 + (255-_r2)*0.65),
+      Math.round(_g2 + (255-_g2)*0.65),
+      Math.round(_b2 + (255-_b2)*0.65)
+    ].map(v=>v.toString(16).padStart(2,'0')).join('');
     const isResting = !!pet.resting;
     const border = isActive ? '#8060d0' : isResting ? '#40a040' : '#2a2a5a';
     const bg = isActive ? 'rgba(100,60,200,0.1)' : isResting ? 'rgba(20,40,20,0.4)' : '#0a0a1a';
@@ -11495,7 +11525,7 @@ function renderParty() {
             ${pet.locked?`<div style="position:absolute;top:-4px;left:-4px;background:#1a1200;border:1px solid #f39c12;border-radius:8px;padding:1px 4px;font-size:11px;line-height:1.4">🔒</div>`:''}
           </div>
           <div style="flex:1">
-            <div style="font-family:Kanit,sans-serif;font-size:14px;font-weight:700;color:${pet.shiny?'#ffd700':nameColor}">${pet.shiny?'✨ ':''}${petName(pet)}${pet.rebirthRank?` <span style="font-size:10px;color:#cc88ff;letter-spacing:1px">${'✦'.repeat(pet.rebirthRank)}</span>`:''}</div>
+            <div style="font-family:Kanit,sans-serif;font-size:14px;font-weight:700;color:${pet.shiny?'#ffe680':nameColorLight}">${pet.shiny?'✨ ':''}${petName(pet)}${pet.rebirthRank?` <span style="font-size:10px;color:#cc88ff;letter-spacing:1px">${'✦'.repeat(pet.rebirthRank)}</span>`:''}</div>
             <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
               <div style="flex:1;height:5px;background:#0a0a20;border-radius:3px;overflow:hidden">
                 <div style="width:${hpPct}%;height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);border-radius:3px"></div>
@@ -11721,12 +11751,7 @@ function renderParty() {
           <div style="flex:1;height:5px;background:#0a0a20;border-radius:3px;overflow:hidden"><div style="width:${hpPct}%;height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);border-radius:3px"></div></div>
           <span style="font-size:10px;color:#8878b8">${p.hp}/${p.maxHp}</span>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;padding:6px;background:#08080f;border-radius:8px">
-          <div><div style="font-size:16px;font-weight:700;color:#e0e0ff">${p.maxHp}</div><div style="font-size:9px;color:#4a4a7a">HP</div></div>
-          <div><div style="font-size:16px;font-weight:700;color:#ff8888">${p.atk}</div><div style="font-size:9px;color:#4a4a7a">ATK</div></div>
-          <div><div style="font-size:16px;font-weight:700;color:#88ffcc">${p.spd}</div><div style="font-size:9px;color:#4a4a7a">SPD</div></div>
-          <div><div style="font-size:16px;font-weight:700;color:#8888ff">${p.def}</div><div style="font-size:9px;color:#4a4a7a">DEF</div></div>
-        </div>
+        <div style="display:flex;justify-content:center;padding:4px 0">${buildStatRadar(p.maxHp, p.atk, p.spd, p.def, 280)}</div>
         <div style="padding:6px 10px;border-radius:8px;background:#08080f;border:1px solid #2a2a3a">
           <div style="font-size:11px;color:#8878b8;font-family:Kanit,sans-serif;margin-bottom:4px">SYMBOLS</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">

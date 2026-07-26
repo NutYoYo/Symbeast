@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1096,7 +1096,7 @@ const EVOLVE2_FORMS = {
   'QUICK-SWIFTGUARD':   { name:'QUICK-SWIFTGUARD',   color:'#44ffcc', hp:120, atk:19, spd:38, def:10, passiveIcon:'💨',
     passive:'25% chance to fully dodge; on dodge, the next attack pierces DEF and cannot miss',
     passiveTh:'25% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จการโจมตีครั้งถัดไปจะทะลุ DEF ฝั่งตรงข้ามและไม่พลาดเป้า' },
-  'PHEONIX-SWIFTGUARD': { name:'PHEONIX-SWIFTGUARD', color:'#ff6644', hp:135, atk:21, spd:28, def:12, passiveIcon:'🔥',
+  'PHEONIX-SWIFTGUARD': { name:'PHOENIX-SWIFTGUARD', color:'#ff6644', hp:135, atk:21, spd:28, def:12, passiveIcon:'🔥',
     passive:'Every attack has a 15% chance to burn the enemy; once per battle when HP < 30%: full heal + ATK/DEF/SPD +15%',
     passiveTh:'ทุกการโจมตีมีโอกาส 15% ทำให้ศัตรูติดเผาไหม้ เมื่อ HP<30% (ครั้งเดียว/การต่อสู้): ฟื้น HP 100% ทันที + ATK/DEF/SPD +15%' },
   'IRON-SWIFTGUARD':    { name:'IRON-SWIFTGUARD',    color:'#0d6655', hp:158, atk:18, spd:23, def:17, passiveIcon:'🛡',
@@ -4716,7 +4716,7 @@ function doTurn(moveIdx) {
   if(ff==='PHEONIX-SWIFTGUARD') {
     if(!bs.e2PhoenixUsed && creature.hp>0 && creature.hp<creature.maxHp*0.3) {
       creature.hp=creature.maxHp; bs.e2PhoenixUsed=true; bs.e2PhoenixBuffed=true;
-      passives.push({icon:'🔥',text:'PHEONIX REBIRTH! Full heal + ATK/DEF/SPD+15% (permanent)'});
+      passives.push({icon:'🔥',text:'PHOENIX REBIRTH! Full heal + ATK/DEF/SPD+15% (permanent)'});
     }
     if(bs.e2PhoenixBuffed) { pd=Math.round(pd*1.15); ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); }
     if(pd>0 && Math.random()<0.15) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`PHOENIX BURN! Enemy is on fire→${pd}`}); }

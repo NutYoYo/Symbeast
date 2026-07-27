@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -2594,7 +2594,7 @@ function grantAchievementReward(reward) {
   if(reward.rebirthStone) { for(let i=0;i<reward.rebirthStone;i++) addItemToInventory('rebirth_stone'); parts.push(`🔮 Rebirth Stone ×${reward.rebirthStone}`); }
   if(reward.shinyEgg) { for(let i=0;i<reward.shinyEgg;i++) addItemToInventory('shiny_egg'); parts.push(`✨🥚 Shiny Egg ×${reward.shinyEgg}`); }
   if(reward.mysteryEgg) { for(let i=0;i<reward.mysteryEgg;i++) addItemToInventory('mystery_egg'); parts.push(`🥚 Mystery Egg ×${reward.mysteryEgg}`); }
-  if(reward.weaponBoxGrade) { addWeaponToBag(rollWeaponFromPool(reward.weaponBoxGrade)); parts.push(`⚔️ Weapon [${reward.weaponBoxGrade}]`); }
+  if(reward.weaponBoxGrade) { const wk = rollWeaponFromPool(reward.weaponBoxGrade); addWeaponToBag(wk); const wn = WEAPONS[wk]; parts.push(`⚔️ ${wn?wn.name:'Weapon'} [${reward.weaponBoxGrade}]`); }
   if(reward.artifactBoxGrade==='E') { addItemToInventory('box_E'); parts.push('📦 Artifact Box [E]'); }
   if(reward.artifactBoxGrade==='R') { addItemToInventory('box_R'); parts.push('📦 Artifact Box [R]'); }
   if(reward.artifactBoxN) { for(let i=0;i<reward.artifactBoxN;i++) addItemToInventory('artifact_box'); parts.push(`📦 Artifact Box ×${reward.artifactBoxN}`); }
@@ -2606,6 +2606,7 @@ function claimAchievement(id) {
   const parts = grantAchievementReward(a.reward);
   achievementStatus[id] = 'claimed';
   saveGame();
+  showToast(`🏆 ${T('ได้รับแล้ว:','Claimed:')} ${parts.join(', ')}`);
   return parts;
 }
 
@@ -12609,6 +12610,10 @@ function claimIdleRewards() {
   const { gold:g, items } = idlePending;
   gold += g;
   items.forEach(it => { addItemToInventory(it.type, it.qty); });
+  // Toast summary
+  const itemParts = items.map(it => `${ITEMS[it.type]?.icon||''} ${T(ITEMS[it.type]?.nameTh||'',ITEMS[it.type]?.name||'')} ×${it.qty}`);
+  if(g>0) itemParts.unshift(`💰 +${g.toLocaleString()}G`);
+  showToast(`⏳ ${T('ได้รับของจาก IDLE:','IDLE Hunt:')} ${itemParts.join(', ')}`);
   idlePending = null;
   idleAccumulatedMs = 0; // reset accumulated time
   saveGame();

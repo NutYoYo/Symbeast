@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -472,7 +472,7 @@ body::after {
   padding:5px 14px; border-radius:20px;
   font-size:12px; font-family:'Kanit',sans-serif;
   animation:toastFade 2.5s forwards; pointer-events:none;
-  white-space:nowrap; z-index:10;
+  white-space:nowrap; z-index:100;
 }
 
 /* ========== ANIMATIONS ========== */
@@ -4252,6 +4252,11 @@ function doOverdriveTurn() {
   const pFireAbsorbOD = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION';
   if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorbOD ? Math.round(pd*0.75) : Math.round(pd*1.25);
   if(bs.playerBurnTurns>0 && ed>0) ed = pFireAbsorbOD ? Math.round(ed*0.75) : Math.round(ed*1.25);
+  // ⏰ Stalemate Breaker
+  if(bs.stalemateAtkMult && bs.stalemateAtkMult>1) {
+    if(pd>0) pd = Math.round(pd * bs.stalemateAtkMult);
+    if(ed>0) ed = Math.round(ed * bs.stalemateAtkMult);
+  }
   // apply damage
   bs.preAnimPlayerHp = creature.hp;
   bs.preAnimEnemyHp  = enemy.hp;
@@ -6078,6 +6083,12 @@ function doTurn(moveIdx) {
   if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorb ? Math.round(pd*0.75) : Math.round(pd*1.25);
   if(bs.playerBurnTurns>0 && ed>0) ed = fireAbsorb ? Math.round(ed*0.75) : Math.round(ed*1.25);
 
+  // ⏰ Stalemate Breaker: ramping ATK boost after turn 50
+  if(bs.stalemateAtkMult && bs.stalemateAtkMult>1) {
+    if(pd>0) pd = Math.round(pd * bs.stalemateAtkMult);
+    if(ed>0) ed = Math.round(ed * bs.stalemateAtkMult);
+  }
+
   // ☠️ Poison ticks — applied here (before lastResult) so floating numbers can display them
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='POISON-FORTRESS') bs.enemyPoisonTurns=0; // POISON-FORTRESS: immune to poison
   if(bs.enemyPoisonTurns>0 && enemy.hp>0) {
@@ -6126,15 +6137,11 @@ function doTurn(moveIdx) {
   if(passives.length) passives.forEach(p => battleState.log.push(`  ${p.icon} ${p.text}`));
 
   const finish = () => {
-    // Stalemate breaker: if battle exceeds 60 turns, both sides take ramping MaxHP% damage
-    // to prevent tanky/healing matchups from looping forever.
-    if(turnNum >= 60) {
-      const pct = turnNum < 75 ? 0.10 : 0.25;
-      const pStale = Math.max(1, Math.round(creature.maxHp * pct));
-      const eStale = Math.max(1, Math.round(enemy.maxHp * pct));
-      creature.hp = Math.max(0, creature.hp - pStale);
-      enemy.hp = Math.max(0, enemy.hp - eStale);
-      battleState.log.push(`  ⏰ ${T('เสมอ! ทั้งสองฝั่งเสีย '+Math.round(pct*100)+'% HP','STALEMATE! Both sides lose '+Math.round(pct*100)+'% HP')}`);
+    // Stalemate breaker: ramping ATK boost for both sides to end drawn-out battles
+    if(turnNum >= 50) {
+      let atkMult = turnNum >= 75 ? 2.0 : turnNum >= 60 ? 1.5 : 1.25;
+      bs.stalemateAtkMult = atkMult;
+      battleState.log.push(`  ⏰ ${T('ดุเดือด! ATK+'+Math.round((atkMult-1)*100)+'% ทั้งสองฝั่ง','FRENZY! ATK+'+Math.round((atkMult-1)*100)+'% for both sides')}`);
     }
 
     // ===== GHOST SURVIVAL/REVIVAL — final safety net =====

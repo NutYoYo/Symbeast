@@ -3299,6 +3299,12 @@ let _lastCloudUploadAt = {}; // {slotNum: timestampMs}
 const CLOUD_AUTOSYNC_MIN_GAP_MS = 150000; // ~2.5 min
 function cloudAutoUploadIfDue(slotNum) {
   if(!cloudUser || !_cloudDb) return;
+  // A hidden/background tab (e.g. an old device or forgotten browser tab left signed in) shouldn't
+  // silently push its possibly-stale state to the cloud with a fresh timestamp — that can outrank a
+  // genuinely newer save from wherever the player is actually playing. The explicit flush on
+  // visibilitychange->hidden below already covers "save the last state right as this tab stops being
+  // the active one"; periodic re-uploads should only happen while the tab is the one being used.
+  if(typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
   const now = Date.now();
   if(now - (_lastCloudUploadAt[slotNum]||0) < CLOUD_AUTOSYNC_MIN_GAP_MS) return;
   _lastCloudUploadAt[slotNum] = now; // mark immediately to avoid overlapping calls while the write is in flight
@@ -3323,6 +3329,23 @@ function cloudFlushNow(slotNum) {
 window.addEventListener('beforeunload', () => { if(cloudUser) cloudFlushNow(currentSlot); });
 document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && cloudUser) cloudFlushNow(currentSlot); });
 
+// Timestamp alone doesn't tell you which save actually has more progress — a stale device/tab that
+// happens to sync later in wall-clock time would otherwise look "newer". This pulls a few honest
+// progress indicators out of a save blob so the conflict dialog can show an actual comparison
+// instead of just trusting whichever timestamp is bigger.
+function saveProgressSummary(d) {
+  if(!d) return null;
+  const stageLabel = d.hellMode ? `Hell ${d.hellStage||1}` : d.hardMode ? `Hard ${d.hardStage||1}` : `Stage ${d.stage||1}`;
+  const petCount = Array.isArray(d.pets) ? d.pets.filter(p=>p && p.phase!=='egg').length : 0;
+  return {
+    stageLabel,
+    gold: d.gold||0,
+    totalPlayTime: d.totalPlayTime||0,
+    petCount,
+    towerHighest: d.towerHighest||0,
+  };
+}
+
 // Called right after a local slot loads — checks whether the cloud has a newer save for that same slot
 function cloudCheckNewerOnLoad(slotNum) {
   if(!cloudUser || !_cloudDb) return;
@@ -3330,10 +3353,16 @@ function cloudCheckNewerOnLoad(slotNum) {
     if(!doc.exists) return;
     const slotData = doc.data()[`slot${slotNum}`];
     if(!slotData) return;
-    let localSavedAt = 0;
-    try { localSavedAt = JSON.parse(localStorage.getItem(SLOT_KEY(slotNum))||'{}').savedAt || 0; } catch(e) {}
+    let localSavedAt = 0, localSummary = null;
+    try {
+      const localParsed = JSON.parse(localStorage.getItem(SLOT_KEY(slotNum))||'{}');
+      localSavedAt = localParsed.savedAt || 0;
+      localSummary = saveProgressSummary(localParsed);
+    } catch(e) {}
     if(slotData.updatedAt > localSavedAt + 5000) { // 5s grace to avoid false positives from clock skew
-      cloudConflict = { slot: slotNum, cloudData: slotData.data, cloudUpdatedAt: slotData.updatedAt };
+      let cloudSummary = null;
+      try { cloudSummary = saveProgressSummary(JSON.parse(slotData.data)); } catch(e) {}
+      cloudConflict = { slot: slotNum, cloudData: slotData.data, cloudUpdatedAt: slotData.updatedAt, cloudSummary, localSummary };
       render();
     }
   }).catch(()=>{});
@@ -3515,14 +3544,20 @@ function fetchLeaderboard(type) {
   }
 }
 
-function saveGame() {
+// skipCloudSync: true for purely-passive background ticks (resting/regen/stamina) — these fire
+// on a timer even when the player isn't doing anything, so if a stale tab is left open somewhere
+// (another device, a forgotten browser tab) it would otherwise keep re-uploading old progress with
+// a fresh timestamp, potentially outranking a genuinely newer save from an active session in the
+// "which save is newer" check purely because it happened to sync more recently in wall-clock time.
+// localStorage is still written either way — only the Firestore push is skipped.
+function saveGame(skipCloudSync) {
   try {
     checkAchievements();
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
     gauntletSyncOut();
     localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, achievementStatus, achFuseCount, achRebirthUsedCount, achEssenceCollected, achBoxesOpenedCount, achFirstBoxGradeE, achFirstBoxGradeR, achSecretShopPurchases, achTotalWinsAll, achWinStreak, achWinStreakBest, achPerfectWinCount, achTrainTotalAll, achTrainMaxSinglePet, achFinalPhaseReachedCount, achFuseShinyInheritFirst, achEnrageBossKilled, achGauntletFirstRoomWin, achGauntletNormalFullClear, achGauntletHardFullClear, achModesPlayed:[...achModesPlayed]}));
-    cloudAutoUploadIfDue(currentSlot);
+    if(!skipCloudSync) cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
 
@@ -7159,11 +7194,31 @@ function render() {
     showTutorial();
   }
   if(cloudConflict && state!=='title') {
+    const _fmtPlaytime = ms => { const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000); return h>0 ? `${h}h ${m}m` : `${m}m`; };
+    const _cmpRow = (label, localVal, cloudVal, cloudWins) => `
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;font-size:11px;align-items:center">
+        <span style="color:#7060a0;text-align:left">${label}</span>
+        <span style="color:${cloudWins===false?'#8ff0e0':'#8878b8'};min-width:52px;text-align:right">${localVal}</span>
+        <span style="color:${cloudWins===true?'#8ff0e0':'#8878b8'};min-width:52px;text-align:right">${cloudVal}</span>
+      </div>`;
+    const ls = cloudConflict.localSummary, cs = cloudConflict.cloudSummary;
+    const comparisonTable = (ls && cs) ? `
+      <div style="width:100%;padding:10px;border-radius:8px;background:#08080f;border:1px solid #2a2a3a;display:flex;flex-direction:column;gap:5px">
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;font-size:10px;color:#5a4a8a;letter-spacing:0.5px">
+          <span></span><span style="text-align:right">${T('เครื่องนี้','THIS DEVICE')}</span><span style="text-align:right">${T('คลาวด์','CLOUD')}</span>
+        </div>
+        ${_cmpRow(T('ด่าน','Stage'), ls.stageLabel, cs.stageLabel)}
+        ${_cmpRow('💰 Gold', ls.gold.toLocaleString(), cs.gold.toLocaleString(), cs.gold>ls.gold)}
+        ${_cmpRow(T('เวลาเล่น','Playtime'), _fmtPlaytime(ls.totalPlayTime), _fmtPlaytime(cs.totalPlayTime), cs.totalPlayTime>ls.totalPlayTime)}
+        ${_cmpRow(T('จำนวน Pet','Pets'), ls.petCount, cs.petCount, cs.petCount>ls.petCount)}
+        ${_cmpRow(T('Tower สูงสุด','Tower best'), ls.towerHighest, cs.towerHighest, cs.towerHighest>ls.towerHighest)}
+      </div>` : '';
     screenContent.insertAdjacentHTML('beforeend', `
-    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:90;border-radius:16px">
-      <div style="background:#0a0a1e;border:2px solid #4ecdc4;border-radius:16px;padding:22px;width:250px;display:flex;flex-direction:column;gap:12px;text-align:center">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:90;border-radius:16px;padding:14px">
+      <div style="background:#0a0a1e;border:2px solid #4ecdc4;border-radius:16px;padding:20px;width:100%;max-width:290px;display:flex;flex-direction:column;gap:12px;text-align:center">
         <div style="font-family:Kanit,sans-serif;font-size:14px;color:#4ecdc4;letter-spacing:1px">☁️ ${T('พบเซฟใหม่กว่าบนคลาวด์','Found a newer cloud save')}</div>
-        <div style="font-size:11px;color:#9080b0;line-height:1.5">${T(`Slot ${cloudConflict.slot} บนคลาวด์อัปเดตล่าสุดเมื่อ ${new Date(cloudConflict.cloudUpdatedAt).toLocaleString()} — ใหม่กว่าเซฟในเครื่องนี้ จะโหลดมาใช้แทนมั้ย?`,`Slot ${cloudConflict.slot} on the cloud was last updated ${new Date(cloudConflict.cloudUpdatedAt).toLocaleString()} — newer than this device. Load it instead?`)}</div>
+        <div style="font-size:11px;color:#9080b0;line-height:1.5">${T(`Slot ${cloudConflict.slot} บนคลาวด์อัปเดตล่าสุดเมื่อ ${new Date(cloudConflict.cloudUpdatedAt).toLocaleString()} — เทียบความคืบหน้าด้านล่างก่อนตัดสินใจ (เวลาล่าสุดไม่ได้แปลว่าคืบหน้ากว่าเสมอไป)`,`Slot ${cloudConflict.slot} on the cloud was last updated ${new Date(cloudConflict.cloudUpdatedAt).toLocaleString()}. Compare actual progress below before deciding — a more recent timestamp doesn't always mean more progress.`)}</div>
+        ${comparisonTable}
         <div style="display:flex;gap:8px">
           <div id="cloudConflictKeepLocal" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:11px;color:#8080c0;cursor:pointer">${T('ใช้เครื่องนี้','Keep local')}</div>
           <div id="cloudConflictLoadCloud" style="flex:1;padding:9px;border-radius:8px;background:#0a2a2a;border:2px solid #4ecdc4;font-family:Kanit,sans-serif;font-size:11px;color:#8ff0e0;cursor:pointer;font-weight:bold">${T('โหลดจากคลาวด์','Load cloud')}</div>
@@ -13542,7 +13597,7 @@ setInterval(() => {
     const amt = Math.max(1, Math.round(p.maxHp * 0.01));
     p.hp = Math.min(p.maxHp, p.hp + amt); changed = true;
   });
-  if(changed) { saveGame(); if((state==='party'||state==='menu') && !helpOpen && !settingsOpen) render(); }
+  if(changed) { saveGame(true); if((state==='party'||state==='menu') && !helpOpen && !settingsOpen) render(); }
 }, 5000);
 
 // Passive regen for non-resting pets (1% Max HP every 30s, only if HP>0)
@@ -13553,7 +13608,7 @@ setInterval(() => {
     const amt = Math.max(1, Math.round(p.maxHp * (p.phase==='larva' ? 0.02 : 0.01)));
     p.hp = Math.min(p.maxHp, p.hp + amt); changed = true;
   });
-  if(changed) { saveGame(); if((state==='party'||state==='menu') && !helpOpen && !settingsOpen) render(); }
+  if(changed) { saveGame(true); if((state==='party'||state==='menu') && !helpOpen && !settingsOpen) render(); }
 }, 30000);
 
 // Dead-rest countdown refresh every second — update text only, no full render
@@ -13572,7 +13627,7 @@ setInterval(() => {
 setInterval(() => {
   if(stamina < MAX_STAMINA) {
     stamina = Math.min(MAX_STAMINA, stamina + 1);
-    saveGame();
+    saveGame(true);
     if((state==='scout' || state==='menu') && !helpOpen && !settingsOpen) render();
   }
 }, 60000);

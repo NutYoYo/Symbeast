@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SymbeastDex</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0520;color:#e0d8f0;font-family:'Kanit',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#0d0820}
+::-webkit-scrollbar-thumb{background:#3a2a5a;border-radius:3px}
+
+/* Header */
+header{background:linear-gradient(135deg,#0d0820,#1a0a30);border-bottom:2px solid #ffd70033;padding:16px 24px;text-align:center;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+header h1{font-size:28px;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,#ffd700,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header p{font-size:12px;color:#8877aa;letter-spacing:2px}
+
+/* Tab Bar */
+#tab-bar{display:flex;gap:4px;padding:12px 16px 0;justify-content:center;flex-wrap:wrap;background:#0d0820;border-bottom:1px solid #2a1a4a}
+.tab{padding:8px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-size:14px;font-weight:500;color:#8877aa;border:1px solid transparent;border-bottom:none;transition:all .3s;position:relative;bottom:-1px}
+.tab:hover{color:#ccaaee;background:#150a28}
+.tab.active{color:#ffd700;background:#0a0520;border-color:#ffd70033;border-bottom-color:#0a0520}
+
+/* Controls */
+#controls{background:#0d0820;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;border-bottom:1px solid #2a1a4a}
+#search-box{background:#150a28;border:1px solid #3a2a5a;border-radius:8px;padding:8px 14px;color:#e0d8f0;font-family:'Kanit',sans-serif;font-size:14px;width:260px;outline:none;transition:border .3s}
+#search-box:focus{border-color:#ffd700}
+#search-box::placeholder{color:#5a4a7a}
+
+#filter-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:4px 12px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid #3a2a5a;background:transparent;color:#8877aa;transition:all .25s;font-family:'Kanit',sans-serif}
+.chip:hover{border-color:#8877aa;color:#ccaaee}
+.chip.active{background:#ffd70015;border-color:#ffd700;color:#ffd700}
+
+/* Sections */
+.section{display:none;padding:20px}
+.section.active{display:block}
+
+/* Card Grid */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;max-width:1200px;margin:0 auto}
+
+/* Card */
+.card{background:linear-gradient(135deg,rgba(20,10,40,0.85),rgba(30,15,50,0.7));border:1px solid rgba(255,215,0,0.12);border-radius:12px;padding:16px;cursor:pointer;transition:all .3s;backdrop-filter:blur(8px);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ffd70044,transparent)}
+.card:hover{transform:translateY(-4px);border-color:#ffd70044;box-shadow:0 8px 32px rgba(255,215,0,0.08)}
+.card:active{transform:translateY(-1px)}
+
+.card-icon{font-size:32px;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+.card-icon img{width:70px;height:70px;border-radius:8px;object-fit:contain;image-rendering:pixelated;background:rgba(0,0,0,0.25);padding:4px}
+.card-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-sub{font-size:11px;color:#8877aa;margin-bottom:8px}
+
+.badge{display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.5px}
+.badge-fist{background:#3a1510;color:#ff7755;border:1px solid #5a2520}
+.badge-wing{background:#0e2a28;color:#44ddcc;border:1px solid #1a4a44}
+.badge-shield{background:#0e1e38;color:#5599ff;border:1px solid #1a3060}
+.badge-balance{background:#1a1a2a;color:#aa88dd;border:1px solid #2a2a4a}
+.badge-N{background:#1a1a2a;color:#8888aa;border:1px solid #2a2a3a}
+.badge-R{background:#1a1010;color:#ffaa44;border:1px solid #3a2010}
+.badge-E{background:#0a0a1a;color:#bb88ff;border:1px solid #2a1a4a}
+
+.card-stats{display:flex;flex-direction:column;gap:3px;margin:8px 0}
+.stat-row{display:flex;align-items:center;gap:6px;font-size:11px}
+.stat-label{width:30px;color:#8877aa;font-weight:500}
+.stat-bar-bg{flex:1;height:6px;background:#1a0a28;border-radius:3px;overflow:hidden}
+.stat-bar{height:100%;border-radius:3px;transition:width .6s ease}
+.stat-bar.atk{background:linear-gradient(90deg,#e74c3c,#ff6b6b)}
+.stat-bar.hp{background:linear-gradient(90deg,#2ecc71,#55efc4)}
+.stat-bar.spd{background:linear-gradient(90deg,#f1c40f,#fdcb6e)}
+.stat-bar.def{background:linear-gradient(90deg,#3498db,#74b9ff)}
+.stat-bar.crit{background:linear-gradient(90deg,#a855f7,#c084fc)}
+.stat-val{width:28px;text-align:right;font-size:11px;color:#aa99cc}
+
+.card-passive{font-size:11px;color:#aa88cc;border-top:1px solid #2a1a4a;padding-top:6px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.card-effect{font-size:11px;color:#aa88cc;border-top:1px solid #2a1a4a;padding-top:6px;margin-top:4px}
+.card-desc{font-size:11px;color:#aa88cc;margin-top:6px}
+
+/* Modal Overlay */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,2,16,0.85);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;padding:20px;animation:fadeIn .25s}
+.modal-overlay.show{display:flex}
+.modal{background:linear-gradient(135deg,#120a28,#1a0e30);border:1px solid rgba(255,215,0,0.15);border-radius:16px;padding:28px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;position:relative;animation:slideUp .3s ease}
+.modal-close{position:absolute;top:12px;right:16px;font-size:24px;cursor:pointer;color:#8877aa;transition:color .3s;background:none;border:none;font-family:'Kanit',sans-serif}
+.modal-close:hover{color:#ffd700}
+
+.modal-header{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #2a1a4a;position:relative}
+.modal-header img{width:200px;height:200px;border-radius:14px;object-fit:contain;background:rgba(0,0,0,0.3);padding:10px}
+.modal-nav{position:absolute;top:100px;width:100%;display:flex;justify-content:space-between;pointer-events:none;padding:0 4px}
+.modal-nav-btn{pointer-events:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.25);color:#ffd700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s;font-family:'Kanit',sans-serif}
+.modal-nav-btn:hover{background:rgba(255,215,0,0.25);border-color:#ffd700;transform:scale(1.1)}
+.modal-nav-btn:disabled{opacity:0.2;cursor:default;transform:none}
+.modal-icon{font-size:56px}
+.modal-title{font-size:22px;font-weight:700;color:#fff}
+.modal-sub{font-size:12px;color:#8877aa;margin-top:-2px}
+
+.modal-body{font-size:14px}
+.modal-stats{margin:12px 0 16px}
+.modal-passive{background:rgba(255,215,0,0.05);border-left:3px solid #ffd700;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.modal-passive-en{font-size:13px;color:#ccb}
+.modal-passive-th{font-size:12px;color:#9988bb;margin-top:4px}
+.modal-section-title{font-size:13px;color:#ffd700;font-weight:600;margin:14px 0 6px;letter-spacing:1px}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* Count badge */
+.count-badge{font-size:11px;color:#8877aa;margin-left:4px}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:#5a4a7a;font-size:15px}
+.empty-state .big-icon{font-size:48px;margin-bottom:12px}
+
+/* Responsive */
+@media(max-width:768px){.card-grid{grid-template-columns:repeat(2,1fr);gap:10px}.modal{padding:20px;margin:10px}
+header h1{font-size:22px}#search-box{width:180px}}
+@media(max-width:480px){.card-grid{grid-template-columns:1fr;gap:8px}.card{padding:12px}
+header h1{font-size:18px}#tab-bar .tab{font-size:12px;padding:6px 12px}#search-box{width:100%}
+.modal{padding:16px}.modal-title{font-size:18px}}
+
+/* Utility */
+.mt-4{margin-top:4px}.mb-4{margin-bottom:4px}
+.text-gold{color:#ffd700}
+.text-muted{color:#8877aa}
+.flex{display:flex}
+.gap-8{gap:8px}
+.items-center{align-items:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap">
+    <h1>⚔ SymbeastDex</h1>
+    <div id="lang-toggle" onclick="toggleLang()" style="cursor:pointer;padding:4px 12px;border-radius:6px;border:1px solid #ffd70044;background:rgba(255,215,0,0.08);color:#ffd700;font-size:12px;font-weight:600;font-family:'Kanit',sans-serif;transition:all .3s">TH</div>
+  </div>
+  <p>PETS · WEAPONS · ARTIFACTS · ITEMS</p>
+</header>
+
+<div id="tab-bar">
+  <div class="tab active" data-tab="pet" onclick="switchTab('pet',this)">🐾 Pet</div>
+  <div class="tab" data-tab="weapon" onclick="switchTab('weapon',this)">⚔️ Weapon</div>
+  <div class="tab" data-tab="artifact" onclick="switchTab('artifact',this)">📿 Artifact</div>
+  <div class="tab" data-tab="item" onclick="switchTab('item',this)">📦 Item</div>
+</div>
+
+<div id="controls">
+  <input id="search-box" type="text" placeholder="🔍 ค้นหา..." oninput="renderActiveTab()">
+  <div id="filter-chips"></div>
+</div>
+
+<div id="s-pet" class="section active"></div>
+<div id="s-weapon" class="section"></div>
+<div id="s-artifact" class="section"></div>
+<div id="s-item" class="section"></div>
+
+<!-- Modal -->
+<div id="modal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modal-inner"></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+
+const PET_BRANCH = {};
+
+const PET_SPRITE = {};
+
+const FORMS = {
+  FFF: { name:'BRAWLER',   color:'#e74c3c', hp:88,  atk:22, spd:13, def:5,  passive:'On WIN: next round deals +25% damage', passiveTh:'เมื่อ WIN เทิร์นต่อไปสร้างดาเมจ +25%', passiveIcon:'💢' },
+  FFW: { name:'PANDA',     color:'#2ecc71', hp:88,  atk:18, spd:18, def:5,  passive:'On LOSE: next round deals +50% damage', passiveTh:'เมื่อ LOSE เทิร์นต่อไปสร้างดาเมจ +50%', passiveIcon:'🐼' },
+  FFS: { name:'IRONJAW',   color:'#95a5a6', hp:108, atk:18, spd:13, def:10, passive:'Damage taken -15%', passiveTh:'ลดดาเมจที่รับ 15%', passiveIcon:'🦖' },
+  FWW: { name:'BLITZ',     color:'#f1c40f', hp:80,  atk:15, spd:23, def:5,  passive:'20% chance to dodge attacks', passiveTh:'หลบหลีก 20%', passiveIcon:'⚡' },
+  FWS: { name:'CHAMPION',  color:'#9b59b6', hp:75,  atk:16, spd:14, def:8,  passive:'On WIN: ATK +20% and damage received -20% for that round', passiveTh:'เมื่อ WIN ATK +20% ดาเมจรับ -20%', passiveIcon:'🏆' },
+  FSS: { name:'FORTRESS',  color:'#2c3e50', hp:120, atk:12, spd:13, def:16, passive:'On DRAW: recover 10% HP', passiveTh:'เมื่อ DRAW ฟื้น 10% HP', passiveIcon:'🏰' },
+  WWW: { name:'SPECTER',   color:'#8e44ad', hp:80,  atk:11, spd:29, def:5,  passive:'On DRAW: next attack pierces DEF', passiveTh:'เมื่อ DRAW สร้างดาเมจเจาะเกราะ', passiveIcon:'👻' },
+  WWS: { name:'SWIFTGUARD',color:'#3498db', hp:100, atk:11, spd:23, def:10, passive:'+10% damage all modes', passiveTh:'ดาเมจ +10% ทุกรูปแบบ', passiveIcon:'⚡' },
+  WSS: { name:'SHIELDWING',color:'#1abc9c', hp:120, atk:11, spd:18, def:16, passive:'Every 3 rounds: damage +50%', passiveTh:'ทุก 3 รอบ ดาเมจ +50%', passiveIcon:'🛡️' },
+  SSS: { name:'BASTION',   color:'#2c3e50', hp:105, atk:12, spd:10, def:16, passive:'On LOSE: damage taken -20% for that round', passiveTh:'เมื่อ LOSE ดาเมจรับ -20%', passiveIcon:'🏛️' },
+  GHOST:{ name:'GHOST',    color:'#8e44ad', hp:80,  atk:11, spd:29, def:5,  passive:'Random buff at battle start', passiveTh:'สุ่มบัฟตอนเริ่ม', passiveIcon:'👻' },
+};
+
+// Branch mapping for base forms (majority symbol)
+PET_BRANCH['BRAWLER']='FIST';PET_BRANCH['PANDA']='FIST';PET_BRANCH['IRONJAW']='FIST';
+PET_BRANCH['BLITZ']='WING';PET_BRANCH['SPECTER']='WING';PET_BRANCH['SWIFTGUARD']='WING';
+PET_BRANCH['SHIELDWING']='SHIELD';PET_BRANCH['BASTION']='SHIELD';PET_BRANCH['FORTRESS']='SHIELD';
+PET_BRANCH['CHAMPION']='BALANCE';PET_BRANCH['GHOST']='BALANCE';
+
+PET_SPRITE['BRAWLER']='BRAWLER';PET_SPRITE['PANDA']='PANDA';PET_SPRITE['IRONJAW']='IRONJAW';
+PET_SPRITE['BLITZ']='BLITZ';PET_SPRITE['CHAMPION']='CHAMPION';PET_SPRITE['FORTRESS']='FORTRESS';
+PET_SPRITE['SPECTER']='SPECTER';PET_SPRITE['SWIFTGUARD']='SWIFTGUARD';PET_SPRITE['SHIELDWING']='SHIELDWING';
+PET_SPRITE['BASTION']='BASTION';PET_SPRITE['GHOST']='GHOST';
+
+const EVOLVE2_FORMS = {};
+
+// FIST branch (from BRAWLER)
+EVOLVE2_FORMS['RAGING-BRAWLER']={ name:'RAGING-BRAWLER', color:'#ff6644', hp:111, atk:50, spd:14, def:5, passiveIcon:'💢', passive:'On WIN: damage dealt +15% per stack (max 5 stacks per battle, never resets)', passiveTh:'เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15% (สะสมได้สูงสุด 5 ครั้ง/1 การต่อสู้)' };
+EVOLVE2_FORMS['WINDBLADE-BRAWLER']={ name:'WINDBLADE-BRAWLER', color:'#44ccff', hp:104, atk:38, spd:21, def:5, passiveIcon:'🌪️', passive:'25% dodge; on dodge, counter-attacks for 75% damage', passiveTh:'หลบหลีก 25% เมื่อหลบสำเร็จ โต้กลับ 75%' };
+EVOLVE2_FORMS['CRIMSON-BRAWLER']={ name:'CRIMSON-BRAWLER', color:'#cc2244', hp:117, atk:41, spd:16, def:6, passiveIcon:'🌹', passive:'Every round (WIN or LOSE): ATK+10% and SPD+10% (max 3 stacks)', passiveTh:'ทุกจบรอบ (WIN หรือ LOSE) ATK+10% และ SPD+10% (สูงสุด 3 ครั้ง)' };
+EVOLVE2_FORMS['KAIJU-BRAWLER']={ name:'KAIJU-BRAWLER', color:'#ff8800', hp:137, atk:36, spd:13, def:8, passiveIcon:'🦖', passive:'On LOSE: next round ATK+50%, DEF+50%, and 25% chance to burn the enemy', passiveTh:'เมื่อ LOSE เทิร์นถัดไป ATK+50% DEF+50% และมีโอกาส 25% เผาศัตรู' };
+PET_BRANCH['RAGING-BRAWLER']='FIST';PET_BRANCH['WINDBLADE-BRAWLER']='WING';PET_BRANCH['CRIMSON-BRAWLER']='BALANCE';PET_BRANCH['KAIJU-BRAWLER']='SHIELD';
+PET_SPRITE['RAGING-BRAWLER']='RAGING-BRAWLER';PET_SPRITE['WINDBLADE-BRAWLER']='WINDBLADE-BRAWLER';PET_SPRITE['CRIMSON-BRAWLER']='CRIMSON-BRAWLER';PET_SPRITE['KAIJU-BRAWLER']='KAIJU-BRAWLER';
+
+// WING branch (from PANDA)
+EVOLVE2_FORMS['FIGHTER-PANDA']={ name:'FIGHTER-PANDA', color:'#ff6644', hp:111, atk:42, spd:19, def:5, passiveIcon:'🥊', passive:'On LOSE: damage dealt +75% this round', passiveTh:'เมื่อ LOSE ดาเมจที่สร้างในเทิร์นนี้ +75%' };
+EVOLVE2_FORMS['PANDA-NINJA']={ name:'PANDA-NINJA', color:'#44ccff', hp:104, atk:32, spd:29, def:5, passiveIcon:'🥷', passive:'25% dodge; on dodge, next attack is guaranteed crit (×1.6)', passiveTh:'หลบหลีก 25% เมื่อหลบสำเร็จ โจมตีครั้งถัดไปคริติคอล (x1.6)' };
+EVOLVE2_FORMS['PANDA-WARRIOR']={ name:'PANDA-WARRIOR', color:'#bb44ff', hp:117, atk:35, spd:22, def:6, passiveIcon:'⚔️', passive:'25% chance to take half damage and counter for 75% damage', passiveTh:'25% โอกาสรับดาเมจครึ่งเดียวและโต้กลับ 75%' };
+EVOLVE2_FORMS['ARMOR-PANDA']={ name:'ARMOR-PANDA', color:'#5588dd', hp:137, atk:30, spd:18, def:8, passiveIcon:'🛡️', passive:'All damage taken -20%; 50% chance to counter for 75% when hit', passiveTh:'ลดดาเมจทั้งหมด 20% มีโอกาส 50% โต้กลับ 75% เมื่อโดนโจมตี' };
+PET_BRANCH['FIGHTER-PANDA']='FIST';PET_BRANCH['PANDA-NINJA']='WING';PET_BRANCH['PANDA-WARRIOR']='BALANCE';PET_BRANCH['ARMOR-PANDA']='SHIELD';
+PET_SPRITE['FIGHTER-PANDA']='FIGHTER-PANDA';PET_SPRITE['PANDA-NINJA']='PANDA-NINJA';PET_SPRITE['PANDA-WARRIOR']='PANDA-WARRIOR';PET_SPRITE['ARMOR-PANDA']='ARMOR-PANDA';
+
+// SHIELD branch (from IRONJAW)
+EVOLVE2_FORMS['TYRANT-IRONJAW']={ name:'TYRANT-IRONJAW', color:'#ff6644', hp:136, atk:42, spd:14, def:10, passiveIcon:'🦖', passive:'Damage dealt +20% and lifesteal +10%', passiveTh:'ดาเมจที่สร้าง +20% และดูดเลือด 10%' };
+EVOLVE2_FORMS['AGILE-IRONJAW']={ name:'AGILE-IRONJAW', color:'#cc6644', hp:128, atk:32, spd:21, def:10, passiveIcon:'🏃', passive:'25% chance to attack twice, 15% chance to dodge', passiveTh:'25% โอกาสโจมตี 2 ครั้ง และ 15% โอกาสหลบหลีก' };
+EVOLVE2_FORMS['RUNE-IRONJAW']={ name:'RUNE-IRONJAW', color:'#cc44ff', hp:144, atk:35, spd:16, def:12, passiveIcon:'🔮', passive:'15% stun; random Rune buff each round: ATK+50% or DEF+50% (non-stacking)', passiveTh:'15% สตัน; สุ่ม Rune แต่ละรอบ: ATK+50% หรือ DEF+50%' };
+EVOLVE2_FORMS['FULLARMOR-IRONJAW']={ name:'FULLARMOR-IRONJAW', color:'#5588dd', hp:168, atk:30, spd:13, def:17, passiveIcon:'⛓️', passive:'HP<50%: damage taken -20% and counter for 75% every round', passiveTh:'HP<50%: ลดดาเมจ 20% และโต้กลับ 75% ทุกรอบ' };
+PET_BRANCH['TYRANT-IRONJAW']='FIST';PET_BRANCH['AGILE-IRONJAW']='WING';PET_BRANCH['RUNE-IRONJAW']='BALANCE';PET_BRANCH['FULLARMOR-IRONJAW']='SHIELD';
+PET_SPRITE['TYRANT-IRONJAW']='TYRANT-IRONJAW';PET_SPRITE['AGILE-IRONJAW']='AGILE-IRONJAW';PET_SPRITE['RUNE-IRONJAW']='RUNE-IRONJAW';PET_SPRITE['FULLARMOR-IRONJAW']='FULLARMOR-IRONJAW';
+
+// BALANCE branch (from BLITZ)
+EVOLVE2_FORMS['STRONG-BLITZ']={ name:'STRONG-BLITZ', color:'#ff6644', hp:102, atk:34, spd:24, def:5, passiveIcon:'💪', passive:'On WIN: damage dealt +20% and 15% chance to stun for 1 round', passiveTh:'เมื่อ WIN ดาเมจที่สร้าง +20% และ 15% สตัน 1 เทิร์น' };
+EVOLVE2_FORMS['STORM-BLITZ']={ name:'STORM-BLITZ', color:'#44ccff', hp:96, atk:26, spd:38, def:5, passiveIcon:'🌩️', passive:'20% dodge; on dodge, ATK+50% next round', passiveTh:'หลบหลีก 20% เมื่อหลบสำเร็จ ATK+50% เทิร์นถัดไป' };
+EVOLVE2_FORMS['THUNDERCLOUD-BLITZ']={ name:'THUNDERCLOUD-BLITZ', color:'#ffcc00', hp:108, atk:28, spd:28, def:6, passiveIcon:'☁️', passive:'15% stun; if not stunned, gains 25% dodge instead', passiveTh:'15% สตัน ถ้าไม่สตัน ได้หลบ 25% แทน' };
+EVOLVE2_FORMS['BULWARK-BLITZ']={ name:'BULWARK-BLITZ', color:'#5588dd', hp:126, atk:24, spd:23, def:8, passiveIcon:'🛡️', passive:'All damage taken -20%; when hit, 15% chance to stun the attacker', passiveTh:'ลดดาเมจทั้งหมด 20% เมื่อถูกโจมตี 15% สตันผู้โจมตี' };
+PET_BRANCH['STRONG-BLITZ']='FIST';PET_BRANCH['STORM-BLITZ']='WING';PET_BRANCH['THUNDERCLOUD-BLITZ']='BALANCE';PET_BRANCH['BULWARK-BLITZ']='SHIELD';
+PET_SPRITE['STRONG-BLITZ']='STRONG-BLITZ';PET_SPRITE['STORM-BLITZ']='STORM-BLITZ';PET_SPRITE['THUNDERCLOUD-BLITZ']='THUNDERCLOUD-BLITZ';PET_SPRITE['BULWARK-BLITZ']='BULWARK-BLITZ';
+
+// BALANCE branch (from CHAMPION)
+EVOLVE2_FORMS['WARLORD-CHAMPION']={ name:'WARLORD-CHAMPION', color:'#ff6644', hp:128, atk:34, spd:19, def:10, passiveIcon:'⚔️', passive:'Damage dealt +20%; 10% chance to attack 4 times', passiveTh:'ดาเมจที่สร้าง +20% มีโอกาส 10% โจมตี 4 ครั้ง' };
+EVOLVE2_FORMS['KING-CHAMPION']={ name:'KING-CHAMPION', color:'#44ccff', hp:120, atk:26, spd:29, def:10, passiveIcon:'👑', passive:'20% dodge; on dodge, ATK/DEF/SPD+10% (max 5 stacks)', passiveTh:'หลบหลีก 20% เมื่อหลบสำเร็จ ATK/DEF/SPD+10% (สูงสุด 5 ครั้ง)' };
+EVOLVE2_FORMS['SOUL-CHAMPION']={ name:'SOUL-CHAMPION', color:'#ff8800', hp:135, atk:28, spd:22, def:12, passiveIcon:'💫', passive:'On WIN: ATK+25% and 25% burn; On LOSE: dodge+25% and damage +25%', passiveTh:'เมื่อ WIN: ATK+25% + เผา 25% เมื่อ LOSE: หลบ+25% + ดาเมจ+25%' };
+EVOLVE2_FORMS['ROLLING-CHAMPION']={ name:'ROLLING-CHAMPION', color:'#5588dd', hp:158, atk:24, spd:18, def:17, passiveIcon:'🌀', passive:'Damage taken -20%; every 3 rounds: damage +50% and cannot miss', passiveTh:'ลดดาเมจ 20% ทุก 3 รอบ ดาเมจ +50% และโจมตีไม่พลาด' };
+PET_BRANCH['WARLORD-CHAMPION']='FIST';PET_BRANCH['KING-CHAMPION']='WING';PET_BRANCH['SOUL-CHAMPION']='BALANCE';PET_BRANCH['ROLLING-CHAMPION']='SHIELD';
+PET_SPRITE['WARLORD-CHAMPION']='WARLORD-CHAMPION';PET_SPRITE['KING-CHAMPION']='KING-CHAMPION';PET_SPRITE['SOUL-CHAMPION']='SOUL-CHAMPION';PET_SPRITE['ROLLING-CHAMPION']='ROLLING-CHAMPION';
+
+// BALANCE branch (from FORTRESS)
+EVOLVE2_FORMS['BLAZING-FORTRESS']={ name:'BLAZING-FORTRESS', color:'#ff6644', hp:153, atk:34, spd:14, def:16, passiveIcon:'🔥', passive:'On WIN: damage +15% and DEF+15% per stack (max 3), 20% poison', passiveTh:'เมื่อ WIN: ดาเมจ+15% และ DEF+15% ต่อสแต็ค (สูงสุด 3) พิษ 20%' };
+EVOLVE2_FORMS['SWIFT-FORTRESS']={ name:'SWIFT-FORTRESS', color:'#44ccff', hp:144, atk:26, spd:21, def:16, passiveIcon:'💨', passive:'Every 3 turns: reflect 75% + recover 10% HP + 50% poison', passiveTh:'ทุก 3 เทิร์น: สะท้อน 75% + ฟื้น 10% HP + พิษ 50%' };
+EVOLVE2_FORMS['POISON-FORTRESS']={ name:'POISON-FORTRESS', color:'#44cc66', hp:162, atk:28, spd:16, def:19, passiveIcon:'☠️', passive:'Damage taken -10%; 25% poison when hit; also immune to poison', passiveTh:'ลดดาเมจ 10% 25% พิษเมื่อโดนโจมตี และภูมิต้านทานพิษ' };
+EVOLVE2_FORMS['GUARDIAN-FORTRESS']={ name:'GUARDIAN-FORTRESS', color:'#5588dd', hp:189, atk:24, spd:13, def:25, passiveIcon:'🏰', passive:'Damage taken -25%; HP<50%: extra reflect 25%', passiveTh:'ลดดาเมจ 25% HP<50%: สะท้อนเพิ่ม 25%' };
+PET_BRANCH['BLAZING-FORTRESS']='FIST';PET_BRANCH['SWIFT-FORTRESS']='WING';PET_BRANCH['POISON-FORTRESS']='BALANCE';PET_BRANCH['GUARDIAN-FORTRESS']='SHIELD';
+PET_SPRITE['BLAZING-FORTRESS']='BLAZING-FORTRESS';PET_SPRITE['SWIFT-FORTRESS']='SWIFT-FORTRESS';PET_SPRITE['POISON-FORTRESS']='POISON-FORTRESS';PET_SPRITE['GUARDIAN-FORTRESS']='GUARDIAN-FORTRESS';
+
+// WING branch (from SPECTER)
+EVOLVE2_FORMS['DARK-SPECTER']={ name:'DARK-SPECTER', color:'#ff6644', hp:102, atk:25, spd:30, def:5, passiveIcon:'🌑', passive:'Damage +20%, Crit Rate +25%, and lifesteal 15%', passiveTh:'ดาเมจ +20% คริติคอลเรท +25% ดูดเลือด 15%' };
+EVOLVE2_FORMS['SOUL-SPECTER']={ name:'SOUL-SPECTER', color:'#44ccff', hp:96, atk:19, spd:46, def:5, passiveIcon:'💫', passive:'20% dodge; on dodge, next attack hits twice', passiveTh:'หลบหลีก 20% เมื่อหลบสำเร็จ โจมตีครั้งถัดไปโจมตี 2 ครั้ง' };
+EVOLVE2_FORMS['MAGE-SPECTER']={ name:'MAGE-SPECTER', color:'#cc44ff', hp:108, atk:21, spd:35, def:6, passiveIcon:'🔮', passive:'WIN: curse ATK-25% (2T); DRAW: enemy no-heal (3T); LOSE: -10% dmg taken', passiveTh:'WIN: สาป ATK-25% (2T) DRAW: ศัตรูฟื้นฟูไม่ได้ (3T) LOSE: ดาเมจรับ -10%' };
+EVOLVE2_FORMS['GRAVE-SPECTER']={ name:'GRAVE-SPECTER', color:'#5588dd', hp:126, atk:18, spd:29, def:8, passiveIcon:'💀', passive:'Damage taken -25%; 50% chance to recover 5% HP per round', passiveTh:'ลดดาเมจ 25% มีโอกาส 50% ฟื้น 5% HP ต่อรอบ' };
+PET_BRANCH['DARK-SPECTER']='FIST';PET_BRANCH['SOUL-SPECTER']='WING';PET_BRANCH['MAGE-SPECTER']='BALANCE';PET_BRANCH['GRAVE-SPECTER']='SHIELD';
+PET_SPRITE['DARK-SPECTER']='DARK-SPECTER';PET_SPRITE['SOUL-SPECTER']='SOUL-SPECTER';PET_SPRITE['MAGE-SPECTER']='MAGE-SPECTER';PET_SPRITE['GRAVE-SPECTER']='GRAVE-SPECTER';
+
+// BALANCE branch (from SWIFTGUARD)
+EVOLVE2_FORMS['FIGHT-SWIFTGUARD']={ name:'FIGHT-SWIFTGUARD', color:'#ff6644', hp:128, atk:25, spd:24, def:10, passiveIcon:'⚔️', passive:'On WIN: damage+15%, dodge+5%, and Crit+5% per stack (max 3)', passiveTh:'เมื่อ WIN: ดาเมจ+15% หลบ+5% คริ+5% ต่อสแต็ค (สูงสุด 3)' };
+EVOLVE2_FORMS['QUICK-SWIFTGUARD']={ name:'QUICK-SWIFTGUARD', color:'#44ccff', hp:120, atk:19, spd:38, def:10, passiveIcon:'💨', passive:'25% dodge; on dodge, next attack pierces DEF and cannot miss', passiveTh:'หลบ 25% เมื่อหลบ โจมตีครั้งถัดไปเจาะเกราะ + โจมตีไม่พลาด' };
+EVOLVE2_FORMS['PHEONIX-SWIFTGUARD']={ name:'PHOENIX-SWIFTGUARD', color:'#ff6644', hp:135, atk:21, spd:28, def:12, passiveIcon:'🔥', passive:'15% burn on attack; HP<30% (once): full heal + ATK/DEF/SPD+15%', passiveTh:'15% เผาเมื่อโจมตี HP<30% (ครั้งเดียว): ฟื้นเต็ม + ATK/DEF/SPD+15%' };
+EVOLVE2_FORMS['IRON-SWIFTGUARD']={ name:'IRON-SWIFTGUARD', color:'#5588dd', hp:158, atk:18, spd:23, def:17, passiveIcon:'🔩', passive:'On LOSE: damage taken -15% per stack (max 3)', passiveTh:'เมื่อ LOSE: ดาเมจรับ -15% ต่อสแต็ค (สูงสุด 3)' };
+PET_BRANCH['FIGHT-SWIFTGUARD']='FIST';PET_BRANCH['QUICK-SWIFTGUARD']='WING';PET_BRANCH['PHOENIX-SWIFTGUARD']='BALANCE';PET_BRANCH['IRON-SWIFTGUARD']='SHIELD';
+PET_SPRITE['FIGHT-SWIFTGUARD']='FIGHT-SWIFTGUARD';PET_SPRITE['QUICK-SWIFTGUARD']='QUICK-SWIFTGUARD';PET_SPRITE['PHOENIX-SWIFTGUARD']='PHOENIX-SWIFTGUARD';PET_SPRITE['IRON-SWIFTGUARD']='IRON-SWIFTGUARD';
+
+// SHIELD branch (from SHIELDWING)
+EVOLVE2_FORMS['HAMMER-SHIELDWING']={ name:'HAMMER-SHIELDWING', color:'#ff6644', hp:153, atk:25, spd:19, def:16, passiveIcon:'🔨', passive:'On WIN: damage+20%, +15% stun, and pierces DEF', passiveTh:'เมื่อ WIN: ดาเมจ+20% สตัน+15% เจาะเกราะ' };
+EVOLVE2_FORMS['CHILL-SHIELDWING']={ name:'CHILL-SHIELDWING', color:'#44ccff', hp:144, atk:19, spd:29, def:16, passiveIcon:'❄️', passive:'Every 3 turns: dodge 100% + pierce + ATK+50%', passiveTh:'ทุก 3 เทิร์น: หลบ 100% + เจาะเกราะ + ATK+50%' };
+EVOLVE2_FORMS['GAIA-SHIELDWING']={ name:'GAIA-SHIELDWING', color:'#44cc66', hp:162, atk:21, spd:22, def:19, passiveIcon:'🌿', passive:'Every 3 rounds: heal 15% HP + ATK/DEF+20% that round', passiveTh:'ทุก 3 รอบ: ฟื้น 15% HP + ATK/DEF+20% ในรอบนั้น' };
+EVOLVE2_FORMS['FATTY-SHIELDWING']={ name:'FATTY-SHIELDWING', color:'#5588dd', hp:189, atk:18, spd:18, def:25, passiveIcon:'🦭', passive:'Damage taken -20%; HP>70%: ATK+30%/DEF+30%; HP<70%: ATK+50%', passiveTh:'ลดดาเมจ 20% HP>70%: ATK+30%/DEF+30% HP<70%: ATK+50%' };
+PET_BRANCH['HAMMER-SHIELDWING']='FIST';PET_BRANCH['CHILL-SHIELDWING']='WING';PET_BRANCH['GAIA-SHIELDWING']='BALANCE';PET_BRANCH['FATTY-SHIELDWING']='SHIELD';
+PET_SPRITE['HAMMER-SHIELDWING']='HAMMER-SHIELDWING';PET_SPRITE['CHILL-SHIELDWING']='CHILL-SHIELDWING';PET_SPRITE['GAIA-SHIELDWING']='GAIA-SHIELDWING';PET_SPRITE['FATTY-SHIELDWING']='FATTY-SHIELDWING';
+
+// SHIELD branch (from BASTION)
+EVOLVE2_FORMS['GUANLET-BASTION']={ name:'GUANLET-BASTION', color:'#ff6644', hp:179, atk:25, spd:14, def:21, passiveIcon:'👊', passive:'On LOSE: damage+15% per stack (max 5)', passiveTh:'เมื่อ LOSE: ดาเมจ+15% ต่อสแต็ค (สูงสุด 5)' };
+EVOLVE2_FORMS['IRON-BASTION']={ name:'IRON-BASTION', color:'#44ccff', hp:168, atk:19, spd:21, def:21, passiveIcon:'⚙️', passive:'20% dodge; every 3 turns: true strike + damage+50% + guaranteed crit', passiveTh:'หลบ 20% ทุก 3 เทิร์น: โจมตีไม่พลาด + ดาเมจ+50% + คริติคอล' };
+EVOLVE2_FORMS['CRYSTAWOLF-BASTION']={ name:'CRYSTAWOLF-BASTION', color:'#88ccff', hp:189, atk:21, spd:16, def:25, passiveIcon:'🐺', passive:'HP>50%: ATK+25%; HP<50%: DEF+25% + counter 75% + 10% stun on hit', passiveTh:'HP>50%: ATK+25% HP<50%: DEF+25% + โต้กลับ 75% + 10% สตัน' };
+EVOLVE2_FORMS['GOLEM-BASTION']={ name:'GOLEM-BASTION', color:'#5588dd', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿', passive:'Damage taken -20%; HP<30%: ATK+30% + heal 5%/round', passiveTh:'ลดดาเมจ 20% HP<30%: ATK+30% + ฟื้น 5%/รอบ' };
+PET_BRANCH['GUANLET-BASTION']='FIST';PET_BRANCH['IRON-BASTION']='WING';PET_BRANCH['CRYSTAWOLF-BASTION']='BALANCE';PET_BRANCH['GOLEM-BASTION']='SHIELD';
+PET_SPRITE['GUANLET-BASTION']='GUANLET-BASTION';PET_SPRITE['IRON-BASTION']='IRON-BASTION';PET_SPRITE['CRYSTAWOLF-BASTION']='CRYSTAWOLF-BASTION';PET_SPRITE['GOLEM-BASTION']='GOLEM-BASTION';
+
+// GHOST Forms
+const GHOST_FORMS = {};
+
+// FIST pool
+GHOST_FORMS['RAGEBEAR-GHOST']={ name:'RAGEBEAR-GHOST', color:'#8B4513', hp:112, atk:48, spd:15, def:6, passiveIcon:'🐻', passive:'Attacks deal x1.75 damage when enemy HP > 50%', passiveTh:'โจมตี x1.75 เมื่อศัตรู HP > 50%' };
+GHOST_FORMS['LION-GHOST']={ name:'LION-GHOST', color:'#DAA520', hp:108, atk:52, spd:16, def:5, passiveIcon:'🦁', passive:'First 3 turns: guaranteed crit each round + permanently reduce enemy ATK by 10%', passiveTh:'3 เทิร์นแรก: คริติคอลทุกรอบ + ลด ATK ศัตรู 10% ถาวร' };
+GHOST_FORMS['TIGER-GHOST']={ name:'TIGER-GHOST', color:'#FF6600', hp:114, atk:50, spd:18, def:5, passiveIcon:'🐯', passive:'On WIN: damage +50% next round; On LOSE: SPD +100% next round', passiveTh:'เมื่อ WIN: ดาเมจ +50% เมื่อ LOSE: SPD +100%' };
+GHOST_FORMS['WOLF-GHOST']={ name:'WOLF-GHOST', color:'#708090', hp:106, atk:46, spd:20, def:6, passiveIcon:'🐺', passive:'25% chance to attack twice (35% when HP<50%)', passiveTh:'25% โอกาสโจมตี 2 ครั้ง (35% เมื่อ HP<50%)' };
+GHOST_FORMS['SHARK-GHOST']={ name:'SHARK-GHOST', color:'#4682B4', hp:118, atk:49, spd:14, def:7, passiveIcon:'🦈', passive:'+30% damage and +30% lifesteal vs enemies with HP<50%', passiveTh:'+30% ดาเมจและดูดเลือด +30% เมื่อศัตรู HP<50%' };
+GHOST_FORMS['MANTIS-GHOST']={ name:'MANTIS-GHOST', color:'#556B2F', hp:102, atk:54, spd:17, def:4, passiveIcon:'🦗', passive:'Crits deal x2.0 instead of x1.6; HP<20%: damage +50%', passiveTh:'คริ x2.0 แทน x1.6 HP<20%: ดาเมจ +50%' };
+PET_BRANCH['RAGEBEAR-GHOST']='FIST';PET_BRANCH['LION-GHOST']='FIST';PET_BRANCH['TIGER-GHOST']='FIST';PET_BRANCH['WOLF-GHOST']='FIST';PET_BRANCH['SHARK-GHOST']='FIST';PET_BRANCH['MANTIS-GHOST']='FIST';
+PET_SPRITE['RAGEBEAR-GHOST']='RAGEBEAR-GHOST';PET_SPRITE['LION-GHOST']='LION-GHOST';PET_SPRITE['TIGER-GHOST']='TIGER-GHOST';PET_SPRITE['WOLF-GHOST']='WOLF-GHOST';PET_SPRITE['SHARK-GHOST']='SHARK-GHOST';PET_SPRITE['MANTIS-GHOST']='MANTIS-GHOST';
+
+// WING pool
+GHOST_FORMS['BEE-GHOST']={ name:'BEE-GHOST', color:'#FFD700', hp:100, atk:28, spd:44, def:5, passiveIcon:'🐝', passive:'15% chance to attack 3 times; on success, 50% poison', passiveTh:'15% โอกาสโจมตี 3 ครั้ง; เมื่อสำเร็จ 50% พิษ' };
+GHOST_FORMS['BUNNY-GHOST']={ name:'BUNNY-GHOST', color:'#FFB6C1', hp:96, atk:24, spd:48, def:4, passiveIcon:'🐰', passive:'Dodge 20%; on dodge, ATK +50% next round', passiveTh:'หลบ 20%; เมื่อหลบ ATK+50% เทิร์นถัดไป' };
+GHOST_FORMS['TRICKFOX-GHOST']={ name:'TRICKFOX-GHOST', color:'#FF4500', hp:104, atk:30, spd:42, def:5, passiveIcon:'🦊', passive:'50% chance to Burn enemy for 3 turns', passiveTh:'50% เผาศัตรู 3 เทิร์น' };
+GHOST_FORMS['OWL-GHOST']={ name:'OWL-GHOST', color:'#8B7355', hp:108, atk:26, spd:40, def:6, passiveIcon:'🦉', passive:'Attacks never miss; 15% blind on hit (50% miss for 3T)', passiveTh:'โจมตีไม่พลาด; 15% blind เมื่อโดน (พลาด 50% 3 เทิร์น)' };
+GHOST_FORMS['VOLTMOUSE-GHOST']={ name:'VOLTMOUSE-GHOST', color:'#FFD700', hp:98, atk:32, spd:46, def:4, passiveIcon:'🐭', passive:'Every turn random: stun / ATK-50% / DEF-50% / give enemy ATK+25%', passiveTh:'ทุกเทิร์นสุ่ม: สตัน / ATK-50% / DEF-50% / ให้ศัตรู ATK+25%' };
+GHOST_FORMS['PENGUIN-GHOST']={ name:'PENGUIN-GHOST', color:'#00CED1', hp:112, atk:22, spd:38, def:8, passiveIcon:'🐧', passive:'Damage taken -15%; HP<50%: dodge+25% and ATK+25%', passiveTh:'ลดดาเมจ 15%; HP<50%: หลบ+25% และ ATK+25%' };
+PET_BRANCH['BEE-GHOST']='WING';PET_BRANCH['BUNNY-GHOST']='WING';PET_BRANCH['TRICKFOX-GHOST']='WING';PET_BRANCH['OWL-GHOST']='WING';PET_BRANCH['VOLTMOUSE-GHOST']='WING';PET_BRANCH['PENGUIN-GHOST']='WING';
+PET_SPRITE['BEE-GHOST']='BEE-GHOST';PET_SPRITE['BUNNY-GHOST']='BUNNY-GHOST';PET_SPRITE['TRICKFOX-GHOST']='TRICKFOX-GHOST';PET_SPRITE['OWL-GHOST']='OWL-GHOST';PET_SPRITE['VOLTMOUSE-GHOST']='VOLTMOUSE-GHOST';PET_SPRITE['PENGUIN-GHOST']='PENGUIN-GHOST';
+
+// SHIELD pool
+GHOST_FORMS['COCKROACH-GHOST']={ name:'COCKROACH-GHOST', color:'#8B4513', hp:135, atk:22, spd:16, def:24, passiveIcon:'🪳', passive:'Survive a fatal blow with 1 HP (once per battle), then ATK+100%, DEF+100% and SPD+100% for the rest of battle', passiveTh:'เมื่อถูกโจมตีถึงตายจะเหลือ HP 1 (1 ครั้ง/การต่อสู้) และ ATK/DEF/SPD+100% ตลอดการต่อสู้นั้น' };
+GHOST_FORMS['SLIME-GHOST']={ name:'SLIME-GHOST', color:'#32CD32', hp:145, atk:18, spd:13, def:22, passiveIcon:'🟢', passive:'Recover 5% HP per round; 25% poison on attack or when hit', passiveTh:'ฟื้น 5% HP ต่อรอบ; 25% พิษเมื่อโจมตีหรือโดนโจมตี' };
+GHOST_FORMS['LEAPFROG-GHOST']={ name:'LEAPFROG-GHOST', color:'#228B22', hp:125, atk:24, spd:18, def:22, passiveIcon:'🐸', passive:'25% chance to reflect 50% damage + poison', passiveTh:'25% โอกาสสะท้อน 50% ดาเมจ + พิษ' };
+GHOST_FORMS['HAMSTER-GHOST']={ name:'HAMSTER-GHOST', color:'#DEB887', hp:128, atk:20, spd:15, def:24, passiveIcon:'🐹', passive:'Every 3 turns: heal 20% HP and DEF+50% that round', passiveTh:'ทุก 3 เทิร์น: ฟื้น 20% HP และ DEF+50% ในรอบนั้น' };
+GHOST_FORMS['AXOLOTL-GHOST']={ name:'AXOLOTL-GHOST', color:'#FF69B4', hp:140, atk:21, spd:15, def:26, passiveIcon:'🦎', passive:'10% chance to dodge; when hit, 30% chance to recover 15% HP', passiveTh:'โอกาสหลบ 10% เมื่อถูกโจมตีโอกาส 30% ฟื้น HP 15%' };
+GHOST_FORMS['CAT-GHOST']={ name:'CAT-GHOST', color:'#9370DB', hp:118, atk:26, spd:22, def:18, passiveIcon:'🐱', passive:'Dodge 25%. If hit: ATK/DEF+50% next round', passiveTh:'หลบ 25% ถ้าโดนโจมตี รอบถัดไปจะ ATK/DEF+50%' };
+PET_BRANCH['COCKROACH-GHOST']='SHIELD';PET_BRANCH['SLIME-GHOST']='SHIELD';PET_BRANCH['LEAPFROG-GHOST']='SHIELD';PET_BRANCH['HAMSTER-GHOST']='SHIELD';PET_BRANCH['AXOLOTL-GHOST']='SHIELD';PET_BRANCH['CAT-GHOST']='SHIELD';
+PET_SPRITE['COCKROACH-GHOST']='COCKROACH-GHOST';PET_SPRITE['SLIME-GHOST']='SLIME-GHOST';PET_SPRITE['LEAPFROG-GHOST']='LEAPFROG-GHOST';PET_SPRITE['HAMSTER-GHOST']='HAMSTER-GHOST';PET_SPRITE['AXOLOTL-GHOST']='AXOLOTL-GHOST';PET_SPRITE['CAT-GHOST']='CAT-GHOST';
+
+// BALANCE pool
+GHOST_FORMS['DRAGON-GHOST']={ name:'DRAGON-GHOST', color:'#8B0000', hp:118, atk:34, spd:22, def:14, passiveIcon:'🐉', passive:'ATK/DEF/SPD +3% per round (max 10 stacks); 15% burn', passiveTh:'ATK/DEF/SPD +3% ต่อเทิร์น (สูงสุด 10 ครั้ง) เผา 15%' };
+GHOST_FORMS['GRIFFON-GHOST']={ name:'GRIFFON-GHOST', color:'#B8860B', hp:112, atk:36, spd:24, def:12, passiveIcon:'🦅', passive:'Dodge 15%, Crit+15%; on crit: enemy no-heal for 3 turns', passiveTh:'หลบ 15% คริ+15%; เมื่อคริ: ศัตรูฟื้นฟูไม่ได้ 3 เทิร์น' };
+GHOST_FORMS['OCTOPUS-GHOST']={ name:'OCTOPUS-GHOST', color:'#9370DB', hp:125, atk:30, spd:20, def:16, passiveIcon:'🐙', passive:'30% blind on hit (50% miss chance for 3 turns)', passiveTh:'30% blind เมื่อโดน (พลาด 50% 3 เทิร์น)' };
+GHOST_FORMS['PHOENIX-GHOST']={ name:'PHOENIX-GHOST', color:'#FF4500', hp:108, atk:35, spd:26, def:10, passiveIcon:'🔥', passive:'Upon death: revive with 100% HP and Burn enemy for 10 turns (once per battle)', passiveTh:'เมื่อตายจะฟื้นคืนชีพด้วย HP 100% และทำให้ศัตรูติดสถานะเผาไหม้ 10 เทิร์น (1 ครั้ง/การต่อสู้)' };
+GHOST_FORMS['UNICORN-GHOST']={ name:'UNICORN-GHOST', color:'#E6E6FA', hp:115, atk:32, spd:25, def:12, passiveIcon:'🦄', passive:'Recover 8% HP per turn; Cleanse 1 debuff per turn', passiveTh:'ฟื้น HP 8% ต่อเทิร์น ล้างดีบัฟ 1 อย่างต่อเทิร์น' };
+GHOST_FORMS['PANDA-GHOST']={ name:'PANDA-GHOST', color:'#2F4F4F', hp:120, atk:33, spd:18, def:15, passiveIcon:'🐼', passive:'Crit Rate +25%; 15% stun on hit', passiveTh:'คริเรท +25% 15% สตันเมื่อโจมตี' };
+PET_BRANCH['DRAGON-GHOST']='BALANCE';PET_BRANCH['GRIFFON-GHOST']='BALANCE';PET_BRANCH['OCTOPUS-GHOST']='BALANCE';PET_BRANCH['PHOENIX-GHOST']='BALANCE';PET_BRANCH['UNICORN-GHOST']='BALANCE';PET_BRANCH['PANDA-GHOST']='BALANCE';
+PET_SPRITE['DRAGON-GHOST']='DRAGON-GHOST';PET_SPRITE['GRIFFON-GHOST']='GRIFFON-GHOST';PET_SPRITE['OCTOPUS-GHOST']='OCTOPUS-GHOST';PET_SPRITE['PHOENIX-GHOST']='PHOENIX-GHOST';PET_SPRITE['UNICORN-GHOST']='UNICORN-GHOST';PET_SPRITE['PANDA-GHOST']='PANDA-GHOST';
+
+// WEAPONS
+const WEAPONS = {
+  iron_sword:{ name:'Iron Sword', nameTh:'ดาบเหล็ก', grade:'N', icon:'🗡️', stats:{atk:30} },
+  iron_shield:{ name:'Iron Shield', nameTh:'โล่เหล็ก', grade:'N', icon:'🛡️', stats:{def:30} },
+  iron_boots:{ name:'Iron Boots', nameTh:'รองเท้าเหล็ก', grade:'N', icon:'👢', stats:{spd:30} },
+  iron_amulet:{ name:'Iron Amulet', nameTh:'เครื่องรางเหล็ก', grade:'N', icon:'📿', stats:{hp:30} },
+  iron_bow:{ name:'Iron Bow', nameTh:'ธนูเหล็ก', grade:'N', icon:'🏹', stats:{atk:25,spd:5} },
+  iron_plate:{ name:'Iron Plate', nameTh:'เกราะเหล็ก', grade:'N', icon:'🛡️', stats:{def:20,hp:10} },
+  modest_crest:{ name:'Modest Crest', nameTh:'เครื่องหมายถ่อมตน', grade:'N', icon:'✨', stats:{atk:15,spd:15} },
+  iron_spear:{ name:'Iron Spear', nameTh:'หอกเหล็ก', grade:'N', icon:'🔱', stats:{atk:20,def:10} },
+  iron_cloak:{ name:'Iron Cloak', nameTh:'ผ้าคลุมเหล็ก', grade:'N', icon:'🧥', stats:{def:15,spd:15} },
+  iron_gauntlet:{ name:'Iron Gauntlet', nameTh:'สนับมือเหล็ก', grade:'N', icon:'✊', stats:{atk:25,def:5} },
+  iron_circlet:{ name:'Iron Circlet', nameTh:'มงกุฎเหล็ก', grade:'N', icon:'👑', stats:{hp:20,spd:10} },
+
+  steel_blade:{ name:'Steel Blade', nameTh:'ดาบเหล็กกล้า', grade:'R', icon:'⚔️', stats:{atk:50}, effect:{type:'atk_dmg_boost',chance:0.10,mult:1.50}, desc:'10% chance to attack damage +50%', descTh:'10% โอกาสโจมตีแรงขึ้น 50%' },
+  steel_wall:{ name:'Steel Wall', nameTh:'กำแพงเหล็กกล้า', grade:'R', icon:'🛡️', stats:{def:50}, effect:{type:'atk_dmg_reduce',chance:0.10,mult:0.50}, desc:'10% chance to take 50% less damage', descTh:'10% โอกาสรับดาเมจลดลง 50%' },
+  steel_greaves:{ name:'Steel Greaves', nameTh:'เกราะขาเหล็กกล้า', grade:'R', icon:'🦵', stats:{spd:50}, effect:{type:'dodge',chance:0.10}, desc:'+10% dodge chance', descTh:'+10% โอกาสหลบหลีก' },
+  steel_heart:{ name:'Steel Heart', nameTh:'หัวใจเหล็กกล้า', grade:'R', icon:'❤️', stats:{hp:50}, effect:{type:'regen',pct:0.05}, desc:'Regenerate 5% Max HP each turn', descTh:'ฟื้นฟู 5% HP สูงสุดทุกเทิร์น' },
+  twin_fang:{ name:'Twin Fang', nameTh:'เขาคู่', grade:'R', icon:'🗡️', stats:{atk:40,spd:10}, effect:{type:'double_attack',chance:0.10}, desc:'10% chance to attack twice', descTh:'10% โอกาสโจมตี 2 ครั้ง' },
+  guardian_plate:{ name:'Guardian Plate', nameTh:'เกราะผู้พิทักษ์', grade:'R', icon:'🛡️', stats:{def:30,hp:20}, effect:{type:'reflect',pct:0.25}, desc:'Reflect 25% of incoming damage', descTh:'สะท้อน 25% ของดาเมจที่ได้รับ' },
+  balanced_crest:{ name:'Balanced Crest', nameTh:'เครื่องหมายสมดุล', grade:'R', icon:'⚖️', stats:{atk:25,def:25}, effect:{type:'all_stat_boost',chance:0.10,mult:1.20}, desc:'10% chance all stats +20% for the round', descTh:'10% โอกาสทุกสถิติ +20% ในรอบนี้' },
+  steel_lance:{ name:'Steel Lance', nameTh:'หอกเหล็กกล้า', grade:'R', icon:'🔱', stats:{atk:40,def:10}, effect:{type:'pierce',chance:0.25}, desc:'25% chance to pierce defense', descTh:'25% โอกาสเจาะเกราะ' },
+  steel_mantle:{ name:'Steel Mantle', nameTh:'เสื้อคลุมเหล็กกล้า', grade:'R', icon:'🧥', stats:{def:25,spd:25}, effect:{type:'dodge_reduce',pct:0.10}, desc:'Enemy -10% accuracy against you', descTh:'ศัตรูแม่นยำลดลง 10%' },
+  steel_fist:{ name:'Steel Fist', nameTh:'กำปั้นเหล็กกล้า', grade:'R', icon:'✊', stats:{atk:40,def:10}, effect:{type:'stun',chance:0.10}, desc:'10% chance to stun on hit', descTh:'10% โอกาสสตันเมื่อโจมตี' },
+  steel_crown:{ name:'Steel Crown', nameTh:'มงกุฎเหล็กกล้า', grade:'R', icon:'👑', stats:{hp:30,spd:20}, effect:{type:'crit',chance:0.10}, desc:'+10% crit rate', descTh:'+10% คริติคอลเรท' },
+
+  dragonfang_blade:{ name:'Dragonfang Blade', nameTh:'ดาบเขี้ยวมังกร', grade:'E', icon:'🐉', stats:{atk:120}, effect:{type:'atk_dmg_boost',chance:0.25,mult:1.75}, desc:'25% chance to attack damage +75%', descTh:'25% โอกาสโจมตีแรงขึ้น 75%' },
+  aegis_bulwark:{ name:'Aegis Bulwark', nameTh:'โล่เทพเอจิส', grade:'E', icon:'🛡️', stats:{def:120}, effect:{type:'atk_dmg_reduce',chance:0.25,mult:0.40}, desc:'25% chance to take 60% less damage', descTh:'25% โอกาสรับดาเมจลดลง 60%' },
+  windwalker_greaves:{ name:'Windwalker Greaves', nameTh:'เกราะขาสายลม', grade:'E', icon:'🦵', stats:{spd:120}, effect:{type:'dodge',chance:0.25}, desc:'+25% dodge chance', descTh:'+25% โอกาสหลบหลีก' },
+  titans_heart:{ name:"Titan's Heart", nameTh:'หัวใจไททัน', grade:'E', icon:'❤️', stats:{hp:120}, effect:{type:'regen',pct:0.10}, desc:'Regenerate 10% Max HP each turn', descTh:'ฟื้นฟู 10% HP สูงสุดทุกเทิร์น' },
+  berserkers_fury:{ name:"Berserker's Fury", nameTh:'คลั่งเบอร์เซิร์ก', grade:'E', icon:'🗡️', stats:{atk:100,spd:20}, effect:{type:'atk_dmg_boost',chance:0.20,mult:2.00}, desc:'20% chance to attack damage +100%', descTh:'20% โอกาสโจมตีแรงขึ้น 100%' },
+  fortress_core:{ name:'Fortress Core', nameTh:'แกนป้อมปราการ', grade:'E', icon:'🛡️', stats:{def:80,hp:40}, effect:{type:'reflect',pct:0.50}, desc:'Reflect 50% of incoming damage', descTh:'สะท้อน 50% ดาเมจที่ได้รับ' },
+  omega_blade:{ name:'Omega Blade', nameTh:'ดาบโอเมก้า', grade:'E', icon:'⚔️', stats:{atk:60,spd:60}, effect:{type:'all_stat_boost',chance:0.20,mult:1.30}, desc:'20% chance all stats +30% for the round', descTh:'20% โอกาสทุกสถิติ +30% ในรอบนี้' },
+  dragon_spear:{ name:'Dragon Spear', nameTh:'หอกมังกร', grade:'E', icon:'🔱', stats:{atk:80,def:40}, effect:{type:'pierce',chance:0.50}, desc:'50% chance to pierce defense', descTh:'50% โอกาสเจาะเกราะ' },
+  phantom_cloak:{ name:'Phantom Cloak', nameTh:'เสื้อคลุมผี', grade:'E', icon:'🧥', stats:{spd:80,def:40}, effect:{type:'dodge_reduce',pct:0.20}, desc:'Enemy -20% accuracy against you', descTh:'ศัตรูแม่นยำลดลง 20%' },
+  titan_gauntlet:{ name:'Titan Gauntlet', nameTh:'นวมไททัน', grade:'E', icon:'✊', stats:{atk:80,def:40}, effect:{type:'stun',chance:0.20}, desc:'20% chance to stun on hit', descTh:'20% โอกาสสตันเมื่อโจมตี' },
+  storm_crown:{ name:'Storm Crown', nameTh:'มงกุฎพายุ', grade:'E', icon:'👑', stats:{hp:60,spd:60}, effect:{type:'crit',chance:0.20}, desc:'+20% crit rate', descTh:'+20% คริติคอลเรท' },
+};
+
+// ARTIFACTS
+const ARTIFACTS = [
+  { key:'vitality_core', name:'Vitality Core', nameTh:'แก่นชีวิต', grade:'N', icon:'💚', desc:'Increases Max HP by 20% when equipped', descTh:'เพิ่ม HP สูงสุด 20% เมื่อสวมใส่' },
+  { key:'shock_bead', name:'Shock Bead', nameTh:'ลูกปัดช็อต', grade:'N', icon:'⚡', desc:'In battle: 15% chance to paralyze the enemy when attacking', descTh:'ในการต่อสู้: 15% โอกาสทำลายศัตรูเมื่อโจมตี' },
+  { key:'keen_edge', name:'Keen Edge', nameTh:'ขอบคม', grade:'N', icon:'🗡️', desc:'In battle: damage dealt +10%', descTh:'ในการต่อสู้: ดาเมจที่สร้าง +10%' },
+  { key:'blade_shard', name:'Blade Shard', nameTh:'เศษดาบ', grade:'N', icon:'🔪', desc:'ATK +10%', descTh:'ATK +10%' },
+  { key:'iron_plate', name:'Iron Plate', nameTh:'แผ่นเหล็ก', grade:'N', icon:'🛡️', desc:'DEF +10%', descTh:'DEF +10%' },
+  { key:'swift_ring', name:'Swift Ring', nameTh:'แหวนว่องไว', grade:'N', icon:'💍', desc:'SPD +10%', descTh:'SPD +10%' },
+  { key:'life_seed', name:'Life Seed', nameTh:'เมล็ดชีวิต', grade:'N', icon:'🌱', desc:'HP +10%', descTh:'HP +10%' },
+  { key:'crimson_fang', name:'Crimson Fang', nameTh:'เขี้ยวแดง', grade:'N', icon:'🦷', desc:'In battle: lifesteal +8%', descTh:'ในการต่อสู้: ดูดเลือด +8%' },
+  { key:'stone_skin', name:'Stone Skin', nameTh:'ผิวหิน', grade:'N', icon:'🪨', desc:'In battle: damage taken -8%', descTh:'ในการต่อสู้: ดาเมจรับ -8%' },
+  { key:'lucky_charm', name:'Lucky Charm', nameTh:'เครื่องรางนำโชค', grade:'N', icon:'🍀', desc:'In battle: 10% chance to avoid all damage', descTh:'ในการต่อสู้: 10% โอกาสหลบดาเมจทั้งหมด' },
+  { key:'venom_fang', name:'Venom Fang', nameTh:'เขี้ยวพิษ', grade:'N', icon:'🐍', desc:'In battle: 15% chance to poison enemy on attack', descTh:'ในการต่อสู้: 15% โอกาสวางยาพิษศัตรูเมื่อโจมตี' },
+  { key:'atk_shard', name:'ATK Shard', nameTh:'เศษ ATK', grade:'N', icon:'⚔️', desc:'ATK +5%', descTh:'ATK +5%' },
+  { key:'def_shard', name:'DEF Shard', nameTh:'เศษ DEF', grade:'N', icon:'🛡️', desc:'DEF +5%', descTh:'DEF +5%' },
+  { key:'spd_shard', name:'SPD Shard', nameTh:'เศษ SPD', grade:'N', icon:'💨', desc:'SPD +5%', descTh:'SPD +5%' },
+  { key:'hp_core', name:'HP Core', nameTh:'แก่น HP', grade:'N', icon:'❤️', desc:'HP +5%', descTh:'HP +5%' },
+
+  { key:'death_mark', name:'Death Mark', nameTh:'ตราแห่งความตาย', grade:'R', icon:'💀', desc:'In battle: When HP drops below 30%, ATK increases by 75%', descTh:'ในการต่อสู้: เมื่อ HP ต่ำกว่า 30% ATK เพิ่ม 75%' },
+  { key:'precision_stone', name:'Precision Stone', nameTh:'หินแม่นยำ', grade:'R', icon:'🎯', desc:'In battle: attacks cannot miss and +15% crit rate', descTh:'ในการต่อสู้: โจมตีไม่พลาด +15% คริติคอลเรท' },
+  { key:'paralysis_fang', name:'Paralysis Fang', nameTh:'เขี้ยวอัมพาต', grade:'R', icon:'⚡', desc:'In battle: 20% chance to paralyze the enemy when attacking', descTh:'ในการต่อสู้: 20% โอกาสทำให้ศัตรูช็อตเมื่อโจมตี' },
+  { key:'berserker_claw', name:"Berserker Claw", nameTh:'เล็บเบอร์เซิร์ก', grade:'R', icon:'🐾', desc:'In battle: ATK+25%, Crit+20%, but take 10% more damage', descTh:'ในการต่อสู้: ATK+25% คริ+20% แต่รับดาเมจ +10%' },
+  { key:'victory_chain', name:'Victory Chain', nameTh:'โซ่แห่งชัย', grade:'R', icon:'⛓️', desc:'In battle: On WIN, damage +20% next round (stacks up to 3)', descTh:'ในการต่อสู้: เมื่อ WIN เทิร์นถัดไปดาเมจ +20% (สูงสุด 3)' },
+  { key:'reflect_coat', name:'Reflect Coat', nameTh:'เสื้อสะท้อน', grade:'R', icon:'🪞', desc:'In battle: reflect 30% of damage taken back to the attacker', descTh:'ในการต่อสู้: สะท้อน 30% ดาเมจกลับไปยังผู้โจมตี' },
+  { key:'wind_step', name:'Wind Step', nameTh:'ฝีเท้าสายลม', grade:'R', icon:'💨', desc:'In battle: 20% dodge chance', descTh:'ในการต่อสู้: 20% โอกาสหลบหลีก' },
+  { key:'rage_core', name:'Rage Core', nameTh:'แก่นพิโรธ', grade:'R', icon:'💢', desc:'In battle: On LOSE, next round damage +50%', descTh:'ในการต่อสู้: เมื่อ LOSE เทิร์นถัดไปดาเมจ +50%' },
+  { key:'drain_aura', name:'Drain Aura', nameTh:'ออร่าดูดพลัง', grade:'R', icon:'🌀', desc:'In battle: lifesteal +15%', descTh:'ในการต่อสู้: ดูดเลือด +15%' },
+  { key:'blood_pact', name:'Blood Pact', nameTh:'สัญญาเลือด', grade:'R', icon:'🩸', desc:'In battle: damage dealt +20%, but lose 5% Max HP per turn', descTh:'ในการต่อสู้: ดาเมจ +20% แต่เสีย 5% HP สูงสุดต่อเทิร์น' },
+  { key:'tide_breaker', name:'Tide Breaker', nameTh:'หักคลื่น', grade:'R', icon:'🌊', desc:'In battle: Every 3 rounds, attack hits twice', descTh:'ในการต่อสู้: ทุก 3 รอบ โจมตี 2 ครั้ง' },
+  { key:'all_stats_r', name:'All Stats (R)', nameTh:'ทุกสถิติ (R)', grade:'R', icon:'✨', desc:'ATK/DEF/SPD/HP +8%', descTh:'ATK/DEF/SPD/HP +8%' },
+  { key:'crit_core', name:'Crit Core', nameTh:'แก่นคริติคอล', grade:'R', icon:'💥', desc:'In battle: crit rate +25%', descTh:'ในการต่อสู้: คริติคอลเรท +25%' },
+  { key:'toxic_coat', name:'Toxic Coat', nameTh:'เสื้อพิษ', grade:'R', icon:'☠️', desc:'In battle: 20% chance to poison the attacker when hit', descTh:'ในการต่อสู้: 20% โอกาสวางยาพิษเมื่อโดนโจมตี' },
+  { key:'antidote_charm', name:'Antidote Charm', nameTh:'เครื่องรางกันพิษ', grade:'R', icon:'🍀', desc:'In battle: immune to poison', descTh:'ในการต่อสู้: ภูมิต้านทานพิษ' },
+  { key:'reflect_ward', name:'Reflect Ward', nameTh:'วอร์ดสะท้อน', grade:'R', icon:'🛡️', desc:'In battle: immune to reflect and counter damage', descTh:'ในการต่อสู้: ภูมิต้านทานดาเมจสะท้อน' },
+  { key:'cursed_shackle', name:'Cursed Shackle', nameTh:'โซ่ต้องสาป', grade:'R', icon:'⛓️', desc:'In battle: 20% chance to curse enemy on attack (ATK -25% 2 turns)', descTh:'ในการต่อสู้: 20% โอกาสสาปศัตรูเมื่อโจมตี (ATK -25% 2 เทิร์น)' },
+
+  { key:'sniper_eye', name:'Sniper Eye', nameTh:'ตานักแม่น', grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (x2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ x2.0)' },
+  { key:'soul_reaper', name:'Soul Reaper', nameTh:'เคียววิญญาณ', grade:'E', icon:'💀', desc:'In battle: attacks deal +40% damage and heal for 20% of damage dealt', descTh:'ในการต่อสู้: โจมตี +40% และฮีล 20% ของดาเมจ' },
+  { key:'iron_will', name:'Iron Will', nameTh:'เจตจำนงเหล็ก', grade:'E', icon:'💪', desc:'In battle: Survive fatal blow with 1 HP (once), next attack deals x4 damage', descTh:'ในการต่อสู้: รอดตายด้วย 1 HP (ครั้งเดียว) โจมตีครั้งถัดไป x4' },
+  { key:'true_sight', name:'True Sight', nameTh:'ตามองทะลุ', grade:'E', icon:'👁️', desc:'In battle: attacks never miss, pierces defense, +25% crit', descTh:'ในการต่อสู้: โจมตีไม่พลาด เจาะเกราะ คริ +25%' },
+  { key:'moon_veil', name:'Moon Veil', nameTh:'ม่านจันทรา', grade:'E', icon:'🌙', desc:'In battle: Heal 5% Max HP per turn, ATK/DEF/SPD +10%', descTh:'ในการต่อสู้: ฮีล 5% HP สูงสุดต่อเทิร์น ATK/DEF/SPD +10%' },
+  { key:'double_attack', name:'Double Attack', nameTh:'โจมตีคู่', grade:'E', icon:'⚔️', desc:'In battle: 25% chance to attack twice', descTh:'ในการต่อสู้: 25% โอกาสโจมตี 2 ครั้ง' },
+  { key:'wild_card', name:'Wild Card', nameTh:'การ์ดป่า', grade:'E', icon:'🃏', desc:'At battle start: random effect (ATK+50% / dodge+50% / DEF+50% / all)', descTh:'เริ่มต่อสู้: สุ่มเอฟเฟกต์ (ATK+50% / หลบ+50% / DEF+50% / ทั้งหมด)' },
+  { key:'execution', name:'Execution', nameTh:'ประหาร', grade:'E', icon:'🔪', desc:'In battle: +50% damage against enemies below 30% HP', descTh:'ในการต่อสู้: +50% ดาเมจใส่ศัตรู HP<30%' },
+  { key:'chain_strike', name:'Chain Strike', nameTh:'โจมตีต่อเนื่อง', grade:'E', icon:'⛓️', desc:'In battle: Landing 2 hits in a row triggers a 3rd hit at 150% damage', descTh:'ในการต่อสู้: โจมตี 2 ครั้งติดต่อกัน ครั้งที่ 3 เหนี่ยวดาเมจ 150%' },
+  { key:'all_stats_e', name:'All Stats (E)', nameTh:'ทุกสถิติ (E)', grade:'E', icon:'✨', desc:'ATK/DEF/SPD/HP +15%', descTh:'ATK/DEF/SPD/HP +15%' },
+  { key:'deathblow', name:'Deathblow', nameTh:'ตายแหลก', grade:'E', icon:'💥', desc:'In battle: crits deal x2.5 instead of x1.6', descTh:'ในการต่อสู้: คริติคอล x2.5 แทน x1.6' },
+  { key:'plague_scythe', name:'Plague Scythe', nameTh:'เคียวโรคระบาด', grade:'E', icon:'☠️', desc:'In battle: 30% chance to poison AND burn the enemy on attack', descTh:'ในการต่อสู้: 30% โอกาสวางยาพิษและเผาศัตรูเมื่อโจมตี' },
+  { key:'piercing_fang', name:'Piercing Fang', nameTh:'เขี้ยวทะลุ', grade:'E', icon:'🦷', desc:'In battle: attacks ignore 50% of enemy DEF', descTh:'ในการต่อสู้: โจมตีข้าม 50% DEF ศัตรู' },
+];
+
+// ITEMS
+const ITEMS = [
+  { key:'hp_potion', name:'HP Potion', nameTh:'ยา HP', icon:'🧪', desc:'Restores 25% Max HP instantly', descTh:'ฟื้นฟู HP 25% ของ HP สูงสุด ทันที' },
+  { key:'super_potion', name:'Super Potion', nameTh:'ยามหา', icon:'🧪', desc:'Restores 50% Max HP instantly', descTh:'ฟื้นฟู HP 50% ของ HP สูงสุด ทันที' },
+  { key:'max_potion', name:'Max Potion', nameTh:'ยาเต็ม', icon:'💊', desc:'Restores 100% Max HP instantly', descTh:'ฟื้นฟู HP 100% ของ HP สูงสุด ทันที' },
+  { key:'revive', name:'Revive Stone', nameTh:'หินฟื้นคืนชีพ', icon:'💎', desc:'Revives your beast with 50% HP when it falls in battle', descTh:'ฟื้นคืนชีพสัตว์ด้วย HP 50% เมื่อล้มในการต่อสู้' },
+  { key:'power_shard', name:'Power Shard', nameTh:'เศษพลัง', icon:'⚡', desc:'Permanently increases your beast ATK by 1', descTh:'เพิ่ม ATK 1 อย่างถาวร' },
+  { key:'speed_shard', name:'Speed Shard', nameTh:'เศษความเร็ว', icon:'💨', desc:'Permanently increases your beast SPD by 1', descTh:'เพิ่ม SPD 1 อย่างถาวร' },
+  { key:'guard_shard', name:'Guard Shard', nameTh:'เศษป้องกัน', icon:'🛡️', desc:'Permanently increases your beast DEF by 1', descTh:'เพิ่ม DEF 1 อย่างถาวร' },
+  { key:'perm_atk', name:'Power Essence', nameTh:'หัวใจพลัง', icon:'🔴', desc:'Permanently increases your beast ATK by 5', descTh:'เพิ่ม ATK 5 อย่างถาวร' },
+  { key:'perm_spd', name:'Speed Essence', nameTh:'หัวใจความเร็ว', icon:'🟢', desc:'Permanently increases your beast SPD by 5', descTh:'เพิ่ม SPD 5 อย่างถาวร' },
+  { key:'perm_def', name:'Def Essence', nameTh:'หัวใจป้องกัน', icon:'🔵', desc:'Permanently increases your beast DEF by 5', descTh:'เพิ่ม DEF 5 อย่างถาวร' },
+  { key:'perm_hp', name:'HP Essence', nameTh:'หัวใจชีวิต', icon:'💜', desc:'Permanently increases your beast HP by 10', descTh:'เพิ่ม HP 10 อย่างถาวร' },
+  { key:'essence', name:'Essence', nameTh:'เอสเซนส์', icon:'💎', desc:'Used for upgrading weapons and crafting', descTh:'ใช้ในการอัปเกรดอาวุธและคราฟต์' },
+  { key:'rebirth_stone', name:'Rebirth Stone', nameTh:'หินเกิดใหม่', icon:'🔮', desc:'Used to rebirth a monster (resets to base form)', descTh:'ใช้เกิดใหม่มอนสเตอร์ (รีเซ็ตเป็นร่างฐาน)' },
+  { key:'mystery_egg', name:'Mystery Egg', nameTh:'ไข่ลึกลับ', icon:'🥚', desc:'Hatches into a random Evolve II monster', descTh:'ฟักเป็นมอน Evolve II แบบสุ่ม' },
+  { key:'shiny_egg', name:'Shiny Egg', nameTh:'ไข่ Shiny', icon:'✨🥚', desc:'Guaranteed to hatch a Shiny Evolve II monster', descTh:'ฟักเป็น Shiny Evolve II แน่นอน' },
+  { key:'fusion_egg', name:'Fusion Egg', nameTh:'ไข่ฟิวชั่น', icon:'🥚', desc:'Hatches after fusion of 2 Evolve II monsters', descTh:'ฟักหลังรวมมอน Evolve II 2 ตัว' },
+  { key:'sym_F', name:'Symbol: FIST', nameTh:'สัญลักษณ์: กำปั้น', icon:'✊', desc:'Grants a FIST symbol to your beast for Evolve II', descTh:'มอบ Symbol กำปั้นให้สัตว์ของคุณ' },
+  { key:'sym_W', name:'Symbol: WING', nameTh:'สัญลักษณ์: ปีก', icon:'🪽', desc:'Grants a WING symbol to your beast for Evolve II', descTh:'มอบ Symbol ปีกให้สัตว์ของคุณ' },
+  { key:'sym_S', name:'Symbol: SHIELD', nameTh:'สัญลักษณ์: โล่', icon:'🛡️', desc:'Grants a SHIELD symbol to your beast for Evolve II', descTh:'มอบ Symbol โล่ให้สัตว์ของคุณ' },
+  { key:'map_scroll', name:'Map Scroll', nameTh:'ม้วนแผนที่', icon:'📜', desc:'Used to progress in Scout mode', descTh:'ใช้ในการเดินหน้า Scout mode' },
+  { key:'energy_drink', name:'Energy Drink', nameTh:'เครื่องดื่มชูกำลัง', icon:'🥤', desc:'Restores 10 Stamina', descTh:'ฟื้นฟู Stamina 10 หน่วย' },
+  { key:'artifact_box', name:'Artifact Box', nameTh:'กล่องอาติแฟค', icon:'📦', desc:'Opens to reveal a random Artifact (N 60% / R 35% / E 5%)', descTh:'เปิดสุ่ม Artifact (N 60% / R 35% / E 5%)' },
+  { key:'weapon_box_n', name:'Weapon Box (N)', nameTh:'กล่องอาวุธ (N)', icon:'📦', desc:'Contains a random Normal-grade weapon', descTh:'สุ่มอาวุธเกรด Normal' },
+];
+
+// ===================== OVERDRIVE INFO =====================
+
+const OVERDRIVE_INFO = {
+  'RAGING-BRAWLER':{name:'APOCALYPSE',icon:'💥',desc:'Strike ×2.5 twice (forced crit), then Crit +25% for 3 turns',descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) จากนั้น Crit +25% นาน 3 เทิร์น'},
+  'CRIMSON-BRAWLER':{name:'APOCALYPSE RUSH',icon:'☯️',desc:'Strike ×2.5 ignoring all DEF, then ATK/SPD+30% and 15% double-attack for 3 turns',descTh:'โจมตี ×2.5 ทะลุ DEF ทั้งหมด จากนั้น ATK/SPD+30% และ 15% โจมตี 2 ครั้ง 3 เทิร์น'},
+  'KAIJU-BRAWLER':{name:'APOCALYPSE WALL',icon:'💥',desc:'Strike ×2.0 twice + damage taken -50%, then Crit+15% and damage taken -15% for 3 turns',descTh:'โจมตี ×2.0 สองครั้ง + ลดดาเมจ 50% จากนั้น Crit+15% และลดดาเมจ 15% 3 เทิร์น'},
+  'WINDBLADE-BRAWLER':{name:'APOCALYPSE WIND',icon:'💥',desc:'Strike ×2.5 twice (forced crit) + dodge, then Crit+20% and dodge+20% for 3 turns',descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) + หลบ จากนั้น Crit+20% และหลบ+20% 3 เทิร์น'},
+  'FIGHTER-PANDA':{name:'FORTRESS BREAK',icon:'🛡',desc:'Strike ×3.0 piercing DEF, then pierce DEF and +75% counter for 3 turns',descTh:'โจมตี ×3.0 ทะลุ DEF จากนั้นทะลุ DEF และโอกาสโต้กลับ +75% 3 เทิร์น'},
+  'PANDA-WARRIOR':{name:'FORTRESS BREAK RUSH',icon:'🛡',desc:'Strike ×2.5 piercing DEF + dodge, then pierce DEF, +50% counter and dodge+20% for 3 turns',descTh:'โจมตี ×2.5 ทะลุ DEF + หลบ จากนั้นทะลุ DEF, โต้กลับ+50%, หลบ+20% 3 เทิร์น'},
+  'ARMOR-PANDA':{name:'FORTRESS BREAK WALL',icon:'🛡',desc:'Strike ×2.0 piercing all DEF + reflect all damage, then reflect 50% and damage taken -15% for 3 turns',descTh:'โจมตี ×2.0 ทะลุ DEF ทั้งหมด + สะท้อนทั้งหมด จากนั้นสะท้อน 50% และลดดาเมจ 15% 3 เทิร์น'},
+  'PANDA-NINJA':{name:'FORTRESS BREAK SHADOW',icon:'🛡',desc:'Strike ×2.5 piercing DEF + dodge, then ATK×1.5, dodge+30% and next hit guaranteed crit for 3 turns',descTh:'โจมตี ×2.5 ทะลุ DEF + หลบ จากนั้น ATK×1.5, หลบ+30%, ตีถัดไป Crit 3 เทิร์น'},
+  'TYRANT-IRONJAW':{name:'CRIMSON REAPER',icon:'🩸',desc:'Strike ×2.5 + lifesteal 50%, then ATK+25% and lifesteal+20% for 3 turns',descTh:'โจมตี ×2.5 + ดูดเลือด 50% จากนั้น ATK+25%, ดูดเลือด+20% 3 เทิร์น'},
+  'AGILE-IRONJAW':{name:'CRIMSON REAPER FANG',icon:'🩸',desc:'Double-hit ×2.0 + lifesteal 30%, then +30% double-attack and lifesteal+15% for 3 turns',descTh:'โจมตี ×2.0 สองครั้ง + ดูดเลือด 30% จากนั้น โอกาสโจมตี 2 ครั้ง+30%, ดูดเลือด+15% 3 เทิร์น'},
+  'FULLARMOR-IRONJAW':{name:'CRIMSON REAPER WARD',icon:'🩸',desc:'Strike ×2.0 + damage taken -50% + lifesteal 30%, then damage taken -20%, lifesteal+15%, counter 50% for 3 turns',descTh:'โจมตี ×2.0 + ลดดาเมจ 50% + ดูดเลือด 30% จากนั้น ลดดาเมจ 20%, ดูดเลือด+15%, โต้กลับ 50% 3 เทิร์น'},
+  'RUNE-IRONJAW':{name:'CRIMSON REAPER RUNE',icon:'🩸',desc:'Strike ×2.5 + lifesteal 50% + random Rune buff, then lifesteal+20% and random Rune buff for 3 turns',descTh:'โจมตี ×2.5 + ดูดเลือด 50% + สุ่ม Rune บัฟ จากนั้นดูดเลือด+20% และสุ่ม Rune 3 เทิร์น'},
+  'STRONG-BLITZ':{name:'THUNDER FANG',icon:'⚡',desc:'Strike ×2.5 + stun, then ATK×2 with 25% stun for 3 turns',descTh:'โจมตี ×2.5 + สตัน จากนั้น ATK×2 มีโอกาสสตัน 25% 3 เทิร์น'},
+  'STORM-BLITZ':{name:'THUNDER DASH',icon:'⚡',desc:'Strike ×2.0 + stun + dodge, then ATK×1.5, SPD×1.5 and dodge+25% for 3 turns',descTh:'โจมตี ×2.0 + สตัน + หลบ จากนั้น ATK×1.5 SPD×1.5 และหลบ+25% 3 เทิร์น'},
+  'BULWARK-BLITZ':{name:'THUNDER GUARD',icon:'⚡',desc:'Strike ×2.0 + stun + half damage, then ATK×1.5, DEF×1.5 and 20% stun for 3 turns',descTh:'โจมตี ×2.0 + สตัน + รับดาเมจครึ่ง จากนั้น ATK×1.5 DEF×1.5 และสตัน 20% 3 เทิร์น'},
+  'THUNDERCLOUD-BLITZ':{name:'THUNDERCLOUD BURST',icon:'⚡',desc:'Strike ×3.0 + stun, then ATK/SPD+25% and 50% stun for 3 turns',descTh:'โจมตี ×3.0 + สตัน จากนั้น ATK/SPD+25% และสตัน 50% 3 เทิร์น'},
+  'WARLORD-CHAMPION':{name:"CONQUEROR'S WRATH",icon:'⚔️',desc:'4 rapid strikes, then ATK×1.2 with 25% 4-hit chance for 3 turns',descTh:'โจมตี 4 ครั้ง จากนั้น ATK×1.2 มีโอกาสโจมตี 4 ครั้ง 25% 3 เทิร์น'},
+  'KING-CHAMPION':{name:'BLOOD TRIBUTE',icon:'👑',desc:'Strike ×2.0 + halve enemy damage, then ATK×2, SPD/DEF×2, lifesteal 35% for 3 turns',descTh:'โจมตี ×2.0 ลดดาเมจศัตรู ×0.5 จากนั้น ATK×2, SPD/DEF×2, ดูดเลือด 35% 3 เทิร์น'},
+  'SOUL-CHAMPION':{name:'SOUL BALANCE',icon:'⚖️',desc:'Strike ×2.0 + halve enemy damage, then ATK/DEF+25% and 50% double-attack for 3 turns',descTh:'โจมตี ×2.0 ลดดาเมจศัตรูครึ่ง จากนั้น ATK/DEF+25% และ 50% โจมตี 2 ครั้ง 3 เทิร์น'},
+  'ROLLING-CHAMPION':{name:'ROLLING STRIKE',icon:'🌀',desc:'Strike ×2.0 + halve enemy damage, then ATK×2, SPD/DEF×2, 50% double-attack for 3 turns',descTh:'โจมตี ×2.0 ลดดาเมจศัตรู ×0.5 จากนั้น ATK×2, SPD/DEF×2, โจมตี 2 ครั้ง 50% 3 เทิร์น'},
+  'BLAZING-FORTRESS':{name:'EARTHSHATTER STRIKE',icon:'🏔️',desc:'Strike ×3.0 + reflect all, then ATK+20% and reflect 50% for 3 turns',descTh:'โจมตี ×3.0 + สะท้อนทั้งหมด จากนั้น ATK+20% และสะท้อน 50% 3 เทิร์น'},
+  'SWIFT-FORTRESS':{name:'EARTHSHATTER QUAKE',icon:'🏔️',desc:'Strike ×2.0 + dodge, then reflect 50%, dodge+15% and recover 10% HP each turn for 3 turns',descTh:'โจมตี ×2.0 + หลบ จากนั้นสะท้อน 50%, หลบ+15% และฟื้น 10% HP 3 เทิร์น'},
+  'POISON-FORTRESS':{name:'VENOM EARTHSHATTER',icon:'🏔️',desc:'Strike ×2.5 + reflect all + poison 3T, then reflect 50%, ATK+20% and 25% poison for 3 turns',descTh:'โจมตี ×2.5 + สะท้อนทั้งหมด + พิษ 3T จากนั้นสะท้อน 50%, ATK+20% และพิษ 25% 3 เทิร์น'},
+  'GUARDIAN-FORTRESS':{name:'EARTHSHATTER',icon:'🏔️',desc:'Strike ×2.5 + reflect all, then reflect 100% for 3 turns; 50% poison when hit',descTh:'โจมตี ×2.5 + สะท้อนทั้งหมด จากนั้นสะท้อน 100% 3 เทิร์น; 50% พิษเมื่อโดนตี'},
+  'DARK-SPECTER':{name:'DEATH SCYTHE',icon:'💀',desc:'Massive ×5.0 strike, then Crit+50% for 3 turns',descTh:'โจมตี ×5.0 ทรงพลัง จากนั้น Crit+50% 3 เทิร์น'},
+  'SOUL-SPECTER':{name:'SOUL SCYTHE',icon:'👻',desc:'Strike ×4.0 + dodge + poison 3T, then dodge+40% for 3 turns',descTh:'โจมตี ×4.0 + หลบ + พิษ 3T จากนั้นหลบ+40% 3 เทิร์น'},
+  'MAGE-SPECTER':{name:'MAGE SCYTHE',icon:'💀',desc:'Strike ×4.0 + dodge + curse (ATK-25% 2T), then Crit+30% and 30% curse for 3 turns',descTh:'โจมตี ×4.0 + หลบ + สาป (ATK-25% 2T) จากนั้น Crit+30% และสาป 30% 3 เทิร์น'},
+  'GRAVE-SPECTER':{name:'GRAVEYARD WARD',icon:'⚰️',desc:'Strike ×4.0 + half damage + poison 3T, then damage taken -50% and recover 10% HP for 3 turns',descTh:'โจมตี ×4.0 + ลดดาเมจครึ่ง + พิษ 3T จากนั้นลดดาเมจ 50% และฟื้น 10% HP 3 เทิร์น'},
+  'FIGHT-SWIFTGUARD':{name:'POWER STRIKE',icon:'🥋',desc:'Strike ×3.5 + recover 40% HP, then ATK+50% and never miss for 3 turns',descTh:'โจมตี ×3.5 + ฟื้น HP 40% จากนั้น ATK+50% และโจมตีไม่พลาด 3 เทิร์น'},
+  'QUICK-SWIFTGUARD':{name:'SWIFT STRIKE',icon:'💨',desc:'Strike ×3.0, then ATK×2 and dodge+15% each turn for 3 turns',descTh:'โจมตี ×3.0 จากนั้น ATK×2 และหลบ+15% ต่อเทิร์น 3 เทิร์น'},
+  'PHEONIX-SWIFTGUARD':{name:'PHOENIX STRIKE',icon:'🔥',desc:'Strike ×3.0 + recover 30% HP, then ATK+50%, recover 15% HP/turn and 50% burn when hit for 3 turns',descTh:'โจมตี ×3.0 + ฟื้น HP 30% จากนั้น ATK+50%, ฟื้น 15% HP/เทิร์น, 50% เผาเมื่อโดนตี 3 เทิร์น'},
+  'PHOENIX-SWIFTGUARD':{name:'PHOENIX STRIKE',icon:'🔥',desc:'Strike ×3.0 + recover 30% HP, then ATK+50%, recover 15% HP/turn and 50% burn when hit for 3 turns',descTh:'โจมตี ×3.0 + ฟื้น HP 30% จากนั้น ATK+50%, ฟื้น 15% HP/เทิร์น, 50% เผาเมื่อโดนตี 3 เทิร์น'},
+  'IRON-SWIFTGUARD':{name:'IRON CURTAIN WALL',icon:'🌀',desc:'Full shield + reflect, then damage taken -25%, ATK+50% and recover 15% HP/turn for 3 turns',descTh:'ชาร์จโล่เต็ม + สะท้อน จากนั้นลดดาเมจ 25%, ATK+50%, ฟื้น 15% HP/เทิร์น 3 เทิร์น'},
+  'HAMMER-SHIELDWING':{name:'HAMMER FALL',icon:'🔨',desc:'Strike ×3.0 piercing DEF + stun, then ATK+25%, pierce DEF, +15% stun for 3 turns',descTh:'โจมตี ×3.0 ทะลุ DEF + สตัน จากนั้น ATK+25%, ทะลุ DEF, สตัน+15% 3 เทิร์น'},
+  'CHILL-SHIELDWING':{name:'CHILL SLASH',icon:'❄️',desc:'Strike ×3.0 piercing DEF + full dodge, then dodge+30% and pierce DEF for 3 turns',descTh:'โจมตี ×3.0 ทะลุ DEF + หลบสมบูรณ์ จากนั้นหลบ+30% และทะลุ DEF 3 เทิร์น'},
+  'GAIA-SHIELDWING':{name:'GAIA WRATH',icon:'🌿',desc:'Strike ×3.0 piercing DEF + recover 20% HP, then ATK/DEF+30% and recover 10% HP/turn for 3 turns',descTh:'โจมตี ×3.0 ทะลุ DEF + ฟื้น HP 20% จากนั้น ATK/DEF+30% และฟื้น 10% HP/เทิร์น 3 เทิร์น'},
+  'FATTY-SHIELDWING':{name:'SKYFALL BULWARK',icon:'🛡',desc:'Strike ×3.0 piercing DEF + stun, then damage taken -20%, ATK+50%, DEF+50% for 3 turns',descTh:'โจมตี ×3.0 ทะลุ DEF + สตัน จากนั้นลดดาเมจ 20%, ATK+50%, DEF+50% 3 เทิร์น'},
+  'GUANLET-BASTION':{name:'GAUNTLETSTRIKE',icon:'🥊',desc:'Take 1 damage + counter ATK×3, then ATK+50% and recover 10% HP/turn for 3 turns',descTh:'รับดาเมจ 1 + สวน ATK×3 จากนั้น ATK+50% และฟื้น 10% HP/เทิร์น 3 เทิร์น'},
+  'IRON-BASTION':{name:'BASTION BEAM',icon:'🎯',desc:'Strike ×3.5 + dodge, then dodge+30%, recover 10% HP/turn and never miss for 3 turns',descTh:'โจมตี ×3.5 + หลบ จากนั้นหลบ+30%, ฟื้น 10% HP/เทิร์น, โจมตีไม่พลาด 3 เทิร์น'},
+  'CRYSTAWOLF-BASTION':{name:'CRYSTAL BEAM',icon:'💎',desc:'Strike ×3.5 + dodge, then ATK+50%, damage taken -30% and recover 10% HP/turn for 3 turns',descTh:'โจมตี ×3.5 + หลบ จากนั้น ATK+50%, ลดดาเมจ 30%, ฟื้น 10% HP/เทิร์น 3 เทิร์น'},
+  'GOLEM-BASTION':{name:'DIVINE AEGIS',icon:'🏰',desc:'Take 1 damage, then take 1 damage, ATK×2 and heal 10% MaxHP for 3 turns',descTh:'รับดาเมจ 1 จากนั้นรับดาเมจ 1, ATK×2 และฮีล 10% MaxHP 3 เทิร์น'},
+  // GHOST
+  'RAGEBEAR-GHOST':{name:'BEAR RAGE',icon:'💥',desc:'Strike ×4.0 + stun, then ATK+30% and Crit+25% for 3 turns',descTh:'x4.0 + สตัน จากนั้น ATK+30% Crit+25% 3T'},
+  'LION-GHOST':{name:"KING'S ROAR",icon:'👑',desc:'Strike ×3.5, then ATK+40% and enemy DEF-20% for 3 turns',descTh:'x3.5 จากนั้น ATK+40% DEF ศัตรู -20% 3T'},
+  'TIGER-GHOST':{name:'TIGER CLAW',icon:'🐅',desc:'Strike ×4.0 pierce DEF + guaranteed crit for 3 turns',descTh:'x4.0 ทะลุ DEF + คริแน่นอน 3T'},
+  'WOLF-GHOST':{name:'WOLF FANG',icon:'🌕',desc:'Strike 2 hits ×2.5 each, then double-attack chance +50% for 3 turns',descTh:'2 ครั้ง x2.5 จากนั้นโจมตี 2 ครั้ง+50% 3T'},
+  'SHARK-GHOST':{name:'SHARK BITE',icon:'🌊',desc:'Strike ×4.0 (HP<50%) or ×2.5 (HP>50%), then lifesteal+25% for 3 turns',descTh:'x4.0 (HP<50%) หรือ x2.5 (HP>50%) จากนั้นดูดเลือด+25% 3T'},
+  'MANTIS-GHOST':{name:'MANTIS SLASH',icon:'⚔️',desc:'Strike ×3.5 (forced crit) + enemy DEF-50% for 3 turns',descTh:'x3.5 (คริบังคับ) + DEF ศัตรู -50% 3T'},
+  'BEE-GHOST':{name:'BEE SWARM',icon:'🍯',desc:'Strike 4 hits ×1.5 each, then dodge+25% for 3 turns',descTh:'4 ครั้ง x1.5 จากนั้นหลบ+25% 3T'},
+  'BUNNY-GHOST':{name:'BUNNY HOP',icon:'🥕',desc:'Strike ×3.0 + full dodge, then dodge+35% and 50% blind for 3 turns',descTh:'x3.0 + หลบสมบูรณ์ จากนั้นหลบ+35% และตาบอด 50% 3T'},
+  'TRICKFOX-GHOST':{name:'FOX TRICK',icon:'🎭',desc:'Strike ×3.0 + enemy no-heal 3T, then dodge+25% for 3 turns',descTh:'x3.0 + ศัตรูฟื้นไม่ได้ 3T จากนั้นหลบ+25% 3T'},
+  'OWL-GHOST':{name:'OWL SIGHT',icon:'👁️',desc:'Strike ×3.0 (guaranteed crit), then ATK/SPD+25% for 3 turns',descTh:'x3.0 (คริ) + ATK/SPD+25% 3T'},
+  'VOLTMOUSE-GHOST':{name:'THUNDER SHOCK',icon:'⚡',desc:'Strike ×3.0 + stun, then SPD×2.0 and stun+30% for 3 turns',descTh:'x3.0 + สตัน จากนั้น SPDx2.0 สตัน+30% 3T'},
+  'PENGUIN-GHOST':{name:'ICE SLIDE',icon:'❄️',desc:'Strike ×3.5 + full dodge + DEF+50% for 3 turns',descTh:'x3.5 + หลบสมบูรณ์ + DEF+50% 3T'},
+  'COCKROACH-GHOST':{name:'ROACH SURVIVAL',icon:'🛡',desc:'Take 1 damage + recover 30% HP, then damage taken -25% and 50% blind for 3 turns',descTh:'รับดาเมจ 1 + ฟื้น 30% HP จากนั้นลดดาเมจ 25% ตาบอด 50% 3T'},
+  'SLIME-GHOST':{name:'SLIME ABSORB',icon:'💚',desc:'Drain 25% enemy HP + recover 30% HP, then recover 10%/turn for 3 turns',descTh:'ดูด HP 25% + ฟื้น 30% จากนั้นฟื้น 10%/เทิร์น 3T'},
+  'LEAPFROG-GHOST':{name:'FROG LEAP',icon:'💦',desc:'Strike ×2.5 + reflect 100%, then reflect 50% + ATK+25% for 3 turns',descTh:'x2.5 + สะท้อน 100% จากนั้นสะท้อน 50% + ATK+25% 3T'},
+  'HAMSTER-GHOST':{name:'HAMSTER STASH',icon:'🌰',desc:'Take 1 damage + recover 40% HP, then DEF+30% + recover 8%/turn for 3 turns',descTh:'รับ 1 + ฟื้น 40% HP จากนั้น DEF+30% + ฟื้น 8%/เทิร์น 3T'},
+  'AXOLOTL-GHOST':{name:'AXOLOTL REGEN',icon:'💗',desc:'Strike ×2.0 + recover 50% HP + full cleanse, then recover 12%/turn for 3 turns',descTh:'x2.0 + ฟื้น 50% HP + ล้างสถานะ จากนั้นฟื้น 12%/เทิร์น 3T'},
+  'CAT-GHOST':{name:'CAT NINE LIVES',icon:'😼',desc:'Strike ×3.0 + full dodge, then dodge+30% + ATK+50% for 3 turns',descTh:'x3.0 + หลบสมบูรณ์ จากนั้นหลบ+30% + ATK+50% 3T'},
+  'DRAGON-GHOST':{name:'DRAGON BREATH',icon:'🔥',desc:'Strike ×3.5 + Burn, then ATK/DEF/SPD+20% for 3 turns',descTh:'x3.5 + เผา จากนั้น ATK/DEF/SPD+20% 3T'},
+  'GRIFFON-GHOST':{name:'GRIFFON DIVE',icon:'🪶',desc:'Strike ×3.5 pierce DEF + dodge, then ATK/SPD+30% for 3 turns',descTh:'x3.5 ทะลุ DEF + หลบ จากนั้น ATK/SPD+30% 3T'},
+  'OCTOPUS-GHOST':{name:'OCTOPUS INK',icon:'🦑',desc:'Strike ×2.5 + blind 3T, then ATK+25% for 3 turns',descTh:'x2.5 + ตาบอด 3T จากนั้น ATK+25% 3T'},
+  'PHOENIX-GHOST':{name:'PHOENIX REBIRTH',icon:'🔱',desc:'Strike ×3.5 + recover 25% HP, then ATK/SPD+30% for 3 turns',descTh:'x3.5 + ฟื้น 25% HP จากนั้น ATK/SPD+30% 3T'},
+  'UNICORN-GHOST':{name:'UNICORN BLESS',icon:'✨',desc:'Strike ×3.0 + recover 40% HP + full cleanse, then ATK/SPD/DEF+20% + recover 10%/turn for 3 turns',descTh:'x3.0 + ฟื้น 40% HP + ล้าง จากนั้น ATK/SPD/DEF+20% ฟื้น 10%/เทิร์น 3T'},
+  'PANDA-GHOST':{name:'PANDA STRIKE',icon:'☯️',desc:'Strike ×4.0 (forced crit) + stun, then Crit+30% + stun+20% for 3 turns',descTh:'x4.0 (คริ) + สตัน จากนั้น Crit+30% สตัน+20% 3T'},
+};
+
+// ===================== FUSION ECHO INFO =====================
+
+const FUSION_ECHO_INFO = {
+  'RAGING-BRAWLER':{name:'RAGING ECHO',icon:'💢',desc:'On WIN: damage dealt +8% per stack (max 5 stacks per battle)',descTh:'เมื่อ WIN ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
+  'WINDBLADE-BRAWLER':{name:'WINDBLADE ECHO',icon:'🗡',desc:'12% chance to fully dodge; on dodge, counter-attacks for 75% damage',descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จโต้กลับดาเมจ 75%'},
+  'CRIMSON-BRAWLER':{name:'CRIMSON ECHO',icon:'☯️',desc:'Every round: ATK+5% and SPD+5% (max 3 stacks per battle)',descTh:'ทุกรอบ ATK+5% และ SPD+5% (สะสมสูงสุด 3 ครั้ง)'},
+  'KAIJU-BRAWLER':{name:'KAIJU ECHO',icon:'🦖',desc:'On LOSE: next round ATK+25%, DEF+25%, and 12% chance to burn the enemy',descTh:'เมื่อ LOSE รอบถัดไป ATK+25%, DEF+25% และ 12% โอกาสทำให้ศัตรูติดเผาไหม้'},
+  'FIGHTER-PANDA':{name:'FIGHTER ECHO',icon:'🥊',desc:'On LOSE: damage dealt +35% that turn',descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้น 35% ในเทิร์นนั้น'},
+  'PANDA-NINJA':{name:'NINJA ECHO',icon:'🥷',desc:'12% chance to fully dodge; on dodge, crit chance +50% next attack',descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ โอกาสคริ+50% ในการโจมตีถัดไป'},
+  'PANDA-WARRIOR':{name:'WARRIOR ECHO',icon:'🐼',desc:'12% chance to take half damage and counter-attack for 35% damage',descTh:'12% โอกาสรับดาเมจครึ่งหนึ่งและโต้กลับด้วยดาเมจ 35%'},
+  'ARMOR-PANDA':{name:'ARMOR ECHO',icon:'🛡',desc:'Damage taken -10%; 25% chance to counter-attack for 35% damage',descTh:'ลดดาเมจที่รับ 10% และ 25% โอกาสโต้กลับด้วยดาเมจ 35%'},
+  'TYRANT-IRONJAW':{name:'TYRANT ECHO',icon:'🩸',desc:'Damage dealt +10% and lifesteal +5%',descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และดูดเลือดเพิ่ม 5%'},
+  'AGILE-IRONJAW':{name:'AGILE ECHO',icon:'⚔',desc:'15% chance to attack twice, 8% chance to dodge',descTh:'15% โอกาสโจมตี 2 ครั้ง และ 8% โอกาสหลบหลีก'},
+  'RUNE-IRONJAW':{name:'RUNE ECHO',icon:'🔮',desc:'8% chance to stun; each round gains a random Rune: ATK+25% or DEF+25%',descTh:'8% โอกาสสตัน และทุกรอบได้รับ Rune สุ่ม: ATK+25% หรือ DEF+25%'},
+  'FULLARMOR-IRONJAW':{name:'FULLARMOR ECHO',icon:'🛡',desc:'While HP<50%: damage taken -10% and counter-attacks for 35% damage',descTh:'เมื่อ HP<50% ลดดาเมจที่รับ 10% และโต้กลับด้วยดาเมจ 35%'},
+  'STRONG-BLITZ':{name:'STRONG ECHO',icon:'⚡',desc:'On WIN: damage dealt +10% and 8% chance to stun the enemy for 1 round',descTh:'เมื่อ WIN ดาเมจเพิ่มขึ้น 10% และ 8% โอกาส Stun ศัตรู 1 รอบ'},
+  'STORM-BLITZ':{name:'STORM ECHO',icon:'🌩',desc:'10% chance to dodge; on dodge, ATK+25% and never miss next round',descTh:'10% โอกาสหลบ เมื่อหลบสำเร็จ ATK+25% และโจมตีไม่พลาดเป้า ในรอบถัดไป'},
+  'THUNDERCLOUD-BLITZ':{name:'THUNDERCLOUD ECHO',icon:'⛈️',desc:'8% chance to stun; if not stunned, gains 12% dodge that round instead',descTh:'8% โอกาส Stun ถ้าไม่ติด จะได้โอกาสหลบ 12% แทนในรอบนั้น'},
+  'BULWARK-BLITZ':{name:'BULWARK ECHO',icon:'🛡',desc:'Damage taken -10%; when hit, 8% chance to stun the attacker for 1 round',descTh:'ลดดาเมจที่รับ 10% และเมื่อถูกโจมตีมีโอกาส 8% ทำให้อีกฝ่าย Stun 1 รอบ'},
+  'WARLORD-CHAMPION':{name:'WARLORD ECHO',icon:'⚔️',desc:'Damage dealt +10%; 5% chance to attack 4 times',descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และมีโอกาส 5% ที่จะโจมตี 4 ครั้ง'},
+  'KING-CHAMPION':{name:'KING ECHO',icon:'👑',desc:'10% chance to dodge; on dodge, ATK/DEF/SPD+5% (max 5 stacks per battle)',descTh:'10% โอกาสหลบ เมื่อหลบสำเร็จ ATK/DEF/SPD+5% (สะสมสูงสุด 5 ครั้ง)'},
+  'SOUL-CHAMPION':{name:'SOUL ECHO',icon:'⚖️',desc:'On WIN: ATK+12% and 12% burn; on LOSE: dodge+12% and damage+12%',descTh:'เมื่อ WIN: ATK+12% และ 12% เผา เมื่อ LOSE: หลบ+12% และดาเมจ+12%'},
+  'ROLLING-CHAMPION':{name:'ROLLING ECHO',icon:'🌀',desc:'Damage taken -10%; every 3 rounds: attack +25% damage and cannot miss',descTh:'ลดดาเมจ 10% ทุก 3 รอบโจมตีแรงขึ้น 25% และไม่พลาดเป้า'},
+  'BLAZING-FORTRESS':{name:'BLAZING ECHO',icon:'🔥',desc:'On WIN: damage+8% and DEF+8% per stack (max 3), 10% poison',descTh:'เมื่อ WIN ดาเมจ+8% และ DEF+8% สะสม (สูงสุด 3) และ 10% พิษ'},
+  'SWIFT-FORTRESS':{name:'SWIFT ECHO',icon:'🔄',desc:'Every 3 turns: reflects 35%, recovers 5% HP, 25% poison enemy',descTh:'ทุก 3 เทิร์นสะท้อน 35% ฟื้น 5% HP 25% โอกาสทำให้ศัตรูติดพิษ'},
+  'POISON-FORTRESS':{name:'POISON ECHO',icon:'☠️',desc:'Damage taken -5%; 12% poison when hit (6% MaxHP/turn, 3 turns)',descTh:'ลดดาเมจ 5% 12% พิษเมื่อถูกโจมตี (6% MaxHP/เทิร์น 3 เทิร์น)'},
+  'GUARDIAN-FORTRESS':{name:'GUARDIAN ECHO',icon:'🏰',desc:'Damage taken -12%; HP<50%: reflects extra 12% damage',descTh:'ลดดาเมจ 12% HP<50% สะท้อนเพิ่ม 12%'},
+  'DARK-SPECTER':{name:'DARK ECHO',icon:'🌑',desc:'Damage dealt +10% and lifesteal 7%',descTh:'ดาเมจ+10% และดูดเลือด 7%'},
+  'SOUL-SPECTER':{name:'SPECTER ECHO',icon:'👻',desc:'10% chance to dodge; on dodge, next attack hits twice',descTh:'10% โอกาสหลบ เมื่อหลบสำเร็จ โจมตีถัดไปโจมตี 2 ครั้ง'},
+  'MAGE-SPECTER':{name:'MAGE ECHO',icon:'🧙',desc:'WIN: curse ATK-12% 2T; DRAW: no-heal 3T; LOSE: damage taken -5%',descTh:'WIN: สาป ATK-12% 2T DRAW: ฟื้นไม่ได้ 3T LOSE: ลดดาเมจ 5%'},
+  'GRAVE-SPECTER':{name:'GRAVE ECHO',icon:'⚰️',desc:'Damage taken -12%; 25% chance to recover 5% HP each round',descTh:'ลดดาเมจ 12% 25% โอกาสฟื้น 5% HP'},
+  'FIGHT-SWIFTGUARD':{name:'FIGHT ECHO',icon:'🥋',desc:'On WIN: damage dealt +8% per stack (max 3 stacks)',descTh:'เมื่อ WIN ดาเมจ+8% สะสม (สูงสุด 3)'},
+  'QUICK-SWIFTGUARD':{name:'QUICK ECHO',icon:'💨',desc:'12% chance to dodge; on dodge, next attack +25% damage and cannot miss',descTh:'12% หลบ เมื่อหลบสำเร็จ โจมตีถัดไป+25% และไม่พลาด'},
+  'PHEONIX-SWIFTGUARD':{name:'PHOENIX ECHO',icon:'🔥',desc:'8% burn on attack; once when HP<30%: heal 50% HP + ATK/DEF/SPD+8%',descTh:'8% เผาเมื่อโจมตี ครั้งเดียว HP<30%: ฟื้น 50% + ATK/DEF/SPD+8%'},
+  'PHOENIX-SWIFTGUARD':{name:'PHOENIX ECHO',icon:'🔥',desc:'8% burn on attack; once when HP<30%: heal 50% HP + ATK/DEF/SPD+8%',descTh:'8% เผาเมื่อโจมตี ครั้งเดียว HP<30%: ฟื้น 50% + ATK/DEF/SPD+8%'},
+  'IRON-SWIFTGUARD':{name:'IRON ECHO',icon:'🛡',desc:'On LOSE: damage taken -8% per stack (max 3 stacks per battle)',descTh:'เมื่อ LOSE ลดดาเมจ 8% สะสม (สูงสุด 3)'},
+  'HAMMER-SHIELDWING':{name:'HAMMER ECHO',icon:'🔨',desc:'On WIN: damage+10%, 8% stun, pierce DEF',descTh:'เมื่อ WIN ดาเมจ+10% 8% สตัน ทะลุ DEF'},
+  'CHILL-SHIELDWING':{name:'CHILL ECHO',icon:'❄️',desc:'Every 3 turns: dodges 50% and attack through DEF with ATK+25%',descTh:'ทุก 3 เทิร์นหลบ 50% และโจมตีทะลุ DEF ATK+25%'},
+  'GAIA-SHIELDWING':{name:'GAIA ECHO',icon:'🌿',desc:'Every 3 rounds: recovers 8% Max HP and ATK/DEF+10% that round',descTh:'ทุก 3 รอบฟื้น 8% Max HP และ ATK/DEF+10%'},
+  'FATTY-SHIELDWING':{name:'FATTY ECHO',icon:'🛡',desc:'Damage taken -10%; HP>70%: ATK/DEF+15%; HP<70%: ATK+25%',descTh:'ลดดาเมจ 10% HP>70% ATK/DEF+15% HP<70% ATK+25%'},
+  'GUANLET-BASTION':{name:'GUANLET ECHO',icon:'🥊',desc:'On LOSE: damage dealt +8% per stack (max 5 stacks per battle)',descTh:'เมื่อ LOSE ดาเมจ+8% สะสม (สูงสุด 5)'},
+  'IRON-BASTION':{name:'BASTION ECHO',icon:'🎯',desc:'10% dodge; every 3 turns: never miss, +25% damage, guaranteed crit',descTh:'10% หลบ ทุก 3 เทิร์นโจมตีไม่พลาด+25% คริ'},
+  'CRYSTAWOLF-BASTION':{name:'CRYSTAL ECHO',icon:'💎',desc:'HP>50%: ATK+12%. HP<50%: DEF+12%, counter 35%, 5% stun when hit',descTh:'HP>50% ATK+12% HP<50% DEF+12% โต้กลับ 35% 5% สตัน'},
+  'GOLEM-BASTION':{name:'GOLEM ECHO',icon:'🗿',desc:'Damage taken -10%; HP<30%: ATK+15% and recovers 2.5% HP each round',descTh:'ลดดาเมจ 10% HP<30% ATK+15% ฟื้น 2.5% HP'},
+  'RAGEBEAR-GHOST':{name:'RAGE ECHO',icon:'💢',desc:'Damage +50% when enemy HP > 50%',descTh:'ดาเมจ +50% เมื่อศัตรู HP > 50%'},
+  'LION-GHOST':{name:'ROAR ECHO',icon:'👑',desc:'First 3 turns: crit+50% and permanently reduce enemy ATK by 5%',descTh:'3 เทิร์นแรก: คริ+50% และลด ATK ศัตรู 5% ตลอด'},
+  'TIGER-GHOST':{name:'TIGER ECHO',icon:'🐯',desc:'On WIN: damage+25%; on LOSE: SPD+50% next round',descTh:'WIN: ดาเมจ+25% LOSE: SPD+50% รอบถัดไป'},
+  'WOLF-GHOST':{name:'WOLF ECHO',icon:'🐺',desc:'12% chance to attack twice (20% when HP<50%)',descTh:'12% โอกาสโจมตี 2 ครั้ง (20% เมื่อ HP<50%)'},
+  'SHARK-GHOST':{name:'SHARK ECHO',icon:'🦈',desc:'+15% damage and 15% lifesteal vs enemies HP<50%',descTh:'+15% ดาเมจ 15% ดูดเลือด ใส่ศัตรู HP<50%'},
+  'MANTIS-GHOST':{name:'MANTIS ECHO',icon:'⚔️',desc:'Crit damage x2. HP<20%: damage+25%',descTh:'คริ x2 HP<20% ดาเมจ+25%'},
+  'BEE-GHOST':{name:'SWARM ECHO',icon:'🐝',desc:'10% chance to attack 3 times; on success, 25% poison',descTh:'10% โจมตี 3 ครั้ง เมื่อสำเร็จ 25% พิษ'},
+  'BUNNY-GHOST':{name:'BUNNY ECHO',icon:'🐰',desc:'10% dodge; on dodge: ATK+25% next round',descTh:'หลบ 10% เมื่อหลบ ATK+25% รอบถัดไป'},
+  'TRICKFOX-GHOST':{name:'TRICK ECHO',icon:'🎭',desc:'25% chance to Burn enemy for 3 turns',descTh:'25% เผาศัตรู 3 เทิร์น'},
+  'OWL-GHOST':{name:'OWL ECHO',icon:'👁️',desc:'Attacks never miss; 10% chance to Blind enemy on hit',descTh:'โจมตีไม่พลาด 10% ตาบอดเมื่อโจมตี'},
+  'VOLTMOUSE-GHOST':{name:'VOLT ECHO',icon:'⚡',desc:'Every turn random: stun / ATK-50% / DEF-50% / give enemy ATK+25%',descTh:'ทุกเทิร์นสุ่ม: สตัน / ATK-50% / DEF-50% / ให้ ATK+25%'},
+  'PENGUIN-GHOST':{name:'PENGUIN ECHO',icon:'🐧',desc:'Damage taken -10%; HP<50%: dodge+10% and ATK+15%',descTh:'ลดดาเมจ 10% HP<50% หลบ+10% ATK+15%'},
+  'COCKROACH-GHOST':{name:'ROACH ECHO',icon:'🪳',desc:'Survive fatal blow with 1 HP (once), then ATK/DEF/SPD+50%',descTh:'รอดตาย 1 HP (1 ครั้ง) ATK/DEF/SPD+50%'},
+  'SLIME-GHOST':{name:'OOZE ECHO',icon:'🟢',desc:'Recover 3% HP/round; 15% poison on attack or when hit',descTh:'ฟื้น 3% HP/รอบ 15% พิษเมื่อโจมตีหรือถูกโจมตี'},
+  'LEAPFROG-GHOST':{name:'FROG ECHO',icon:'💦',desc:'15% reflect 25% damage and poison enemy',descTh:'15% สะท้อน 25% และพิษ'},
+  'HAMSTER-GHOST':{name:'HAMSTER ECHO',icon:'🐹',desc:'Every 3 turns: recover 10% HP and DEF+25% that round',descTh:'ทุก 3 เทิร์นฟื้น 10% HP DEF+25%'},
+  'AXOLOTL-GHOST':{name:'AXOLOTL ECHO',icon:'🦎',desc:'5% dodge; when hit, 30% chance to recover 10% HP',descTh:'5% หลบ เมื่อโดน 30% ฟื้น 10% HP'},
+  'CAT-GHOST':{name:'CAT ECHO',icon:'😼',desc:'10% dodge; if hit: ATK/DEF+30% next round',descTh:'10% หลบ ถ้าโดน ATK/DEF+30% รอบถัดไป'},
+  'DRAGON-GHOST':{name:'DRAGON ECHO',icon:'🔥',desc:'ATK/DEF/SPD+1.5%/round (max 10); 8% burn',descTh:'ATK/DEF/SPD+1.5%/รอบ (สูงสุด 10) 8% เผา'},
+  'GRIFFON-GHOST':{name:'GRIFFON ECHO',icon:'🦅',desc:'10% dodge, 10% crit; on crit: enemy no-heal 3 turns',descTh:'หลบ 10% คริ 10% เมื่อคริ: ศัตรูฟื้นไม่ได้ 3 เทิร์น'},
+  'OCTOPUS-GHOST':{name:'OCTOPUS ECHO',icon:'🐙',desc:'15% chance to Blind enemy on hit (50% miss 3 turns)',descTh:'15% ตาบอดเมื่อโดน (พลาด 50% 3 เทิร์น)'},
+  'PHOENIX-GHOST':{name:'PHOENIX ECHO',icon:'🔱',desc:'Once: revive with 50% HP, Burn enemy for 5 turns',descTh:'ครั้งเดียว: ฟื้น 50% HP เผาศัตรู 5 เทิร์น'},
+  'UNICORN-GHOST':{name:'UNICORN ECHO',icon:'✨',desc:'Recover 4% HP/turn; cleanse 1 debuff every turn',descTh:'ฟื้น 4% HP/เทิร์น ล้างดีบัฟ 1 อย่าง/เทิร์น'},
+  'PANDA-GHOST':{name:'PANDA ECHO',icon:'☯️',desc:'Crit+15%; 10% chance to stun on hit',descTh:'Crit+15% 10% สตันเมื่อโจมตี'},
+};
+
+// ===================== RENDER LOGIC =====================
+
+let currentTab = 'pet';
+let currentFilter = 'all';
+let filteredPetList = []; // for modal prev/next
+let dexLang = 'th'; // 'th' or 'en'
+
+function t(th, en) { return dexLang === 'th' ? th : en; }
+function toggleLang() {
+  dexLang = dexLang === 'th' ? 'en' : 'th';
+  document.getElementById('lang-toggle').textContent = dexLang.toUpperCase();
+  renderActiveTab();
+  // Refresh modal if open
+  const modal = document.getElementById('modal');
+  if (modal.classList.contains('show')) {
+    // Re-open by simulating click on current modal's source - handled by renderActiveTab refresh
+    // For now, just close modal to avoid stale content
+    closeModal();
+  }
+}
+
+const BRANCHES = ['FIST','WING','SHIELD','BALANCE'];
+const GRADES = ['N','R','E'];
+
+const BRANCH_COLORS = { FIST:'#ff7755', WING:'#44ddcc', SHIELD:'#5599ff', BALANCE:'#aa88dd' };
+const GRADE_COLORS = { N:'#8888aa', R:'#ffaa44', E:'#bb88ff' };
+
+function getPetBranch(name) {
+  return PET_BRANCH[name] || 'BALANCE';
+}
+
+function getSpritePath(name) {
+  const key = PET_SPRITE[name] || name;
+  return 'Pet/' + key + '.png';
+}
+
+function getAllPets() {
+  const pets = [];
+  // Base forms
+  for (const [key, data] of Object.entries(FORMS)) {
+    if (key === 'GHOST') continue;
+    pets.push({ key: data.name, ...data, formType: 'Base', branch: getPetBranch(data.name), spriteKey: PET_SPRITE[data.name] || data.name });
+  }
+  // Evolve II
+  for (const [key, data] of Object.entries(EVOLVE2_FORMS)) {
+    pets.push({ key: data.name, ...data, formType: 'Evolve II', branch: getPetBranch(data.name), spriteKey: PET_SPRITE[data.name] || data.name });
+  }
+  // Ghost
+  pets.push({ key: 'GHOST', ...FORMS['GHOST'], formType: 'Base', branch: getPetBranch('GHOST'), spriteKey: 'GHOST' });
+  for (const [key, data] of Object.entries(GHOST_FORMS)) {
+    pets.push({ key: data.name, ...data, formType: 'Ghost', branch: getPetBranch(data.name), spriteKey: PET_SPRITE[data.name] || data.name });
+  }
+  return pets;
+}
+
+function getAllWeapons() {
+  return Object.entries(WEAPONS).map(([key, data]) => ({ key, ...data }));
+}
+
+function getAllArtifacts() {
+  return ARTIFACTS.map(a => ({ ...a }));
+}
+
+function getAllItems() {
+  return ITEMS.map(i => ({ ...i }));
+}
+
+function renderStatBar(label, value, cls, maxVal) {
+  const pct = Math.min(100, (value / maxVal) * 100);
+  return `<div class="stat-row">
+    <span class="stat-label">${label}</span>
+    <div class="stat-bar-bg"><div class="stat-bar ${cls}" style="width:${pct}%"></div></div>
+    <span class="stat-val">${value}</span>
+  </div>`;
+}
+
+function getGradeBadge(grade) {
+  return `<span class="badge badge-${grade}">${grade}</span>`;
+}
+
+function getBranchBadge(branch) {
+  const color = BRANCH_COLORS[branch] || '#aa88dd';
+  return `<span class="badge" style="background:${color}22;color:${color};border-color:${color}44">${branch}</span>`;
+}
+
+// ===================== CARD RENDERERS =====================
+
+function renderPetCard(pet) {
+  const branch = pet.branch;
+  const branchBadge = getBranchBadge(branch);
+  const imgTag = `<img src="${getSpritePath(pet.name)}" alt="${pet.name}" onerror="this.style.display='none'">`;
+  const od = OVERDRIVE_INFO[pet.name];
+  const odHtml = od ? `<div style="margin-top:6px;padding:5px 8px;background:#0a0a1c;border-radius:6px;border:1px solid #ff660033"><span style="font-size:10px;color:#ff6600">⚡ ${od.icon} ${od.name}</span></div>` : '';
+  return `<div class="card" onclick="showPetModal('${pet.name}')">
+    <div class="card-icon">${imgTag}</div>
+    <div class="card-name">${pet.name} ${branchBadge}<span style="font-size:10px;color:#8877aa;font-weight:400">${pet.formType}</span></div>
+    <div class="card-sub" style="color:#8877aa">HP:${pet.hp} ATK:${pet.atk} SPD:${pet.spd} DEF:${pet.def}</div>
+    <div class="card-stats">
+      ${renderStatBar('HP',pet.hp,'hp',250)}
+      ${renderStatBar('ATK',pet.atk,'atk',60)}
+      ${renderStatBar('SPD',pet.spd,'spd',50)}
+      ${renderStatBar('DEF',pet.def,'def',40)}
+    </div>
+    <div class="card-passive">${dexLang==='th' ? (pet.passiveTh||pet.passive) : pet.passive}</div>
+    ${odHtml}
+  </div>`;
+}
+
+function renderWeaponCard(w) {
+  const statsStr = Object.entries(w.stats).map(([k,v]) => k.toUpperCase()+':+'+v).join(' ');
+  const gradeBadge = getGradeBadge(w.grade);
+  const effDesc = w.desc ? `<div class="card-effect">${w.desc}</div>` : '';
+  return `<div class="card" onclick="showWeaponModal('${w.key}')">
+    <div class="card-icon"><span style="font-size:28px">${w.icon}</span></div>
+    <div class="card-name">${w.name} ${gradeBadge}</div>
+    <div class="card-sub">${w.nameTh} · ${statsStr}</div>
+    ${effDesc}
+  </div>`;
+}
+
+function renderArtifactCard(a) {
+  const gradeBadge = getGradeBadge(a.grade);
+  return `<div class="card" onclick="showArtifactModal('${a.key}')">
+    <div class="card-icon"><span style="font-size:28px">${a.icon}</span></div>
+    <div class="card-name">${a.name} ${gradeBadge}</div>
+    <div class="card-sub">${a.nameTh}</div>
+    <div class="card-desc">${a.desc}</div>
+  </div>`;
+}
+
+function renderItemCard(item) {
+  return `<div class="card" onclick="showItemModal('${item.key}')">
+    <div class="card-icon"><span style="font-size:28px">${item.icon}</span></div>
+    <div class="card-name">${item.name}</div>
+    <div class="card-sub">${item.nameTh}</div>
+    <div class="card-desc">${item.desc}</div>
+  </div>`;
+}
+
+// ===================== TAB & FILTER =====================
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + tab).classList.add('active');
+  updateFilterChips();
+  renderActiveTab();
+}
+
+function updateFilterChips() {
+  const container = document.getElementById('filter-chips');
+  let chips = '<div class="chip active" data-filter="all" onclick="setFilter(\'all\',this)">All</div>';
+
+  if (currentTab === 'pet') {
+    for (const b of BRANCHES) {
+      chips += `<div class="chip" data-filter="${b}" onclick="setFilter('${b}',this)" style="color:${BRANCH_COLORS[b]}">${b}</div>`;
+    }
+  } else if (currentTab === 'weapon' || currentTab === 'artifact') {
+    for (const g of GRADES) {
+      chips += `<div class="chip" data-filter="${g}" onclick="setFilter('${g}',this)" style="color:${GRADE_COLORS[g]}">${g}</div>`;
+    }
+  }
+  container.innerHTML = chips;
+}
+
+function setFilter(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('#filter-chips .chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderActiveTab();
+}
+
+function getSearchTerm() {
+  return document.getElementById('search-box').value.toLowerCase().trim();
+}
+
+// ===================== MAIN RENDER =====================
+
+function renderActiveTab() {
+  const term = getSearchTerm();
+  const filter = currentFilter;
+  const container = document.getElementById('s-' + currentTab);
+
+  if (currentTab === 'pet') {
+    renderPets(container, term, filter);
+  } else if (currentTab === 'weapon') {
+    renderWeapons(container, term, filter);
+  } else if (currentTab === 'artifact') {
+    renderArtifacts(container, term, filter);
+  } else if (currentTab === 'item') {
+    renderItems(container, term);
+  }
+}
+
+function renderPets(container, term, filter) {
+  let pets = getAllPets();
+  if (filter !== 'all') pets = pets.filter(p => p.branch === filter);
+  if (term) pets = pets.filter(p => p.name.toLowerCase().includes(term) || (p.passive||'').toLowerCase().includes(term));
+  filteredPetList = pets.map(p => p.name);
+
+  if (!pets.length) {
+    container.innerHTML = `<div class="empty-state"><div class="big-icon">🔍</div>ไม่พบสัตว์ที่ค้นหา</div>`;
+    return;
+  }
+
+  let html = `<div class="card-grid">`;
+  for (const p of pets) html += renderPetCard(p);
+  html += `</div>`;
+  html += `<div style="text-align:center;padding:12px;color:#5a4a7a;font-size:12px">พบ ${pets.length} ตัว</div>`;
+  container.innerHTML = html;
+}
+
+function renderWeapons(container, term, filter) {
+  let weapons = getAllWeapons();
+  if (filter !== 'all') weapons = weapons.filter(w => w.grade === filter);
+  if (term) weapons = weapons.filter(w => w.name.toLowerCase().includes(term) || w.nameTh.includes(term) || (w.desc||'').toLowerCase().includes(term));
+
+  if (!weapons.length) {
+    container.innerHTML = `<div class="empty-state"><div class="big-icon">🔍</div>ไม่พบอาวุธที่ค้นหา</div>`;
+    return;
+  }
+
+  let html = `<div class="card-grid">`;
+  for (const w of weapons) html += renderWeaponCard(w);
+  html += `</div>`;
+  html += `<div style="text-align:center;padding:12px;color:#5a4a7a;font-size:12px">พบ ${weapons.length} ชิ้น</div>`;
+  container.innerHTML = html;
+}
+
+function renderArtifacts(container, term, filter) {
+  let arts = getAllArtifacts();
+  if (filter !== 'all') arts = arts.filter(a => a.grade === filter);
+  if (term) arts = arts.filter(a => a.name.toLowerCase().includes(term) || a.nameTh.includes(term) || a.desc.toLowerCase().includes(term));
+
+  if (!arts.length) {
+    container.innerHTML = `<div class="empty-state"><div class="big-icon">🔍</div>ไม่พบอาติแฟคที่ค้นหา</div>`;
+    return;
+  }
+
+  let html = `<div class="card-grid">`;
+  for (const a of arts) html += renderArtifactCard(a);
+  html += `</div>`;
+  html += `<div style="text-align:center;padding:12px;color:#5a4a7a;font-size:12px">พบ ${arts.length} ชิ้น</div>`;
+  container.innerHTML = html;
+}
+
+function renderItems(container, term) {
+  let items = getAllItems();
+  if (term) items = items.filter(i => i.name.toLowerCase().includes(term) || i.nameTh.includes(term) || i.desc.toLowerCase().includes(term));
+
+  if (!items.length) {
+    container.innerHTML = `<div class="empty-state"><div class="big-icon">🔍</div>ไม่พบไอเทมที่ค้นหา</div>`;
+    return;
+  }
+
+  let html = `<div class="card-grid">`;
+  for (const i of items) html += renderItemCard(i);
+  html += `</div>`;
+  html += `<div style="text-align:center;padding:12px;color:#5a4a7a;font-size:12px">พบ ${items.length} ชิ้น</div>`;
+  container.innerHTML = html;
+}
+
+// ===================== MODALS =====================
+
+function openModal() {
+  document.getElementById('modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+function showPetModal(name, dir) {
+  // If called with dir, find prev/next from filteredPetList
+  if (dir && filteredPetList.length) {
+    const idx = filteredPetList.indexOf(name);
+    if (idx >= 0) {
+      let newIdx = idx + (dir === 'prev' ? -1 : 1);
+      if (newIdx < 0) newIdx = filteredPetList.length - 1;
+      if (newIdx >= filteredPetList.length) newIdx = 0;
+      name = filteredPetList[newIdx];
+    }
+  }
+  let pet = null;
+  for (const [,d] of Object.entries(FORMS)) { if (d.name === name) { pet = {...d, formType:'Base', key:name}; break; } }
+  if (!pet) for (const [,d] of Object.entries(EVOLVE2_FORMS)) { if (d.name === name) { pet = {...d, formType:'Evolve II', key:name}; break; } }
+  if (!pet) for (const [,d] of Object.entries(GHOST_FORMS)) { if (d.name === name) { pet = {...d, formType:'Ghost', key:name}; break; } }
+  if (!pet) return;
+
+  const branch = getPetBranch(name);
+  const branchBadge = getBranchBadge(branch);
+  const spritePath = getSpritePath(name);
+  const maxHp = 250, maxAtk = 60, maxSpd = 50, maxDef = 40;
+  const gradeLabel = { 'Base':'Base Form', 'Evolve II':'Evolve II', 'Ghost':'Ghost' }[pet.formType] || pet.formType;
+  const curIdx = filteredPetList.indexOf(name);
+  const prevDisabled = curIdx <= 0 ? 'disabled' : '';
+  const nextDisabled = curIdx >= filteredPetList.length - 1 ? 'disabled' : '';
+  const od = OVERDRIVE_INFO[name];
+  const odHtml = od ? `<div class="modal-section-title">⚡ OVERDRIVE — ${od.icon} ${od.name}</div><div class="modal-passive"><div style="font-size:13px;color:#ccb">${dexLang==='th'?od.descTh:od.desc}</div></div>` : '';
+  const echo = FUSION_ECHO_INFO[name];
+  const echoHtml = echo ? `<div class="modal-section-title">🧬 ${t('ECHO','FUSION ECHO')} — ${echo.icon} ${echo.name}</div><div class="modal-passive" style="border-left-color:#44aaff"><div style="font-size:13px;color:#ccb">${dexLang==='th'?echo.descTh:echo.desc}</div></div>` : '';
+
+  const inner = `
+    <div class="modal-header">
+      <img src="${spritePath}" alt="${name}" onerror="this.style.display='none'">
+      <div class="modal-nav">
+        <button class="modal-nav-btn" ${prevDisabled} onclick="showPetModal('${name}','prev')">&lsaquo;</button>
+        <button class="modal-nav-btn" ${nextDisabled} onclick="showPetModal('${name}','next')">&rsaquo;</button>
+      </div>
+      <div style="text-align:center">
+        <div class="modal-title">${name}</div>
+        <div class="modal-sub">${branchBadge} <span style="color:#8877aa;font-size:11px">${gradeLabel}</span>${filteredPetList.length > 0 ? ` <span style="color:#5a4a7a;font-size:11px">· ${curIdx+1}/${filteredPetList.length}</span>` : ''}</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">${t('📊 สเตตัส','📊 Stats')}</div>
+      <div class="modal-stats">
+        ${renderStatBar('HP',pet.hp,'hp',maxHp)}
+        ${renderStatBar('ATK',pet.atk,'atk',maxAtk)}
+        ${renderStatBar('SPD',pet.spd,'spd',maxSpd)}
+        ${renderStatBar('DEF',pet.def,'def',maxDef)}
+      </div>
+      <div class="modal-section-title">${t('⭐ ความสามารถติดตัว','⭐ Passive')}</div>
+      <div class="modal-passive">
+        <div style="font-size:13px;color:#ccb">${dexLang==='th' ? pet.passiveTh : pet.passive}</div>
+      </div>
+      ${odHtml}
+      ${echoHtml}
+    </div>
+  `;
+  document.getElementById('modal-inner').innerHTML = inner;
+  openModal();
+}
+
+function showWeaponModal(key) {
+  const w = WEAPONS[key];
+  if (!w) return;
+  const gradeBadge = getGradeBadge(w.grade);
+  const statsStr = Object.entries(w.stats).map(([k,v]) => `<div class="stat-row"><span class="stat-label">${k.toUpperCase()}</span><span style="color:#44dd88">+${v}</span></div>`).join('');
+  const wName = dexLang==='th' ? w.nameTh : w.name;
+
+  let effHtml = '';
+  if (w.effect) {
+    effHtml = `<div class="modal-section-title">⚡ ${t('เอฟเฟกต์','Effect')}</div>
+      <div class="modal-passive">
+        <div style="font-size:13px;color:#ccb">${dexLang==='th' ? w.descTh : w.desc}</div>
+      </div>`;
+  }
+
+  const inner = `
+    <div class="modal-header">
+      <span class="modal-icon">${w.icon}</span>
+      <div>
+        <div class="modal-title">${wName}</div>
+        <div class="modal-sub">${gradeBadge} <span style="color:#8877aa">${dexLang==='th' ? w.name : w.nameTh}</span></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">${t('📊 สเตตัส','📊 Stats')}</div>
+      <div class="modal-stats">${statsStr}</div>
+      ${effHtml}
+    </div>
+  `;
+  document.getElementById('modal-inner').innerHTML = inner;
+  openModal();
+}
+
+function showArtifactModal(key) {
+  const a = ARTIFACTS.find(x => x.key === key);
+  if (!a) return;
+  const gradeBadge = getGradeBadge(a.grade);
+  const aName = dexLang==='th' ? a.nameTh : a.name;
+
+  const inner = `
+    <div class="modal-header">
+      <span class="modal-icon">${a.icon}</span>
+      <div>
+        <div class="modal-title">${aName}</div>
+        <div class="modal-sub">${gradeBadge} <span style="color:#8877aa">${dexLang==='th' ? a.name : a.nameTh}</span></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">📜 ${t('รายละเอียด','Details')}</div>
+      <div class="modal-passive">
+        <div style="font-size:13px;color:#ccb">${dexLang==='th' ? a.descTh : a.desc}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modal-inner').innerHTML = inner;
+  openModal();
+}
+
+function showItemModal(key) {
+  const item = ITEMS.find(x => x.key === key);
+  if (!item) return;
+  const iName = dexLang==='th' ? item.nameTh : item.name;
+
+  const inner = `
+    <div class="modal-header">
+      <span class="modal-icon">${item.icon}</span>
+      <div>
+        <div class="modal-title">${iName}</div>
+        <div class="modal-sub"><span style="color:#8877aa">${dexLang==='th' ? item.name : item.nameTh}</span></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">📜 ${t('รายละเอียด','Details')}</div>
+      <div class="modal-passive">
+        <div style="font-size:13px;color:#ccb">${dexLang==='th' ? item.descTh : item.desc}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modal-inner').innerHTML = inner;
+  openModal();
+}
+
+// ===================== INIT =====================
+updateFilterChips();
+renderActiveTab();
+</script>
+</body>
+</html>

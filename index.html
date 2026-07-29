@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -560,6 +560,28 @@ body::after {
 @keyframes rpsWinGlow { 0%,100%{box-shadow:0 0 8px #4ecdc4} 50%{box-shadow:0 0 20px #4ecdc4} }
 @keyframes rpsLoseShake { 0%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} 100%{transform:translateX(0)} }
 @keyframes diceTumble { 0%{transform:rotate(0deg) scale(1)} 30%{transform:rotate(220deg) scale(1.15)} 60%{transform:rotate(480deg) scale(0.95)} 100%{transform:rotate(720deg) scale(1)} }
+/* ========== MINIGAME ========== */
+@keyframes mgPulse { 0%,100%{transform:scale(1);box-shadow:0 0 8px rgba(255,200,50,0.3)} 50%{transform:scale(1.05);box-shadow:0 0 18px rgba(255,200,50,0.7)} }
+@keyframes mgConfetti { 0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)} 100%{opacity:0;transform:translateY(-120px) rotate(var(--rot)) scale(0.3)} }
+@keyframes mgScreenFlash { 0%{opacity:0} 30%{opacity:0.45} 100%{opacity:0} }
+@keyframes mgPrizePop { 0%{opacity:0;transform:scale(0.3)} 40%{opacity:1;transform:scale(1.2)} 60%{transform:scale(0.9)} 100%{transform:scale(1)} }
+@keyframes mgDiceBounce { 0%{transform:translateY(0)} 30%{transform:translateY(-10px)} 50%{transform:translateY(0)} 70%{transform:translateY(-4px)} 100%{transform:translateY(0)} }
+@keyframes mgHiloProgress { 0%{background-position:0 0} 100%{background-position:20px 0} }
+@keyframes mgRpsHover { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.scout-cell.minigame-slot { color:#ffd700; text-shadow:0 0 6px rgba(255,215,0,0.5); }
+.scout-cell.minigame-hilo { color:#2ecc71; text-shadow:0 0 6px rgba(46,204,113,0.5); }
+.scout-cell.minigame-rps { color:#e74c3c; text-shadow:0 0 6px rgba(231,76,60,0.5); }
+/* Roulette Wheel */
+.mg-roulette-wrap { position:relative; width:270px; height:270px; margin:0 auto; }
+.mg-roulette-wheel { width:100%; height:100%; border-radius:50%; position:relative; background:radial-gradient(circle,#1a1020 38%,#0d0a18 100%); border:4px solid #ffd700; box-shadow:0 0 20px rgba(255,215,0,0.25),inset 0 0 30px rgba(0,0,0,0.6); overflow:hidden; }
+.mg-roulette-item { position:absolute; display:flex; flex-direction:column; align-items:center; gap:1px; width:44px; text-align:center; transform:translate(-50%,-50%); transition:all 0.12s; }
+.mg-roulette-item .mg-item-icon { font-size:20px; filter:drop-shadow(0 0 3px rgba(0,0,0,0.8)); }
+.mg-roulette-item .mg-item-label { font-size:7px; color:#665588; font-family:Kanit,sans-serif; line-height:1.1; text-shadow:0 0 4px rgba(0,0,0,0.9); white-space:nowrap; }
+.mg-roulette-item.lit { z-index:2; }
+.mg-roulette-item.lit .mg-item-icon { font-size:26px; filter:drop-shadow(0 0 8px currentColor); }
+.mg-roulette-item.lit .mg-item-label { color:#fff; font-size:8px; }
+.mg-roulette-pointer { position:absolute; top:-16px; left:50%; transform:translateX(-50%); z-index:5; width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:22px solid #ffd700; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+.mg-roulette-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:48px; height:48px; border-radius:50%; background:radial-gradient(circle,#2a1a10,#1a0e05); border:3px solid #ffd700; display:flex; align-items:center; justify-content:center; font-size:22px; z-index:3; box-shadow:0 0 12px rgba(255,215,0,0.3); }
 </style>
 </head>
 <body>
@@ -917,6 +939,44 @@ const SFX = {
     const t = ctx.currentTime;
     [523,659,784,880,1047,1320].forEach((f,i) =>
       _osc('triangle', f, 0.15, t+i*0.08, 0.14, ctx));
+  })},
+
+  // Minigame sounds
+  mgOpen() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _osc('sine', 523, 0.08, t, 0.06, ctx);
+    _osc('sine', 659, 0.08, t+0.06, 0.06, ctx);
+    _osc('sine', 784, 0.1,  t+0.12, 0.08, ctx);
+  })},
+  mgSlotTick() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _osc('square', 1800, 0.06, t, 0.015, ctx);
+    _noise(0.05, t, 0.01, ctx);
+  })},
+  mgSlotStop() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _osc('sine', 880, 0.12, t, 0.05, ctx);
+    _osc('sine', 1320, 0.1, t+0.06, 0.08, ctx);
+  })},
+  mgDiceRoll() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _noise(0.15, t, 0.06, ctx);
+    for(let i=0;i<4;i++) _osc('square', 300+Math.random()*200, 0.05, t+i*0.02, 0.02, ctx);
+  })},
+  mgWin() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    [523,659,784,1047].forEach((f,i)=>_osc('triangle',f,0.15,t+i*0.1,0.14,ctx));
+    _osc('sine', 1319, 0.12, t+0.4, 0.2, ctx);
+  })},
+  mgLose() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _osc('square', 330, 0.15, t, 0.08, ctx);
+    _osc('square', 260, 0.18, t+0.1, 0.15, ctx);
+  })},
+  mgRpsClash() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    _noise(0.3, t, 0.04, ctx);
+    _sweep('sawtooth', 500, 100, 0.25, t, 0.1, ctx);
   })},
 };
 
@@ -3960,7 +4020,8 @@ function grantMysteryEgg() {
 const GUARDIAN_EMOJIS = ['🗿','🐉','👹','🧙','🦂','🐺','👻','🤖'];
 
 function openMinigame(type) {
-  minigameOpen = type;
+  mgPendingType = type;
+  minigameOpen = null;
   minigameResult = null;
   slotSpinning = false;
   slotHighlightIdx = -1;
@@ -3971,12 +4032,37 @@ function openMinigame(type) {
   hiloAccumulated = [];
   hiloGameOver = false;
   hiloOutcome = null;
+  SFX.mgOpen();
+  saveGame(); render();
+}
+
+function startMinigame() {
+  if(!mgPendingType) return;
+  minigameOpen = mgPendingType;
+  mgPendingType = null;
+  minigameResult = null;
+  slotHighlightIdx = -1;
+  rpsResult = null;
+  hiloRound = 0;
+  hiloAccumulated = [];
+  hiloGameOver = false;
+  hiloOutcome = null;
+  saveGame(); render();
+}
+
+function cancelMinigame() {
+  mgPendingType = null;
+  minigameResult = null;
+  hiloAccumulated = [];
+  hiloGameOver = false;
+  hiloOutcome = null;
   saveGame(); render();
 }
 
 function closeMinigame() {
   if(slotSpinning) return;
   minigameOpen = null;
+  mgPendingType = null;
   minigameResult = null;
   rpsResult = null;
   hiloRound = 0;
@@ -4005,8 +4091,7 @@ function getSlotPool() {
   ];
 }
 
-// Running-light prize picker: the pool order IS the grid order, so the light just walks
-// the array index in sequence — no angle math needed like the old wheel.
+// Roulette running-light: highlight moves around the circle, decelerating to land on winner.
 function spinSlotMachine() {
   if(slotSpinning || minigameResult) return;
   const pool = getSlotPool();
@@ -4016,28 +4101,31 @@ function spinSlotMachine() {
   for(let i=0;i<n;i++) { cum += pool[i].w; if(r < cum) { targetIdx = i; break; } }
 
   const startIdx = slotHighlightIdx >= 0 ? slotHighlightIdx : 0;
-  const loops = 3;
+  const laps = 3;
   const stepsToTarget = (targetIdx - startIdx + n) % n;
-  const totalSteps = loops*n + stepsToTarget;
+  const totalSteps = laps * n + stepsToTarget;
 
   slotSpinning = true;
   let idx = startIdx, step = 0;
   function tick() {
-    idx = (idx+1) % n;
+    idx = (idx + 1) % n;
     slotHighlightIdx = idx;
     step++;
+    SFX.mgSlotTick();
     render();
     if(step < totalSteps) {
-      const progress = step/totalSteps;
-      const delay = 60 + Math.pow(progress, 3)*260; // accelerate-in, ease out to a crawl near the end
+      const progress = step / totalSteps;
+      const delay = 50 + Math.pow(progress, 3) * 280;
       setTimeout(tick, delay);
     } else {
       slotSpinning = false;
       minigameResult = pool[targetIdx].fn();
+      SFX.mgSlotStop();
+      SFX.itemGet();
       saveGame(); render();
     }
   }
-  setTimeout(tick, 60);
+  setTimeout(tick, 40);
 }
 
 function rpsPickMove(idx) {
@@ -4058,6 +4146,9 @@ function rpsPickMove(idx) {
     reward = {item:'hp_potion'};
   }
   rpsResult = {playerMove, guardMove, won, reward};
+  SFX.mgRpsClash();
+  if(won) { setTimeout(()=>SFX.mgWin(), 200); }
+  else { setTimeout(()=>SFX.mgLose(), 200); }
   saveGame(); render();
 }
 
@@ -4077,11 +4168,13 @@ function hiloGuess(direction) {
   const correct = direction==='higher' ? newSum >= hiloCurrentNum : newSum <= hiloCurrentNum;
   hiloCurrentNum = newSum;
   hiloDice = [d1,d2];
+  SFX.mgDiceRoll();
   if(!correct) {
     hiloAccumulated = [];
     hiloGameOver = true;
     hiloOutcome = 'lost';
     addItemToInventory('hp_potion');
+    SFX.mgLose();
     saveGame(); render();
     return;
   }
@@ -4103,6 +4196,7 @@ function hiloGuess(direction) {
     applyHiloRewards();
     hiloGameOver = true;
     hiloOutcome = 'won';
+    SFX.mgWin();
   }
   saveGame(); render();
 }
@@ -4112,6 +4206,7 @@ function hiloCashOut() {
   applyHiloRewards();
   hiloGameOver = true;
   hiloOutcome = 'cashed';
+  SFX.itemGet();
   saveGame(); render();
 }
 
@@ -7483,30 +7578,73 @@ function render() {
       </div>
     </div>`);
   }
+  if(mgPendingType) {
+    const mgNames = {slot:T('🎰 ตู้เกมสุ่มรางวัล','🎰 PRIZE ARCADE'),hilo:T('🎲 ไฮโลทอยลูกเต๋า','🎲 HI-LO DICE'),rps:T('⚔️ ปะทะการ์เดี้ยน','⚔️ RPS VS GUARDIAN')};
+    const mgDescs = {slot:T('สุ่มรางวัลจากวงล้อ — มีทั้ง Gold, Item, Symbol และอื่นๆ!','Spin the prize wheel — Gold, Items, Symbols, and more!'),hilo:T('ทายสูง/ต่ำ สะสมรางวัล 5 รอบ (เก็บก่อนก็ได้)','Guess Higher/Lower — stack rewards over 5 rounds (cash out anytime)'),rps:T('เป่ายิ้งฉุบชนะการ์เดี้ยนเพื่อชิงรางวัล!','Beat the Guardian in Rock-Paper-Scissors for a prize!')};
+    const mgBgColors = {slot:'#1a1400',hilo:'#001a08',rps:'#1a0008'};
+    screenContent.insertAdjacentHTML('beforeend', `
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:96;border-radius:16px;padding:14px">
+      <div style="max-width:320px;width:100%;background:linear-gradient(135deg,${mgBgColors[mgPendingType]||'#0a0a1e'},#0a0a1e);border:2px solid ${mgPendingType==='slot'?'#ffd700':mgPendingType==='hilo'?'#2ecc71':'#e74c3c'};border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;animation:mgPrizePop 0.3s ease-out">
+        <div style="font-size:42px;text-align:center">${mgPendingType==='slot'?'🎰':mgPendingType==='hilo'?'🎲':'⚔️'}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:15px;color:#fff;letter-spacing:1px;text-align:center;font-weight:700">${mgNames[mgPendingType]||''}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#9080b0;text-align:center;line-height:1.5">${mgDescs[mgPendingType]||''}</div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <div data-mg-play style="flex:1;padding:10px;border-radius:10px;background:linear-gradient(135deg,${mgPendingType==='slot'?'#604020':mgPendingType==='hilo'?'#206040':'#602030'},${mgPendingType==='slot'?'#806030':mgPendingType==='hilo'?'#308060':'#803040'});border:1px solid ${mgPendingType==='slot'?'#ffd700':mgPendingType==='hilo'?'#2ecc71':'#e74c3c'};font-family:Kanit,sans-serif;font-size:13px;color:#fff;text-align:center;cursor:pointer;font-weight:600;letter-spacing:1px;animation:mgPulse 2s ease-in-out infinite">${T('🎮 เล่นเลย!','🎮 PLAY!')}</div>
+          <div data-mg-cancel style="flex:1;padding:10px;border-radius:10px;background:#141428;border:1px solid #2a2a4a;font-family:Kanit,sans-serif;font-size:12px;color:#6a6a9a;text-align:center;cursor:pointer">${T('✕ ผ่าน','✕ SKIP')}</div>
+        </div>
+      </div>
+    </div>`);
+  }
   if(minigameOpen) {
-    const _btn = (attr, label, disabled) => `<div ${disabled?'':attr} style="flex:1;padding:10px;border-radius:8px;background:${disabled?'#141428':'#1a1a3a'};border:1px solid ${disabled?'#2a2a4a':'#4a4a8a'};font-family:Kanit,sans-serif;font-size:12px;color:${disabled?'#4a4a6a':'#c0c0ff'};text-align:center;cursor:${disabled?'default':'pointer'}">${label}</div>`;
-    let title='', body='';
+    const _btn = (attr, label, disabled, highlight) => `<div ${disabled?'':attr} style="flex:1;padding:11px 8px;border-radius:10px;background:${disabled?'#141428':highlight?'linear-gradient(135deg,#403020,#604820)':'#1a1a3a'};border:1px solid ${disabled?'#2a2a4a':highlight?'#ffd700':'#4a4a8a'};font-family:Kanit,sans-serif;font-size:13px;color:${disabled?'#4a4a6a':highlight?'#ffe080':'#c0c0ff'};text-align:center;cursor:${disabled?'default':'pointer'};font-weight:${highlight?'600':'400'};transition:all 0.2s">${label}</div>`;
+    let title='', body='', borderColor='#6040c0', bgColor='#0a0a1e';
     if(minigameOpen==='slot') {
-      title = T('🕹️ ตู้เกมสุ่มรางวัล','🕹️ PRIZE ARCADE');
+      title = T('🎰 วงล้อรูเล็ตต์','🎰 PRIZE ROULETTE');
+      borderColor = '#ffd700'; bgColor = '#1a1400';
       const pool = getSlotPool();
-      const gridHtml = `
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 12px">
-          ${pool.map((p,i) => {
-            const lit = i===slotHighlightIdx;
-            return `<div style="aspect-ratio:1;border-radius:8px;background:${lit?p.color:'#141428'};border:2px solid ${lit?'#fff':p.color};display:flex;align-items:center;justify-content:center;font-size:20px;${lit?`transform:scale(1.08);box-shadow:0 0 10px ${p.color}`:''}">${p.icon}</div>`;
-          }).join('')}
+      const n = pool.length;
+      const segA = 360 / n;
+      const wheelSize = 270, cx = wheelSize/2, cy = wheelSize/2;
+      const radius = 100; // distance from center to item center
+      const slotLabels = [T('Gold น้อย','Small Gold'),T('Gold กลาง','Mid Gold'),T('Gold มาก','Big Gold'),ITEMS.super_potion.name,T('Shard สุ่ม','Random Shard'),T('Symbol สุ่ม','Random Symbol'),T('Essence','Essence'),T('Rebirth Stone','Rebirth Stone'),T('Artifact Box','Artifact Box'),T('Weapon Box','Weapon Box'),T('Mystery Egg','Mystery Egg')];
+      // Items positioned around the circle using left/top
+      const itemsHtml = pool.map((p,i) => {
+        const angleRad = (i * segA - 90) * Math.PI / 180; // start from top (-90°)
+        const left = cx + radius * Math.cos(angleRad);
+        const top = cy + radius * Math.sin(angleRad);
+        const lit = i === slotHighlightIdx;
+        const glow = lit ? `filter:drop-shadow(0 0 10px ${p.color});` : '';
+        return `<div class="mg-roulette-item${lit?' lit':''}" style="left:${left}px;top:${top}px;${glow}">
+          <span class="mg-item-icon" style="color:${lit?p.color:''}">${p.icon}</span>
+          <span class="mg-item-label" style="color:${lit?'#fff':''}">${slotLabels[i]||''}</span>
+        </div>`;
+      }).join('');
+      // Segment dividers
+      const dividersHtml = pool.map((p,i) => {
+        const angle = (i + 0.5) * segA;
+        return `<div style="position:absolute;top:50%;left:50%;width:1.5px;height:${radius+12}px;background:${p.color}44;transform-origin:top center;transform:translateX(-50%) rotate(${angle}deg)"></div>`;
+      }).join('');
+      const wheelHtml = `
+        <div class="mg-roulette-wrap">
+          <div class="mg-roulette-pointer"></div>
+          <div class="mg-roulette-wheel">
+            ${dividersHtml}
+            ${itemsHtml}
+          </div>
+          <div class="mg-roulette-center">🎰</div>
         </div>`;
       body = minigameResult
-        ? `${gridHtml}
-           <div style="text-align:center;padding:0 0 6px;display:flex;flex-direction:column;gap:4px;align-items:center">
-             <div style="font-size:28px">${minigameResult.icon}</div>
-             <div style="font-family:Kanit,sans-serif;font-size:14px;color:#ffe080">${minigameResult.text}</div>
+        ? `${wheelHtml}
+           <div style="text-align:center;padding:4px 0 8px;display:flex;flex-direction:column;gap:4px;align-items:center;animation:mgPrizePop 0.4s ease-out">
+             <div style="font-size:36px">${minigameResult.icon}</div>
+             <div style="font-family:Kanit,sans-serif;font-size:15px;color:#ffe080;font-weight:600">${minigameResult.text}</div>
            </div>
-           ${_btn('data-minigame-close', T('รับรางวัล','COLLECT'), false)}`
-        : `${gridHtml}
-           ${_btn('data-slot-spin', slotSpinning ? T('กำลังสุ่ม...','ROLLING...') : T('เริ่ม!','START!'), slotSpinning)}`;
+           ${_btn('data-minigame-close', T('🎁 รับรางวัล','🎁 COLLECT'), false, true)}`
+        : `${wheelHtml}
+           ${_btn('data-slot-spin', slotSpinning ? T('🎰 กำลังหมุน...','🎰 SPINNING...') : T('🎰 หมุนเลย!','🎰 SPIN!'), slotSpinning, true)}`;
     } else if(minigameOpen==='rps') {
       title = T('⚔️ ปะทะการ์เดี้ยน','⚔️ RPS VS GUARDIAN');
+      borderColor = '#e74c3c'; bgColor = '#1a0008';
       if(rpsResult) {
         const {playerMove, guardMove, won, reward} = rpsResult;
         const pIcon = MOVES.find(m=>m.name===playerMove).icon;
@@ -7515,66 +7653,89 @@ function render() {
           ? (reward.gold ? T(`💰 +${reward.gold}G + ${ITEMS[reward.item].icon} ${ITEMS[reward.item].name}`,`💰 +${reward.gold}G + ${ITEMS[reward.item].icon} ${ITEMS[reward.item].name}`)
                           : T(`${ITEMS[reward.item].icon} ${ITEMS[reward.item].name} ×1`,`${ITEMS[reward.item].icon} ${ITEMS[reward.item].name} ×1`))
           : T('ไม่ได้รางวัล','No reward');
+        const confettiHtml = won ? Array.from({length:12},(_,i)=>`<div style="position:absolute;top:50%;left:50%;width:6px;height:6px;border-radius:2px;background:${['#ffd700','#ff6b6b','#4ecdc4','#a855f7','#f97316','#22d3ee'][i%6]};animation:mgConfetti ${0.8+Math.random()*0.6}s ease-out ${Math.random()*0.2}s forwards;--rot:${(Math.random()-0.5)*720}deg;transform:translate(${(Math.random()-0.5)*60}px,${(Math.random()-0.5)*30}px)"></div>`).join('') : '';
         body = `
-           <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:20px;padding:14px 0 6px">
-             <div style="width:62px;height:62px;border-radius:50%;background:#10102a;border:2px solid ${won?'#4ecdc4':'#4a4a8a'};display:flex;align-items:center;justify-content:center;font-size:28px;${won?'animation:rpsWinGlow 1s ease-in-out infinite':''}">${pIcon}</div>
-             <div style="position:absolute;left:50%;top:50%;font-size:32px;pointer-events:none;animation:rpsClashBurst 0.6s ease-out">💥</div>
-             <div style="width:62px;height:62px;border-radius:50%;background:#2a1010;border:2px solid ${won?'#4a4a8a':'#ff6b6b'};display:flex;align-items:center;justify-content:center;font-size:28px;${won?'':'animation:rpsLoseShake 0.4s ease-in-out'}">${gIcon}</div>
+           <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:24px;padding:16px 0 8px">
+             ${confettiHtml}
+             <div style="width:68px;height:68px;border-radius:50%;background:#10102a;border:3px solid ${won?'#4ecdc4':'#4a4a8a'};display:flex;align-items:center;justify-content:center;font-size:32px;${won?'animation:rpsWinGlow 1s ease-in-out infinite':'animation:rpsLoseShake 0.4s ease-in-out'}">${pIcon}</div>
+             <div style="font-size:28px;color:#fff;font-weight:900;font-family:Kanit,sans-serif;animation:mgPrizePop 0.4s ease-out">VS</div>
+             <div style="width:68px;height:68px;border-radius:50%;background:#2a1010;border:3px solid ${won?'#4a4a8a':'#ff6b6b'};display:flex;align-items:center;justify-content:center;font-size:32px;${won?'':'animation:rpsLoseShake 0.4s ease-in-out'}">${gIcon}</div>
            </div>
            <div style="text-align:center;font-family:Kanit,sans-serif;font-size:11px;color:#a090c0;margin-bottom:4px">${T('คุณ','You')} ${playerMove}  vs  ${rpsGuardianEmoji} ${guardMove}</div>
-           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:16px;color:${won?'#8ff0e0':'#ff8080'};font-weight:700">${won?T('🎉 ชนะ!','🎉 WIN!'):T('😵 แพ้','😵 LOSE')}</div>
+           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:18px;color:${won?'#8ff0e0':'#ff8080'};font-weight:700;margin-bottom:2px">${won?T('🎉 ชนะ!','🎉 WIN!'):T('😵 แพ้','😵 LOSE')}</div>
            <div style="text-align:center;font-size:12px;color:#c0b0e0;margin:4px 0 10px">${rewardTxt}</div>
            ${_btn('data-minigame-close', T('ปิด','CLOSE'), false)}`;
       } else {
         body = `
-           <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:6px 0 12px">
-             <div style="width:58px;height:58px;border-radius:50%;background:#10102a;border:2px solid #4a4a8a;display:flex;align-items:center;justify-content:center;overflow:hidden">${buildPetSvg(creature, 50, true)}</div>
-             <div style="font-family:Kanit,sans-serif;font-size:13px;color:#8878b8">VS</div>
-             <div style="width:58px;height:58px;border-radius:50%;background:#2a1010;border:2px solid #7a3f3f;display:flex;align-items:center;justify-content:center;font-size:28px;animation:bob 2s ease-in-out infinite">${rpsGuardianEmoji}</div>
+           <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:8px 0 14px">
+             <div style="width:62px;height:62px;border-radius:50%;background:#10102a;border:2px solid #4a4a8a;display:flex;align-items:center;justify-content:center;overflow:hidden">${buildPetSvg(creature, 54, true)}</div>
+             <div style="font-family:Kanit,sans-serif;font-size:16px;color:#8878b8;font-weight:700">VS</div>
+             <div style="width:62px;height:62px;border-radius:50%;background:#2a1010;border:2px solid #7a3f3f;display:flex;align-items:center;justify-content:center;font-size:32px;animation:bob 2s ease-in-out infinite">${rpsGuardianEmoji}</div>
            </div>
-           <div style="font-size:11px;color:#9080b0;text-align:center;margin-bottom:10px">${T('เลือกท่าของคุณ','Pick your move')}</div>
+           <div style="font-size:12px;color:#9080b0;text-align:center;margin-bottom:12px;font-family:Kanit,sans-serif">${T('เลือกท่าของคุณ — ชนะเพื่อรับรางวัล!','Pick your move — win to get a prize!')}</div>
            <div style="display:flex;gap:8px">
-             ${MOVES.map((m,i)=>`<div data-rps-move="${i}" style="flex:1;padding:12px 4px;border-radius:8px;background:#1a1a3a;border:1px solid #4a4a8a;text-align:center;cursor:pointer">
-               <div style="font-size:22px">${m.icon}</div>
-               <div style="font-family:Kanit,sans-serif;font-size:10px;color:#c0c0ff;margin-top:4px">${m.name}</div>
+             ${MOVES.map((m,i)=>`<div data-rps-move="${i}" style="flex:1;padding:14px 4px;border-radius:12px;background:#1a1a3a;border:2px solid #4a4a8a;text-align:center;cursor:pointer;transition:all 0.2s"
+                  onmouseenter="this.style.borderColor='#c0a0ff';this.style.background='#222250';this.style.transform='translateY(-3px)'" 
+                  onmouseleave="this.style.borderColor='#4a4a8a';this.style.background='#1a1a3a';this.style.transform='translateY(0)'">
+               <div style="font-size:28px">${m.icon}</div>
+               <div style="font-family:Kanit,sans-serif;font-size:11px;color:#c0c0ff;margin-top:6px;font-weight:600">${m.name}</div>
+               <div style="font-size:9px;color:#6a5a9a;margin-top:2px">${T('ชนะ','Beats')} ${m.desc.replace('Beats ','')}</div>
              </div>`).join('')}
            </div>`;
       }
     } else if(minigameOpen==='hilo') {
-      title = T('🎲 ไฮโล (ทอยลูกเต๋า)','🎲 HI-LO (DICE)');
-      const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+      title = T('🎲 ไฮโลทอยลูกเต๋า','🎲 HI-LO DICE');
+      borderColor = '#2ecc71'; bgColor = '#001a08';
+      const DICE_DOTS = {
+        1: [[1,1]], 2: [[0,0],[2,2]], 3: [[0,0],[1,1],[2,2]],
+        4: [[0,0],[0,2],[2,0],[2,2]], 5: [[0,0],[0,2],[1,1],[2,0],[2,2]],
+        6: [[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]
+      };
+      const renderDie = (val, anim) => `
+        <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#f5f0e8,#e8e0d0);border:2px solid #c0b898;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:6px;${anim?`animation:${anim} 0.5s ease-out`:''};box-shadow:2px 3px 6px rgba(0,0,0,0.4)">
+          ${Array.from({length:9},(_,i)=>{
+            const r=Math.floor(i/3), c=i%3;
+            const has = (DICE_DOTS[val]||[]).some(([dr,dc])=>dr===r&&dc===c);
+            return `<div style="display:flex;align-items:center;justify-content:center">${has?'<div style="width:9px;height:9px;border-radius:50%;background:#1a1a2a"></div>':''}</div>`;
+          }).join('')}
+        </div>`;
+      const progressHtml = `<div style="display:flex;gap:4px;margin-bottom:6px;justify-content:center">${Array.from({length:5},(_,i)=>{
+        const done=i<hiloRound, current=i===hiloRound&&!hiloGameOver;
+        return `<div style="width:24px;height:6px;border-radius:3px;background:${done?'#2ecc71':current?'#f0c040':'#1a1a3a'};border:1px solid ${done?'#2ecc71':current?'#f0c040':'#2a2a4a'};transition:all 0.3s"></div>`;
+      }).join('')}</div>`;
       const rewardsList = hiloAccumulated.length
-        ? `<div style="display:flex;flex-direction:column;gap:3px">${hiloAccumulated.map(r=>`<div style="font-size:11px;color:#c0b0e0">${r.icon} ${r.text}</div>`).join('')}</div>`
-        : `<div style="font-size:11px;color:#5a4a8a">${T('ยังไม่ได้รางวัล','No rewards yet')}</div>`;
+        ? `<div style="display:flex;flex-direction:column;gap:3px;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px">${hiloAccumulated.map(r=>`<div style="font-size:12px;color:#c0b0e0;display:flex;align-items:center;gap:6px"><span style="font-size:14px">${r.icon}</span> ${r.text}</div>`).join('')}</div>`
+        : `<div style="font-size:11px;color:#3a5a4a;text-align:center;padding:8px">${T('ยังไม่ได้รางวัล — ทายถูกเพื่อสะสม!','No rewards yet — guess right to stack!')}</div>`;
       const diceHtml = `
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 4px">
-          <div style="font-size:44px;color:#e8e0ff;animation:diceTumble 0.5s ease-out">${DICE_FACES[hiloDice[0]-1]}</div>
-          <div style="font-size:44px;color:#e8e0ff;animation:diceTumble 0.5s ease-out">${DICE_FACES[hiloDice[1]-1]}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 2px">
+          ${renderDie(hiloDice[0],'diceTumble')}
+          ${renderDie(hiloDice[1],'diceTumble')}
         </div>
-        <div style="text-align:center;font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;margin-bottom:8px">${T('รวม','SUM')}: <span style="color:#c0a0ff;font-size:18px;font-weight:700">${hiloCurrentNum}</span></div>`;
+        <div style="text-align:center;font-family:Kanit,sans-serif;font-size:12px;color:#9ab8a8;margin-bottom:8px">${T('รวม','SUM')}: <span style="color:#4ecdc4;font-size:20px;font-weight:700">${hiloCurrentNum}</span></div>`;
       if(hiloGameOver) {
-        const outcomeTxt = hiloOutcome==='lost' ? T('😵 เดาผิด — เสียรางวัลสะสมทั้งหมด','😵 Wrong guess — lost all accumulated rewards')
-                          : hiloOutcome==='won' ? T('🎉 ผ่านครบ 5 รอบ! ได้รางวัลทั้งหมด','🎉 Cleared all 5 rounds! Full rewards banked')
-                          : T('✅ เก็บรางวัลสะสมแล้ว','✅ Cashed out — rewards banked');
-        body = `${diceHtml}
-           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:13px;color:${hiloOutcome==='lost'?'#ff8080':'#8ff0e0'};margin-bottom:10px">${outcomeTxt}</div>
+        const emoji = hiloOutcome==='lost'?'😵':hiloOutcome==='won'?'🎉':'✅';
+        const outcomeTxt = hiloOutcome==='lost' ? T('เดาผิด — เสียรางวัลสะสมทั้งหมด','Wrong guess — lost all accumulated rewards')
+                          : hiloOutcome==='won' ? T('ผ่านครบ 5 รอบ! ได้รางวัลทั้งหมด','Cleared all 5 rounds! Full rewards banked')
+                          : T('เก็บรางวัลสะสมแล้ว','Cashed out — rewards banked');
+        body = `${progressHtml}${diceHtml}
+           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:14px;color:${hiloOutcome==='lost'?'#ff8080':'#8ff0e0'};margin-bottom:10px;font-weight:600">${emoji} ${outcomeTxt}</div>
            ${hiloOutcome==='lost' ? `<div style="font-size:11px;color:#c0b0e0;text-align:center;margin-bottom:10px">${T('ปลอบใจ','Consolation')}: ${ITEMS.hp_potion.icon} ${ITEMS.hp_potion.name} ×1</div>` : rewardsList}
            ${_btn('data-minigame-close', T('ปิด','CLOSE'), false)}`;
       } else {
-        body = `${diceHtml}
-           <div style="font-size:11px;color:#9080b0;text-align:center;margin-bottom:10px">${T(`รอบ ${hiloRound+1}/5 — ลูกเต๋าคู่ต่อไปจะรวมสูงหรือต่ำกว่านี้?`,`Round ${hiloRound+1}/5 — will the next roll be Higher or Lower?`)}</div>
+        body = `${progressHtml}${diceHtml}
+           <div style="font-size:11px;color:#9ab8a8;text-align:center;margin-bottom:10px;font-family:Kanit,sans-serif">${T(`รอบ ${hiloRound+1}/5 — ลูกเต๋าคู่ต่อไปจะรวมสูงหรือต่ำกว่านี้?`,`Round ${hiloRound+1}/5 — will the next roll be Higher or Lower?`)}</div>
            <div style="display:flex;gap:8px;margin-bottom:10px">
-             ${_btn('data-hilo-lower', T('⬇️ ต่ำกว่า','⬇️ LOWER'), false)}
-             ${_btn('data-hilo-higher', T('⬆️ สูงกว่า','⬆️ HIGHER'), false)}
+             ${_btn('data-hilo-lower', T('⬇️ ต่ำกว่า','⬇️ LOWER'), false, false)}
+             ${_btn('data-hilo-higher', T('⬆️ สูงกว่า','⬆️ HIGHER'), false, true)}
            </div>
            ${rewardsList}
-           <div style="margin-top:10px">${_btn('data-hilo-cashout', T('💰 เก็บรางวัลสะสม','💰 CASH OUT'), hiloRound===0)}</div>`;
+           <div style="margin-top:10px">${_btn('data-hilo-cashout', T('💰 เก็บรางวัลสะสม','💰 CASH OUT'), hiloRound===0, false)}</div>`;
       }
     }
     screenContent.insertAdjacentHTML('beforeend', `
-    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:96;border-radius:16px;padding:14px">
-      <div style="max-width:300px;width:100%;background:#0a0a1e;border:2px solid #6040c0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px">
-        <div style="font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;letter-spacing:1px;text-align:center;margin-bottom:6px">${title}</div>
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:96;border-radius:16px;padding:14px">
+      <div style="max-width:360px;width:100%;background:linear-gradient(135deg,${bgColor},#0a0a1e);border:2px solid ${borderColor};border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 30px ${borderColor}33;animation:mgPrizePop 0.25s ease-out">
+        <div style="font-family:Kanit,sans-serif;font-size:14px;color:#fff;letter-spacing:1px;text-align:center;font-weight:700">${title}</div>
         ${body}
       </div>
     </div>`);
@@ -9616,9 +9777,10 @@ function renderScout() {
     const isAdj = !isPlayer && dx+dy===1;
     if(!cell.vis && !isPlayer) { cellsHtml+=`<div class="scout-cell fog"></div>`; continue; }
     const t = cell.type;
-    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',minigame:'🕹️',empty:'·'};
-    const cls = `scout-cell visible ${isPlayer?'player':''} ${isAdj?'adjacent':''} ${!isPlayer?t:''}`;
-    const icon = isPlayer ? '◉' : (icons[t]||'·');
+    const mgIcons = {slot:'🎰',hilo:'🎲',rps:'⚔️'};
+    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·'};
+    const cls = `scout-cell visible ${isPlayer?'player':''} ${isAdj?'adjacent':''} ${!isPlayer?t:''} ${t==='minigame' && cell.minigameType ? 'minigame-'+cell.minigameType : ''}`;
+    const icon = isPlayer ? '◉' : (t==='minigame'&&cell.minigameType ? mgIcons[cell.minigameType]||'🕹️' : icons[t]||'·');
     const iconStyle = (!isPlayer && t!=='empty') ? 'style="font-size:15px;filter:drop-shadow(0 0 3px rgba(0,0,0,0.9)) drop-shadow(0 1px 2px rgba(0,0,0,1))"' : '';
     cellsHtml += `<div class="${cls}" data-x="${x}" data-y="${y}"><span ${iconStyle}>${icon}</span></div>`;
   }
@@ -10339,6 +10501,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   if(collectionOpen) { collectionOpen=false; render(); return; }
   if(storageDetailIdx!==null) { storageDetailIdx=null; render(); return; }
   if(secretShopOpen) { secretShopOpen=false; render(); return; }
+  if(mgPendingType) { cancelMinigame(); return; }
   if(minigameOpen) { closeMinigame(); return; }
   if(battleItemPicker) { battleItemPicker=false; render(); return; }
   if(bagArtifactPending) { bagArtifactPending=null; render(); return; }
@@ -10400,6 +10563,11 @@ screenContent.addEventListener('click', e=>{
     if(el.closest('[data-leaderboard-close]')) { SFX.click(); closeLeaderboard(); return; }
   }
 
+  if(mgPendingType) {
+    if(el.closest('[data-mg-play]')) { SFX.click(); startMinigame(); return; }
+    if(el.closest('[data-mg-cancel]')) { SFX.click(); cancelMinigame(); return; }
+    return;
+  }
   if(minigameOpen) {
     if(el.closest('[data-minigame-close]')) { SFX.click(); closeMinigame(); return; }
     if(minigameOpen==='slot' && el.closest('[data-slot-spin]')) { SFX.click(); spinSlotMachine(); return; }
@@ -13437,8 +13605,9 @@ let secretShopSymbol = 'sym_F';
 let secretShopBought = {};
 // ── SCOUT MINIGAME SPOT ──
 let minigameOpen = null;     // null | 'slot' | 'hilo' | 'rps'
+let mgPendingType = null;   // minigame type waiting for player confirmation
 let minigameResult = null;   // {icon, text} — Slot Machine spin result
-let slotHighlightIdx = -1;   // which prize box the running light currently sits on (-1 = none yet)
+let slotHighlightIdx = -1;   // which segment the running light currently highlights (-1 = none yet)
 let slotSpinning = false;    // true while the running-light animation is in flight
 let rpsResult = null;        // {playerMove, guardMove, won, reward:{gold,item}|null}
 let rpsGuardianEmoji = '🗿'; // random guardian avatar, rolled per minigame visit
@@ -13972,7 +14141,7 @@ setInterval(() => {
   if(stamina < MAX_STAMINA) {
     stamina = Math.min(MAX_STAMINA, stamina + 1);
     saveGame(true);
-    if((state==='scout' || state==='menu') && !helpOpen && !settingsOpen && !minigameOpen) render();
+    if((state==='scout' || state==='menu') && !helpOpen && !settingsOpen && !minigameOpen && !mgPendingType) render();
   }
 }, 60000);
 </script>

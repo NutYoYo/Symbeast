@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -7722,8 +7722,18 @@ function render() {
            ${hiloOutcome==='lost' ? `<div style="font-size:11px;color:#c0b0e0;text-align:center;margin-bottom:10px">${T('ปลอบใจ','Consolation')}: ${ITEMS.hp_potion.icon} ${ITEMS.hp_potion.name} ×1</div>` : rewardsList}
            ${_btn('data-minigame-close', T('ปิด','CLOSE'), false)}`;
       } else {
+        // Next round reward preview
+        const nextRewards = [
+          {icon:'💰', text:T('Gold (ตามด่าน)','Gold (scales with biome)')},
+          {icon:'✨', text:T('Essence ×3','Essence ×3')},
+          {icon:ITEMS.mystery_egg.icon, text:T('Mystery Egg ×1','Mystery Egg ×1')},
+          {icon:ITEMS.rebirth_stone.icon, text:T('Rebirth Stone ×1','Rebirth Stone ×1')},
+          {icon:ITEMS.weapon_box.icon, text:T('Weapon Box ×1','Weapon Box ×1')},
+        ];
+        const nextR = nextRewards[hiloRound];
         body = `${progressHtml}${diceHtml}
-           <div style="font-size:11px;color:#9ab8a8;text-align:center;margin-bottom:10px;font-family:Kanit,sans-serif">${T(`รอบ ${hiloRound+1}/5 — ลูกเต๋าคู่ต่อไปจะรวมสูงหรือต่ำกว่านี้?`,`Round ${hiloRound+1}/5 — will the next roll be Higher or Lower?`)}</div>
+           <div style="font-size:11px;color:#9ab8a8;text-align:center;margin-bottom:6px;font-family:Kanit,sans-serif">${T(`รอบ ${hiloRound+1}/5 — ลูกเต๋าคู่ต่อไปจะรวมสูงหรือต่ำกว่านี้?`,`Round ${hiloRound+1}/5 — will the next roll be Higher or Lower?`)}</div>
+           ${nextR ? `<div style="display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(46,204,113,0.08);border:1px solid #2ecc7133;border-radius:8px;padding:6px 12px;margin-bottom:8px"><span style="font-size:11px;color:#8ab8a8;font-family:Kanit,sans-serif">${T('🏆 รางวัลรอบนี้','🏆 This round prize')}:</span><span style="font-size:14px">${nextR.icon}</span><span style="font-size:11px;color:#c0e8d0;font-family:Kanit,sans-serif;font-weight:500">${nextR.text}</span></div>` : ''}
            <div style="display:flex;gap:8px;margin-bottom:10px">
              ${_btn('data-hilo-lower', T('⬇️ ต่ำกว่า','⬇️ LOWER'), false, false)}
              ${_btn('data-hilo-higher', T('⬆️ สูงกว่า','⬆️ HIGHER'), false, true)}

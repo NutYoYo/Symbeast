@@ -659,22 +659,28 @@ function renderPetCard(pet) {
 function renderWeaponCard(w) {
   const statsStr = Object.entries(w.stats).map(([k,v]) => k.toUpperCase()+':+'+v).join(' ');
   const gradeBadge = getGradeBadge(w.grade);
-  const effDesc = w.desc ? `<div class="card-effect">${w.desc}</div>` : '';
+  const wName = dexLang==='th' ? w.nameTh : w.name;
+  const wSub = dexLang==='th' ? w.name : w.nameTh;
+  const wDesc = dexLang==='th' ? (w.descTh||w.desc) : w.desc;
+  const effDesc = wDesc ? `<div class="card-effect">${wDesc}</div>` : '';
   return `<div class="card" onclick="showWeaponModal('${w.key}')">
     <div class="card-icon"><span style="font-size:28px">${w.icon}</span></div>
-    <div class="card-name">${w.name} ${gradeBadge}</div>
-    <div class="card-sub">${w.nameTh} · ${statsStr}</div>
+    <div class="card-name">${wName} ${gradeBadge}</div>
+    <div class="card-sub">${wSub} · ${statsStr}</div>
     ${effDesc}
   </div>`;
 }
 
 function renderArtifactCard(a) {
   const gradeBadge = getGradeBadge(a.grade);
+  const aName = dexLang==='th' ? a.nameTh : a.name;
+  const aSub = dexLang==='th' ? a.name : a.nameTh;
+  const aDesc = dexLang==='th' ? (a.descTh||a.desc) : a.desc;
   return `<div class="card" onclick="showArtifactModal('${a.key}')">
     <div class="card-icon"><span style="font-size:28px">${a.icon}</span></div>
-    <div class="card-name">${a.name} ${gradeBadge}</div>
-    <div class="card-sub">${a.nameTh}</div>
-    <div class="card-desc">${a.desc}</div>
+    <div class="card-name">${aName} ${gradeBadge}</div>
+    <div class="card-sub">${aSub}</div>
+    <div class="card-desc">${aDesc}</div>
   </div>`;
 }
 

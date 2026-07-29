@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4091,7 +4091,7 @@ function getSlotPool() {
   ];
 }
 
-// Roulette: DOM-based running light that circles the segments (no re-render, no flicker).
+// Roulette: 100% DOM-based — zero render() calls, ultra smooth.
 function spinSlotMachine() {
   if(slotSpinning || minigameResult) return;
   const pool = getSlotPool();
@@ -4107,20 +4107,28 @@ function spinSlotMachine() {
 
   slotSpinning = true;
   slotHighlightIdx = startIdx;
-  render(); // render once, then manipulate DOM directly
+
+  // Disable spin button via DOM (no render!)
+  const spinBtn = document.querySelector('[data-slot-spin]');
+  if(spinBtn) {
+    spinBtn.textContent = T('🎰 กำลังหมุน...','🎰 SPINNING...');
+    spinBtn.style.background = '#141428';
+    spinBtn.style.borderColor = '#2a2a4a';
+    spinBtn.style.color = '#4a4a6a';
+    spinBtn.style.cursor = 'default';
+    spinBtn.style.fontWeight = '400';
+    spinBtn.removeAttribute('data-slot-spin');
+  }
 
   let idx = startIdx, step = 0;
   const items = document.querySelectorAll('.mg-roulette-item');
 
   function tick() {
-    // Remove highlight from previous
     if(items[idx]) items[idx].classList.remove('lit');
     idx = (idx + 1) % n;
-    // Add highlight to current
     if(items[idx]) {
       items[idx].classList.add('lit');
-      const color = pool[idx].color || '#ffd700';
-      items[idx].style.filter = `drop-shadow(0 0 12px ${color})`;
+      items[idx].style.filter = `drop-shadow(0 0 12px ${pool[idx].color||'#ffd700'})`;
     }
     slotHighlightIdx = idx;
     step++;
@@ -4132,13 +4140,27 @@ function spinSlotMachine() {
       setTimeout(tick, delay);
     } else {
       slotSpinning = false;
-      // Clear last highlight
       if(items[idx]) { items[idx].classList.remove('lit'); items[idx].style.filter = ''; }
       minigameResult = pool[targetIdx].fn();
       SFX.mgSlotStop();
       SFX.itemGet();
       showToast(`${T('🎰 ได้รับ:','🎰 Earned:')} ${minigameResult.icon} ${minigameResult.text}`);
-      saveGame(); render();
+      // Show result via DOM — insert prize pop + collect button, remove spin button
+      const wheelWrap = document.querySelector('.mg-roulette-wrap');
+      if(wheelWrap && spinBtn) {
+        const resultDiv = document.createElement('div');
+        resultDiv.style.cssText = 'text-align:center;padding:4px 0 8px;display:flex;flex-direction:column;gap:4px;align-items:center;animation:mgPrizePop 0.4s ease-out';
+        resultDiv.innerHTML = `<div style="font-size:36px">${minigameResult.icon}</div><div style="font-family:Kanit,sans-serif;font-size:15px;color:#ffe080;font-weight:600">${minigameResult.text}</div>`;
+        // Insert after the wheel wrapper
+        wheelWrap.after(resultDiv);
+        // Replace spin button with collect button
+        const collectBtn = document.createElement('div');
+        collectBtn.setAttribute('data-minigame-close', '');
+        collectBtn.style.cssText = 'flex:1;padding:11px 8px;border-radius:10px;background:linear-gradient(135deg,#403020,#604820);border:1px solid #ffd700;font-family:Kanit,sans-serif;font-size:13px;color:#ffe080;text-align:center;cursor:pointer;font-weight:600;margin-top:6px';
+        collectBtn.textContent = T('🎁 รับรางวัล','🎁 COLLECT');
+        spinBtn.replaceWith(collectBtn);
+      }
+      saveGame();
     }
   }
   setTimeout(tick, 50);

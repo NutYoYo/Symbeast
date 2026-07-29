@@ -135,14 +135,13 @@ header h1{font-size:18px}#tab-bar .tab{font-size:12px;padding:6px 12px}#search-b
     <h1>⚔ SymbeastDex</h1>
     <div id="lang-toggle" onclick="toggleLang()" style="cursor:pointer;padding:4px 12px;border-radius:6px;border:1px solid #ffd70044;background:rgba(255,215,0,0.08);color:#ffd700;font-size:12px;font-weight:600;font-family:'Kanit',sans-serif;transition:all .3s">TH</div>
   </div>
-  <p>PETS · WEAPONS · ARTIFACTS · ITEMS</p>
+  <p>PETS · WEAPONS · ARTIFACTS</p>
 </header>
 
 <div id="tab-bar">
   <div class="tab active" data-tab="pet" onclick="switchTab('pet',this)">🐾 Pet</div>
   <div class="tab" data-tab="weapon" onclick="switchTab('weapon',this)">⚔️ Weapon</div>
   <div class="tab" data-tab="artifact" onclick="switchTab('artifact',this)">📿 Artifact</div>
-  <div class="tab" data-tab="item" onclick="switchTab('item',this)">📦 Item</div>
 </div>
 
 <div id="controls">
@@ -153,7 +152,7 @@ header h1{font-size:18px}#tab-bar .tab{font-size:12px;padding:6px 12px}#search-b
 <div id="s-pet" class="section active"></div>
 <div id="s-weapon" class="section"></div>
 <div id="s-artifact" class="section"></div>
-<div id="s-item" class="section"></div>
+
 
 <!-- Modal -->
 <div id="modal" class="modal-overlay" onclick="closeModal(event)">
@@ -320,121 +319,96 @@ GHOST_FORMS['PANDA-GHOST']={ name:'PANDA-GHOST', color:'#2F4F4F', hp:120, atk:33
 PET_BRANCH['DRAGON-GHOST']='BALANCE';PET_BRANCH['GRIFFON-GHOST']='BALANCE';PET_BRANCH['OCTOPUS-GHOST']='BALANCE';PET_BRANCH['PHOENIX-GHOST']='BALANCE';PET_BRANCH['UNICORN-GHOST']='BALANCE';PET_BRANCH['PANDA-GHOST']='BALANCE';
 PET_SPRITE['DRAGON-GHOST']='DRAGON-GHOST';PET_SPRITE['GRIFFON-GHOST']='GRIFFON-GHOST';PET_SPRITE['OCTOPUS-GHOST']='OCTOPUS-GHOST';PET_SPRITE['PHOENIX-GHOST']='PHOENIX-GHOST';PET_SPRITE['UNICORN-GHOST']='UNICORN-GHOST';PET_SPRITE['PANDA-GHOST']='PANDA-GHOST';
 
-// WEAPONS
+// WEAPONS — synced with game data (index.html)
 const WEAPONS = {
+  // Normal — pure stats, no passive
   iron_sword:{ name:'Iron Sword', nameTh:'ดาบเหล็ก', grade:'N', icon:'🗡️', stats:{atk:30} },
   iron_shield:{ name:'Iron Shield', nameTh:'โล่เหล็ก', grade:'N', icon:'🛡️', stats:{def:30} },
   iron_boots:{ name:'Iron Boots', nameTh:'รองเท้าเหล็ก', grade:'N', icon:'👢', stats:{spd:30} },
-  iron_amulet:{ name:'Iron Amulet', nameTh:'เครื่องรางเหล็ก', grade:'N', icon:'📿', stats:{hp:30} },
-  iron_bow:{ name:'Iron Bow', nameTh:'ธนูเหล็ก', grade:'N', icon:'🏹', stats:{atk:25,spd:5} },
-  iron_plate:{ name:'Iron Plate', nameTh:'เกราะเหล็ก', grade:'N', icon:'🛡️', stats:{def:20,hp:10} },
-  modest_crest:{ name:'Modest Crest', nameTh:'เครื่องหมายถ่อมตน', grade:'N', icon:'✨', stats:{atk:15,spd:15} },
-  iron_spear:{ name:'Iron Spear', nameTh:'หอกเหล็ก', grade:'N', icon:'🔱', stats:{atk:20,def:10} },
-  iron_cloak:{ name:'Iron Cloak', nameTh:'ผ้าคลุมเหล็ก', grade:'N', icon:'🧥', stats:{def:15,spd:15} },
-  iron_gauntlet:{ name:'Iron Gauntlet', nameTh:'สนับมือเหล็ก', grade:'N', icon:'✊', stats:{atk:25,def:5} },
-  iron_circlet:{ name:'Iron Circlet', nameTh:'มงกุฎเหล็ก', grade:'N', icon:'👑', stats:{hp:20,spd:10} },
-
+  iron_amulet:{ name:'Iron Amulet', nameTh:'เครื่องรางเหล็ก', grade:'N', icon:'📿', stats:{hp:150} },
+  iron_bow:{ name:'Iron Bow', nameTh:'ธนูเหล็ก', grade:'N', icon:'🏹', stats:{atk:20,spd:20} },
+  iron_plate:{ name:'Iron Plate', nameTh:'แผ่นเกราะเหล็ก', grade:'N', icon:'🔰', stats:{def:20,hp:100} },
+  modest_crest:{ name:'Modest Crest', nameTh:'ตราพอประมาณ', grade:'N', icon:'💍', stats:{atk:10,def:10,spd:10,hp:50} },
+  iron_spear:{ name:'Iron Spear', nameTh:'หอกเหล็ก', grade:'N', icon:'🔱', stats:{atk:20,def:20} },
+  iron_cloak:{ name:'Iron Cloak', nameTh:'เสื้อคลุมเหล็ก', grade:'N', icon:'🧥', stats:{spd:20,hp:100} },
+  iron_gauntlet:{ name:'Iron Gauntlet', nameTh:'ถุงมือเหล็ก', grade:'N', icon:'🥊', stats:{atk:20,hp:100} },
+  iron_circlet:{ name:'Iron Circlet', nameTh:'มงกุฎเหล็ก', grade:'N', icon:'👑', stats:{def:20,spd:20} },
+  // Rare — stats + 1 small passive
   steel_blade:{ name:'Steel Blade', nameTh:'ดาบเหล็กกล้า', grade:'R', icon:'⚔️', stats:{atk:50}, effect:{type:'atk_dmg_boost',chance:0.10,mult:1.50}, desc:'10% chance to attack damage +50%', descTh:'10% โอกาสโจมตีแรงขึ้น 50%' },
-  steel_wall:{ name:'Steel Wall', nameTh:'กำแพงเหล็กกล้า', grade:'R', icon:'🛡️', stats:{def:50}, effect:{type:'atk_dmg_reduce',chance:0.10,mult:0.50}, desc:'10% chance to take 50% less damage', descTh:'10% โอกาสรับดาเมจลดลง 50%' },
-  steel_greaves:{ name:'Steel Greaves', nameTh:'เกราะขาเหล็กกล้า', grade:'R', icon:'🦵', stats:{spd:50}, effect:{type:'dodge',chance:0.10}, desc:'+10% dodge chance', descTh:'+10% โอกาสหลบหลีก' },
-  steel_heart:{ name:'Steel Heart', nameTh:'หัวใจเหล็กกล้า', grade:'R', icon:'❤️', stats:{hp:50}, effect:{type:'regen',pct:0.05}, desc:'Regenerate 5% Max HP each turn', descTh:'ฟื้นฟู 5% HP สูงสุดทุกเทิร์น' },
-  twin_fang:{ name:'Twin Fang', nameTh:'เขาคู่', grade:'R', icon:'🗡️', stats:{atk:40,spd:10}, effect:{type:'double_attack',chance:0.10}, desc:'10% chance to attack twice', descTh:'10% โอกาสโจมตี 2 ครั้ง' },
-  guardian_plate:{ name:'Guardian Plate', nameTh:'เกราะผู้พิทักษ์', grade:'R', icon:'🛡️', stats:{def:30,hp:20}, effect:{type:'reflect',pct:0.25}, desc:'Reflect 25% of incoming damage', descTh:'สะท้อน 25% ของดาเมจที่ได้รับ' },
-  balanced_crest:{ name:'Balanced Crest', nameTh:'เครื่องหมายสมดุล', grade:'R', icon:'⚖️', stats:{atk:25,def:25}, effect:{type:'all_stat_boost',chance:0.10,mult:1.20}, desc:'10% chance all stats +20% for the round', descTh:'10% โอกาสทุกสถิติ +20% ในรอบนี้' },
-  steel_lance:{ name:'Steel Lance', nameTh:'หอกเหล็กกล้า', grade:'R', icon:'🔱', stats:{atk:40,def:10}, effect:{type:'pierce',chance:0.25}, desc:'25% chance to pierce defense', descTh:'25% โอกาสเจาะเกราะ' },
-  steel_mantle:{ name:'Steel Mantle', nameTh:'เสื้อคลุมเหล็กกล้า', grade:'R', icon:'🧥', stats:{def:25,spd:25}, effect:{type:'dodge_reduce',pct:0.10}, desc:'Enemy -10% accuracy against you', descTh:'ศัตรูแม่นยำลดลง 10%' },
-  steel_fist:{ name:'Steel Fist', nameTh:'กำปั้นเหล็กกล้า', grade:'R', icon:'✊', stats:{atk:40,def:10}, effect:{type:'stun',chance:0.10}, desc:'10% chance to stun on hit', descTh:'10% โอกาสสตันเมื่อโจมตี' },
-  steel_crown:{ name:'Steel Crown', nameTh:'มงกุฎเหล็กกล้า', grade:'R', icon:'👑', stats:{hp:30,spd:20}, effect:{type:'crit',chance:0.10}, desc:'+10% crit rate', descTh:'+10% คริติคอลเรท' },
-
+  steel_wall:{ name:'Steel Wall', nameTh:'กำแพงเหล็กกล้า', grade:'R', icon:'🧱', stats:{def:50}, effect:{type:'block',chance:0.10}, desc:'10% chance to block (-50% damage that hit)', descTh:'10% โอกาสบล็อก (ลดดาเมจ 50% ในครั้งนั้น)' },
+  steel_greaves:{ name:'Steel Greaves', nameTh:'สนับแข้งเหล็กกล้า', grade:'R', icon:'🥾', stats:{spd:50}, effect:{type:'dodge',chance:0.05}, desc:'5% chance to dodge attacks', descTh:'5% โอกาสหลบการโจมตี' },
+  steel_heart:{ name:'Steel Heart', nameTh:'หัวใจเหล็กกล้า', grade:'R', icon:'💠', stats:{hp:200}, effect:{type:'regen',chance:0.10,pct:0.05}, desc:'10% chance to regen 5% Max HP at end of turn', descTh:'10% โอกาสฟื้นฟู HP 5% ท้ายเทิร์น' },
+  twin_fang:{ name:'Twin Fang', nameTh:'เขี้ยวคู่', grade:'R', icon:'🦷', stats:{atk:30,spd:30}, effect:{type:'multi_attack',chance:0.10,hits:2}, desc:'10% chance to attack twice', descTh:'10% โอกาสโจมตี 2 ครั้ง' },
+  guardian_plate:{ name:'Guardian Plate', nameTh:'เกราะผู้พิทักษ์', grade:'R', icon:'🪖', stats:{def:30,hp:150}, effect:{type:'counter',chance:0.10,mult:0.75}, desc:'10% chance to counter (deal damage 75% that hit)', descTh:'10% โอกาสโจมตีสวนกลับ (ทำดาเมจ 75% ในครั้งนั้น)' },
+  balanced_crest:{ name:'Balanced Crest', nameTh:'ตราสมดุล', grade:'R', icon:'⚖️', stats:{atk:20,def:20,spd:20,hp:100}, effect:{type:'on_lose_dr',mult:0.90}, desc:'On LOSE, damage received -10%', descTh:'เมื่อแพ้ ดาเมจที่ได้รับ -10%' },
+  steel_lance:{ name:'Steel Lance', nameTh:'ทวนเหล็กกล้า', grade:'R', icon:'☄️', stats:{atk:30,def:30}, effect:{type:'poison_on_hit',chance:0.10}, desc:'10% chance to poison on a landed hit', descTh:'10% โอกาสวางพิษเมื่อโจมตีโดน' },
+  steel_mantle:{ name:'Steel Mantle', nameTh:'ผ้าคลุมเหล็กกล้า', grade:'R', icon:'🎽', stats:{spd:30,hp:150}, effect:{type:'reflect',chance:0.10,mult:0.50}, desc:'10% chance to reflect 50% damage to enemy', descTh:'10% โอกาสสะท้อนดาเมจ 50% ใส่ศัตรู' },
+  steel_fist:{ name:'Steel Fist', nameTh:'หมัดเหล็กกล้า', grade:'R', icon:'🤜', stats:{atk:30,hp:150}, effect:{type:'stun_on_hit',chance:0.05}, desc:'5% chance to stun enemy', descTh:'5% โอกาสสตันศัตรู' },
+  steel_crown:{ name:'Steel Crown', nameTh:'มงกุฎเหล็กกล้า', grade:'R', icon:'🎖️', stats:{def:30,spd:30}, effect:{type:'on_win_dmg',mult:1.10}, desc:'On WIN, damage dealt +10%', descTh:'เมื่อชนะ ดาเมจที่สร้าง +10%' },
+  // Epic — stats + stronger passive
   dragonfang_blade:{ name:'Dragonfang Blade', nameTh:'ดาบเขี้ยวมังกร', grade:'E', icon:'🐉', stats:{atk:120}, effect:{type:'atk_dmg_boost',chance:0.25,mult:1.75}, desc:'25% chance to attack damage +75%', descTh:'25% โอกาสโจมตีแรงขึ้น 75%' },
-  aegis_bulwark:{ name:'Aegis Bulwark', nameTh:'โล่เทพเอจิส', grade:'E', icon:'🛡️', stats:{def:120}, effect:{type:'atk_dmg_reduce',chance:0.25,mult:0.40}, desc:'25% chance to take 60% less damage', descTh:'25% โอกาสรับดาเมจลดลง 60%' },
-  windwalker_greaves:{ name:'Windwalker Greaves', nameTh:'เกราะขาสายลม', grade:'E', icon:'🦵', stats:{spd:120}, effect:{type:'dodge',chance:0.25}, desc:'+25% dodge chance', descTh:'+25% โอกาสหลบหลีก' },
-  titans_heart:{ name:"Titan's Heart", nameTh:'หัวใจไททัน', grade:'E', icon:'❤️', stats:{hp:120}, effect:{type:'regen',pct:0.10}, desc:'Regenerate 10% Max HP each turn', descTh:'ฟื้นฟู 10% HP สูงสุดทุกเทิร์น' },
-  berserkers_fury:{ name:"Berserker's Fury", nameTh:'คลั่งเบอร์เซิร์ก', grade:'E', icon:'🗡️', stats:{atk:100,spd:20}, effect:{type:'atk_dmg_boost',chance:0.20,mult:2.00}, desc:'20% chance to attack damage +100%', descTh:'20% โอกาสโจมตีแรงขึ้น 100%' },
-  fortress_core:{ name:'Fortress Core', nameTh:'แกนป้อมปราการ', grade:'E', icon:'🛡️', stats:{def:80,hp:40}, effect:{type:'reflect',pct:0.50}, desc:'Reflect 50% of incoming damage', descTh:'สะท้อน 50% ดาเมจที่ได้รับ' },
-  omega_blade:{ name:'Omega Blade', nameTh:'ดาบโอเมก้า', grade:'E', icon:'⚔️', stats:{atk:60,spd:60}, effect:{type:'all_stat_boost',chance:0.20,mult:1.30}, desc:'20% chance all stats +30% for the round', descTh:'20% โอกาสทุกสถิติ +30% ในรอบนี้' },
-  dragon_spear:{ name:'Dragon Spear', nameTh:'หอกมังกร', grade:'E', icon:'🔱', stats:{atk:80,def:40}, effect:{type:'pierce',chance:0.50}, desc:'50% chance to pierce defense', descTh:'50% โอกาสเจาะเกราะ' },
-  phantom_cloak:{ name:'Phantom Cloak', nameTh:'เสื้อคลุมผี', grade:'E', icon:'🧥', stats:{spd:80,def:40}, effect:{type:'dodge_reduce',pct:0.20}, desc:'Enemy -20% accuracy against you', descTh:'ศัตรูแม่นยำลดลง 20%' },
-  titan_gauntlet:{ name:'Titan Gauntlet', nameTh:'นวมไททัน', grade:'E', icon:'✊', stats:{atk:80,def:40}, effect:{type:'stun',chance:0.20}, desc:'20% chance to stun on hit', descTh:'20% โอกาสสตันเมื่อโจมตี' },
-  storm_crown:{ name:'Storm Crown', nameTh:'มงกุฎพายุ', grade:'E', icon:'👑', stats:{hp:60,spd:60}, effect:{type:'crit',chance:0.20}, desc:'+20% crit rate', descTh:'+20% คริติคอลเรท' },
+  aegis_bulwark:{ name:'Aegis Bulwark', nameTh:'ปราการเอจิส', grade:'E', icon:'🏰', stats:{def:120}, effect:{type:'block',chance:0.20}, desc:'20% chance to block (-50% damage that hit)', descTh:'20% โอกาสบล็อก (ลดดาเมจ 50% ในครั้งนั้น)' },
+  windwalker_greaves:{ name:'Windwalker Greaves', nameTh:'สนับแข้งจอมพายุ', grade:'E', icon:'🌪️', stats:{spd:120}, effect:{type:'dodge',chance:0.15}, desc:'15% chance to dodge attacks', descTh:'15% โอกาสหลบการโจมตี' },
+  titans_heart:{ name:"Titan's Heart", nameTh:'หัวใจไททัน', grade:'E', icon:'💎', stats:{hp:600}, effect:{type:'regen',chance:0.20,pct:0.05}, desc:'20% chance to regen 5% Max HP at end of turn', descTh:'20% โอกาสฟื้นฟู HP 5% ท้ายเทิร์น' },
+  berserkers_fury:{ name:"Berserker's Fury", nameTh:'โทสะนักรบเถื่อน', grade:'E', icon:'🔥', stats:{atk:80,spd:80}, effect:{type:'multi_attack',chance:0.10,hits:3}, desc:'10% chance to attack three times', descTh:'10% โอกาสโจมตี 3 ครั้ง' },
+  fortress_core:{ name:'Fortress Core', nameTh:'แก่นป้อมปราการ', grade:'E', icon:'🏛️', stats:{def:80,hp:400}, effect:{type:'counter',chance:0.20,mult:0.75}, desc:'20% chance to counter (deal damage 75% that hit)', descTh:'20% โอกาสโจมตีสวนกลับ (ทำดาเมจ 75% ในครั้งนั้น)' },
+  omega_blade:{ name:'Omega Blade', nameTh:'ดาบโอเมก้า', grade:'E', icon:'✨', stats:{atk:50,def:50,spd:50,hp:300}, effect:{type:'on_win_dmg',mult:1.50}, desc:'On WIN, damage dealt +50%', descTh:'เมื่อชนะ ดาเมจที่สร้าง +50%' },
+  dragon_spear:{ name:'Fire Dragon Spear', nameTh:'หอกมังกรไฟ', grade:'E', icon:'🐲', stats:{atk:80,def:80}, effect:{type:'burn_on_hit',chance:0.15}, desc:'15% chance to burn on a landed hit', descTh:'15% โอกาสทำให้ศัตรูติดเผาไหม้เมื่อโจมตีโดน' },
+  phantom_cloak:{ name:'Phantom Cloak', nameTh:'เสื้อคลุมภูต', grade:'E', icon:'👻', stats:{spd:80,hp:400}, effect:{type:'poison_when_hit',chance:0.20}, desc:'20% chance to poison the attacker when hit', descTh:'20% โอกาสวางพิษใส่ผู้โจมตีเมื่อถูกโจมตี' },
+  titan_gauntlet:{ name:'Titan Gauntlet', nameTh:'ถุงมือไททัน', grade:'E', icon:'👊', stats:{atk:80,hp:400}, effect:{type:'stun_on_hit',chance:0.10}, desc:'10% chance to stun enemy', descTh:'10% โอกาสสตันศัตรู' },
+  storm_crown:{ name:'Storm Crown', nameTh:'มงกุฎพายุ', grade:'E', icon:'⛈️', stats:{def:80,spd:80}, effect:{type:'dmg_reduce',mult:0.90}, desc:'Damage received -10%', descTh:'ดาเมจที่ได้รับ -10%' },
 };
 
-// ARTIFACTS
+// ARTIFACTS — synced with game data (index.html)
 const ARTIFACTS = [
+  // Normal
   { key:'vitality_core', name:'Vitality Core', nameTh:'แก่นชีวิต', grade:'N', icon:'💚', desc:'Increases Max HP by 20% when equipped', descTh:'เพิ่ม HP สูงสุด 20% เมื่อสวมใส่' },
-  { key:'shock_bead', name:'Shock Bead', nameTh:'ลูกปัดช็อต', grade:'N', icon:'⚡', desc:'In battle: 15% chance to paralyze the enemy when attacking', descTh:'ในการต่อสู้: 15% โอกาสทำลายศัตรูเมื่อโจมตี' },
-  { key:'keen_edge', name:'Keen Edge', nameTh:'ขอบคม', grade:'N', icon:'🗡️', desc:'In battle: damage dealt +10%', descTh:'ในการต่อสู้: ดาเมจที่สร้าง +10%' },
-  { key:'blade_shard', name:'Blade Shard', nameTh:'เศษดาบ', grade:'N', icon:'🔪', desc:'ATK +10%', descTh:'ATK +10%' },
-  { key:'iron_plate', name:'Iron Plate', nameTh:'แผ่นเหล็ก', grade:'N', icon:'🛡️', desc:'DEF +10%', descTh:'DEF +10%' },
-  { key:'swift_ring', name:'Swift Ring', nameTh:'แหวนว่องไว', grade:'N', icon:'💍', desc:'SPD +10%', descTh:'SPD +10%' },
-  { key:'life_seed', name:'Life Seed', nameTh:'เมล็ดชีวิต', grade:'N', icon:'🌱', desc:'HP +10%', descTh:'HP +10%' },
-  { key:'crimson_fang', name:'Crimson Fang', nameTh:'เขี้ยวแดง', grade:'N', icon:'🦷', desc:'In battle: lifesteal +8%', descTh:'ในการต่อสู้: ดูดเลือด +8%' },
-  { key:'stone_skin', name:'Stone Skin', nameTh:'ผิวหิน', grade:'N', icon:'🪨', desc:'In battle: damage taken -8%', descTh:'ในการต่อสู้: ดาเมจรับ -8%' },
-  { key:'lucky_charm', name:'Lucky Charm', nameTh:'เครื่องรางนำโชค', grade:'N', icon:'🍀', desc:'In battle: 10% chance to avoid all damage', descTh:'ในการต่อสู้: 10% โอกาสหลบดาเมจทั้งหมด' },
-  { key:'venom_fang', name:'Venom Fang', nameTh:'เขี้ยวพิษ', grade:'N', icon:'🐍', desc:'In battle: 15% chance to poison enemy on attack', descTh:'ในการต่อสู้: 15% โอกาสวางยาพิษศัตรูเมื่อโจมตี' },
-  { key:'atk_shard', name:'ATK Shard', nameTh:'เศษ ATK', grade:'N', icon:'⚔️', desc:'ATK +5%', descTh:'ATK +5%' },
-  { key:'def_shard', name:'DEF Shard', nameTh:'เศษ DEF', grade:'N', icon:'🛡️', desc:'DEF +5%', descTh:'DEF +5%' },
-  { key:'spd_shard', name:'SPD Shard', nameTh:'เศษ SPD', grade:'N', icon:'💨', desc:'SPD +5%', descTh:'SPD +5%' },
-  { key:'hp_core', name:'HP Core', nameTh:'แก่น HP', grade:'N', icon:'❤️', desc:'HP +5%', descTh:'HP +5%' },
-
+  { key:'shock_bead', name:'Shock Bead', nameTh:'ลูกปัดช็อต', grade:'N', icon:'⚡', desc:'In battle: 8% chance to stun the enemy each round', descTh:'ในการต่อสู้: 8% โอกาส Stun ศัตรูทุกรอบ' },
+  { key:'keen_edge', name:'Keen Edge', nameTh:'คมแห่งคม', grade:'N', icon:'🎯', desc:'In battle: Increases critical hit chance by 10%', descTh:'ในการต่อสู้: เพิ่มโอกาสคริติคอล 10%' },
+  { key:'blade_shard', name:'Blade Shard', nameTh:'เศษใบมีด', grade:'N', icon:'🗡', desc:'In battle: Increases ATK by 10%, crit chance +5%', descTh:'ในการต่อสู้: เพิ่ม ATK 10%, เพิ่มโอกาสคริติคอล 5%' },
+  { key:'iron_plate', name:'Iron Plate', nameTh:'แผ่นเหล็ก', grade:'N', icon:'🛡', desc:'In battle: Reduces all damage received by 15%', descTh:'ในการต่อสู้: ลดดาเมจที่รับทั้งหมด 15%' },
+  { key:'swift_ring', name:'Swift Ring', nameTh:'แหวนฉับพลัน', grade:'N', icon:'💨', desc:'In battle: 10% chance to dodge attacks', descTh:'ในการต่อสู้: 10% โอกาสหลบการโจมตี' },
+  { key:'life_seed', name:'Life Seed', nameTh:'เมล็ดชีวิต', grade:'N', icon:'🌱', desc:'In battle: Regenerates 4% of Max HP each round', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 4% ทุกรอบ' },
+  { key:'crimson_fang', name:'Crimson Fang', nameTh:'เขี้ยวเลือด', grade:'N', icon:'🩸', desc:'In battle: Drains 5% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 5% จากดาเมจที่โจมตีทุกรอบ' },
+  { key:'stone_skin', name:'Stone Skin', nameTh:'หนังหิน', grade:'N', icon:'🪨', desc:'In battle: Reduces damage taken by 10% while HP > 70%', descTh:'ในการต่อสู้: ลดดาเมจที่รับ 10% เมื่อ HP > 70%' },
+  { key:'lucky_charm', name:'Lucky Charm', nameTh:'เครื่องรางโชค', grade:'N', icon:'🍀', desc:'After winning a battle: Gold earned ×1.5', descTh:'หลังชนะการต่อสู้: ได้ Gold เพิ่มขึ้น ×1.5' },
+  { key:'venom_fang', name:'Venom Fang', nameTh:'เขี้ยวพิษ', grade:'N', icon:'🐍', desc:'In battle: On attack, 20% chance to poison the opponent (6% MaxHP/turn, 3 turns)', descTh:'ในการต่อสู้: เมื่อโจมตี 20% โอกาสวางพิษใส่คู่ต่อสู้ (6% MaxHP/เทิร์น นาน 3 เทิร์น)' },
+  { key:'atk_shard', name:'ATK Shard', nameTh:'เศษพลังโจมตี', grade:'N', icon:'🗡', desc:'ATK +15% when equipped', descTh:'ATK +15% เมื่อสวมใส่' },
+  { key:'def_shard', name:'DEF Shard', nameTh:'เศษพลังป้องกัน', grade:'N', icon:'🛡', desc:'DEF +15% when equipped', descTh:'DEF +15% เมื่อสวมใส่' },
+  { key:'spd_shard', name:'SPD Shard', nameTh:'เศษความเร็ว', grade:'N', icon:'💨', desc:'SPD +15% when equipped', descTh:'SPD +15% เมื่อสวมใส่' },
+  { key:'hp_core', name:'HP Core', nameTh:'แก่น HP', grade:'N', icon:'❤️', desc:'Max HP +15% when equipped', descTh:'HP สูงสุด +15% เมื่อสวมใส่' },
+  // Rare
   { key:'death_mark', name:'Death Mark', nameTh:'ตราแห่งความตาย', grade:'R', icon:'💀', desc:'In battle: When HP drops below 30%, ATK increases by 75%', descTh:'ในการต่อสู้: เมื่อ HP ต่ำกว่า 30% ATK เพิ่ม 75%' },
-  { key:'precision_stone', name:'Precision Stone', nameTh:'หินแม่นยำ', grade:'R', icon:'🎯', desc:'In battle: attacks cannot miss and +15% crit rate', descTh:'ในการต่อสู้: โจมตีไม่พลาด +15% คริติคอลเรท' },
-  { key:'paralysis_fang', name:'Paralysis Fang', nameTh:'เขี้ยวอัมพาต', grade:'R', icon:'⚡', desc:'In battle: 20% chance to paralyze the enemy when attacking', descTh:'ในการต่อสู้: 20% โอกาสทำให้ศัตรูช็อตเมื่อโจมตี' },
-  { key:'berserker_claw', name:"Berserker Claw", nameTh:'เล็บเบอร์เซิร์ก', grade:'R', icon:'🐾', desc:'In battle: ATK+25%, Crit+20%, but take 10% more damage', descTh:'ในการต่อสู้: ATK+25% คริ+20% แต่รับดาเมจ +10%' },
-  { key:'victory_chain', name:'Victory Chain', nameTh:'โซ่แห่งชัย', grade:'R', icon:'⛓️', desc:'In battle: On WIN, damage +20% next round (stacks up to 3)', descTh:'ในการต่อสู้: เมื่อ WIN เทิร์นถัดไปดาเมจ +20% (สูงสุด 3)' },
-  { key:'reflect_coat', name:'Reflect Coat', nameTh:'เสื้อสะท้อน', grade:'R', icon:'🪞', desc:'In battle: reflect 30% of damage taken back to the attacker', descTh:'ในการต่อสู้: สะท้อน 30% ดาเมจกลับไปยังผู้โจมตี' },
-  { key:'wind_step', name:'Wind Step', nameTh:'ฝีเท้าสายลม', grade:'R', icon:'💨', desc:'In battle: 20% dodge chance', descTh:'ในการต่อสู้: 20% โอกาสหลบหลีก' },
-  { key:'rage_core', name:'Rage Core', nameTh:'แก่นพิโรธ', grade:'R', icon:'💢', desc:'In battle: On LOSE, next round damage +50%', descTh:'ในการต่อสู้: เมื่อ LOSE เทิร์นถัดไปดาเมจ +50%' },
-  { key:'drain_aura', name:'Drain Aura', nameTh:'ออร่าดูดพลัง', grade:'R', icon:'🌀', desc:'In battle: lifesteal +15%', descTh:'ในการต่อสู้: ดูดเลือด +15%' },
-  { key:'blood_pact', name:'Blood Pact', nameTh:'สัญญาเลือด', grade:'R', icon:'🩸', desc:'In battle: damage dealt +20%, but lose 5% Max HP per turn', descTh:'ในการต่อสู้: ดาเมจ +20% แต่เสีย 5% HP สูงสุดต่อเทิร์น' },
-  { key:'tide_breaker', name:'Tide Breaker', nameTh:'หักคลื่น', grade:'R', icon:'🌊', desc:'In battle: Every 3 rounds, attack hits twice', descTh:'ในการต่อสู้: ทุก 3 รอบ โจมตี 2 ครั้ง' },
-  { key:'all_stats_r', name:'All Stats (R)', nameTh:'ทุกสถิติ (R)', grade:'R', icon:'✨', desc:'ATK/DEF/SPD/HP +8%', descTh:'ATK/DEF/SPD/HP +8%' },
-  { key:'crit_core', name:'Crit Core', nameTh:'แก่นคริติคอล', grade:'R', icon:'💥', desc:'In battle: crit rate +25%', descTh:'ในการต่อสู้: คริติคอลเรท +25%' },
-  { key:'toxic_coat', name:'Toxic Coat', nameTh:'เสื้อพิษ', grade:'R', icon:'☠️', desc:'In battle: 20% chance to poison the attacker when hit', descTh:'ในการต่อสู้: 20% โอกาสวางยาพิษเมื่อโดนโจมตี' },
-  { key:'antidote_charm', name:'Antidote Charm', nameTh:'เครื่องรางกันพิษ', grade:'R', icon:'🍀', desc:'In battle: immune to poison', descTh:'ในการต่อสู้: ภูมิต้านทานพิษ' },
-  { key:'reflect_ward', name:'Reflect Ward', nameTh:'วอร์ดสะท้อน', grade:'R', icon:'🛡️', desc:'In battle: immune to reflect and counter damage', descTh:'ในการต่อสู้: ภูมิต้านทานดาเมจสะท้อน' },
-  { key:'cursed_shackle', name:'Cursed Shackle', nameTh:'โซ่ต้องสาป', grade:'R', icon:'⛓️', desc:'In battle: 20% chance to curse enemy on attack (ATK -25% 2 turns)', descTh:'ในการต่อสู้: 20% โอกาสสาปศัตรูเมื่อโจมตี (ATK -25% 2 เทิร์น)' },
-
-  { key:'sniper_eye', name:'Sniper Eye', nameTh:'ตานักแม่น', grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (x2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ x2.0)' },
-  { key:'soul_reaper', name:'Soul Reaper', nameTh:'เคียววิญญาณ', grade:'E', icon:'💀', desc:'In battle: attacks deal +40% damage and heal for 20% of damage dealt', descTh:'ในการต่อสู้: โจมตี +40% และฮีล 20% ของดาเมจ' },
-  { key:'iron_will', name:'Iron Will', nameTh:'เจตจำนงเหล็ก', grade:'E', icon:'💪', desc:'In battle: Survive fatal blow with 1 HP (once), next attack deals x4 damage', descTh:'ในการต่อสู้: รอดตายด้วย 1 HP (ครั้งเดียว) โจมตีครั้งถัดไป x4' },
-  { key:'true_sight', name:'True Sight', nameTh:'ตามองทะลุ', grade:'E', icon:'👁️', desc:'In battle: attacks never miss, pierces defense, +25% crit', descTh:'ในการต่อสู้: โจมตีไม่พลาด เจาะเกราะ คริ +25%' },
-  { key:'moon_veil', name:'Moon Veil', nameTh:'ม่านจันทรา', grade:'E', icon:'🌙', desc:'In battle: Heal 5% Max HP per turn, ATK/DEF/SPD +10%', descTh:'ในการต่อสู้: ฮีล 5% HP สูงสุดต่อเทิร์น ATK/DEF/SPD +10%' },
-  { key:'double_attack', name:'Double Attack', nameTh:'โจมตีคู่', grade:'E', icon:'⚔️', desc:'In battle: 25% chance to attack twice', descTh:'ในการต่อสู้: 25% โอกาสโจมตี 2 ครั้ง' },
-  { key:'wild_card', name:'Wild Card', nameTh:'การ์ดป่า', grade:'E', icon:'🃏', desc:'At battle start: random effect (ATK+50% / dodge+50% / DEF+50% / all)', descTh:'เริ่มต่อสู้: สุ่มเอฟเฟกต์ (ATK+50% / หลบ+50% / DEF+50% / ทั้งหมด)' },
-  { key:'execution', name:'Execution', nameTh:'ประหาร', grade:'E', icon:'🔪', desc:'In battle: +50% damage against enemies below 30% HP', descTh:'ในการต่อสู้: +50% ดาเมจใส่ศัตรู HP<30%' },
-  { key:'chain_strike', name:'Chain Strike', nameTh:'โจมตีต่อเนื่อง', grade:'E', icon:'⛓️', desc:'In battle: Landing 2 hits in a row triggers a 3rd hit at 150% damage', descTh:'ในการต่อสู้: โจมตี 2 ครั้งติดต่อกัน ครั้งที่ 3 เหนี่ยวดาเมจ 150%' },
-  { key:'all_stats_e', name:'All Stats (E)', nameTh:'ทุกสถิติ (E)', grade:'E', icon:'✨', desc:'ATK/DEF/SPD/HP +15%', descTh:'ATK/DEF/SPD/HP +15%' },
-  { key:'deathblow', name:'Deathblow', nameTh:'ตายแหลก', grade:'E', icon:'💥', desc:'In battle: crits deal x2.5 instead of x1.6', descTh:'ในการต่อสู้: คริติคอล x2.5 แทน x1.6' },
-  { key:'plague_scythe', name:'Plague Scythe', nameTh:'เคียวโรคระบาด', grade:'E', icon:'☠️', desc:'In battle: 30% chance to poison AND burn the enemy on attack', descTh:'ในการต่อสู้: 30% โอกาสวางยาพิษและเผาศัตรูเมื่อโจมตี' },
-  { key:'piercing_fang', name:'Piercing Fang', nameTh:'เขี้ยวทะลุ', grade:'E', icon:'🦷', desc:'In battle: attacks ignore 50% of enemy DEF', descTh:'ในการต่อสู้: โจมตีข้าม 50% DEF ศัตรู' },
-];
-
-// ITEMS
-const ITEMS = [
-  { key:'hp_potion', name:'HP Potion', nameTh:'ยา HP', icon:'🧪', desc:'Restores 25% Max HP instantly', descTh:'ฟื้นฟู HP 25% ของ HP สูงสุด ทันที' },
-  { key:'super_potion', name:'Super Potion', nameTh:'ยามหา', icon:'🧪', desc:'Restores 50% Max HP instantly', descTh:'ฟื้นฟู HP 50% ของ HP สูงสุด ทันที' },
-  { key:'max_potion', name:'Max Potion', nameTh:'ยาเต็ม', icon:'💊', desc:'Restores 100% Max HP instantly', descTh:'ฟื้นฟู HP 100% ของ HP สูงสุด ทันที' },
-  { key:'revive', name:'Revive Stone', nameTh:'หินฟื้นคืนชีพ', icon:'💎', desc:'Revives your beast with 50% HP when it falls in battle', descTh:'ฟื้นคืนชีพสัตว์ด้วย HP 50% เมื่อล้มในการต่อสู้' },
-  { key:'power_shard', name:'Power Shard', nameTh:'เศษพลัง', icon:'⚡', desc:'Permanently increases your beast ATK by 1', descTh:'เพิ่ม ATK 1 อย่างถาวร' },
-  { key:'speed_shard', name:'Speed Shard', nameTh:'เศษความเร็ว', icon:'💨', desc:'Permanently increases your beast SPD by 1', descTh:'เพิ่ม SPD 1 อย่างถาวร' },
-  { key:'guard_shard', name:'Guard Shard', nameTh:'เศษป้องกัน', icon:'🛡️', desc:'Permanently increases your beast DEF by 1', descTh:'เพิ่ม DEF 1 อย่างถาวร' },
-  { key:'perm_atk', name:'Power Essence', nameTh:'หัวใจพลัง', icon:'🔴', desc:'Permanently increases your beast ATK by 5', descTh:'เพิ่ม ATK 5 อย่างถาวร' },
-  { key:'perm_spd', name:'Speed Essence', nameTh:'หัวใจความเร็ว', icon:'🟢', desc:'Permanently increases your beast SPD by 5', descTh:'เพิ่ม SPD 5 อย่างถาวร' },
-  { key:'perm_def', name:'Def Essence', nameTh:'หัวใจป้องกัน', icon:'🔵', desc:'Permanently increases your beast DEF by 5', descTh:'เพิ่ม DEF 5 อย่างถาวร' },
-  { key:'perm_hp', name:'HP Essence', nameTh:'หัวใจชีวิต', icon:'💜', desc:'Permanently increases your beast HP by 10', descTh:'เพิ่ม HP 10 อย่างถาวร' },
-  { key:'essence', name:'Essence', nameTh:'เอสเซนส์', icon:'💎', desc:'Used for upgrading weapons and crafting', descTh:'ใช้ในการอัปเกรดอาวุธและคราฟต์' },
-  { key:'rebirth_stone', name:'Rebirth Stone', nameTh:'หินเกิดใหม่', icon:'🔮', desc:'Used to rebirth a monster (resets to base form)', descTh:'ใช้เกิดใหม่มอนสเตอร์ (รีเซ็ตเป็นร่างฐาน)' },
-  { key:'mystery_egg', name:'Mystery Egg', nameTh:'ไข่ลึกลับ', icon:'🥚', desc:'Hatches into a random Evolve II monster', descTh:'ฟักเป็นมอน Evolve II แบบสุ่ม' },
-  { key:'shiny_egg', name:'Shiny Egg', nameTh:'ไข่ Shiny', icon:'✨🥚', desc:'Guaranteed to hatch a Shiny Evolve II monster', descTh:'ฟักเป็น Shiny Evolve II แน่นอน' },
-  { key:'fusion_egg', name:'Fusion Egg', nameTh:'ไข่ฟิวชั่น', icon:'🥚', desc:'Hatches after fusion of 2 Evolve II monsters', descTh:'ฟักหลังรวมมอน Evolve II 2 ตัว' },
-  { key:'sym_F', name:'Symbol: FIST', nameTh:'สัญลักษณ์: กำปั้น', icon:'✊', desc:'Grants a FIST symbol to your beast for Evolve II', descTh:'มอบ Symbol กำปั้นให้สัตว์ของคุณ' },
-  { key:'sym_W', name:'Symbol: WING', nameTh:'สัญลักษณ์: ปีก', icon:'🪽', desc:'Grants a WING symbol to your beast for Evolve II', descTh:'มอบ Symbol ปีกให้สัตว์ของคุณ' },
-  { key:'sym_S', name:'Symbol: SHIELD', nameTh:'สัญลักษณ์: โล่', icon:'🛡️', desc:'Grants a SHIELD symbol to your beast for Evolve II', descTh:'มอบ Symbol โล่ให้สัตว์ของคุณ' },
-  { key:'map_scroll', name:'Map Scroll', nameTh:'ม้วนแผนที่', icon:'📜', desc:'Used to progress in Scout mode', descTh:'ใช้ในการเดินหน้า Scout mode' },
-  { key:'energy_drink', name:'Energy Drink', nameTh:'เครื่องดื่มชูกำลัง', icon:'🥤', desc:'Restores 10 Stamina', descTh:'ฟื้นฟู Stamina 10 หน่วย' },
-  { key:'artifact_box', name:'Artifact Box', nameTh:'กล่องอาติแฟค', icon:'📦', desc:'Opens to reveal a random Artifact (N 60% / R 35% / E 5%)', descTh:'เปิดสุ่ม Artifact (N 60% / R 35% / E 5%)' },
-  { key:'weapon_box_n', name:'Weapon Box (N)', nameTh:'กล่องอาวุธ (N)', icon:'📦', desc:'Contains a random Normal-grade weapon', descTh:'สุ่มอาวุธเกรด Normal' },
+  { key:'precision_stone', name:'Precision Stone', nameTh:'หินแม่นยำ', grade:'R', icon:'🔮', desc:'In battle: Every 3 rounds, deal 1.5x damage', descTh:'ในการต่อสู้: ทุก 3 รอบ โจมตีด้วยดาเมจ 1.5 เท่า' },
+  { key:'paralysis_fang', name:'Paralysis Fang', nameTh:'เขี้ยวอัมพาต', grade:'R', icon:'🦷', desc:'In battle: 15% chance to stun the enemy; if stunned, ATK +30% next round', descTh:'ในการต่อสู้: 15% โอกาส Stun ศัตรู หาก Stun ATK +30% รอบถัดไป' },
+  { key:'berserker_claw', name:'Berserker Claw', nameTh:'กรงเล็บคลั่ง', grade:'R', icon:'🐾', desc:'In battle: ATK +25%, Crit chance +20%, but you take 10% more damage', descTh:'ในการต่อสู้: ATK +25%, โอกาสคริติคอล +20% แต่รับดาเมจเพิ่ม 10%' },
+  { key:'victory_chain', name:'Victory Chain', nameTh:'โซ่แห่งชัยชนะ', grade:'R', icon:'⛓', desc:'In battle: Each WIN increases ATK by 20%, stacking up to 3 times', descTh:'ในการต่อสู้: ทุกครั้งที่ชนะ ATK +20% สะสมสูงสุด 3 ครั้ง' },
+  { key:'reflect_coat', name:'Reflect Coat', nameTh:'เสื้อสะท้อน', grade:'R', icon:'🪞', desc:'In battle: Reflects 15% of damage received back to the enemy', descTh:'ในการต่อสู้: สะท้อนดาเมจที่รับ 15% กลับไปยังศัตรู' },
+  { key:'wind_step', name:'Wind Step', nameTh:'ก้าวลม', grade:'R', icon:'🌀', desc:'In battle: 15% chance to dodge attacks', descTh:'ในการต่อสู้: 15% โอกาสหลบการโจมตี' },
+  { key:'rage_core', name:'Rage Core', nameTh:'แก่นแห่งความโกรธ', grade:'R', icon:'🔥', desc:'In battle: Each hit received increases ATK by 15%, up to 3 stacks', descTh:'ในการต่อสู้: ทุกครั้งที่โดนตี ATK +15% สะสมสูงสุด 3 ครั้ง' },
+  { key:'drain_aura', name:'Drain Aura', nameTh:'ออร่าดูดพลัง', grade:'R', icon:'🌑', desc:'In battle: Each LOSE reduces enemy ATK by 15%, up to 2 stacks', descTh:'ในการต่อสู้: ทุกครั้งที่แพ้ ATK ศัตรู -15% สะสมสูงสุด 2 ครั้ง' },
+  { key:'blood_pact', name:'Blood Pact', nameTh:'สัญญาเลือด', grade:'R', icon:'🔴', desc:'In battle: Drains 15% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 15% จากดาเมจที่โจมตีทุกรอบ' },
+  { key:'tide_breaker', name:'Tide Breaker', nameTh:'ทลายกระแส', grade:'R', icon:'🌊', desc:'In battle: If you lost last round, ATK +75% this round', descTh:'ในการต่อสู้: ถ้าแพ้รอบที่แล้ว ATK +75% รอบนี้' },
+  { key:'all_stats_r', name:'Power Crest', nameTh:'ตราพลัง', grade:'R', icon:'💠', desc:'All stats (ATK/DEF/SPD/HP) +15% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +15% เมื่อสวมใส่' },
+  { key:'crit_core', name:'Crit Core', nameTh:'แก่นคริ', grade:'R', icon:'💫', desc:'In battle: Crit chance +20%; on crit, heal 5% max HP', descTh:'ในการต่อสู้: โอกาสคริ +20%; เมื่อคริ ฟื้น HP 5% ของ HP สูงสุด' },
+  { key:'toxic_coat', name:'Toxic Coat', nameTh:'เสื้อพิษ', grade:'R', icon:'🧪', desc:'In battle: When hit, 25% chance to poison the attacker', descTh:'ในการต่อสู้: เมื่อโดนโจมตี 25% โอกาสวางพิษใส่ผู้โจมตี' },
+  { key:'antidote_charm', name:'Antidote Charm', nameTh:'เครื่องรางแก้พิษ', grade:'R', icon:'💊', desc:'In battle: Complete immunity to poison', descTh:'ในการต่อสู้: ป้องกันพิษได้สมบูรณ์' },
+  { key:'reflect_ward', name:'Reflect Ward', nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🛑', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
+  { key:'cursed_shackle', name:'Cursed Shackle', nameTh:'ตรวนต้องสาป', grade:'R', icon:'🕸️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
+  // Epic
+  { key:'sniper_eye', name:'Sniper Eye', nameTh:'ตานักแม่น', grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (×2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ ×2.0)' },
+  { key:'soul_reaper', name:'Soul Reaper', nameTh:'เกี่ยวเกลียวจิตวิญญาณ', grade:'E', icon:'🪦', desc:'In battle: Drains 25% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 25% จากดาเมจที่โจมตีทุกรอบ' },
+  { key:'iron_will', name:'Iron Will', nameTh:'ใจเหล็ก', grade:'E', icon:'💎', desc:'In battle: Survive one fatal blow (once per battle). The next attack deals ATK +300%', descTh:'ในการต่อสู้: รอดจากการโจมตีที่จะทำให้ตาย 1 ครั้ง/การต่อสู้ การโจมตีครั้งถัดไป ATK +300%' },
+  { key:'true_sight', name:'True Sight', nameTh:'สายตาแท้', grade:'E', icon:'🔭', desc:'In battle: The enemy cannot dodge your attacks. ATK +50%', descTh:'ในการต่อสู้: ศัตรูไม่สามารถหลบการโจมตีของคุณได้ และ ATK +50%' },
+  { key:'moon_veil', name:'Moon Veil', nameTh:'ม่านจันทร์', grade:'E', icon:'🌙', desc:'In battle: Regenerates 5% Max HP each round. ATK/DEF/SPD +10%', descTh:'ในการต่อสู้: ฟื้นฟู HP สูงสุด 5% ทุกรอบ และ ATK/DEF/SPD +10%' },
+  { key:'double_attack', name:'Double Attack', nameTh:'โจมตีสองครั้ง', grade:'E', icon:'⚔', desc:'In battle: 20% chance to attack twice in one round', descTh:'ในการต่อสู้: 20% โอกาสโจมตีสองครั้งในรอบเดียว' },
+  { key:'wild_card', name:'Wild Card', nameTh:'ไพ่มหัศจรรย์', grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly Heal/ATK×1.5/Reflect(30% each) or Bad Luck +50% dmg taken (10%)', descTh:'ในการต่อสู้: 25% โอกาสสุ่ม Heal/ATK×1.5/Reflect (30% ต่ออัน) หรือ Bad Luck โดนดาเมจ+50% (10%)' },
+  { key:'execution', name:'Execution', nameTh:'ประหาร', grade:'E', icon:'☠', desc:'In battle: When your HP drops below 20%, deal 200% more damage', descTh:'ในการต่อสู้: เมื่อ HP ของคุณต่ำกว่า 20% โจมตีเพิ่ม 200%' },
+  { key:'chain_strike', name:'Chain Strike', nameTh:'โจมตีลูกโซ่', grade:'E', icon:'💥', desc:'In battle: WIN streak bonus — ×1: 50% ATK / ×2: 100% ATK / ×3: 200% ATK. Breaks on non-WIN.', descTh:'ในการต่อสู้: ชนะต่อเนื่อง — ×1: 50% ATK / ×2: 100% ATK / ×3: 200% ATK | ไม่ชนะ = รีเซ็ต' },
+  { key:'all_stats_e', name:'Omega Crest', nameTh:'ตราโอเมก้า', grade:'E', icon:'🔷', desc:'All stats (ATK/DEF/SPD/HP) +25% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +25% เมื่อสวมใส่' },
+  { key:'deathblow', name:'Deathblow', nameTh:'ฆ่าตัดตอน', grade:'E', icon:'⚰️', desc:'In battle: Crit chance +15% and crit deals ×2.0 damage', descTh:'ในการต่อสู้: โอกาสคริ +15% และคริดาเมจ ×2.0' },
+  { key:'plague_scythe', name:'Plague Scythe', nameTh:'เคียวกาฬโรค', grade:'E', icon:'☣️', desc:'In battle: On attack, 30% chance to poison; deals +50% damage to an already-poisoned opponent', descTh:'ในการต่อสู้: เมื่อโจมตี 30% โอกาสวางพิษ และดาเมจ +50% ถ้าคู่ต่อสู้ติดพิษอยู่แล้ว' },
+  { key:'piercing_fang', name:'Piercing Fang', nameTh:'เขี้ยวทะลุทะลวง', grade:'E', icon:'🔪', desc:'In battle: ATK +25% and attacks pierce 50% of enemy DEF and damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ DEF และเอฟเฟกต์ลดดาเมจของศัตรู 50%' },
 ];
 
 // ===================== OVERDRIVE INFO =====================
@@ -641,10 +615,6 @@ function getAllArtifacts() {
   return ARTIFACTS.map(a => ({ ...a }));
 }
 
-function getAllItems() {
-  return ITEMS.map(i => ({ ...i }));
-}
-
 function renderStatBar(label, value, cls, maxVal) {
   const pct = Math.min(100, (value / maxVal) * 100);
   return `<div class="stat-row">
@@ -708,15 +678,6 @@ function renderArtifactCard(a) {
   </div>`;
 }
 
-function renderItemCard(item) {
-  return `<div class="card" onclick="showItemModal('${item.key}')">
-    <div class="card-icon"><span style="font-size:28px">${item.icon}</span></div>
-    <div class="card-name">${item.name}</div>
-    <div class="card-sub">${item.nameTh}</div>
-    <div class="card-desc">${item.desc}</div>
-  </div>`;
-}
-
 // ===================== TAB & FILTER =====================
 
 function switchTab(tab, el) {
@@ -769,9 +730,7 @@ function renderActiveTab() {
     renderWeapons(container, term, filter);
   } else if (currentTab === 'artifact') {
     renderArtifacts(container, term, filter);
-  } else if (currentTab === 'item') {
-    renderItems(container, term);
-  }
+
 }
 
 function renderPets(container, term, filter) {
@@ -823,22 +782,6 @@ function renderArtifacts(container, term, filter) {
   for (const a of arts) html += renderArtifactCard(a);
   html += `</div>`;
   html += `<div style="text-align:center;padding:12px;color:#5a4a7a;font-size:12px">พบ ${arts.length} ชิ้น</div>`;
-  container.innerHTML = html;
-}
-
-function renderItems(container, term) {
-  let items = getAllItems();
-  if (term) items = items.filter(i => i.name.toLowerCase().includes(term) || i.nameTh.includes(term) || i.desc.toLowerCase().includes(term));
-
-  if (!items.length) {
-    container.innerHTML = `<div class="empty-state"><div class="big-icon">🔍</div>ไม่พบไอเทมที่ค้นหา</div>`;
-    return;
-  }
-
-  let html = `<div class="card-grid">`;
-  for (const i of items) html += renderItemCard(i);
-  html += `</div>`;
-  html += `<div style="text-align:center;padding:12px;color:#5a4a7a;font-size:12px">พบ ${items.length} ชิ้น</div>`;
   container.innerHTML = html;
 }
 
@@ -979,29 +922,6 @@ function showArtifactModal(key) {
   openModal();
 }
 
-function showItemModal(key) {
-  const item = ITEMS.find(x => x.key === key);
-  if (!item) return;
-  const iName = dexLang==='th' ? item.nameTh : item.name;
-
-  const inner = `
-    <div class="modal-header">
-      <span class="modal-icon">${item.icon}</span>
-      <div>
-        <div class="modal-title">${iName}</div>
-        <div class="modal-sub"><span style="color:#8877aa">${dexLang==='th' ? item.name : item.nameTh}</span></div>
-      </div>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section-title">📜 ${t('รายละเอียด','Details')}</div>
-      <div class="modal-passive">
-        <div style="font-size:13px;color:#ccb">${dexLang==='th' ? item.descTh : item.desc}</div>
-      </div>
-    </div>
-  `;
-  document.getElementById('modal-inner').innerHTML = inner;
-  openModal();
-}
 
 // ===================== INIT =====================
 updateFilterChips();

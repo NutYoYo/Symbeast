@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4137,6 +4137,7 @@ function spinSlotMachine() {
       minigameResult = pool[targetIdx].fn();
       SFX.mgSlotStop();
       SFX.itemGet();
+      showToast(`${T('🎰 ได้รับ:','🎰 Earned:')} ${minigameResult.icon} ${minigameResult.text}`);
       saveGame(); render();
     }
   }
@@ -4162,8 +4163,15 @@ function rpsPickMove(idx) {
   }
   rpsResult = {playerMove, guardMove, won, reward};
   SFX.mgRpsClash();
-  if(won) { setTimeout(()=>SFX.mgWin(), 200); }
-  else { setTimeout(()=>SFX.mgLose(), 200); }
+  if(won) {
+    setTimeout(()=>SFX.mgWin(), 200);
+    showToast(`${T('⚔️ ชนะ! ได้รับ:','⚔️ Win! Earned:')} 💰 +${reward.gold}G + ${ITEMS[reward.item].icon} ${ITEMS[reward.item].name}`);
+  } else if(reward) {
+    setTimeout(()=>SFX.mgLose(), 200);
+    showToast(`${T('⚔️ แพ้ ปลอบใจ:','⚔️ Lost! Consolation:')} ${ITEMS[reward.item].icon} ${ITEMS[reward.item].name} ×1`);
+  } else {
+    setTimeout(()=>SFX.mgLose(), 200);
+  }
   saveGame(); render();
 }
 
@@ -4190,6 +4198,7 @@ function hiloGuess(direction) {
     hiloOutcome = 'lost';
     addItemToInventory('hp_potion');
     SFX.mgLose();
+    showToast(`${T('🎲 เสียรางวัลสะสม ปลอบใจ:','🎲 Lost all! Consolation:')} ${ITEMS.hp_potion.icon} ${ITEMS.hp_potion.name} ×1`);
     saveGame(); render();
     return;
   }
@@ -4212,6 +4221,8 @@ function hiloGuess(direction) {
     hiloGameOver = true;
     hiloOutcome = 'won';
     SFX.mgWin();
+    const allRewards = hiloAccumulated.map(r=>`${r.icon} ${r.text}`).join(', ');
+    showToast(`${T('🎲 เคลียร์ 5 รอบ! ได้รับ:','🎲 5 Rounds Cleared! Earned:')} ${allRewards}`);
   }
   saveGame(); render();
 }
@@ -4222,6 +4233,8 @@ function hiloCashOut() {
   hiloGameOver = true;
   hiloOutcome = 'cashed';
   SFX.itemGet();
+  const cashRewards = hiloAccumulated.map(r=>`${r.icon} ${r.text}`).join(', ');
+  showToast(`${T('🎲 เก็บรางวัล! ได้รับ:','🎲 Cashed Out! Earned:')} ${cashRewards}`);
   saveGame(); render();
 }
 

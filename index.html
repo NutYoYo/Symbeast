@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -554,6 +554,12 @@ body::after {
 .anim-bob { animation:bob 2s ease-in-out infinite; }
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
+
+@keyframes rpsPickPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+@keyframes rpsClashBurst { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.2) rotate(0deg)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(20deg)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(-10deg)} }
+@keyframes rpsWinGlow { 0%,100%{box-shadow:0 0 8px #4ecdc4} 50%{box-shadow:0 0 20px #4ecdc4} }
+@keyframes rpsLoseShake { 0%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} 100%{transform:translateX(0)} }
+@keyframes diceTumble { 0%{transform:rotate(0deg) scale(1)} 30%{transform:rotate(220deg) scale(1.15)} 60%{transform:rotate(480deg) scale(0.95)} 100%{transform:rotate(720deg) scale(1)} }
 </style>
 </head>
 <body>
@@ -2095,6 +2101,18 @@ const PATCH_NOTES = [
       '   • PHOENIX-GHOST — revive now restores full 100% HP (up from 50%); Echo revives to 50% HP (up from 25%)',
     ]
   },
+  { ver:'v0.2.3', date:'2026-07-29', th:[
+      '👑 เพิ่ม Elite Monster ใน Scout — 5% โอกาสเจอศัตรูร่างพิเศษ (มอนสเตอร์/มิมิค/มินิบอส/บอส) ค่าพลัง HP x2.0, ATK/DEF/SPD x1.5, รางวัล Gold x4 และไอเทมดรอป x2',
+      '🕹️ เพิ่ม Minigame Spot ใน Scout — 20% โอกาสเจอตู้เกมสุ่ม 1 ใน 3 แบบ (สุ่มรางวัล/ไฮโลทอยลูกเต๋า/ปะทะการ์เดี้ยน RPS) เข้าไปเล่นแล้วหายไปเหมือนกล่องมิมิค',
+      '🐛 แก้บั๊ก ATK/DEF/SPD/HP ผิดเพี้ยนหลัง Rebirth ถ้าถอด/เปลี่ยน Weapon ทีหลัง (โบนัสอาวุธถูกหักซ้ำจนค่าพลังตกฮวบ) — ตอนนี้ Rebirth จะถอด-คำนวณ-ใส่กลับให้อัตโนมัติ',
+      '🔒 Evolve II ต้องถอด Weapon และ Artifact ก่อนทำ (ป้องกันบั๊กค่าพลังผิดเพี้ยนแบบเดียวกับ Rebirth เหมือนที่ Fusion บังคับอยู่แล้ว)',
+    ], en:[
+      '👑 Added Elite Monster to Scout mode — 5% chance for any enemy (monster/mimic/mini-boss/boss) to spawn as a tougher variant: HP x2.0, ATK/DEF/SPD x1.5, rewards Gold x4 and item drops x2',
+      '🕹️ Added Minigame Spot to Scout mode — 20% chance to find an arcade cabinet with one of 3 random games (prize picker / dice Hi-Lo / RPS vs Guardian), one-shot like a Mimic',
+      '🐛 Fixed a bug where ATK/DEF/SPD/HP could crash to near-zero after Rebirth if you later unequipped/swapped a Weapon (the weapon bonus was being subtracted twice) — Rebirth now unequips, recalculates, and re-equips automatically',
+      '🔒 Evolve II now requires unequipping Weapon and Artifact first (prevents the same stat-corruption bug as Rebirth, matching the restriction Fusion already had)',
+    ]
+  },
 ];
 let pets = [];          // max 4 pet objects
 let storage = [];       // max 10 pet objects (storage box)
@@ -2727,6 +2745,7 @@ function doEvolve2(petIdx, fromList, symbol) {
   const pet = list[petIdx];
   if(!pet) return;
   if(pet.phase !== 'evolved') return;
+  if(pet.weapon || pet.artifact || pet.artifact2) { scoutToast=T('⚠ ถอด Weapon/Artifact ก่อน Evolve II!','⚠ Unequip Weapon/Artifact before Evolve II!'); render(); return; }
   // GHOST Evolve II: randomly pick from pool instead of deterministic branch
   const isGhost = pet.formKey === 'GHOST';
   let branchKey;
@@ -3827,8 +3846,13 @@ function genScoutGrid() {
   place('boss', 1);
   if(Math.random() < 0.25) place('mini_boss', 1);
   if(Math.random() < 0.12) place('secret_shop', 1);
+  if(Math.random() < 0.20) place('minigame', 1);
   // Assign enemy type by biome
   scoutGrid.forEach(c => { if(c.type==='monster'||c.type==='boss'||c.type==='mini_boss') c.enemyType=pickBiomeEnemyType(c.type==='boss'); });
+  // Which of the 3 minigames this spot is — fixed at grid-gen time, same convention as
+  // sprite/hard-form/elite rolls, so revisiting (impossible here since it's consumed on first
+  // step, but kept consistent) never changes the result.
+  scoutGrid.forEach(c => { if(c.type==='minigame') c.minigameType = ['slot','hilo','rps'][Math.floor(Math.random()*3)]; });
   place('heal', 1);
   place('treasure', 3);
   place('gold_chest', 2);
@@ -3866,21 +3890,14 @@ function moveScout(dx,dy) {
       startBattle('mimic');
       return;
     }
-    const pool = hellMode
-      ? [{t:'super_potion',w:15},{t:'max_potion',w:15},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:4},{t:'energy_drink',w:6},{t:'essence',w:8},{t:'box_R',w:2}]
-      : hardMode
-      ? [{t:'super_potion',w:22},{t:'max_potion',w:15},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:4},{t:'energy_drink',w:6},{t:'essence',w:5}]
-      : [{t:'hp_potion',w:25},{t:'super_potion',w:10},{t:'max_potion',w:10},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:5},{t:'energy_drink',w:5}];
-    let r=Math.random()*100, cum=0, item=pool[0].t;
-    for(const p of pool){cum+=p.w;if(r<cum){item=p.t;break;}}
+    const item = rollTreasureItem();
     addItemToInventory(item);
     cell.type='empty'; scoutToast=T(`🎁 ได้ ${ITEMS[item].icon} ${ITEMS[item].name}!`,`🎁 Found ${ITEMS[item].icon} ${ITEMS[item].name}!`); saveGame(); render(); return;
   }
   if(t==='gold_chest') {
     // Mirror the monster-kill gold scaling (endBattle) — this previously used raw `stage`
     // only, which freezes at 20 once Hard unlocks, so chests never scaled up in Hard/Hell.
-    const gcMult = hellMode ? 3 : hardMode ? 2 : 1;
-    const gcs = hellMode ? 40+hellStage : hardMode ? 20+hardStage : stage;
+    const {gs: gcs, mult: gcMult} = scoutGoldScale();
     const g = (15 + gcs*8 + Math.floor(Math.random()*gcs*5)) * gcMult;
     gold += g;
     cell.type='empty'; scoutToast=T(`💰 ได้ ${g}G!`,`💰 Found ${g}G!`); saveGame(); render(); return;
@@ -3897,6 +3914,9 @@ function moveScout(dx,dy) {
   if(t==='secret_shop') {
     cell.type='empty'; secretShopOpen=true; secretShopSymbol='sym_'+['F','W','S'][Math.floor(Math.random()*3)]; secretShopBought={}; saveGame(); render(); return;
   }
+  if(t==='minigame') {
+    cell.type='empty'; openMinigame(cell.minigameType); return;
+  }
   saveGame(); render();
 }
 
@@ -3906,6 +3926,193 @@ function collectSymbol(sym) {
   scoutToast = `${SYMS[sym].icon} ${SYMS[sym].name} COLLECTED!`;
   if(creature.symbols.length===3) scoutToast += T(' — EVOLVE READY!',' — EVOLVE READY!');
   saveGame();
+}
+
+function scoutGoldScale() {
+  const mult = hellMode ? 3 : hardMode ? 2 : 1;
+  const gs = hellMode ? 40+hellStage : hardMode ? 20+hardStage : stage;
+  return { gs, mult };
+}
+
+function rollTreasureItem() {
+  const pool = hellMode
+    ? [{t:'super_potion',w:15},{t:'max_potion',w:15},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:4},{t:'energy_drink',w:6},{t:'essence',w:8},{t:'box_R',w:2}]
+    : hardMode
+    ? [{t:'super_potion',w:22},{t:'max_potion',w:15},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:4},{t:'energy_drink',w:6},{t:'essence',w:5}]
+    : [{t:'hp_potion',w:25},{t:'super_potion',w:10},{t:'max_potion',w:10},{t:'power_shard',w:10},{t:'speed_shard',w:10},{t:'guard_shard',w:10},{t:'sym_F',w:5},{t:'sym_W',w:5},{t:'sym_S',w:5},{t:'map_scroll',w:5},{t:'energy_drink',w:5}];
+  let r=Math.random()*100, cum=0, item=pool[0].t;
+  for(const p of pool){cum+=p.w;if(r<cum){item=p.t;break;}}
+  return item;
+}
+
+function grantMysteryEgg() {
+  if(pets.length < MAX_PETS) {
+    const bp = newPet();
+    if(Math.random()<0.03) { bp.shiny=true; applyShinyStats(bp); }
+    pets.push(bp); syncCreature();
+    return bp.shiny ? T('✨ Shiny Mystery Egg — สัตว์เลี้ยงหายากเข้าปาร์ตี้!','✨ Shiny Mystery Egg — Rare beast joined party!') : T('🥚 ได้สัตว์เลี้ยงใหม่เข้าปาร์ตี้!','🥚 New beast joined the party!');
+  }
+  addItemToInventory('mystery_egg');
+  return T(`${ITEMS.mystery_egg.icon} Mystery Egg (เก็บใน Inventory)`,`${ITEMS.mystery_egg.icon} Mystery Egg (stored in Inventory)`);
+}
+
+// ── SCOUT MINIGAME SPOT ──
+const GUARDIAN_EMOJIS = ['🗿','🐉','👹','🧙','🦂','🐺','👻','🤖'];
+
+function openMinigame(type) {
+  minigameOpen = type;
+  minigameResult = null;
+  slotSpinning = false;
+  slotHighlightIdx = -1;
+  rpsResult = null;
+  rpsGuardianEmoji = GUARDIAN_EMOJIS[Math.floor(Math.random()*GUARDIAN_EMOJIS.length)];
+  hiloRound = 0;
+  { const d1=Math.floor(Math.random()*6)+1, d2=Math.floor(Math.random()*6)+1; hiloDice=[d1,d2]; hiloCurrentNum=d1+d2; }
+  hiloAccumulated = [];
+  hiloGameOver = false;
+  hiloOutcome = null;
+  saveGame(); render();
+}
+
+function closeMinigame() {
+  if(slotSpinning) return;
+  minigameOpen = null;
+  minigameResult = null;
+  rpsResult = null;
+  hiloRound = 0;
+  hiloAccumulated = [];
+  hiloGameOver = false;
+  hiloOutcome = null;
+  saveGame(); render();
+}
+
+// Reward pool for the roulette wheel — same weights/rewards as before, now tagged with
+// icon+color so the wheel segments and the reward outcome are drawn from one source of truth.
+function getSlotPool() {
+  const {gs, mult} = scoutGoldScale();
+  return [
+    {w:34, icon:'💰', color:'#1f7a4a', fn:() => { const g=Math.round((5+gs*3)*mult); gold+=g; return {icon:'💰', text:`+${g}G`}; }},
+    {w:18, icon:'💰', color:'#1f8a6a', fn:() => { const g=Math.round((15+gs*6)*mult); gold+=g; return {icon:'💰', text:`+${g}G`}; }},
+    {w:5,  icon:'💰', color:'#b8860b', fn:() => { const g=Math.round((40+gs*15)*mult); gold+=g; return {icon:'💰', text:`+${g}G`}; }},
+    {w:11, icon:'🧬', color:'#0d6e88', fn:() => { addItemToInventory('super_potion'); return {icon:ITEMS.super_potion.icon, text:T(`${ITEMS.super_potion.name} ×1`,`${ITEMS.super_potion.name} ×1`)}; }},
+    {w:9,  icon:'⚡', color:'#4a3f8f', fn:() => { const k=['power_shard','speed_shard','guard_shard'][Math.floor(Math.random()*3)]; addItemToInventory(k); return {icon:ITEMS[k].icon, text:T(`${ITEMS[k].name} ×1`,`${ITEMS[k].name} ×1`)}; }},
+    {w:7,  icon:'✊', color:'#7a3f2f', fn:() => { const k=['sym_F','sym_W','sym_S'][Math.floor(Math.random()*3)]; addItemToInventory(k); return {icon:ITEMS[k].icon, text:T(`${ITEMS[k].name} ×1`,`${ITEMS[k].name} ×1`)}; }},
+    {w:4,  icon:'✨', color:'#8a7a1f', fn:() => { addItemToInventory('essence'); return {icon:ITEMS.essence.icon, text:T('Essence ×1','Essence ×1')}; }},
+    {w:3,  icon:'🔮', color:'#5a2f8a', fn:() => { addItemToInventory('rebirth_stone'); return {icon:ITEMS.rebirth_stone.icon, text:T('Rebirth Stone ×1','Rebirth Stone ×1')}; }},
+    {w:2,  icon:'📦', color:'#4a2f8a', fn:() => { addItemToInventory('artifact_box'); return {icon:ITEMS.artifact_box.icon, text:T('Artifact Box ×1','Artifact Box ×1')}; }},
+    {w:2,  icon:'🗡️', color:'#8a4a1f', fn:() => { addItemToInventory('weapon_box'); return {icon:ITEMS.weapon_box.icon, text:T('Weapon Box ×1','Weapon Box ×1')}; }},
+    {w:5,  icon:'🥚', color:'#2f5a8a', fn:() => { const txt=grantMysteryEgg(); return {icon:ITEMS.mystery_egg.icon, text:txt}; }},
+  ];
+}
+
+// Running-light prize picker: the pool order IS the grid order, so the light just walks
+// the array index in sequence — no angle math needed like the old wheel.
+function spinSlotMachine() {
+  if(slotSpinning || minigameResult) return;
+  const pool = getSlotPool();
+  const n = pool.length;
+  const total = pool.reduce((s,p)=>s+p.w,0);
+  let r = Math.random()*total, cum = 0, targetIdx = 0;
+  for(let i=0;i<n;i++) { cum += pool[i].w; if(r < cum) { targetIdx = i; break; } }
+
+  const startIdx = slotHighlightIdx >= 0 ? slotHighlightIdx : 0;
+  const loops = 3;
+  const stepsToTarget = (targetIdx - startIdx + n) % n;
+  const totalSteps = loops*n + stepsToTarget;
+
+  slotSpinning = true;
+  let idx = startIdx, step = 0;
+  function tick() {
+    idx = (idx+1) % n;
+    slotHighlightIdx = idx;
+    step++;
+    render();
+    if(step < totalSteps) {
+      const progress = step/totalSteps;
+      const delay = 60 + Math.pow(progress, 3)*260; // accelerate-in, ease out to a crawl near the end
+      setTimeout(tick, delay);
+    } else {
+      slotSpinning = false;
+      minigameResult = pool[targetIdx].fn();
+      saveGame(); render();
+    }
+  }
+  setTimeout(tick, 60);
+}
+
+function rpsPickMove(idx) {
+  if(rpsResult) return;
+  const playerMove = MOVES[idx].name;
+  const guardMove = MOVES[Math.floor(Math.random()*3)].name;
+  const won = compareMoves(playerMove, guardMove) === 'win';
+  let reward = null;
+  if(won) {
+    const {gs, mult} = scoutGoldScale();
+    const g = Math.round((8+gs*4)*mult);
+    gold += g;
+    const item = rollTreasureItem();
+    addItemToInventory(item);
+    reward = {gold:g, item};
+  } else if(Math.random() < 0.30) {
+    addItemToInventory('hp_potion');
+    reward = {item:'hp_potion'};
+  }
+  rpsResult = {playerMove, guardMove, won, reward};
+  saveGame(); render();
+}
+
+function applyHiloRewards() {
+  hiloAccumulated.forEach(r => {
+    if(r.type==='gold') gold += r.amount;
+    else if(r.type==='multi_essence') { for(let i=0;i<3;i++) addItemToInventory(dropEssence()); }
+    else if(r.type==='mystery_egg') grantMysteryEgg();
+    else if(r.type==='item') addItemToInventory(r.key);
+  });
+}
+
+function hiloGuess(direction) {
+  if(hiloGameOver) return;
+  const d1 = Math.floor(Math.random()*6)+1, d2 = Math.floor(Math.random()*6)+1;
+  const newSum = d1+d2;
+  const correct = direction==='higher' ? newSum >= hiloCurrentNum : newSum <= hiloCurrentNum;
+  hiloCurrentNum = newSum;
+  hiloDice = [d1,d2];
+  if(!correct) {
+    hiloAccumulated = [];
+    hiloGameOver = true;
+    hiloOutcome = 'lost';
+    addItemToInventory('hp_potion');
+    saveGame(); render();
+    return;
+  }
+  hiloRound++;
+  const {gs, mult} = scoutGoldScale();
+  if(hiloRound===1) {
+    const g = Math.round((5+gs*3)*mult);
+    hiloAccumulated.push({type:'gold', amount:g, icon:'💰', text:`+${g}G`});
+  } else if(hiloRound===2) {
+    hiloAccumulated.push({type:'multi_essence', icon:'✨', text:T('Essence ×3','Essence ×3')});
+  } else if(hiloRound===3) {
+    hiloAccumulated.push({type:'mystery_egg', icon:ITEMS.mystery_egg.icon, text:T('Mystery Egg ×1','Mystery Egg ×1')});
+  } else if(hiloRound===4) {
+    hiloAccumulated.push({type:'item', key:'rebirth_stone', icon:ITEMS.rebirth_stone.icon, text:T('Rebirth Stone ×1','Rebirth Stone ×1')});
+  } else if(hiloRound===5) {
+    hiloAccumulated.push({type:'item', key:'weapon_box', icon:ITEMS.weapon_box.icon, text:T('Weapon Box ×1','Weapon Box ×1')});
+  }
+  if(hiloRound >= 5) {
+    applyHiloRewards();
+    hiloGameOver = true;
+    hiloOutcome = 'won';
+  }
+  saveGame(); render();
+}
+
+function hiloCashOut() {
+  if(hiloGameOver || hiloRound===0) return;
+  applyHiloRewards();
+  hiloGameOver = true;
+  hiloOutcome = 'cashed';
+  saveGame(); render();
 }
 
 // ============================================================
@@ -3929,10 +4136,16 @@ function startBattle(battleType) {
   const tierStage = replayStage>0 ? (replayHard||replayHell?20:replayStage) : stage;
   const tier = Math.min(2, Math.floor((tierStage-1)/3));
 
-  const baseHp  = isBoss ? Math.round(80+lv*18+lv*lv*0.8) : isMini ? Math.round(60+lv*13+lv*lv*0.6) : Math.round(40+lv*9+lv*lv*0.4);
-  const baseAtk = Math.round((isMini?1.4:isMimic?1.2:1)*(8+lv*3+lv*lv*0.15));
-  const baseDef = Math.round(3+lv*2+lv*lv*0.1);
-  const baseSpd = Math.round((isMimic?1.3:1)*(7+lv*1.2+0.02*lv*lv));
+  // Elite Scout enemy: 5% chance on any enemy type (monster/mimic/mini-boss/boss), cached on the
+  // cell like the sprite/hard-form rolls so retries don't reroll it. Tougher stats + better rewards.
+  if(cell && cell.eliteSeed === undefined) cell.eliteSeed = Math.random();
+  const isElite = (cell?.eliteSeed ?? Math.random()) < 0.05;
+  const ELITE_STAT_MULT = { hp:2.0, atk:1.5, def:1.5, spd:1.5 };
+
+  const baseHp  = Math.round((isBoss ? Math.round(80+lv*18+lv*lv*0.8) : isMini ? Math.round(60+lv*13+lv*lv*0.6) : Math.round(40+lv*9+lv*lv*0.4)) * (isElite?ELITE_STAT_MULT.hp:1));
+  const baseAtk = Math.round((isMini?1.4:isMimic?1.2:1)*(8+lv*3+lv*lv*0.15) * (isElite?ELITE_STAT_MULT.atk:1));
+  const baseDef = Math.round((3+lv*2+lv*lv*0.1) * (isElite?ELITE_STAT_MULT.def:1));
+  const baseSpd = Math.round((isMimic?1.3:1)*(7+lv*1.2+0.02*lv*lv) * (isElite?ELITE_STAT_MULT.spd:1));
 
   const MONSTER_SPRITES = {
     F: ['monster & boss/F-Slime-Mon.png','monster & boss/F-wolf-mon.png','monster & boss/F-Bear-Mon.png','monster & boss/F-scropion-mon.png'],
@@ -4019,6 +4232,7 @@ function startBattle(battleType) {
     spd:    Math.round(baseSpd * (isMimic?1.0:et.spd)),
     isBoss, isMini, isMimic, spriteFile,
   };
+  enemy.isElite = isElite;
   if(!enemy.passives) {
     if(isMimic) {
       enemy.passives = pickEnemyPassivesCached(cell, ['F','W','S'][Math.floor(Math.random()*3)], 1);
@@ -6718,12 +6932,15 @@ function endBattle(won) {
 
   let rewards = [];
   if(won) {
+    // Elite Scout enemy: Gold x4 / item drop count x2 (applied below)
+    const isEliteEnemy = !!(battleState.enemy && battleState.enemy.isElite);
+    const eliteGoldMult = isEliteEnemy ? 4 : 1;
     // Gold drop — use effective stage/difficulty (replay-aware)
     const isEffHellGold = replayStage > 0 ? replayHell : hellMode;
     const isEffHardGold = replayStage > 0 ? (replayHard||replayHell) : (hardMode || hellMode);
     const effectiveHardStageGold = replayStage > 0 ? replayStage : hellMode ? hellStage : hardStage;
     const effectiveNormalStageGold = replayStage > 0 ? replayStage : stage;
-    const goldMult = isEffHellGold ? 3 : isEffHardGold ? 2 : 1;
+    const goldMult = (isEffHellGold ? 3 : isEffHardGold ? 2 : 1) * eliteGoldMult;
     const gs = isEffHellGold ? 40+effectiveHardStageGold : isEffHardGold ? 20+effectiveHardStageGold : effectiveNormalStageGold;
     const hasLuckyCharm = creature.artifact==='lucky_charm' || creature.artifact2==='lucky_charm';
     const luckyProc = hasLuckyCharm;
@@ -6822,7 +7039,7 @@ function endBattle(won) {
       // Mimic: ×5 gold (Normal) / ×5×1.5 (Hard, scale by hardStage)
       // gs already accounts for replay/hard/hell scaling (computed above at effectiveNormalStageGold etc.)
       const mimicGs = gs;
-      const mimicMult = isEffHardGold ? 1.5 : 1;
+      const mimicMult = (isEffHardGold ? 1.5 : 1) * eliteGoldMult;
       const mimicGold = Math.round((15 + mimicGs*8 + Math.floor(Math.random()*mimicGs*5)) * 5 * mimicMult);
       gold += mimicGold;
       rewards.push(`💰 +${mimicGold}G (MIMIC LOOT!)`);
@@ -6863,7 +7080,7 @@ function endBattle(won) {
       else if(battleState.isMini)  { dropChance=0.80; cntMin=h?3:2; cntMax=h?5:4; }
       else                         { dropChance=h?0.25:0.20; cntMin=h?2:1; cntMax=h?4:3; }
       if(Math.random() < dropChance) {
-        const cnt = cntMin + Math.floor(Math.random()*(cntMax-cntMin+1));
+        const cnt = (cntMin + Math.floor(Math.random()*(cntMax-cntMin+1))) * (isEliteEnemy?2:1);
         const pool = h
           ? [{t:'super_potion',w:16},{t:'max_potion',w:10},{t:'power_shard',w:3},{t:'speed_shard',w:3},{t:'guard_shard',w:3},{t:'revive',w:5}]
           : [{t:'hp_potion',w:15},{t:'super_potion',w:8},{t:'max_potion',w:3},{t:'power_shard',w:3},{t:'speed_shard',w:3},{t:'guard_shard',w:3},{t:'revive',w:5}];
@@ -7263,6 +7480,102 @@ function render() {
           <div data-leaderboard-refresh style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:12px;color:#8ff0e0;text-align:center;cursor:pointer">🔄 ${T('รีเฟรช','REFRESH')}</div>
           <div data-leaderboard-close style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:12px;color:#8080c0;text-align:center;cursor:pointer">${T('ปิด','CLOSE')}</div>
         </div>
+      </div>
+    </div>`);
+  }
+  if(minigameOpen) {
+    const _btn = (attr, label, disabled) => `<div ${disabled?'':attr} style="flex:1;padding:10px;border-radius:8px;background:${disabled?'#141428':'#1a1a3a'};border:1px solid ${disabled?'#2a2a4a':'#4a4a8a'};font-family:Kanit,sans-serif;font-size:12px;color:${disabled?'#4a4a6a':'#c0c0ff'};text-align:center;cursor:${disabled?'default':'pointer'}">${label}</div>`;
+    let title='', body='';
+    if(minigameOpen==='slot') {
+      title = T('🕹️ ตู้เกมสุ่มรางวัล','🕹️ PRIZE ARCADE');
+      const pool = getSlotPool();
+      const gridHtml = `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 12px">
+          ${pool.map((p,i) => {
+            const lit = i===slotHighlightIdx;
+            return `<div style="aspect-ratio:1;border-radius:8px;background:${lit?p.color:'#141428'};border:2px solid ${lit?'#fff':p.color};display:flex;align-items:center;justify-content:center;font-size:20px;${lit?`transform:scale(1.08);box-shadow:0 0 10px ${p.color}`:''}">${p.icon}</div>`;
+          }).join('')}
+        </div>`;
+      body = minigameResult
+        ? `${gridHtml}
+           <div style="text-align:center;padding:0 0 6px;display:flex;flex-direction:column;gap:4px;align-items:center">
+             <div style="font-size:28px">${minigameResult.icon}</div>
+             <div style="font-family:Kanit,sans-serif;font-size:14px;color:#ffe080">${minigameResult.text}</div>
+           </div>
+           ${_btn('data-minigame-close', T('รับรางวัล','COLLECT'), false)}`
+        : `${gridHtml}
+           ${_btn('data-slot-spin', slotSpinning ? T('กำลังสุ่ม...','ROLLING...') : T('เริ่ม!','START!'), slotSpinning)}`;
+    } else if(minigameOpen==='rps') {
+      title = T('⚔️ ปะทะการ์เดี้ยน','⚔️ RPS VS GUARDIAN');
+      if(rpsResult) {
+        const {playerMove, guardMove, won, reward} = rpsResult;
+        const pIcon = MOVES.find(m=>m.name===playerMove).icon;
+        const gIcon = MOVES.find(m=>m.name===guardMove).icon;
+        const rewardTxt = reward
+          ? (reward.gold ? T(`💰 +${reward.gold}G + ${ITEMS[reward.item].icon} ${ITEMS[reward.item].name}`,`💰 +${reward.gold}G + ${ITEMS[reward.item].icon} ${ITEMS[reward.item].name}`)
+                          : T(`${ITEMS[reward.item].icon} ${ITEMS[reward.item].name} ×1`,`${ITEMS[reward.item].icon} ${ITEMS[reward.item].name} ×1`))
+          : T('ไม่ได้รางวัล','No reward');
+        body = `
+           <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:20px;padding:14px 0 6px">
+             <div style="width:62px;height:62px;border-radius:50%;background:#10102a;border:2px solid ${won?'#4ecdc4':'#4a4a8a'};display:flex;align-items:center;justify-content:center;font-size:28px;${won?'animation:rpsWinGlow 1s ease-in-out infinite':''}">${pIcon}</div>
+             <div style="position:absolute;left:50%;top:50%;font-size:32px;pointer-events:none;animation:rpsClashBurst 0.6s ease-out">💥</div>
+             <div style="width:62px;height:62px;border-radius:50%;background:#2a1010;border:2px solid ${won?'#4a4a8a':'#ff6b6b'};display:flex;align-items:center;justify-content:center;font-size:28px;${won?'':'animation:rpsLoseShake 0.4s ease-in-out'}">${gIcon}</div>
+           </div>
+           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:11px;color:#a090c0;margin-bottom:4px">${T('คุณ','You')} ${playerMove}  vs  ${rpsGuardianEmoji} ${guardMove}</div>
+           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:16px;color:${won?'#8ff0e0':'#ff8080'};font-weight:700">${won?T('🎉 ชนะ!','🎉 WIN!'):T('😵 แพ้','😵 LOSE')}</div>
+           <div style="text-align:center;font-size:12px;color:#c0b0e0;margin:4px 0 10px">${rewardTxt}</div>
+           ${_btn('data-minigame-close', T('ปิด','CLOSE'), false)}`;
+      } else {
+        body = `
+           <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:6px 0 12px">
+             <div style="width:58px;height:58px;border-radius:50%;background:#10102a;border:2px solid #4a4a8a;display:flex;align-items:center;justify-content:center;overflow:hidden">${buildPetSvg(creature, 50, true)}</div>
+             <div style="font-family:Kanit,sans-serif;font-size:13px;color:#8878b8">VS</div>
+             <div style="width:58px;height:58px;border-radius:50%;background:#2a1010;border:2px solid #7a3f3f;display:flex;align-items:center;justify-content:center;font-size:28px;animation:bob 2s ease-in-out infinite">${rpsGuardianEmoji}</div>
+           </div>
+           <div style="font-size:11px;color:#9080b0;text-align:center;margin-bottom:10px">${T('เลือกท่าของคุณ','Pick your move')}</div>
+           <div style="display:flex;gap:8px">
+             ${MOVES.map((m,i)=>`<div data-rps-move="${i}" style="flex:1;padding:12px 4px;border-radius:8px;background:#1a1a3a;border:1px solid #4a4a8a;text-align:center;cursor:pointer">
+               <div style="font-size:22px">${m.icon}</div>
+               <div style="font-family:Kanit,sans-serif;font-size:10px;color:#c0c0ff;margin-top:4px">${m.name}</div>
+             </div>`).join('')}
+           </div>`;
+      }
+    } else if(minigameOpen==='hilo') {
+      title = T('🎲 ไฮโล (ทอยลูกเต๋า)','🎲 HI-LO (DICE)');
+      const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+      const rewardsList = hiloAccumulated.length
+        ? `<div style="display:flex;flex-direction:column;gap:3px">${hiloAccumulated.map(r=>`<div style="font-size:11px;color:#c0b0e0">${r.icon} ${r.text}</div>`).join('')}</div>`
+        : `<div style="font-size:11px;color:#5a4a8a">${T('ยังไม่ได้รางวัล','No rewards yet')}</div>`;
+      const diceHtml = `
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 4px">
+          <div style="font-size:44px;color:#e8e0ff;animation:diceTumble 0.5s ease-out">${DICE_FACES[hiloDice[0]-1]}</div>
+          <div style="font-size:44px;color:#e8e0ff;animation:diceTumble 0.5s ease-out">${DICE_FACES[hiloDice[1]-1]}</div>
+        </div>
+        <div style="text-align:center;font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;margin-bottom:8px">${T('รวม','SUM')}: <span style="color:#c0a0ff;font-size:18px;font-weight:700">${hiloCurrentNum}</span></div>`;
+      if(hiloGameOver) {
+        const outcomeTxt = hiloOutcome==='lost' ? T('😵 เดาผิด — เสียรางวัลสะสมทั้งหมด','😵 Wrong guess — lost all accumulated rewards')
+                          : hiloOutcome==='won' ? T('🎉 ผ่านครบ 5 รอบ! ได้รางวัลทั้งหมด','🎉 Cleared all 5 rounds! Full rewards banked')
+                          : T('✅ เก็บรางวัลสะสมแล้ว','✅ Cashed out — rewards banked');
+        body = `${diceHtml}
+           <div style="text-align:center;font-family:Kanit,sans-serif;font-size:13px;color:${hiloOutcome==='lost'?'#ff8080':'#8ff0e0'};margin-bottom:10px">${outcomeTxt}</div>
+           ${hiloOutcome==='lost' ? `<div style="font-size:11px;color:#c0b0e0;text-align:center;margin-bottom:10px">${T('ปลอบใจ','Consolation')}: ${ITEMS.hp_potion.icon} ${ITEMS.hp_potion.name} ×1</div>` : rewardsList}
+           ${_btn('data-minigame-close', T('ปิด','CLOSE'), false)}`;
+      } else {
+        body = `${diceHtml}
+           <div style="font-size:11px;color:#9080b0;text-align:center;margin-bottom:10px">${T(`รอบ ${hiloRound+1}/5 — ลูกเต๋าคู่ต่อไปจะรวมสูงหรือต่ำกว่านี้?`,`Round ${hiloRound+1}/5 — will the next roll be Higher or Lower?`)}</div>
+           <div style="display:flex;gap:8px;margin-bottom:10px">
+             ${_btn('data-hilo-lower', T('⬇️ ต่ำกว่า','⬇️ LOWER'), false)}
+             ${_btn('data-hilo-higher', T('⬆️ สูงกว่า','⬆️ HIGHER'), false)}
+           </div>
+           ${rewardsList}
+           <div style="margin-top:10px">${_btn('data-hilo-cashout', T('💰 เก็บรางวัลสะสม','💰 CASH OUT'), hiloRound===0)}</div>`;
+      }
+    }
+    screenContent.insertAdjacentHTML('beforeend', `
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:96;border-radius:16px;padding:14px">
+      <div style="max-width:300px;width:100%;background:#0a0a1e;border:2px solid #6040c0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;letter-spacing:1px;text-align:center;margin-bottom:6px">${title}</div>
+        ${body}
       </div>
     </div>`);
   }
@@ -9303,7 +9616,7 @@ function renderScout() {
     const isAdj = !isPlayer && dx+dy===1;
     if(!cell.vis && !isPlayer) { cellsHtml+=`<div class="scout-cell fog"></div>`; continue; }
     const t = cell.type;
-    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·'};
+    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',minigame:'🕹️',empty:'·'};
     const cls = `scout-cell visible ${isPlayer?'player':''} ${isAdj?'adjacent':''} ${!isPlayer?t:''}`;
     const icon = isPlayer ? '◉' : (icons[t]||'·');
     const iconStyle = (!isPlayer && t!=='empty') ? 'style="font-size:15px;filter:drop-shadow(0 0 3px rgba(0,0,0,0.9)) drop-shadow(0 1px 2px rgba(0,0,0,1))"' : '';
@@ -9694,6 +10007,8 @@ function renderBattleScreen() {
               ebadges.push(ebadge(`🔺 ATK+${battleState.eBerserkerStacks*10}%`,'#ff6600','rgba(60,20,0,0.7)','1.2'));
             if(ep.includes('regen_cleanse'))
               ebadges.push(ebadge('💚 REGEN','#44ff88','rgba(0,50,20,0.7)','1.2'));
+            if(enemy.isElite)
+              ebadges.push(ebadge('⚔️ ELITE','#ffcc00','rgba(60,40,0,0.7)','1.0'));
             // artifact badges (mirror player side)
             const ea1=enemy.artifact, ea2=enemy.artifact2;
             const eas=battleState.eArtStacks||{};
@@ -9812,14 +10127,14 @@ function renderBattleScreen() {
             </div>
           </div>
           ${dmgNums}
-          <div class="${enemyCls}" style="position:relative;z-index:1;${lr&&lr.enemyStunned&&ap==='e-atk'?'filter:brightness(1.4) saturate(0.3);':(!bs.isDuelBattle&&(enemy.isEvolve2Enemy||enemy.isEvolvedEnemy))?`filter:hue-rotate(${enemy.isEvolve2Enemy?'180deg':'0deg'}) brightness(0.85) saturate(1.4) drop-shadow(0 0 8px ${(enemy.isEvolve2Enemy?EVOLVE2_FORMS[enemy.evolve2Key]:FORMS[enemy.evolvedKey])?.color||'#aa44ff'})`:``}">
+          <div class="${enemyCls}" style="position:relative;z-index:1;${lr&&lr.enemyStunned&&ap==='e-atk'?'filter:brightness(1.4) saturate(0.3);':enemy.isElite?'filter:drop-shadow(0 0 8px #ffcc00) drop-shadow(0 0 16px #ff8800) saturate(1.3);animation:shiny-aura-pulse 1.6s ease-in-out infinite;':(!bs.isDuelBattle&&(enemy.isEvolve2Enemy||enemy.isEvolvedEnemy))?`filter:hue-rotate(${enemy.isEvolve2Enemy?'180deg':'0deg'}) brightness(0.85) saturate(1.4) drop-shadow(0 0 8px ${(enemy.isEvolve2Enemy?EVOLVE2_FORMS[enemy.evolve2Key]:FORMS[enemy.evolvedKey])?.color||'#aa44ff'})`:``}">
             ${lr&&lr.enemyStunned&&ap==='e-atk'?`<div style="position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:flex;gap:2px;z-index:10;pointer-events:none">${['⚡','💫','⚡'].map((s,i)=>`<span style="font-size:18px;animation:stun-float 0.8s ease-out ${i*0.15}s both">${s}</span>`).join('')}</div>`:''}
             <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;${(enemy.isEvolve2Enemy||enemy.isEvolvedEnemy)?'transform:scaleX(-1)':''}">
               ${enemy.isEvolve2Enemy ? buildPetSvg({phase:'final',finalKey:enemy.evolve2Key,shiny:enemy.shiny||false,symbols:[]},isBoss?200:180,false)
                 : enemy.isEvolvedEnemy ? buildPetSvg({phase:'evolved',formKey:enemy.evolvedKey,shiny:enemy.shiny||false,symbols:[]},isBoss?170:150,false)
                 : enemy.isLarvaEnemy ? buildPetSvg({phase:'larva',shiny:enemy.shiny||false,symbols:[]},isBoss?170:150,false)
                 : buildMonsterSvg(isBoss, enemy.typeKey, enemy.spriteFile)}
-              ${(enemy.shiny&&(enemy.isEvolve2Enemy||enemy.isEvolvedEnemy)) ? buildShinySparkles(8, isBoss?90:70) : ''}
+              ${(enemy.shiny&&(enemy.isEvolve2Enemy||enemy.isEvolvedEnemy)) || enemy.isElite ? buildShinySparkles(8, isBoss?90:70) : ''}
             </div>
           </div>
         </div>`;
@@ -10024,6 +10339,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   if(collectionOpen) { collectionOpen=false; render(); return; }
   if(storageDetailIdx!==null) { storageDetailIdx=null; render(); return; }
   if(secretShopOpen) { secretShopOpen=false; render(); return; }
+  if(minigameOpen) { closeMinigame(); return; }
   if(battleItemPicker) { battleItemPicker=false; render(); return; }
   if(bagArtifactPending) { bagArtifactPending=null; render(); return; }
   if(bagWeaponPending) { bagWeaponPending=null; render(); return; }
@@ -10082,6 +10398,19 @@ screenContent.addEventListener('click', e=>{
   if(leaderboardOpen) {
     if(el.closest('[data-leaderboard-refresh]')) { SFX.click(); fetchLeaderboard(leaderboardOpen); return; }
     if(el.closest('[data-leaderboard-close]')) { SFX.click(); closeLeaderboard(); return; }
+  }
+
+  if(minigameOpen) {
+    if(el.closest('[data-minigame-close]')) { SFX.click(); closeMinigame(); return; }
+    if(minigameOpen==='slot' && el.closest('[data-slot-spin]')) { SFX.click(); spinSlotMachine(); return; }
+    const rpsBtn = el.closest('[data-rps-move]');
+    if(minigameOpen==='rps' && rpsBtn) { SFX.click(); rpsPickMove(Number(rpsBtn.dataset.rpsMove)); return; }
+    if(minigameOpen==='hilo') {
+      if(el.closest('[data-hilo-higher]')) { SFX.click(); hiloGuess('higher'); return; }
+      if(el.closest('[data-hilo-lower]')) { SFX.click(); hiloGuess('lower'); return; }
+      if(el.closest('[data-hilo-cashout]')) { SFX.click(); hiloCashOut(); return; }
+    }
+    return;
   }
 
   if(cloudConflict) {
@@ -10690,6 +11019,7 @@ screenContent.addEventListener('click', e=>{
       if(form) {
         if(pet.artifact)  { if(pet.artifact==='vitality_core'){pet.maxHp=Math.round(pet.maxHp/1.2);} applyArtifactStat(pet,pet.artifact,true); }
         if(pet.artifact2) { if(pet.artifact2==='vitality_core'){pet.maxHp=Math.round(pet.maxHp/1.2);} applyArtifactStat(pet,pet.artifact2,true); }
+        if(pet.weapon) applyWeaponStat(pet, pet.weapon, true);
         pet.atk   = form.atk   + pet.rebirthBonus.atk;
         pet.def   = form.def   + pet.rebirthBonus.def;
         pet.spd   = form.spd   + pet.rebirthBonus.spd;
@@ -10698,6 +11028,7 @@ screenContent.addEventListener('click', e=>{
         pet.trainCount = 0;
         if(pet.artifact)  { applyArtifactStat(pet,pet.artifact); if(pet.artifact==='vitality_core'){pet.maxHp=Math.round(pet.maxHp*1.2);pet.hp=pet.maxHp;} }
         if(pet.artifact2) { applyArtifactStat(pet,pet.artifact2); if(pet.artifact2==='vitality_core'){pet.maxHp=Math.round(pet.maxHp*1.2);pet.hp=pet.maxHp;} }
+        if(pet.weapon) applyWeaponStat(pet, pet.weapon);
       }
       syncCreature();
       SFX.rebirth();
@@ -13104,6 +13435,19 @@ let exitConfirm = false;
 let secretShopOpen = false;
 let secretShopSymbol = 'sym_F';
 let secretShopBought = {};
+// ── SCOUT MINIGAME SPOT ──
+let minigameOpen = null;     // null | 'slot' | 'hilo' | 'rps'
+let minigameResult = null;   // {icon, text} — Slot Machine spin result
+let slotHighlightIdx = -1;   // which prize box the running light currently sits on (-1 = none yet)
+let slotSpinning = false;    // true while the running-light animation is in flight
+let rpsResult = null;        // {playerMove, guardMove, won, reward:{gold,item}|null}
+let rpsGuardianEmoji = '🗿'; // random guardian avatar, rolled per minigame visit
+let hiloRound = 0;           // 1-5, current round awaiting a guess
+let hiloCurrentNum = 0;      // dice-sum (2-12) the player is guessing against
+let hiloDice = [1,1];        // current two dice face values (1-6 each) matching hiloCurrentNum
+let hiloAccumulated = [];    // [{icon,text}, ...] rewards banked so far this run
+let hiloGameOver = false;    // true once lost / cashed out / won round 5
+let hiloOutcome = null;      // 'lost' | 'cashed' | 'won'
 let invSellQty = 1;
 let invSellConfirm = null; // { type, price, name }
 let itemUseConfirm = null; // { type, fromScout/fromTower/fromVs } — confirm before use
@@ -13628,7 +13972,7 @@ setInterval(() => {
   if(stamina < MAX_STAMINA) {
     stamina = Math.min(MAX_STAMINA, stamina + 1);
     saveGame(true);
-    if((state==='scout' || state==='menu') && !helpOpen && !settingsOpen) render();
+    if((state==='scout' || state==='menu') && !helpOpen && !settingsOpen && !minigameOpen) render();
   }
 }, 60000);
 </script>

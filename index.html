@@ -1674,10 +1674,37 @@ const RAID_SPECIAL_BOSSES = [
   { name:'RAGNAROK',  typeKey:'F', sprite:'monster & boss/F-Ragnarok-specialboss.png',  icon:'💥' },
   { name:'COLOSSUS',  typeKey:'S', sprite:'monster & boss/S-colossus-specialboss.png',  icon:'🐢' },
   { name:'PHANTASM',  typeKey:'W', sprite:'monster & boss/W-phantasm-specialboss.png',  icon:'👻' },
-  { name:'TYRANTJAW', typeKey:'F', sprite:'monster & boss/F-Tyrantjaw-specialboss.png', icon:'🦈' },
+  { name:'TYRANTJAW', typeKey:'F', sprite:'monster & boss/F-Tyrantjaw-specialboss.png', icon:'🦈', color:'#1a5f8a' },
   { name:'VANGUARD',  typeKey:'S', sprite:'monster & boss/S-Vanguard-specialboss.png',  icon:'🛡️' },
   { name:'MONKEY',    typeKey:'W', sprite:'monster & boss/W-Monkey-specialboss.png',    icon:'🐒' },
 ];
+
+// ── SCOUT SECRET DUNGEONS ── Hell Stage 20 only, 10% chance to find an entrance cell.
+// Each dungeon is fixed to one RAID_SPECIAL_BOSSES index (by array position above) and a
+// themed pool of EVOLVE2_FORMS keys for its regular monsters/dungeon-bosses.
+const SECRET_DUNGEONS = [
+  { key:'volcano', name:'Volcano', bossIdx:0 /*RAGNAROK*/,
+    bg:'Background/BG-Dungeon-Volcano.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-volcano.jpg', bgm:'BGM/Magma Throne.mp3',
+    monsterPool:['RAGING-BRAWLER','CRIMSON-BRAWLER','KAIJU-BRAWLER','TYRANT-IRONJAW','BLAZING-FORTRESS','PHEONIX-SWIFTGUARD','HAMMER-SHIELDWING','LION-GHOST','TIGER-GHOST','PHOENIX-GHOST','FIGHTER-PANDA'] },
+  { key:'rock', name:'Rock Cave', bossIdx:1 /*COLOSSUS*/,
+    bg:'Background/BG-Dungeon-Rock-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-rock-cave.jpg', bgm:'BGM/Crown Below Stone.mp3',
+    monsterPool:['ARMOR-PANDA','FULLARMOR-IRONJAW','BULWARK-BLITZ','GUARDIAN-FORTRESS','IRON-SWIFTGUARD','GUANLET-BASTION','IRON-BASTION','GOLEM-BASTION','COCKROACH-GHOST','AGILE-IRONJAW','SWIFT-FORTRESS'] },
+  { key:'dark', name:'Dark Cave', bossIdx:2 /*PHANTASM*/,
+    bg:'Background/BG-Dungeon-Dark-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-dark-cave.jpg', bgm:'BGM/Catacomb Pulse.mp3',
+    monsterPool:['PANDA-NINJA','DARK-SPECTER','SOUL-SPECTER','MAGE-SPECTER','GRAVE-SPECTER','OWL-GHOST','CAT-GHOST','WOLF-GHOST','POISON-FORTRESS','WARLORD-CHAMPION','OCTOPUS-GHOST'] },
+  { key:'ice', name:'Ice Cave', bossIdx:3 /*TYRANTJAW*/,
+    bg:'Background/BG-Dungeon-Ice-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-ice-cave.jpg', bgm:'BGM/Shard Throne.mp3',
+    monsterPool:['CHILL-SHIELDWING','FATTY-SHIELDWING','CRYSTAWOLF-BASTION','THUNDERCLOUD-BLITZ','SHARK-GHOST','PENGUIN-GHOST','AXOLOTL-GHOST','QUICK-SWIFTGUARD','PANDA-GHOST','STORM-BLITZ'] },
+  { key:'desert', name:'Desert Cave', bossIdx:4 /*VANGUARD*/,
+    bg:'Background/BG-Dungeon-Desert-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-desert-cave.jpg', bgm:'BGM/Tomb of the Guardian.mp3',
+    monsterPool:['RUNE-IRONJAW','KING-CHAMPION','SOUL-CHAMPION','ROLLING-CHAMPION','HAMSTER-GHOST','GRIFFON-GHOST','UNICORN-GHOST','TRICKFOX-GHOST','WINDBLADE-BRAWLER','PANDA-WARRIOR','STRONG-BLITZ'] },
+  { key:'forest', name:'Deep Forest', bossIdx:5 /*MONKEY*/,
+    bg:'Background/BG-Dungeon-Deep-Forest.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-deep-forest.jpg', bgm:'BGM/Moonroot Labyrinth.mp3',
+    monsterPool:['GAIA-SHIELDWING','MANTIS-GHOST','BEE-GHOST','BUNNY-GHOST','SLIME-GHOST','LEAPFROG-GHOST','DRAGON-GHOST','FIGHT-SWIFTGUARD','RAGEBEAR-GHOST','VOLTMOUSE-GHOST'] },
+];
+const SECRET_DUNGEON_LV = 120;
+const SECRET_DUNGEON_ACH_IDS = [78,79,80,81,82,83]; // index-aligned with SECRET_DUNGEONS
+
 const RAID_DAILY_MAX = 10;
 const RAID_STAMINA_COST = 20;
 const RAID_EFF_LEVEL = [30,40,50,55,60,65,70,80,90,100]; // index = Raid Level - 1
@@ -2613,6 +2640,12 @@ function achMetric(key) {
     case 'trainTotalAll': return achTrainTotalAll;
     case 'trainMaxSingle': return achTrainMaxSinglePet;
     case 'scoutHell20': return scoutFirstClears.has('hell_20') ? 1 : 0;
+    case 'secretDungeon_volcano': return scoutFirstClears.has('dungeon_volcano') ? 1 : 0;
+    case 'secretDungeon_rock': return scoutFirstClears.has('dungeon_rock') ? 1 : 0;
+    case 'secretDungeon_dark': return scoutFirstClears.has('dungeon_dark') ? 1 : 0;
+    case 'secretDungeon_ice': return scoutFirstClears.has('dungeon_ice') ? 1 : 0;
+    case 'secretDungeon_desert': return scoutFirstClears.has('dungeon_desert') ? 1 : 0;
+    case 'secretDungeon_forest': return scoutFirstClears.has('dungeon_forest') ? 1 : 0;
     default: return 0;
   }
 }
@@ -2688,6 +2721,12 @@ const ACHIEVEMENTS = [
   {id:75, cat:'Train', title:'นักฝึกฝนทุ่มเท', titleEn:'Dedicated Trainer', cond:'Train มอนสเตอร์ 1 ตัวครบ 500 ครั้ง', condEn:'Train a single Pet 500 times', reward:{gold:100000}, metric:'trainMaxSingle', target:500},
   {id:76, cat:'Train', title:'ปรมาจารย์การฝึก', titleEn:'Training Grandmaster', cond:'Train มอนสเตอร์ 1 ตัวครบ 1010 ครั้ง', condEn:'Train a single Pet 1,010 times', reward:{gold:100000, shinyEgg:1}, metric:'trainMaxSingle', target:1010},
   {id:77, cat:'Combat: Scout', title:'ผู้ท้าทายนรก', titleEn:'Hell Challenger', cond:'เคลียร์ Scout Hell Mode ด่านที่ 20 (ครั้งแรก)', condEn:'Clear Scout Hell Mode stage 20 for the first time', reward:{gold:100000}, metric:'scoutHell20', target:1, oneTime:true},
+  {id:78, cat:'Combat: Scout', title:'ผู้พิชิต RAGNAROK', titleEn:'Ragnarok Slain', cond:'เคลียร์ดันเจี้ยนลับ Volcano ครั้งแรก', condEn:'Clear the Volcano secret dungeon for the first time', reward:{gold:100000, artifactBoxGrade:'E', weaponBoxN:1}, metric:'secretDungeon_volcano', target:1, oneTime:true},
+  {id:79, cat:'Combat: Scout', title:'ผู้พิชิต COLOSSUS', titleEn:'Colossus Slain', cond:'เคลียร์ดันเจี้ยนลับ Rock Cave ครั้งแรก', condEn:'Clear the Rock Cave secret dungeon for the first time', reward:{gold:100000, artifactBoxGrade:'E', weaponBoxN:1}, metric:'secretDungeon_rock', target:1, oneTime:true},
+  {id:80, cat:'Combat: Scout', title:'ผู้พิชิต PHANTASM', titleEn:'Phantasm Slain', cond:'เคลียร์ดันเจี้ยนลับ Dark Cave ครั้งแรก', condEn:'Clear the Dark Cave secret dungeon for the first time', reward:{gold:100000, artifactBoxGrade:'E', weaponBoxN:1}, metric:'secretDungeon_dark', target:1, oneTime:true},
+  {id:81, cat:'Combat: Scout', title:'ผู้พิชิต TYRANTJAW', titleEn:'Tyrantjaw Slain', cond:'เคลียร์ดันเจี้ยนลับ Ice Cave ครั้งแรก', condEn:'Clear the Ice Cave secret dungeon for the first time', reward:{gold:100000, artifactBoxGrade:'E', weaponBoxN:1}, metric:'secretDungeon_ice', target:1, oneTime:true},
+  {id:82, cat:'Combat: Scout', title:'ผู้พิชิต VANGUARD', titleEn:'Vanguard Slain', cond:'เคลียร์ดันเจี้ยนลับ Desert Cave ครั้งแรก', condEn:'Clear the Desert Cave secret dungeon for the first time', reward:{gold:100000, artifactBoxGrade:'E', weaponBoxN:1}, metric:'secretDungeon_desert', target:1, oneTime:true},
+  {id:83, cat:'Combat: Scout', title:'ผู้พิชิต MONKEY', titleEn:'Monkey Slain', cond:'เคลียร์ดันเจี้ยนลับ Deep Forest ครั้งแรก', condEn:'Clear the Deep Forest secret dungeon for the first time', reward:{gold:100000, artifactBoxGrade:'E', weaponBoxN:1}, metric:'secretDungeon_forest', target:1, oneTime:true},
 ];
 
 function checkAchievements() {
@@ -2708,6 +2747,7 @@ function grantAchievementReward(reward) {
   if(reward.artifactBoxGrade==='E') { addItemToInventory('box_E'); parts.push('📦 Artifact Box [E]'); }
   if(reward.artifactBoxGrade==='R') { addItemToInventory('box_R'); parts.push('📦 Artifact Box [R]'); }
   if(reward.artifactBoxN) { for(let i=0;i<reward.artifactBoxN;i++) addItemToInventory('artifact_box'); parts.push(`📦 Artifact Box ×${reward.artifactBoxN}`); }
+  if(reward.weaponBoxN) { for(let i=0;i<reward.weaponBoxN;i++) addItemToInventory('weapon_box'); parts.push(`${ITEMS.weapon_box.icon} Weapon Box ×${reward.weaponBoxN}`); }
   return parts;
 }
 function claimAchievement(id) {

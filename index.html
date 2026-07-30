@@ -7426,7 +7426,41 @@ function endBattle(won) {
   pendingBattleCell = null;
 
   let rewards = [];
-  if(won) {
+  if(won && battleState.isSecretDungeonBattle) {
+    const dungeon = SECRET_DUNGEONS[secretDungeonIdx];
+    const isSpecial = battleState.enemy.isSpecialBoss;
+    const isDBoss = battleState.isBoss && !isSpecial;
+    if(isDBoss || isSpecial) {
+      const g = isSpecial ? (30000 + Math.floor(Math.random()*20001)) : (8000 + Math.floor(Math.random()*4001));
+      gold += g; rewards.push(`💰 +${g}G`);
+      const symKey = ['sym_F','sym_W','sym_S'][Math.floor(Math.random()*3)];
+      addItemToInventory(symKey); rewards.push(`${ITEMS[symKey].icon} ${ITEMS[symKey].name}`);
+      if(Math.random() < 0.50) { addItemToInventory('revive'); rewards.push(`${ITEMS.revive.icon} ${ITEMS.revive.name}`); }
+      if(Math.random() < 0.20) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
+      if(Math.random() < (isSpecial?0.20:0.15)) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
+      if(isSpecial) { addItemToInventory('weapon_box'); rewards.push(`${ITEMS.weapon_box.icon} Weapon Box!`); }
+      if(isDBoss) {
+        dungeonBossesKilled++;
+        if(dungeonBossesKilled >= 3 && !dungeonSpecialBossSpawned) spawnDungeonSpecialBoss();
+      }
+      if(isSpecial) {
+        const clearKey = `dungeon_${dungeon.key}`;
+        if(!scoutFirstClears.has(clearKey)) {
+          scoutFirstClears.add(clearKey);
+          checkAchievements();
+          rewards.push(T('🎁 FIRST CLEAR! เช็ค Achievement เพื่อรับรางวัล','🎁 FIRST CLEAR! Check Achievements to claim your reward'));
+        }
+        rewards.push(T(`🏆 ${dungeon.name} เคลียร์แล้ว! กลับสู่ Hell 20`,`🏆 ${dungeon.name} cleared! Returning to Hell 20`));
+        exitSecretDungeon();
+      }
+    } else {
+      // regular dungeon monster
+      const g = 3000 + Math.floor(Math.random()*1501);
+      gold += g; rewards.push(`💰 +${g}G`);
+      if(Math.random() < 0.175) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
+      if(Math.random() < 0.25) { const item = rollTreasureItem(); addItemToInventory(item); rewards.push(`${ITEMS[item].icon} ${ITEMS[item].name}`); }
+    }
+  } else if(won) {
     // Elite Scout enemy: Gold x4 / item drop count x2 (applied below)
     const isEliteEnemy = !!(battleState.enemy && battleState.enemy.isElite);
     const eliteGoldMult = isEliteEnemy ? 4 : 1;

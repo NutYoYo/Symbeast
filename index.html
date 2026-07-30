@@ -2282,6 +2282,16 @@ let gauntletRewardConfirm = null; // {reward} object shown as confirmation popup
 
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
+
+// ── Secret Dungeon (Scout Hell 20 only) ── swaps scoutGrid/scoutPos in place while active;
+// savedScoutGrid/savedScoutPos hold the real Hell 20 map to restore on exit.
+let inSecretDungeon = false;
+let secretDungeonIdx = -1;      // index into SECRET_DUNGEONS
+let dungeonBossesKilled = 0;    // 0-3; special_boss cell spawns once this hits 3
+let dungeonSpecialBossSpawned = false;
+let savedScoutGrid = null;
+let savedScoutPos = null;
+
 let lastScrollDay = '';
 let lastEnergyDrinkDay = '';
 let currentBiome = 'desert'; // desert / forest / grass
@@ -3827,7 +3837,7 @@ function saveGame(skipCloudSync) {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
     gauntletSyncOut();
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, achievementStatus, achFuseCount, achRebirthUsedCount, achEssenceCollected, achBoxesOpenedCount, achFirstBoxGradeE, achFirstBoxGradeR, achSecretShopPurchases, achTotalWinsAll, achWinStreak, achWinStreakBest, achPerfectWinCount, achTrainTotalAll, achTrainMaxSinglePet, achFinalPhaseReachedCount, achFuseShinyInheritFirst, achEnrageBossKilled, achGauntletFirstRoomWin, achGauntletNormalFullClear, achGauntletHardFullClear, achModesPlayed:[...achModesPlayed]}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, achievementStatus, achFuseCount, achRebirthUsedCount, achEssenceCollected, achBoxesOpenedCount, achFirstBoxGradeE, achFirstBoxGradeR, achSecretShopPurchases, achTotalWinsAll, achWinStreak, achWinStreakBest, achPerfectWinCount, achTrainTotalAll, achTrainMaxSinglePet, achFinalPhaseReachedCount, achFuseShinyInheritFirst, achEnrageBossKilled, achGauntletFirstRoomWin, achGauntletNormalFullClear, achGauntletHardFullClear, achModesPlayed:[...achModesPlayed], inSecretDungeon, secretDungeonIdx, dungeonBossesKilled, dungeonSpecialBossSpawned, savedScoutGrid, savedScoutPos}));
     if(!skipCloudSync) cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -3869,6 +3879,7 @@ function loadGame(slotNum) {
         pets.forEach(p=>{ p.symbols = (p.symbols||[]).map(s=>s.length>1?s.split('_').pop():s).filter(s=>'FWS'.includes(s)); });
         // Reset all slot-specific state before loading to avoid bleed between slots
         scoutGrid=[]; scoutPos={x:0,y:0}; currentBiome='desert';
+        inSecretDungeon=false; secretDungeonIdx=-1; dungeonBossesKilled=0; dungeonSpecialBossSpawned=false; savedScoutGrid=null; savedScoutPos=null;
         hardMode=false; hardStage=0; hellMode=false; hellStage=1;
         replayStage=null; replayHard=false; replayHell=false; lastScrollDay=''; lastEnergyDrinkDay='';
         stamina=100; firstBossKilled=false; overdriveCharge=0;
@@ -3913,6 +3924,12 @@ function loadGame(slotNum) {
         if(Array.isArray(d.seenArtifacts)) seenArtifacts = new Set(d.seenArtifacts);
         if(Array.isArray(d.towerFirstClears)) towerFirstClears = new Set(d.towerFirstClears);
         if(Array.isArray(d.scoutFirstClears)) scoutFirstClears = new Set(d.scoutFirstClears);
+        if(typeof d.inSecretDungeon==='boolean') inSecretDungeon = d.inSecretDungeon;
+        if(typeof d.secretDungeonIdx==='number') secretDungeonIdx = d.secretDungeonIdx;
+        if(typeof d.dungeonBossesKilled==='number') dungeonBossesKilled = d.dungeonBossesKilled;
+        if(typeof d.dungeonSpecialBossSpawned==='boolean') dungeonSpecialBossSpawned = d.dungeonSpecialBossSpawned;
+        if(Array.isArray(d.savedScoutGrid)&&d.savedScoutGrid.length) savedScoutGrid = d.savedScoutGrid;
+        if(d.savedScoutPos) savedScoutPos = d.savedScoutPos;
         if(typeof d.hardMode==='boolean') hardMode = d.hardMode;
         if(typeof d.hardStage==='number') hardStage = d.hardStage;
         if(typeof d.hellMode==='boolean') hellMode = d.hellMode;
@@ -4109,6 +4126,12 @@ function genScoutGrid() {
   place('treasure', 3);
   place('gold_chest', 2);
   place('rest', 2);
+  // Secret Dungeon entrance: Hell Stage 20 only, 10% chance per map generation.
+  if(hellMode && hellStage===20 && Math.random() < 0.10) {
+    place('dungeon_entrance', 1);
+    const idx = Math.floor(Math.random()*SECRET_DUNGEONS.length);
+    scoutGrid.forEach(c => { if(c.type==='dungeon_entrance') c.dungeonIdx = idx; });
+  }
   revealAround(0,0);
 }
 
@@ -4163,6 +4186,15 @@ function moveScout(dx,dy) {
     startBattle(t==='boss' ? 'boss' : t==='mini_boss' ? 'mini' : false);
     return;
   }
+  if(t==='dungeon_entrance') {
+    enterSecretDungeon(cell.dungeonIdx);
+    return;
+  }
+  if(t==='dboss'||t==='special_boss') {
+    pendingBattleCell = {x:nx, y:ny, type:t};
+    startBattle(t);
+    return;
+  }
   if(t==='secret_shop') {
     cell.type='empty'; secretShopOpen=true; secretShopSymbol='sym_'+['F','W','S'][Math.floor(Math.random()*3)]; secretShopBought={}; saveGame(); render(); return;
   }
@@ -4170,6 +4202,61 @@ function moveScout(dx,dy) {
     cell.type='empty'; openMinigame(cell.minigameType); return;
   }
   saveGame(); render();
+}
+
+// ── Secret Dungeon lifecycle ── swaps scoutGrid/scoutPos so moveScout/revealAround/rendering
+// work unmodified inside the dungeon; savedScoutGrid/savedScoutPos hold the real Hell 20 map.
+function genDungeonGrid() {
+  scoutGrid = Array(GRID*GRID).fill(null).map(() => ({type:'empty', vis:false}));
+  const place = (type, n) => {
+    let c=0;
+    while(c<n) {
+      const i = Math.floor(Math.random()*GRID*GRID);
+      if (scoutGrid[i].type==='empty' && i!==0) { scoutGrid[i].type=type; c++; }
+    }
+  };
+  place('monster', 11);
+  place('dboss', 3);
+  place('treasure', 3);
+  place('gold_chest', 2);
+  place('heal', 2);
+  place('rest', 1);
+  revealAround(0,0);
+}
+
+function enterSecretDungeon(idx) {
+  savedScoutGrid = scoutGrid;
+  savedScoutPos = scoutPos;
+  inSecretDungeon = true;
+  secretDungeonIdx = idx;
+  dungeonBossesKilled = 0;
+  dungeonSpecialBossSpawned = false;
+  genDungeonGrid();
+  scoutPos = {x:0, y:0};
+  scoutToast = T(`🚪 เข้าสู่ดันเจี้ยนลับ: ${SECRET_DUNGEONS[idx].name}!`,`🚪 Entered secret dungeon: ${SECRET_DUNGEONS[idx].name}!`);
+  saveGame(); render();
+}
+
+function exitSecretDungeon() {
+  inSecretDungeon = false;
+  secretDungeonIdx = -1;
+  dungeonBossesKilled = 0;
+  dungeonSpecialBossSpawned = false;
+  scoutGrid = savedScoutGrid || (genScoutGrid(), scoutGrid);
+  scoutPos = savedScoutPos || {x:0, y:0};
+  savedScoutGrid = null;
+  savedScoutPos = null;
+  saveGame(); render();
+}
+
+function spawnDungeonSpecialBoss() {
+  const emptyIdxs = [];
+  scoutGrid.forEach((c,i) => { if(c.type==='empty' && i!==idx(scoutPos.x,scoutPos.y)) emptyIdxs.push(i); });
+  if(!emptyIdxs.length) return;
+  const target = emptyIdxs[Math.floor(Math.random()*emptyIdxs.length)];
+  scoutGrid[target].type = 'special_boss';
+  dungeonSpecialBossSpawned = true;
+  scoutToast = T('⚡ Special Boss ปรากฏตัวแล้ว! ตามหามันในแมพ!','⚡ The Special Boss has appeared! Track it down!');
 }
 
 function collectSymbol(sym) {

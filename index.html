@@ -609,6 +609,12 @@ const BGM_FILES = {
   grass:   'BGM/Meadow of the Silent Wind (Meadow).mp3',
   tower:   'BGM/The Tower of the Fallen King (Tower).mp3',
   vs:      'BGM/The Colossus Awakens.mp3',
+  dungeon_volcano: 'BGM/Magma Throne.mp3',
+  dungeon_rock:    'BGM/Crown Below Stone.mp3',
+  dungeon_dark:    'BGM/Catacomb Pulse.mp3',
+  dungeon_ice:     'BGM/Shard Throne.mp3',
+  dungeon_desert:  'BGM/Tomb of the Guardian.mp3',
+  dungeon_forest:  'BGM/Moonroot Labyrinth.mp3',
 };
 
 let _bgmAudio = null;
@@ -658,13 +664,14 @@ function bgmPlay(key) {
 
 function bgmForState() {
   if(state === 'title') return 'tower';
-  if(state === 'battle') return battleState?.isTowerBattle ? 'tower' : (battleState?.isVsBattle || battleState?.isGauntletBattle) ? 'vs' : 'battle';
+  if(state === 'battle') return battleState?.isSecretDungeonBattle ? `dungeon_${SECRET_DUNGEONS[secretDungeonIdx].key}` : battleState?.isTowerBattle ? 'tower' : (battleState?.isVsBattle || battleState?.isGauntletBattle) ? 'vs' : 'battle';
   if(state === 'vs_lobby' || state === 'vs_result') return 'vs';
   if(state === 'gauntlet') return 'vs';
   if(state === 'duel_result') return 'vs';
   if(state === 'battle' && battleState?.isDuelBattle) return 'vs';
   if(state === 'tower') return 'tower';
   if(state === 'scout') {
+    if(inSecretDungeon) return `dungeon_${SECRET_DUNGEONS[secretDungeonIdx].key}`;
     return currentBiome === 'forest' ? 'forest'
          : currentBiome === 'grass'  ? 'grass'
          : currentBiome === 'desert' ? 'desert'
@@ -2544,6 +2551,8 @@ function getBattleBg() {
   else if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result' || state === 'gauntlet') bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle || battleState.isGauntletBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
+  else if(isBattleActive && battleState.isSecretDungeonBattle) bg = SECRET_DUNGEONS[secretDungeonIdx].battleBg;
+  else if(inSecretDungeon && ['result','scout'].includes(state)) bg = SECRET_DUNGEONS[secretDungeonIdx].bg;
   else if(['battle','result','scout'].includes(state)) {
     const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
     const h = new Date().getHours();
@@ -4187,6 +4196,7 @@ function moveScout(dx,dy) {
     return;
   }
   if(t==='dungeon_entrance') {
+    cell.type = 'empty';
     enterSecretDungeon(cell.dungeonIdx);
     return;
   }
@@ -10336,7 +10346,7 @@ Status Effects:
 }
 
 function renderScout() {
-  labelStrip.textContent = replayStage>0 ? `🔄 REPLAY ${replayHell?'HELL ':replayHard?'HARD ':''}STAGE ${replayStage} ✦ ${BIOMES[currentBiome].label}` : hellMode ? `💀 HELL MODE ✦ STAGE ${hellStage}/20 ✦ ${BIOMES[currentBiome].label}` : hardMode ? `🔥 HARD MODE ✦ STAGE ${hardStage}/20 ✦ ${BIOMES[currentBiome].label}` : `SCOUT ✦ STAGE ${stage} ✦ ${BIOMES[currentBiome].label}`;
+  labelStrip.textContent = inSecretDungeon ? `${SECRET_DUNGEONS[secretDungeonIdx].name.toUpperCase()} ✦ BOSSES ${dungeonBossesKilled}/3${dungeonSpecialBossSpawned?' ✦ ⚡ SPECIAL BOSS ACTIVE':''}` : replayStage>0 ? `🔄 REPLAY ${replayHell?'HELL ':replayHard?'HARD ':''}STAGE ${replayStage} ✦ ${BIOMES[currentBiome].label}` : hellMode ? `💀 HELL MODE ✦ STAGE ${hellStage}/20 ✦ ${BIOMES[currentBiome].label}` : hardMode ? `🔥 HARD MODE ✦ STAGE ${hardStage}/20 ✦ ${BIOMES[currentBiome].label}` : `SCOUT ✦ STAGE ${stage} ✦ ${BIOMES[currentBiome].label}`;
   let cellsHtml = '';
   for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) {
     const cell = scoutGrid[idx(x,y)];
@@ -10346,7 +10356,7 @@ function renderScout() {
     if(!cell.vis && !isPlayer) { cellsHtml+=`<div class="scout-cell fog"></div>`; continue; }
     const t = cell.type;
     const mgIcons = {slot:'🎰',hilo:'🎲',rps:'⚔️'};
-    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·'};
+    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'👹',special_boss:'⚡'};
     const cls = `scout-cell visible ${isPlayer?'player':''} ${isAdj?'adjacent':''} ${!isPlayer?t:''} ${t==='minigame' && cell.minigameType ? 'minigame-'+cell.minigameType : ''}`;
     const icon = isPlayer ? '◉' : (t==='minigame'&&cell.minigameType ? mgIcons[cell.minigameType]||'🕹️' : icons[t]||'·');
     const iconStyle = (!isPlayer && t!=='empty') ? 'style="font-size:15px;filter:drop-shadow(0 0 3px rgba(0,0,0,0.9)) drop-shadow(0 1px 2px rgba(0,0,0,1))"' : '';
@@ -10404,9 +10414,10 @@ function renderScout() {
   screenContent.innerHTML = `
     <div class="scout-screen" style="position:relative">
       <div class="scout-header">
-        ${(stage>1||hardMode||hellMode) && !replayStage ? `<span id="stageSelectBtn" style="cursor:pointer;border:1px solid ${hellMode?'rgba(255,30,30,0.6)':hardMode?'rgba(255,100,50,0.6)':'rgba(100,80,200,0.6)'};border-radius:5px;padding:1px 6px;color:${hellMode?'#ff4444':hardMode?'#ff8866':'#a080ff'}">📋 ${hellMode?`💀${hellStage}`:hardMode?`H${hardStage}`:`S${stage}`}</span>` : ''}
-        ${replayStage ? `<span id="stageSelectBtn" style="cursor:pointer;border:1px solid #ff8800;border-radius:5px;padding:1px 6px;color:#ff8800">🔄 ${replayHell?'💀':replayHard?'H':'S'}${replayStage}</span>` : ''}
-        ${!((stage>1||hardMode||hellMode) && !replayStage) && !replayStage ? `<span></span>` : ''}
+        ${inSecretDungeon ? `<span id="exitDungeonBtn" style="cursor:pointer;border:1px solid rgba(255,60,60,0.6);border-radius:5px;padding:1px 6px;color:#ff6666">🚪 EXIT</span>` : ''}
+        ${!inSecretDungeon && (stage>1||hardMode||hellMode) && !replayStage ? `<span id="stageSelectBtn" style="cursor:pointer;border:1px solid ${hellMode?'rgba(255,30,30,0.6)':hardMode?'rgba(255,100,50,0.6)':'rgba(100,80,200,0.6)'};border-radius:5px;padding:1px 6px;color:${hellMode?'#ff4444':hardMode?'#ff8866':'#a080ff'}">📋 ${hellMode?`💀${hellStage}`:hardMode?`H${hardStage}`:`S${stage}`}</span>` : ''}
+        ${!inSecretDungeon && replayStage ? `<span id="stageSelectBtn" style="cursor:pointer;border:1px solid #ff8800;border-radius:5px;padding:1px 6px;color:#ff8800">🔄 ${replayHell?'💀':replayHard?'H':'S'}${replayStage}</span>` : ''}
+        ${!inSecretDungeon && !((stage>1||hardMode||hellMode) && !replayStage) && !replayStage ? `<span></span>` : ''}
         <div style="display:flex;align-items:center;gap:4px">
           <span style="font-size:10px;color:${stamina<=5?'#ff4444':stamina<=15?'#f39c12':'#4ecdc4'}">⚡${stamina}/${MAX_STAMINA}</span>
           <div style="width:50px;height:3px;background:#0a0a20;border-radius:2px;overflow:hidden">
@@ -12482,6 +12493,7 @@ screenContent.addEventListener('click', e=>{
       scoutToast=T(`✅ ซื้อ ${ITEMS[type]?.icon||''} ${ITEMS[type]?.name||type} สำเร็จ!`,`✅ Bought ${ITEMS[type]?.icon||''} ${ITEMS[type]?.name||type}!`);
       saveGame(); render(); return;
     }
+    if(el.closest('#exitDungeonBtn')) { exitSecretDungeon(); return; }
     if(el.closest('#stageSelectBtn')) { stageSelectOpen=true; render(); return; }
     if(el.closest('#stageSelectClose')) { stageSelectOpen=false; render(); return; }
     const selStage = el.closest('[data-sel-stage]');

@@ -2552,8 +2552,7 @@ function getBattleBg() {
   else if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result' || state === 'gauntlet') bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle || battleState.isGauntletBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
-  else if(isBattleActive && battleState.isSecretDungeonBattle) bg = SECRET_DUNGEONS[secretDungeonIdx].battleBg;
-  else if(inSecretDungeon && ['result','scout'].includes(state)) bg = SECRET_DUNGEONS[secretDungeonIdx].bg;
+  else if((isBattleActive && battleState.isSecretDungeonBattle) || (inSecretDungeon && ['result','scout'].includes(state))) bg = SECRET_DUNGEONS[secretDungeonIdx].battleBg;
   else if(['battle','result','scout'].includes(state)) {
     const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
     const h = new Date().getHours();

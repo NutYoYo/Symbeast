@@ -4583,12 +4583,12 @@ function startBattle(battleType) {
   battleAutoMode = false;
   if(creature.shiny) playShinySound();
 
-  // battleType: 'boss' | 'mini' | false(monster)
-  const isBoss  = battleType === 'boss';
+  // battleType: 'boss' | 'mini' | 'dboss' | 'special_boss' | false(monster) | 'mimic'
+  const isBoss  = battleType === 'boss' || battleType === 'dboss' || battleType === 'special_boss';
   const isMini  = battleType === 'mini';
   const isMimic = battleType === 'mimic';
   const effectiveStage = replayStage > 0 ? (replayHell ? 40 + replayStage : replayHard ? 20 + replayStage : replayStage) : hellMode ? 40 + hellStage : hardMode ? 20 + hardStage : stage;
-  const lv = isBoss ? effectiveStage+2 : isMini ? effectiveStage+1 : effectiveStage;
+  const lv = inSecretDungeon ? SECRET_DUNGEON_LV : (isBoss ? effectiveStage+2 : isMini ? effectiveStage+1 : effectiveStage);
   const cell = scoutGrid[idx(scoutPos.x, scoutPos.y)];
   const typeKey = isMimic ? 'F' : (cell?.enemyType || ['F','W','S'][Math.floor(Math.random()*3)]);
   const et = ENEMY_TYPES[typeKey];
@@ -4637,10 +4637,39 @@ function startBattle(battleType) {
   const isEffectiveHell = replayStage>0 ? replayHell : hellMode;
   const effectiveHardStage = replayStage>0 ? replayStage : hellMode ? hellStage : hardStage;
   let scoutHardForm = null;
+  // Secret Dungeon (Hell 20 only): every enemy is lv120. Regular monster / dungeon-boss are pure
+  // Evolve2 forms drawn from the dungeon's themed pool; special_boss is the dungeon's fixed
+  // RAID_SPECIAL_BOSSES entry using the same ×1.8HP/×1.3ATK pattern Hell mode already uses for
+  // its own special-boss roll. Skips the normal Hell/Hard fusion-roll chain entirely.
+  if(inSecretDungeon) {
+    const dungeon = SECRET_DUNGEONS[secretDungeonIdx];
+    if(battleType === 'special_boss') {
+      const sb = RAID_SPECIAL_BOSSES[dungeon.bossIdx];
+      const sbEt = ENEMY_TYPES[sb.typeKey];
+      scoutHardForm = { name:sb.name, typeKey:sb.typeKey, isBoss:true, isMini:false, isMimic:false, isSpecialBoss:true, spriteFile:sb.sprite, color:sb.color||null,
+        maxHp:Math.round(baseHp*sbEt.hp*1.8), hp:Math.round(baseHp*sbEt.hp*1.8),
+        atk:Math.round(baseAtk*sbEt.atk*1.3), def:Math.round(baseDef*sbEt.def), spd:Math.round(baseSpd*sbEt.spd),
+        passives: pickEnemyPassivesCached(cell, sb.typeKey, 2) };
+    } else {
+      // 'dboss' (isBoss=true, HP×1.4/ATK×1.2/DEF×1.2, flat SPD, 3 total passives) or plain
+      // monster (isBoss=false, no extra multiplier, 2 total passives) — both are pure Evolve2
+      // forms from the dungeon's themed pool, fusScale mirrors the existing Hell-boss-fusion math.
+      if(cell && cell.dungeonFormSeed === undefined) cell.dungeonFormSeed = Math.random();
+      const pool = dungeon.monsterPool;
+      const fk = pool[Math.floor((cell?.dungeonFormSeed ?? Math.random()) * pool.length)];
+      const ff = EVOLVE2_FORMS[fk];
+      const fusScale = baseHp / 135;
+      const mult = battleType === 'dboss' ? {hp:1.4, atk:1.2, def:1.2} : {hp:1, atk:1, def:1};
+      scoutHardForm = { name:ff.name, typeKey, isBoss, isMini:false, isMimic:false, spriteFile:null, isEvolve2Enemy:true, evolve2Key:fk,
+        maxHp:Math.round(ff.hp*fusScale*mult.hp), hp:Math.round(ff.hp*fusScale*mult.hp),
+        atk:Math.round(ff.atk*fusScale*mult.atk), def:Math.round(ff.def*fusScale*mult.def), spd:baseSpd,
+        passives:[fk, ...pickEnemyPassivesCached(cell, typeKey, battleType==='dboss'?2:1)], ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
+    }
+  }
   // Hell Mode bosses: 3-way random (plain Boss Monster / Evolve II / Special Boss) — Evolve I
   // (Evolved form) no longer appears on Hell bosses specifically. Mini-bosses/regular monsters
   // in Hell, and all of Hard mode, keep the existing Evolved-or-Fusion 40% roll below unchanged.
-  if(isBoss && isEffectiveHell && !isMimic) {
+  else if(isBoss && isEffectiveHell && !isMimic) {
     if(cell && cell.hellBossSeed === undefined) { cell.hellBossSeed = Math.random(); cell.hellBossKeySeed = Math.random(); }
     const hbRoll = cell?.hellBossSeed ?? Math.random();
     const hbKeyRoll = cell?.hellBossKeySeed ?? Math.random();
@@ -4711,7 +4740,7 @@ function startBattle(battleType) {
   }
 
   battleState = {
-    enemy, isBoss, isMini, isMimic,
+    enemy, isBoss, isMini, isMimic, isSecretDungeonBattle: inSecretDungeon,
     turn: 1, log: [],
     passivesLog: [], // [{turn, passives:[{icon,text}]}]
     lastResult: null,
@@ -5789,8 +5818,8 @@ function doTurn(moveIdx) {
     if(ewe.type==='dmg_reduce') { pd=Math.round(pd*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} dmg-${Math.round((1-ewe.mult)*100)}% →${pd}`}); }
   }
 
-  // ===== GAUNTLET BOSS: HP<30% one-time finisher + post-finisher Enrage buff =====
-  if(bs.isGauntletBattle && enemy.evolve2Key) {
+  // ===== GAUNTLET BOSS / SECRET DUNGEON: HP<30% one-time finisher + post-finisher Enrage buff =====
+  if((bs.isGauntletBattle || bs.isSecretDungeonBattle) && enemy.evolve2Key) {
     if(!bs.gauntletFinisherUsed && enemy.hp>0 && enemy.hp < enemy.maxHp*0.30) {
       bs.gauntletFinisherUsed = true;
       const odInfo = OVERDRIVE_INFO[enemy.evolve2Key];
@@ -10450,7 +10479,7 @@ function renderBattleScreen() {
   const pHpPct = Math.round(Math.max(0, displayPlayerHp) / creature.maxHp * 100);
   const eHpPct = Math.round(Math.max(0, displayEnemyHp)  / enemy.maxHp   * 100);
   const et = ENEMY_TYPES[enemy.typeKey] || ENEMY_TYPES.F;
-  const eColor = isBoss ? '#ffaa00' : et.color;
+  const eColor = enemy.color || (isBoss ? '#ffaa00' : et.color);
 
   let resultBox = '';
   if(lastResult) {

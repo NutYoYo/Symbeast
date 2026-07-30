@@ -2532,6 +2532,7 @@ const BIOMES = {
   grass:  { label:'Grass',  boss:'W', majorType:'W', majorChance:0.5, day:'Background/BG-Grass-Day.jpg',    night:'Background/BG-Grass-Night.jpg'  },
 };
 function getBiomeBg() {
+  if(inSecretDungeon) return SECRET_DUNGEONS[secretDungeonIdx].bg;
   const b = BIOMES[currentBiome];
   const h = new Date().getHours();
   return (h>=6&&h<18) ? b.day : b.night;
@@ -4179,6 +4180,11 @@ function moveScout(dx,dy) {
     cell.type='empty'; scoutToast=T(`🎁 ได้ ${ITEMS[item].icon} ${ITEMS[item].name}!`,`🎁 Found ${ITEMS[item].icon} ${ITEMS[item].name}!`); saveGame(); render(); return;
   }
   if(t==='gold_chest') {
+    if(inSecretDungeon) {
+      const g = 5000 + Math.floor(Math.random()*3001); // 5000-8000, above monster tier since it's a treasure tile
+      gold += g;
+      cell.type='empty'; scoutToast=T(`💰 ได้ ${g}G!`,`💰 Found ${g}G!`); saveGame(); render(); return;
+    }
     // Mirror the monster-kill gold scaling (endBattle) — this previously used raw `stage`
     // only, which freezes at 20 once Hard unlocks, so chests never scaled up in Hard/Hell.
     const {gs: gcs, mult: gcMult} = scoutGoldScale();
@@ -7449,6 +7455,16 @@ function endBattle(won) {
       if(Math.random() < 0.20) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
       if(Math.random() < (isSpecial?0.20:0.15)) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
       if(isSpecial) { addItemToInventory('weapon_box'); rewards.push(`${ITEMS.weapon_box.icon} Weapon Box!`); }
+      // Bulk potion/shard drop, same pool as a standard Hell-tier boss — dboss gets 3-6 pieces,
+      // special_boss gets 5-9 (guaranteed, not a percentage roll — it's the dungeon's climax kill).
+      {
+        const pool = [{t:'super_potion',w:16},{t:'max_potion',w:10},{t:'power_shard',w:3},{t:'speed_shard',w:3},{t:'guard_shard',w:3},{t:'revive',w:5}];
+        const poolTotal = pool.reduce((s,p)=>s+p.w, 0);
+        const cnt = isSpecial ? (5 + Math.floor(Math.random()*5)) : (3 + Math.floor(Math.random()*4));
+        const picked = {};
+        for(let i=0;i<cnt;i++) { const it=pickFromPool(pool, poolTotal); addItemToInventory(it); picked[it]=(picked[it]||0)+1; }
+        Object.entries(picked).forEach(([it,n]) => rewards.push(`${ITEMS[it].icon} ${ITEMS[it].name} ×${n}`));
+      }
       if(isDBoss) {
         dungeonBossesKilled++;
         if(dungeonBossesKilled >= 3 && !dungeonSpecialBossSpawned) spawnDungeonSpecialBoss();

@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/((?!dex\\.html).*)","destination":"/index.html"}]}
+{"rewrites":[{"source":"/dex.html","destination":"/dex.html"},{"source":"/(.*)","destination":"/index.html"}]}

@@ -664,7 +664,7 @@ function bgmPlay(key) {
 
 function bgmForState() {
   if(state === 'title') return 'tower';
-  if(state === 'battle') return battleState?.isSecretDungeonBattle ? `dungeon_${SECRET_DUNGEONS[secretDungeonIdx].key}` : battleState?.isTowerBattle ? 'tower' : (battleState?.isVsBattle || battleState?.isGauntletBattle) ? 'vs' : 'battle';
+  if(state === 'battle') return (battleState?.isSecretDungeonBattle && SECRET_DUNGEONS[secretDungeonIdx]) ? `dungeon_${SECRET_DUNGEONS[secretDungeonIdx].key}` : battleState?.isTowerBattle ? 'tower' : (battleState?.isVsBattle || battleState?.isGauntletBattle) ? 'vs' : 'battle';
   if(state === 'vs_lobby' || state === 'vs_result') return 'vs';
   if(state === 'gauntlet') return 'vs';
   if(state === 'duel_result') return 'vs';
@@ -2207,6 +2207,12 @@ const PATCH_NOTES = [
       '🔒 Evolve II now requires unequipping Weapon and Artifact first (prevents the same stat-corruption bug as Rebirth, matching the restriction Fusion already had)',
     ]
   },
+  { ver:'v0.2.4', date:'2026-07-31', th:[
+      '🌀 เพิ่ม Secret Dungeon ใน Scout — มีโอกาสเจอทางเข้าสู่ดันเจี้ยนลับที่ Hell Stage 20 พบกับมอนสุดโหดรออยู่',
+    ], en:[
+      '🌀 Added a Secret Dungeon to Scout — a chance to find a hidden entrance at Hell Stage 20, where ferocious monsters await',
+    ]
+  },
 ];
 let pets = [];          // max 4 pet objects
 let storage = [];       // max 10 pet objects (storage box)
@@ -2552,7 +2558,7 @@ function getBattleBg() {
   else if(state === 'vs_lobby' || state === 'vs_result' || state === 'duel_result' || state === 'gauntlet') bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(isBattleActive && (battleState.isVsBattle || battleState.isDuelBattle || battleState.isGauntletBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
   else if(state === 'result' && battleState && (battleState.isVsBattle || battleState.isDuelBattle)) bg = 'Battle Scene/BG-VS-Mode.jpg';
-  else if((isBattleActive && battleState.isSecretDungeonBattle) || (inSecretDungeon && ['result','scout'].includes(state))) bg = SECRET_DUNGEONS[secretDungeonIdx].battleBg;
+  else if(((isBattleActive && battleState.isSecretDungeonBattle) || (inSecretDungeon && ['result','scout'].includes(state))) && SECRET_DUNGEONS[secretDungeonIdx]) bg = SECRET_DUNGEONS[secretDungeonIdx].battleBg;
   else if(['battle','result','scout'].includes(state)) {
     const b = BATTLE_BGS[currentBiome] || BATTLE_BGS.desert;
     const h = new Date().getHours();
@@ -2814,7 +2820,7 @@ function INFO_TEXT() {
     symbols:  T('ชนะศึกจะได้ Symbol เป็นไอเทมในกระเป๋าก่อน — ต้องไปที่ ITEMS แล้วเลือกใช้ Symbol กับ Pet ตัวนี้ ถึงจะติดเข้ามาที่นี่ (ไม่ติดอัตโนมัติ)', 'Winning battles adds Symbols to your inventory as items first — go to ITEMS and use a Symbol on this Pet to attach it here (it doesn\'t attach automatically)'),
     artifact: T('แตะช่องว่างเพื่อเลือก Artifact จากคลังมาใส่ให้ Pet ตัวนี้ — เพิ่ม Passive พิเศษระหว่างต่อสู้ ถอดเปลี่ยนได้ตลอดเวลา', 'Tap an empty slot to equip an Artifact from your bag — grants a special battle Passive. Can be swapped anytime'),
     weapon:   T('แตะช่องว่างเพื่อเลือก Weapon จากคลังมาใส่ให้ Pet ตัวนี้ — เพิ่มสเตตัสตรงๆ (เกรดสูงมีความสามารถพิเศษเพิ่ม) ใส่ได้ตัวละ 1 ชิ้น', 'Tap the empty slot to equip a Weapon from your bag — grants a flat stat boost (higher grades add a special effect too). One per Pet'),
-    scout:    T('สำรวจแผนที่ ต่อสู้มอนสเตอร์ เก็บของและ Symbol — ใช้ Stamina 1 ต่อก้าว เหมาะเป็นโหมดหลักตอนเริ่มเกม', 'Explore the map, battle monsters, and collect loot/Symbols — costs 1 Stamina per step. The main mode for early game'),
+    scout:    T('สำรวจแผนที่ ต่อสู้มอนสเตอร์ เก็บของและ Symbol — ใช้ Stamina 1 ต่อก้าว เหมาะเป็นโหมดหลักตอนเริ่มเกม 🌀 ที่ Hell Stage 20 อาจเจอ Secret Dungeon ซ่อนอยู่ — พบกับมอนสุดโหดรออยู่!', 'Explore the map, battle monsters, and collect loot/Symbols — costs 1 Stamina per step. The main mode for early game 🌀 At Hell Stage 20 you might stumble onto a Secret Dungeon — ferocious monsters await!'),
     tower:    T('ปีนหอคอยทีละชั้น ใช้ Stamina 30 ต่อรอบ ยิ่งสูงยิ่งยาก แต่รางวัลชั้นพิเศษ (ทุก 10 ชั้น) คุ้มมาก', 'Climb the Tower floor by floor, costs 30 Stamina per run — gets harder as you go, but every 10th floor has a big one-time reward'),
     raid:     T('ปลดล็อคหลังผ่าน Scout Stage 20 — สู้ 3 Wave ลุ้น Special Boss ประจำวัน ใช้ Stamina 20 ต่อรอบ เล่นได้ 5 รอบ/วัน', 'Unlocks after Scout Stage 20 — fight 3 Waves ending in the day\'s Special Boss. Costs 20 Stamina, up to 5 runs/day'),
     vs:       T('ประลองกับศัตรู AI แบบ Ladder ไม่จำกัดจำนวนครั้ง ไม่ใช้ Stamina เหมาะไว้ฝึกทีมหรือฟาร์มรางวัลเพิ่ม', 'Unlimited PvE Ladder battles against AI — no Stamina cost. Good for practicing your team or farming extra rewards'),
@@ -4678,7 +4684,7 @@ function startBattle(battleType) {
       scoutHardForm = { name:ff.name, typeKey, isBoss, isMini:false, isMimic:false, spriteFile:null, isEvolve2Enemy:true, evolve2Key:fk,
         maxHp:Math.round(ff.hp*fusScale*mult.hp), hp:Math.round(ff.hp*fusScale*mult.hp),
         atk:Math.round(ff.atk*fusScale*mult.atk), def:Math.round(ff.def*fusScale*mult.def), spd:baseSpd,
-        passives:[fk, ...pickEnemyPassivesCached(cell, typeKey, battleType==='dboss'?2:1)], ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
+        passives:[fk, ...pickEnemyPassivesCached(cell, typeKey, 2)], ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
     }
   }
   // Hell Mode bosses: 3-way random (plain Boss Monster / Evolve II / Special Boss) — Evolve I
@@ -7454,6 +7460,7 @@ function endBattle(won) {
       if(Math.random() < 0.20) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
       if(Math.random() < (isSpecial?0.20:0.15)) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
       if(isSpecial) { addItemToInventory('weapon_box'); rewards.push(`${ITEMS.weapon_box.icon} Weapon Box!`); }
+      if(isSpecial && Math.random() < 0.20) { addItemToInventory('shiny_egg'); rewards.push(`${ITEMS.shiny_egg.icon} ${ITEMS.shiny_egg.name}!`); }
       // Bulk potion/shard drop, same pool as a standard Hell-tier boss — dboss gets 3-6 pieces,
       // special_boss gets 5-9 (guaranteed, not a percentage roll — it's the dungeon's climax kill).
       {

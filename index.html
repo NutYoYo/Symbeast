@@ -855,6 +855,20 @@ const SFX = {
     _noise(0.25, t+0.7, 0.1, ctx);
   })},
 
+  rift() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    // deep descending pull — the rift tearing open
+    _sweep('sawtooth', 800, 60, 0.3, t, 0.9, ctx);
+    _sweep('sine', 400, 40, 0.25, t, 0.9, ctx);
+    _noise(0.35, t, 0.5, ctx);
+    // shimmering rising arpeggio — stepping through
+    const mel = [220, 330, 440, 660, 880];
+    mel.forEach((f,i) => _osc('sine', f, 0.16, t+0.5+i*0.09, 0.35, ctx));
+    // magical chime impact on arrival
+    _osc('triangle', 1568, 0.2, t+1.0, 0.6, ctx);
+    _osc('sine',     1976, 0.15, t+1.05, 0.6, ctx);
+  })},
+
   defeat() { _sfx(ctx => {
     const t = ctx.currentTime;
     const notes = [440, 370, 311, 220];
@@ -3054,6 +3068,7 @@ function useItem(type, petIdx=activePetIdx) {
   if(type==='mystery_egg'||type==='shiny_egg') {
     if(pets.length >= MAX_PETS) { SFX.error(); scoutToast=T('⚠ Party เต็ม! ลบสัตว์เลี้ยงก่อน','⚠ Party full! Remove a beast first'); return false; }
   }
+  if(type==='map_scroll' && inSecretDungeon) { SFX.error(); scoutToast=T('🚫 ใช้ Map Scroll ในดันเจี้ยนลับไม่ได้!','🚫 Can\'t use Map Scroll inside a Secret Dungeon!'); return false; }
   if((type==='hp_potion'||type==='super_potion'||type==='max_potion') && pet.hp <= 0) { SFX.error(); scoutToast=T('💀 ตัวนี้ตายแล้ว! ต้องใช้ Revive Stone ก่อน','💀 Beast is knocked out — use a Revive Stone first!'); return false; }
   if(type==='hp_potion' && pet.hp >= pet.maxHp) { SFX.error(); scoutToast=T('⚠ HP เต็มแล้ว!','⚠ HP is already full!'); return false; }
   if(type==='super_potion' && pet.hp >= pet.maxHp) { SFX.error(); scoutToast=T('⚠ HP เต็มแล้ว!','⚠ HP is already full!'); return false; }
@@ -4246,16 +4261,19 @@ function genDungeonGrid() {
 }
 
 function enterSecretDungeon(idx) {
-  savedScoutGrid = scoutGrid;
-  savedScoutPos = scoutPos;
-  inSecretDungeon = true;
-  secretDungeonIdx = idx;
-  dungeonBossesKilled = 0;
-  dungeonSpecialBossSpawned = false;
-  genDungeonGrid();
-  scoutPos = {x:0, y:0};
-  scoutToast = T(`🚪 เข้าสู่ดันเจี้ยนลับ: ${SECRET_DUNGEONS[idx].name}!`,`🚪 Entered secret dungeon: ${SECRET_DUNGEONS[idx].name}!`);
-  saveGame(); render();
+  SFX.rift();
+  fadeToState(() => {
+    savedScoutGrid = scoutGrid;
+    savedScoutPos = scoutPos;
+    inSecretDungeon = true;
+    secretDungeonIdx = idx;
+    dungeonBossesKilled = 0;
+    dungeonSpecialBossSpawned = false;
+    genDungeonGrid();
+    scoutPos = {x:0, y:0};
+    scoutToast = T(`🚪 เข้าสู่ดันเจี้ยนลับ: ${SECRET_DUNGEONS[idx].name}!`,`🚪 Entered secret dungeon: ${SECRET_DUNGEONS[idx].name}!`);
+    saveGame(); render();
+  });
 }
 
 function exitSecretDungeon() {
@@ -7653,7 +7671,7 @@ function endBattle(won) {
   battleState.reward = rewards.length ? rewards.join('  ') : null;
   battleItemPicker = false;
   saveGame();
-  if(won && battleState.isBoss) {
+  if(won && battleState.isBoss && !battleState.isSecretDungeonBattle) {
     SFX.stageClear();
     state = 'stageclear';
     render();

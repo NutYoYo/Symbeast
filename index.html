@@ -682,7 +682,7 @@ function bgmForState() {
 
 function fadeToState(nextStateFn) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:#000;opacity:0;z-index:9999;pointer-events:none;transition:opacity 0.6s ease';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#000;opacity:0;z-index:9999;pointer-events:auto;transition:opacity 0.6s ease';
   document.body.appendChild(overlay);
   requestAnimationFrame(() => { overlay.style.opacity = '1'; });
   // fade out BGM
@@ -7501,6 +7501,8 @@ function endBattle(won) {
           rewards.push(T('🎁 FIRST CLEAR! เช็ค Achievement เพื่อรับรางวัล','🎁 FIRST CLEAR! Check Achievements to claim your reward'));
         }
         rewards.push(T(`🏆 ${dungeon.name} เคลียร์แล้ว! กลับสู่ Hell 20`,`🏆 ${dungeon.name} cleared! Returning to Hell 20`));
+        battleState.clearedStageLabel = dungeon.name;
+        battleState.isSecretDungeonClear = true;
         exitSecretDungeon();
       }
     } else {
@@ -7671,7 +7673,7 @@ function endBattle(won) {
   battleState.reward = rewards.length ? rewards.join('  ') : null;
   battleItemPicker = false;
   saveGame();
-  if(won && battleState.isBoss && !battleState.isSecretDungeonBattle) {
+  if(won && battleState.isBoss && (!battleState.isSecretDungeonBattle || battleState.isSecretDungeonClear)) {
     SFX.stageClear();
     state = 'stageclear';
     render();
@@ -10975,8 +10977,10 @@ function renderBattleScreen() {
 
 function renderStageClear() {
   const isBoss = battleState.isBoss;
+  const isDungeonClear = !!battleState.isSecretDungeonClear;
   const sl = replayStage>0 ? `REPLAY ${replayHell?'HELL ':replayHard?'HARD ':''}${replayStage}` : (battleState.clearedStageLabel || (hellMode ? `HELL ${hellStage}` : hardMode ? `HARD ${hardStage}` : `STAGE ${stage}`));
-  const subText = isBoss ? `${sl} CLEAR!` : 'MINI-BOSS DEFEATED!';
+  const subText = isDungeonClear ? `DUNGEON ${sl} CLEAR!` : isBoss ? `${sl} CLEAR!` : 'MINI-BOSS DEFEATED!';
+  const bannerText = isDungeonClear ? 'DUNGEON CLEAR' : 'STAGE CLEAR';
   const starEmojis = ['⭐','✨','💫','🌟','⚡'];
   const starsHtml = Array.from({length:18}, (_,i) => {
     const x = 5 + Math.random()*90;
@@ -10985,11 +10989,11 @@ function renderStageClear() {
     const em = starEmojis[i % starEmojis.length];
     return `<div class="sc-star" style="left:${x}%;bottom:${10+Math.random()*30}%;animation-duration:${dur}s;animation-delay:${delay}s">${em}</div>`;
   }).join('');
-  labelStrip.textContent = '★ STAGE CLEAR ★';
+  labelStrip.textContent = `★ ${bannerText} ★`;
   screenContent.innerHTML = `
     <div class="sc-overlay" id="scOverlay">
       <div class="sc-stars">${starsHtml}</div>
-      <div class="sc-banner">STAGE CLEAR</div>
+      <div class="sc-banner">${bannerText}</div>
       <div class="sc-sub">${subText}</div>
       <div style="position:absolute;bottom:24px;font-family:Kanit,sans-serif;font-size:10px;color:#6040a0;letter-spacing:2px;animation:scBannerIn 0.4s ease 1.5s both">TAP TO CONTINUE</div>
     </div>`;

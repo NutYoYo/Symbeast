@@ -6061,6 +6061,7 @@ function doTurn(moveIdx) {
     if(bs.playerPoisonTurns>0) { bs.playerPoisonTurns=0; const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'👽',`ALIEN reversed Poison→Heal+${heal}`); }
     if(bs.playerBurnTurns>0) { bs.playerBurnTurns=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Burn→ATK+15%→${pd}`}); }
     if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Curse→ATK+15%→${pd}`}); }
+    if(bs.playerFreezeSpdTurns>0) { bs.playerFreezeSpdTurns=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Freeze→ATK+15%→${pd}`}); }
     if(pd>0 && Math.random()<0.15) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'ALIEN BLIND!'}); }
   }
   if(ff==='SHIVA-GHOST' && bs.turn%3===0) {
@@ -7032,6 +7033,7 @@ function doTurn(moveIdx) {
         if(bs.playerPoisonTurns>0) { bs.playerPoisonTurns=0; const heal=Math.round(creature.maxHp*0.03); _pHeal(heal,'👽',`ALIEN RESISTANCE reversed Poison→Heal+${heal}`); }
         else if(bs.playerBurnTurns>0) { bs.playerBurnTurns=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Burn→ATK+8%→${pd}`}); }
         else if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Curse→ATK+8%→${pd}`}); }
+        else if(bs.playerFreezeSpdTurns>0) { bs.playerFreezeSpdTurns=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Freeze→ATK+8%→${pd}`}); }
       }
       if(pd>0 && Math.random()<0.08) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'ALIEN RESISTANCE BLIND!'}); }
     }

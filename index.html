@@ -1093,7 +1093,7 @@ function evolve2BaseOfKey(key) {
 
 // Evolve II: base form's passive stays active (baseFormKey), plus a bespoke Branch Skill
 // per form (implemented in the EVOLVE II BRANCH SKILL block in doTurn).
-// Data source of truth: SYMBEAST_Evolve_Forms.xlsx (user-authored, confirmed final).
+// Data source of truth: design/SYMBEAST_Evolve_Forms.xlsx (user-authored, confirmed final).
 const EVOLVE2_FORMS = {
   'RAGING-BRAWLER':     { name:'RAGING-BRAWLER',     color:'#ff6644', hp:111, atk:50, spd:14, def:5,  passiveIcon:'💢',
     passive:'On WIN: damage dealt +15% per stack (max 5 stacks per battle, never resets)',
@@ -2400,7 +2400,7 @@ let overdriveCharge = 0;
 const MAX_OVERDRIVE = 5;
 // Overdrive is now shared per Evolve II branch symbol (F/W/S) instead of per fusion combo.
 // Overdrive: one unique move per Evolve II form (keyed by finalKey), extended from
-// the 10 original Final-Form Overdrive families. Source: SYMBEAST_Evolve_Forms.xlsx.
+// the 10 original Final-Form Overdrive families. Source: design/SYMBEAST_Evolve_Forms.xlsx.
 const OVERDRIVE_INFO = {
   'RAGING-BRAWLER':    {name:'APOCALYPSE',          icon:'💥', desc:'Strike ×2.5 twice (forced crit), then Crit +25% for 3 turns',
     descTh:'โจมตี ×2.5 สองครั้ง (Crit บังคับ) จากนั้น Crit +25% นาน 3 เทิร์น'},

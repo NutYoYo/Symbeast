@@ -1277,8 +1277,8 @@ const EVOLVE2_FORMS = {
     passive:'ATK/DEF/SPD +3% every round (max 10 stacks). 15% chance to Burn enemy for 3 turns',
     passiveTh:'ATK/DEF/SPD +3% ทุกรอบ (สูงสุด 10 ครั้ง) และมีโอกาส 15% ทำให้ศัตรูติดสถานะเผาไหม้ เป็นเวลา 3 เทิร์น' },
   'GRIFFON-GHOST':      { name:'GRIFFON-GHOST',      color:'#B8860B', hp:112, atk:36, spd:24, def:12, passiveIcon:'🦅',
-    passive:'Dodge 15%, Crit Rate+15%. On crit: enemy cannot heal for 3 turns',
-    passiveTh:'หลบ 15%, Crit Rate+15% เมื่อโจมตีติดคริติคอล จะทำให้ศัตรูติดสถานะฟื้นฟู HP ไม่ได้ 3 เทิร์น' },
+    passive:'Dodge 15%, Crit Rate+15%, SPD+15% for the whole battle. On crit: enemy cannot heal for 3 turns',
+    passiveTh:'หลบ 15%, Crit Rate+15%, SPD+15% ในการต่อสู้ เมื่อโจมตีติดคริติคอล จะทำให้ศัตรูติดสถานะฟื้นฟู HP ไม่ได้ 3 เทิร์น' },
   'OCTOPUS-GHOST':      { name:'OCTOPUS-GHOST',      color:'#8A2BE2', hp:125, atk:30, spd:20, def:16, passiveIcon:'🐙',
     passive:'30% chance to Blind enemy on hit (50% miss for 3 turns)',
     passiveTh:'โอกาส 30% ทำให้ศัตรูติดสถานะตาบอด (โจมตีพลาด 50% เป็นเวลา 3 เทิร์น)' },
@@ -1286,11 +1286,11 @@ const EVOLVE2_FORMS = {
     passive:'Upon death: revive with 100% HP and Burn enemy for 10 turns (once per battle)',
     passiveTh:'เมื่อตายจะฟื้นคืนชีพด้วย HP 100% และทำให้ศัตรูติดสถานะเผาไหม้ 10 เทิร์น (1 ครั้ง/การต่อสู้)' },
   'UNICORN-GHOST':      { name:'UNICORN-GHOST',      color:'#E6E6FA', hp:115, atk:32, spd:25, def:12, passiveIcon:'🦄',
-    passive:'Recover 8% HP per turn. Cleanse 1 debuff per turn',
-    passiveTh:'ฟื้น HP 8% ต่อเทิร์น ล้างดีบัฟ 1 อย่างต่อเทิร์น' },
+    passive:'Recover 8% HP per turn. Cleanse 1 debuff per turn (Curse/No-Heal/Burn/Poison/Stun/Blind/Heal-Block/Freeze — covers all types)',
+    passiveTh:'ฟื้น HP 8% ต่อเทิร์น ล้างดีบัฟ 1 อย่างต่อเทิร์น (Curse/No-Heal/Burn/Poison/Stun/Blind/Heal-Block/Freeze — ครอบคลุมทุกประเภท)' },
   'PANDA-GHOST':        { name:'PANDA-GHOST',        color:'#FFFFFF', hp:120, atk:33, spd:18, def:15, passiveIcon:'🐼',
-    passive:'Crit Rate+25%. 15% chance to stun on hit',
-    passiveTh:'Crit Rate+25% โอกาสสตัน 15% เมื่อโจมตี' },
+    passive:'Crit Rate+25%. 20% chance to stun on hit',
+    passiveTh:'Crit Rate+25% โอกาสสตัน 20% เมื่อโจมตี' },
 };
 
 const SPRITE_NAMES = {
@@ -2535,11 +2535,11 @@ const FUSION_ECHO_INFO = {
   'AXOLOTL-GHOST':      {name:'AXOLOTL ECHO',   icon:'🦎', desc:'5% chance to dodge; when hit, 30% chance to recover 10% HP', descTh:'โอกาสหลบ 5% เมื่อถูกโจมตีโอกาส 30% ฟื้น HP 10%'},
   'CAT-GHOST':          {name:'CAT ECHO',       icon:'😼', desc:'10% dodge; if hit: ATK/SPD+30% next round', descTh:'หลบ 10% ถ้าโดนโจมตี: ATK/SPD+30% รอบถัดไป'},
   'DRAGON-GHOST':       {name:'DRAGON ECHO',    icon:'🔥', desc:'ATK/DEF/SPD +1.5%/round (max 10 stacks); 8% chance to Burn enemy', descTh:'ATK/DEF/SPD +1.5% ต่อรอบ (สูงสุด 10 ครั้ง) โอกาส 8% เผาศัตรู'},
-  'GRIFFON-GHOST':      {name:'GRIFFON ECHO',   icon:'🦅', desc:'10% dodge, 10% crit; on crit: enemy cannot heal for 3 turns', descTh:'หลบ 10%, Crit+10% เมื่อคริ: ศัตรูฟื้นฟู HP ไม่ได้ 3 เทิร์น'},
+  'GRIFFON-GHOST':      {name:'GRIFFON ECHO',   icon:'🦅', desc:'For the whole battle: 10% dodge, 10% crit, SPD+10%; on crit: enemy cannot heal for 3 turns', descTh:'ในการต่อสู้ หลบ 10%, Crit+10%, SPD+10% เมื่อคริ: ศัตรูฟื้นฟู HP ไม่ได้ 3 เทิร์น'},
   'OCTOPUS-GHOST':      {name:'OCTOPUS ECHO',   icon:'🐙', desc:'15% chance to Blind enemy on hit (50% miss for 3 turns)', descTh:'โอกาส 15% ทำให้ศัตรูตาบอด (โจมตีพลาด 50% 3 เทิร์น)'},
   'PHOENIX-GHOST':      {name:'PHOENIX ECHO',   icon:'🔱', desc:'Once: revive with 50% HP, Burn enemy for 5 turns', descTh:'ครั้งเดียว: ฟื้นคืนชีพด้วย HP 50% เผาศัตรู 5 เทิร์น'},
-  'UNICORN-GHOST':      {name:'UNICORN ECHO',   icon:'✨', desc:'Recover 4% HP/turn; cleanse 1 debuff every turn', descTh:'ฟื้น HP 4% ต่อเทิร์น ล้างดีบัฟ 1 อย่างต่อเทิร์น'},
-  'PANDA-GHOST':        {name:'PANDA ECHO',     icon:'☯️', desc:'Crit+15%; 10% chance to stun on hit', descTh:'Crit+15% โอกาสสตัน 10% เมื่อโจมตี'},
+  'UNICORN-GHOST':      {name:'UNICORN ECHO',   icon:'✨', desc:'Recover 4% HP/turn; cleanse 1 debuff every turn (Curse/No-Heal/Burn/Poison/Stun/Blind/Heal-Block/Freeze — covers all types)', descTh:'ฟื้น HP 4% ต่อเทิร์น ล้างดีบัฟ 1 อย่างต่อเทิร์น (Curse/No-Heal/Burn/Poison/Stun/Blind/Heal-Block/Freeze — ครอบคลุมทุกประเภท)'},
+  'PANDA-GHOST':        {name:'PANDA ECHO',     icon:'☯️', desc:'Crit+15%; 13% chance to stun on hit', descTh:'Crit+15% โอกาสสตัน 13% เมื่อโจมตี'},
 };
 // Overdrive-buff crit-chance bonuses that must apply before the crit roll (see doTurn's critChance calc)
 const OD_CRIT_BONUS = {
@@ -2988,6 +2988,7 @@ function getEnemyEffSpd(enemy, bs) {
   if(bs?.eGhostBunnyAtkBuff) val = Math.round(val * 1.5);
   if(bs?.eGhostCatAtkBuff) val = Math.round(val * 1.5);
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='TRICKFOX-GHOST') val = Math.round(val * 1.25);
+  if(enemy.isEvolve2Enemy && enemy.evolve2Key==='GRIFFON-GHOST') val = Math.round(val * 1.15);
   return val;
 }
 function getEffStat(stat) {
@@ -3002,6 +3003,8 @@ function getEffStat(stat) {
   if(stat==='spd' && creature.inheritedPassive==='TRICKFOX-GHOST') val = Math.round(val * 1.12);
   if(stat==='spd' && battleState?.ghostCatAtkBuff) val = Math.round(val * 1.5);
   if(stat==='spd' && battleState?.echoCatAtkBuff) val = Math.round(val * 1.3);
+  if(stat==='spd' && creature.phase==='final' && creature.finalKey==='GRIFFON-GHOST') val = Math.round(val * 1.15);
+  if(stat==='spd' && creature.inheritedPassive==='GRIFFON-GHOST') val = Math.round(val * 1.10);
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   // Ghost branch skill modifiers (battle-only, temporary — resets every battle)
@@ -5752,9 +5755,10 @@ function doTurn(moveIdx) {
     if(!cleansed && bs.playerStunnedNextTurn) { bs.playerStunnedNextTurn=false; cleansed=true; }
     if(!cleansed && bs.pBlindTurns>0) { bs.pBlindTurns=0; cleansed=true; }
     if(!cleansed && bs.playerHealBlockTurns>0) { bs.playerHealBlockTurns=0; cleansed=true; }
+    if(!cleansed && bs.playerFreezeSpdTurns>0) { bs.playerFreezeSpdTurns=0; cleansed=true; }
     if(cleansed) passives.push({icon:'✨',text:'UNICORN CLEANSED!'});
   }
-  if(ff==='PANDA-GHOST' && !enemyStunned && pd>0 && Math.random()<0.15) {
+  if(ff==='PANDA-GHOST' && !enemyStunned && pd>0 && Math.random()<0.20) {
     if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'☯️',text:'PANDA STUN!'});
   }
 
@@ -6277,9 +6281,10 @@ function doTurn(moveIdx) {
     if(!cleansed && bs.enemyStunnedNextTurn) { bs.enemyStunnedNextTurn=false; cleansed=true; }
     if(!cleansed && bs.eBlindTurns>0) { bs.eBlindTurns=0; cleansed=true; }
     if(!cleansed && bs.enemyHealBlockTurns>0) { bs.enemyHealBlockTurns=0; cleansed=true; }
+    if(!cleansed && bs.enemyFreezeSpdTurns>0) { bs.enemyFreezeSpdTurns=0; cleansed=true; }
     if(cleansed) passives.push({icon:'✨',text:'[E] UNICORN CLEANSED!'});
   }
-  if(fk2==='PANDA-GHOST' && !playerStunned && ed>0 && Math.random()<0.15) {
+  if(fk2==='PANDA-GHOST' && !playerStunned && ed>0 && Math.random()<0.20) {
     if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'☯️',text:'[E] PANDA STUN!'});
   }
   // ── Deferred dodge effect (enemy side): artifact/weapon dodge triggers form secondary effect ──
@@ -6626,10 +6631,11 @@ function doTurn(moveIdx) {
       if(!cleansed && bs.playerStunnedNextTurn) { bs.playerStunnedNextTurn = false; cleansed = true; }
       if(!cleansed && bs.pBlindTurns > 0) { bs.pBlindTurns = 0; cleansed = true; }
       if(!cleansed && bs.playerHealBlockTurns > 0) { bs.playerHealBlockTurns = 0; cleansed = true; }
+      if(!cleansed && bs.playerFreezeSpdTurns > 0) { bs.playerFreezeSpdTurns = 0; cleansed = true; }
       if(cleansed) passives.push({icon:'✨',text:'UNICORN ECHO CLEANSED!'});
     }
     else if(ip==='PANDA-GHOST') {
-      if(!enemyStunned && pd > 0 && Math.random() < 0.10) {
+      if(!enemyStunned && pd > 0 && Math.random() < 0.13) {
         if(!playerFirst) { bs.enemyStunnedNextTurn = true; } else { ed = 0; enemyStunned = true; }
         SFX.stun(); passives.push({icon:'☯️',text:'PANDA ECHO STUN!'});
       }

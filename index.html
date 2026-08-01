@@ -1220,8 +1220,8 @@ const EVOLVE2_FORMS = {
     passive:'Attacks deal x1.75 damage when enemy HP > 50%',
     passiveTh:'โจมตี x1.75 เมื่อศัตรูมี HP > 50%' },
   'LION-GHOST':         { name:'LION-GHOST',         color:'#FF8C00', hp:108, atk:52, spd:16, def:5,  passiveIcon:'🦁',
-    passive:'First 3 turns: guaranteed crit against each enemy and enemy ATK permanently -10%',
-    passiveTh:'โจมตี 3 เทิร์นแรกใส่ศัตรูแต่ละตัวติดคริติคอลแน่นอน และลด ATK ศัตรู 10% ตลอดการต่อสู้' },
+    passive:'First 5 turns: guaranteed crit against each enemy and enemy ATK permanently -10%',
+    passiveTh:'โจมตี 5 เทิร์นแรกใส่ศัตรูแต่ละตัวติดคริติคอลแน่นอน และลด ATK ศัตรู 10% ตลอดการต่อสู้' },
   'TIGER-GHOST':        { name:'TIGER-GHOST',        color:'#FF6600', hp:114, atk:50, spd:18, def:5,  passiveIcon:'🐯',
     passive:'On WIN: damage +50%. On LOSE: SPD+100% next round',
     passiveTh:'เมื่อ WIN ดาเมจ+50% เมื่อ LOSE SPD+100% ในรอบถัดไป' },
@@ -1239,8 +1239,8 @@ const EVOLVE2_FORMS = {
     passive:'15% chance to attack 3 times. On success: 50% chance to poison the enemy',
     passiveTh:'โอกาส 15% โจมตี 3 ครั้ง เมื่อสำเร็จมีโอกาสทำให้ศัตรูติดพิษ 50%' },
   'BUNNY-GHOST':        { name:'BUNNY-GHOST',        color:'#FFB6C1', hp:96,  atk:24, spd:48, def:4,  passiveIcon:'🐰',
-    passive:'Dodge 20%. On dodge: ATK+50% next round',
-    passiveTh:'หลบ 20% เมื่อหลบสำเร็จ ATK+50% รอบถัดไป' },
+    passive:'Dodge 20%. On dodge: ATK/SPD+50% next round',
+    passiveTh:'หลบ 20% เมื่อหลบสำเร็จ ATK/SPD+50% รอบถัดไป' },
   'TRICKFOX-GHOST':     { name:'TRICKFOX-GHOST',     color:'#FF6347', hp:104, atk:30, spd:42, def:5,  passiveIcon:'🦊',
     passive:'50% chance to Burn the enemy for 3 turns',
     passiveTh:'โอกาส 50% ทำให้ศัตรูติดสถานะเผาไหม้ เป็นเวลา 3 เทิร์น' },
@@ -2407,8 +2407,8 @@ const OVERDRIVE_INFO = {
     descTh:'โจมตี ×2.5 ทะลุ DEF + หลบเทิร์นนี้ จากนั้น ATK×1.5, โอกาสหลบ +30% และโจมตีครั้งถัดไปติด Crit แน่นอน นาน 3 เทิร์น'},
   'RUNE-IRONJAW':      {name:'CRIMSON REAPER RUNE', icon:'🩸', desc:'Strike ×2.5 + lifesteal 50% this turn + random Rune buff (ATK+50% or DEF+50%), then lifesteal +20% and random Rune buff for 3 turns',
     descTh:'โจมตี ×2.5 + ดูดเลือด 50% เทิร์นนี้ + สุ่ม Rune บัฟ (ATK+50% หรือ DEF+50%) จากนั้นดูดเลือด +20% และสุ่ม Rune บัฟ นาน 3 เทิร์น'},
-  'THUNDERCLOUD-BLITZ':{name:'THUNDERCLOUD BURST',  icon:'⚡', desc:'Strike ×3.0 + stun this turn, then ATK/SPD +25% and 50% stun chance for 3 turns',
-    descTh:'โจมตี ×3.0 + สตันศัตรูเทิร์นนี้ → จากนั้น 3 เทิร์น: ATK+25%, SPD+25%, มีโอกาส 50% สตันทุกรอบ'},
+  'THUNDERCLOUD-BLITZ':{name:'THUNDER STORM',  icon:'⚡', desc:'Strike ×2.5 + stun this turn, then ATK x2 and 25% stun chance for 3 turns',
+    descTh:'โจมตี ×2.5 + สตันศัตรู จากนั้น ATK×2 และโอกาสสตัน 25% นาน 3 เทิร์น'},
   'SOUL-CHAMPION':     {name:'SOUL BALANCE',        icon:'⚖️', desc:'Strike ×2.0 + halve enemy damage this turn, then ATK/DEF +25% and 50% chance to double-attack for 3 turns',
     descTh:'โจมตี ×2.0 + ลดดาเมจศัตรูครึ่งหนึ่งเทิร์นนี้ จากนั้น ATK/DEF +25% และมีโอกาส 50% โจมตี 2 ครั้ง นาน 3 เทิร์น'},
   'POISON-FORTRESS':   {name:'VENOM EARTHSHATTER',  icon:'🏔️', desc:'Strike ×2.5 + reflect all damage this turn + poison ☠️ the enemy for 3 turns, then reflect 50%, ATK +20% and 25% chance to poison on hit for 3 turns',
@@ -2517,13 +2517,13 @@ const FUSION_ECHO_INFO = {
   'GOLEM-BASTION':      {name:'GOLEM ECHO',       icon:'🗿', desc:'Damage taken -10%; while HP < 30%, ATK +15% and recovers 2.5% HP each round', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP < 30% ATK+15% และฟื้นฟู HP 2.5%'},
   // === GHOST Echo Passives (half-strength Fusion versions) ===
   'RAGEBEAR-GHOST':     {name:'RAGE ECHO',      icon:'💢', desc:'Damage +50% when enemy HP > 50%', descTh:'ดาเมจ +50% เมื่อศัตรูมี HP > 50%'},
-  'LION-GHOST':         {name:'ROAR ECHO',      icon:'👑', desc:'First 3 turns: crit chance +50% and permanently reduce enemy ATK by 5%', descTh:'3 เทิร์นแรก: โอกาสคริ +50% และลด ATK ศัตรู 5% ตลอดการต่อสู้'},
+  'LION-GHOST':         {name:'ROAR ECHO',      icon:'👑', desc:'First 5 turns: crit chance +50% and reduce enemy ATK by 5% for the rest of the battle', descTh:'5 เทิร์นแรก: โอกาสคริ +50% และลด ATK ศัตรู 5% ตลอดการต่อสู้'},
   'TIGER-GHOST':        {name:'TIGER ECHO',     icon:'🐯', desc:'On WIN: damage +25%; on LOSE: SPD+50% next round', descTh:'เมื่อ WIN: ดาเมจ+25% เมื่อ LOSE: SPD+50% รอบถัดไป'},
   'WOLF-GHOST':         {name:'WOLF ECHO',      icon:'🐺', desc:'12% chance to attack twice (20% when HP<50%)', descTh:'โอกาส 12% โจมตี 2 ครั้ง (20% เมื่อ HP<50%)'},
   'SHARK-GHOST':        {name:'SHARK ECHO',     icon:'🦈', desc:'+15% damage and 15% lifesteal vs enemies with HP<50%', descTh:'ดาเมจ+15% และดูดเลือด 15% ใส่ศัตรู HP<50%'},
   'MANTIS-GHOST':       {name:'MANTIS ECHO',    icon:'⚔️', desc:'Crit damage x2. When HP<20%: damage +25%', descTh:'คริติคอลดาเมจ x2 เมื่อ HP<20%: ดาเมจ+25%'},
   'BEE-GHOST':          {name:'SWARM ECHO',     icon:'🐝', desc:'10% chance to attack 3 times; on success, 25% chance to poison enemy', descTh:'โอกาส 10% โจมตี 3 ครั้ง เมื่อสำเร็จ โอกาส 25% ทำให้ศัตรูติดพิษ'},
-  'BUNNY-GHOST':        {name:'BUNNY ECHO',     icon:'🐰', desc:'10% dodge; on dodge: ATK+25% next round', descTh:'หลบ 10% เมื่อหลบสำเร็จ ATK+25% รอบถัดไป'},
+  'BUNNY-GHOST':        {name:'BUNNY ECHO',     icon:'🐰', desc:'10% dodge; on dodge: ATK/SPD+25% next round', descTh:'หลบ 10% เมื่อหลบสำเร็จ ATK/SPD+25% รอบถัดไป'},
   'TRICKFOX-GHOST':     {name:'TRICK ECHO',     icon:'🎭', desc:'25% chance to Burn the enemy for 3 turns', descTh:'โอกาส 25% ทำให้ศัตรูติดสถานะเผาไหม้ 3 เทิร์น'},
   'OWL-GHOST':          {name:'OWL ECHO',       icon:'👁️', desc:'Attacks never miss; 10% chance to Blind enemy on hit', descTh:'โจมตีไม่พลาดเป้า โอกาส 10% ทำให้ศัตรูตาบอดเมื่อโจมตี'},
   'VOLTMOUSE-GHOST':    {name:'VOLT ECHO',      icon:'⚡', desc:'Every turn: random effect — stun enemy, ATK-50%, DEF-50%, or give enemy ATK+25%', descTh:'ทุกเทิร์นมีโอกาสสุ่ม ทำให้ศัตรูสตัน,ลด ATK 50%,ลด DEF 50%, เพิ่ม ATK 25%(ให้ศัตรู)'},
@@ -2985,6 +2985,7 @@ function spdDodgeChance(mySpd, theirSpd) {
 function getEnemyEffSpd(enemy, bs) {
   let val = enemy.spd;
   if(bs?.enemyFreezeSpdTurns > 0) val = Math.round(val * 0.75);
+  if(bs?.eGhostBunnyAtkBuff) val = Math.round(val * 1.5);
   return val;
 }
 function getEffStat(stat) {
@@ -2993,6 +2994,8 @@ function getEffStat(stat) {
   const exp = creature.buffExpiry?.[stat] || 0;
   let val = (exp > now) ? Math.round(base * 1.2) : base;
   if(stat==='spd' && battleState?.playerFreezeSpdTurns > 0) val = Math.round(val * 0.75);
+  if(stat==='spd' && battleState?.ghostBunnyAtkBuff) val = Math.round(val * 1.5);
+  if(stat==='spd' && battleState?.echoBunnyAtkBuff) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   // Ghost branch skill modifiers (battle-only, temporary — resets every battle)
@@ -5038,8 +5041,8 @@ function doOverdriveTurn() {
     bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🩸',text:`CRIMSON REAPER RUNE ×2.5→${pd} + Lifesteal50% +${ls} | rune+20%lifesteal (3T)`});
   } else if(ff==='THUNDERCLOUD-BLITZ') {
-    const h=_hit(3.0); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:ff,turnsLeft:3};
-    passives.push({icon:'⚡',text:`THUNDERCLOUD BURST ×3.0→${pd} + STUN | ATK/SPD+25%,stun50% (3T)`});
+    const h=_hit(2.5); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'⚡',text:`THUNDER STORM ×2.5→${pd} + STUN | ATKx2,stun25% (3T)`});
   } else if(ff==='SOUL-CHAMPION') {
     const h=_hit(2.0); pd=h.d; ed=Math.round(_ed()*0.5); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'⚖️',text:`SOUL BALANCE ×2.0→${pd} + half dmg | ATK/DEF+25%,doubleAttack+50% (3T)`});
@@ -5225,13 +5228,13 @@ function doTurn(moveIdx) {
   if(ff==='FIGHT-SWIFTGUARD') critChance += 0.05 * (bs.e2Stack||0);
   if(ff==='IRON-BASTION' && bs.turn%3===0) critChance += 1.0;
   if(bs.odBuff?.type===creature.finalKey) critChance = Math.min(1, critChance + (OD_CRIT_BONUS[creature.finalKey]||0));
-  if(ff==='LION-GHOST' && bs.turn<=3) critChance = 1;
+  if(ff==='LION-GHOST' && bs.turn<=5) critChance = 1;
   if(ff==='GRIFFON-GHOST') critChance += 0.15;
   if(ff==='PANDA-GHOST') critChance += 0.25;
   // Fusion Echo crit bonuses
   if(creature.inheritedPassive) {
     const ip = creature.inheritedPassive;
-    if(ip==='LION-GHOST' && bs.turn <= 3) critChance += 0.50;
+    if(ip==='LION-GHOST' && bs.turn <= 5) critChance += 0.50;
     if(ip==='GRIFFON-GHOST') critChance += 0.10;
     if(ip==='PANDA-GHOST') critChance += 0.15;
   }
@@ -5269,7 +5272,7 @@ function doTurn(moveIdx) {
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='FIGHT-SWIFTGUARD' && cmp==='lose') bs.e2StackE = Math.min(3, (bs.e2StackE||0)+1);
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='FIGHT-SWIFTGUARD') eCritBonus += 0.05 * (bs.e2StackE||0);
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='IRON-BASTION' && bs.turn%3===0) eCritBonus += 1.0;
-  if(enemy.isEvolve2Enemy && enemy.evolve2Key==='LION-GHOST' && bs.turn<=3) eCritBonus = 1.0;
+  if(enemy.isEvolve2Enemy && enemy.evolve2Key==='LION-GHOST' && bs.turn<=5) eCritBonus = 1.0;
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='GRIFFON-GHOST') eCritBonus += 0.15;
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='PANDA-GHOST') eCritBonus += 0.25;
   // TYRANTJAW (special boss): crit chance +20%
@@ -5414,7 +5417,7 @@ function doTurn(moveIdx) {
     if(type==='GAIA-SHIELDWING') { pd=Math.round(pd*1.3); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🌿',`GAIA WRATH ATK/DEF+30%,+${heal}HP`); }
     if(type==='PANDA-NINJA') { pd=Math.round(pd*1.5); if(!enemyTrueStrike && Math.random()<0.30){ed=0;} bs.playerGuaranteeCrit=true; passives.push({icon:'🥷',text:`SHADOW STRIKE dodge+30%,guaranteeCrit→${pd}`}); }
     if(type==='RUNE-IRONJAW') { bs.e2RuneType=['atk','def'][Math.floor(Math.random()*2)]; const runeMul=bs.e2RuneType==='atk'?1.5:1.0; const runeDef=bs.e2RuneType==='def'?1.5:1.0; pd=Math.round(pd*runeMul); ed=Math.round(ed/runeDef); const heal=Math.round(pd*0.20); _pHeal(heal,'🔮',`RUNE R.${runeMul>1?'+50%ATK':'+50%DEF'}→${pd},+${heal}HP`); }
-    if(type==='THUNDERCLOUD-BLITZ') { pd=Math.round(pd*1.25); if(!enemyStunned && Math.random()<0.50){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⛈️',text:`THUNDERCLOUD BURST ATK/SPD+25%,stun50%→${pd}`}); }
+    if(type==='THUNDERCLOUD-BLITZ') { pd=Math.round(pd*2); if(!enemyStunned && Math.random()<0.25){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⛈️',text:`THUNDER STORM ATKx2,stun25%→${pd}`}); }
     if(type==='SOUL-CHAMPION') { pd=Math.round(pd*1.25); ed=Math.round(ed*0.75); const isDouble=Math.random()<0.50; if(isDouble){ const orig=pd; pd=orig*2; pdHits=[orig,orig]; } passives.push({icon:'⚖️',text:`SOUL BALANCE ATK/DEF+25%,double50%→${pd}${isDouble?'x2!':''}`}); }
     if(type==='POISON-FORTRESS') { pd=Math.round(pd*1.20); ed=Math.round(ed*0.50); if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')&&Math.random()<0.25&&!hasAntiPoison){bs.enemyPoisonTurns=3;} passives.push({icon:'☠️',text:`VENOM EARTHSHATTER ATK+20%,reflect50%,poisonOnHit→${pd}`}); }
     if(type==='MAGE-SPECTER') { if(Math.random()<0.30){bs.e2CurseTurns=2;} passives.push({icon:'🧙',text:`MAGE SCYTHE crit+30%,curse30%→${pd}`}); }
@@ -5672,7 +5675,7 @@ function doTurn(moveIdx) {
     else passives.push({icon:'🐝',text:`BEE TRIPLE HIT!→${pd}`});
   }
   if(ff==='BUNNY-GHOST') {
-    if(bs.ghostBunnyAtkBuff) { pd=Math.round(pd*1.5); bs.ghostBunnyAtkBuff=false; passives.push({icon:'🐰',text:`BUNNY BUFF ATK+50%→${pd}`}); }
+    if(bs.ghostBunnyAtkBuff) { pd=Math.round(pd*1.5); bs.ghostBunnyAtkBuff=false; passives.push({icon:'🐰',text:`BUNNY BUFF ATK/SPD+50%→${pd}`}); }
     if(!enemyTrueStrike && Math.random()<0.20) { ed=0; bs.ghostBunnyAtkBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🐰',text:'BUNNY DODGE! ATK+50% next'}); }
   }
   if(ff==='TRICKFOX-GHOST' && pd>0 && Math.random()<0.5) { bs.enemyBurnTurns=3; passives.push({icon:'🎭',text:'TRICKFOX BURN! (3T)'}); }
@@ -5913,7 +5916,7 @@ function doTurn(moveIdx) {
     else if(ff==='SOUL-SPECTER') { bs.e2NextBuff=true; passives.push({icon:'👻',text:'SOUL BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
     else if(ff==='QUICK-SWIFTGUARD') { bs.e2NextBuff=true; passives.push({icon:'💨',text:'QUICK BUFF from dodge! next pierce+true strike'}); _dodgeEffectApplied=true; }
     else if(ff==='PANDA-NINJA') { bs.e2NextGuaranteeCrit=true; passives.push({icon:'🥷',text:'PANDA-NINJA next crit GUARANTEED from dodge!'}); _dodgeEffectApplied=true; }
-    else if(ff==='BUNNY-GHOST') { bs.ghostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ATK+50% next from dodge!'}); _dodgeEffectApplied=true; }
+    else if(ff==='BUNNY-GHOST') { bs.ghostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ATK/SPD+50% next from dodge!'}); _dodgeEffectApplied=true; }
     else if(ff==='CAT-GHOST') { bs.ghostCatAtkBuff=true; passives.push({icon:'😼',text:'CAT ATK/DEF+50% next from dodge!'}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`WINDBLADE ECHO Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='STORM-BLITZ') { bs.echoStormBuff=true; passives.push({icon:'🌩',text:'STORM ECHO BUFF from dodge! ATK+25% next'}); _dodgeEffectApplied=true; }
@@ -5921,7 +5924,7 @@ function doTurn(moveIdx) {
     else if(creature.inheritedPassive==='SOUL-SPECTER') { bs.echoSoulDouble=true; passives.push({icon:'👻',text:'SOUL ECHO BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='QUICK-SWIFTGUARD') { bs.echoQuickBuff=true; passives.push({icon:'💨',text:'QUICK ECHO BUFF from dodge! next empowered'}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='PANDA-NINJA') { bs.echoNinjaCrit=true; passives.push({icon:'🥷',text:'PANDA-NINJA ECHO next crit chance from dodge!'}); _dodgeEffectApplied=true; }
-    else if(creature.inheritedPassive==='BUNNY-GHOST') { bs.echoBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ECHO ATK+25% next from dodge!'}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='BUNNY-GHOST') { bs.echoBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ECHO ATK/SPD+25% next from dodge!'}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='CAT-GHOST') { bs.echoCatAtkBuff=true; passives.push({icon:'😼',text:'CAT ECHO ATK/DEF+30% next from dodge!'}); _dodgeEffectApplied=true; }
   }
 
@@ -6197,7 +6200,7 @@ function doTurn(moveIdx) {
     else passives.push({icon:'🐝',text:`[E] BEE TRIPLE HIT!→${ed}`});
   }
   if(fk2==='BUNNY-GHOST') {
-    if(bs.eGhostBunnyAtkBuff) { ed=Math.round(ed*1.5); bs.eGhostBunnyAtkBuff=false; passives.push({icon:'🐰',text:`[E] BUNNY BUFF ATK+50%→${ed}`}); }
+    if(bs.eGhostBunnyAtkBuff) { ed=Math.round(ed*1.5); bs.eGhostBunnyAtkBuff=false; passives.push({icon:'🐰',text:`[E] BUNNY BUFF ATK/SPD+50%→${ed}`}); }
     if(!bs.playerTrueStrike && Math.random()<0.20) { pd=0; bs.eGhostBunnyAtkBuff=true; _eDodgeEffectApplied=true; passives.push({icon:'🐰',text:'[E] BUNNY DODGE! ATK+50% next'}); }
   }
   if(fk2==='TRICKFOX-GHOST' && ed>0 && Math.random()<0.5) { bs.playerBurnTurns=3; passives.push({icon:'🎭',text:'[E] TRICKFOX BURN! (3T)'}); }
@@ -6279,7 +6282,7 @@ function doTurn(moveIdx) {
     else if(fk2==='SOUL-SPECTER') { bs.e2NextBuffE=true; passives.push({icon:'👻',text:'[E] SOUL BUFF from dodge! next ×2'}); _eDodgeEffectApplied=true; }
     else if(fk2==='QUICK-SWIFTGUARD') { bs.e2NextBuffE=true; passives.push({icon:'💨',text:'[E] QUICK BUFF from dodge! next pierce'}); _eDodgeEffectApplied=true; }
     else if(fk2==='PANDA-NINJA') { bs.e2NextGuaranteeCritE=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA next crit GUARANTEED from dodge!'}); _eDodgeEffectApplied=true; }
-    else if(fk2==='BUNNY-GHOST') { bs.eGhostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'[E] BUNNY ATK+50% next from dodge!'}); _eDodgeEffectApplied=true; }
+    else if(fk2==='BUNNY-GHOST') { bs.eGhostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'[E] BUNNY ATK/SPD+50% next from dodge!'}); _eDodgeEffectApplied=true; }
     else if(fk2==='CAT-GHOST') { bs.eGhostCatAtkBuff=true; passives.push({icon:'😼',text:'[E] CAT ATK/DEF+50% next from dodge!'}); _eDodgeEffectApplied=true; }
   }
   }
@@ -6520,7 +6523,7 @@ function doTurn(moveIdx) {
       }
     }
     else if(ip==='BUNNY-GHOST') {
-      if(bs.echoBunnyAtkBuff) { pd = Math.round(pd * 1.25); bs.echoBunnyAtkBuff = false; passives.push({icon:'🐰',text:`BUNNY ECHO BUFF ATK+25%→${pd}`}); }
+      if(bs.echoBunnyAtkBuff) { pd = Math.round(pd * 1.25); bs.echoBunnyAtkBuff = false; passives.push({icon:'🐰',text:`BUNNY ECHO BUFF ATK/SPD+25%→${pd}`}); }
       if(!enemyTrueStrike && Math.random() < 0.10) { ed = 0; bs.echoBunnyAtkBuff = true; _dodgeEffectApplied = true; passives.push({icon:'🐰',text:'BUNNY ECHO DODGE! ATK+25% next'}); }
     }
     else if(ip==='TRICKFOX-GHOST') {

@@ -2290,6 +2290,14 @@ const PATCH_NOTES = [
       '🌀 Added a Secret Dungeon to Scout — a chance to find a hidden entrance at Hell Stage 20, where ferocious monsters await',
     ]
   },
+  { ver:'v0.2.5', date:'2026-08-01', th:[
+      '⚡ SPD มีผลต่อการหลบหลีกแล้ว — ทุกๆ 25% ที่ SPD ของคุณนำศัตรู เพิ่มโอกาสหลบการโจมตี +4% (สูงสุด +20%) ซ้อนทับกับโอกาสหลบจากสกิล/Artifact ที่มีอยู่เดิม ใช้ได้ทั้งฝั่งผู้เล่นและศัตรู',
+      '❄️ เพิ่มสถานะใหม่ Freeze (แช่แข็ง) — โจมตีไม่ได้ 1 เทิร์น และ SPD ลดลง 25% นาน 3 เทิร์น มี Badge แสดงจำนวนเทิร์นที่เหลือระหว่างการต่อสู้',
+    ], en:[
+      '⚡ SPD now affects dodge chance — every 25% SPD advantage over your opponent grants +4% dodge (capped at +20%), stacking on top of existing skill/Artifact dodge sources, for both you and enemies',
+      '❄️ Added a new status effect, Freeze — target can\'t attack for 1 turn and SPD is reduced 25% for 3 turns, shown as an in-battle turn-counter badge',
+    ]
+  },
 ];
 let pets = [];          // max 4 pet objects
 let storage = [];       // max 10 pet objects (storage box)
@@ -10722,7 +10730,7 @@ function renderMenu() {
               ['🥚','FUSION',T(`เลือก Pet ร่าง Evolve II 2 ตัว (ต้องถอด Artifact/Weapon ก่อน) มา Fusion ด้วย Rebirth Stone ${FUSION_STONE_COST} ชิ้น + Gold ${FUSION_GOLD_COST} — ทั้งคู่จะหายไป ได้ Fusion Egg แทน\n\n🥚 ฟักไข่แบบปกติ ได้สัตว์ใหม่ที่มีสเตตัสเริ่มต้นสูงขึ้น (25% ของค่าเฉลี่ยพ่อแม่) พร้อมพาสซีพ "Echo" ติดตัวมาแบบสุ่มจาก 1 ใน 2 ตัว (พาสซีพครึ่งความแรง ไม่ขึ้นกับร่างที่วิวัฒนาการทีหลัง) ดูได้ที่หน้ารายละเอียด Pet\n\n✨ ถ้าพ่อแม่เป็น Shiny มีโอกาสสืบทอดความ Shiny ด้วย — พ่อแม่ Shiny 1 ตัว = 28%, ทั้งคู่ = 53% (ปกติ 3%)`,`Pick 2 Evolve II Pets (must unequip Artifact/Weapon first) to Fuse using ${FUSION_STONE_COST} Rebirth Stones + ${FUSION_GOLD_COST} Gold — both are consumed, you get a Fusion Egg instead\n\n🥚 Hatches normally into a new beast with a stat head-start (25% of the parents' combined average), plus a random "Echo" passive inherited from one of the two parents (half-strength, independent of whatever form it evolves into later) — check the Pet detail screen to see it\n\n✨ Shiny parents can pass it on — one Shiny parent = 28%, both = 53% (base 3%)`)],
             ];
             const BATTLE_SYSTEMS = [
-              ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!')],
+              ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!\n\n⚡ SPD ไม่ได้มีผลแค่ใครโจมตีก่อน — ยิ่ง SPD ของคุณนำศัตรูมากเท่าไหร่ ยิ่งมีโอกาสหลบการโจมตีเพิ่มขึ้นด้วย: ทุกๆ 25% ที่ SPD นำอยู่ เพิ่มโอกาสหลบ +4% (สูงสุด +20%) ซ้อนทับกับโอกาสหลบจากสกิล/Artifact ที่มีอยู่เดิม ใช้ได้ทั้งฝั่งคุณและศัตรู','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!\n\n⚡ SPD does more than decide who attacks first — the more SPD you have over your opponent, the more likely you are to dodge their attacks too: every 25% SPD advantage grants +4% dodge chance (capped at +20%), stacking on top of any existing skill/Artifact dodge sources, for both you and enemies')],
               ['⚡','BATTLE STATUS',T(
 `ไอคอนพื้นฐานที่เจอบ่อย:
 ⚡DODGE — โจมตีพลาดสนิท ไม่โดนดาเมจเลย
@@ -10735,6 +10743,7 @@ function renderMenu() {
 🧙CURSE (คำสาป) — ATK ลดลง 25% นาน 2 เทิร์น
 🧙🚫NO-HEAL / ⛓️HEAL BLOCK (ล็อคการฟื้นฟู) — ฟื้นฟู HP ไม่ได้เลยจากทุกช่องทาง (ยา/พาสซีฟ/อาติแฟค) นาน 3 เทิร์น
 👁️BLIND (ตาบอด) — โจมตีมีโอกาส 50% พลาดเป้าในแต่ละเทิร์น นาน 3 เทิร์น
+❄️FREEZE (แช่แข็ง) — โจมตีไม่ได้ 1 เทิร์น และ SPD ลดลง 25% นาน 3 เทิร์น (มี Badge นับเทิร์นที่เหลือ)
 
 ⚡OVERDRIVE — แถบพลังใต้ HP ของ Pet ขั้น Evolve II สะสม +1 ทุกครั้งที่แพ้ในเทิร์นนั้น เมื่อเต็ม 5/5 จะใช้ท่าไม้ตายพิเศษได้ในเทิร์นถัดไป
 
@@ -10750,6 +10759,7 @@ Status Effects:
 🧙CURSE — ATK reduced by 25% for 2 turns
 🧙🚫NO-HEAL / ⛓️HEAL BLOCK — can't recover HP from any source (potions/passives/artifacts) for 3 turns
 👁️BLIND — a 50% chance for attacks to miss each turn, lasting 3 turns
+❄️FREEZE — can't attack for 1 turn, and SPD is reduced 25% for 3 turns (shown as a turn-counter badge)
 
 ⚡OVERDRIVE — the gauge under an Evolve II Pet's HP charges by 1 every turn you lose, and unleashes a powerful finisher move once it hits 5/5
 

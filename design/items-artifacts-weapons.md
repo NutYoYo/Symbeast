@@ -85,6 +85,10 @@ Source of truth for these 3 sheets going forward, migrated from `design/SYMBEAST
 | R | ⛓️ | cursed_shackle | Cursed Shackle | ตรวนต้องสาป | In battle: 25% chance to prevent enemy healing for 3 turns | ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น |
 | R | 💠 | all_stats_r | Power Crest | ตราพลัง | All stats (ATK/DEF/SPD/HP) +15% when equipped | ทุก Stat (ATK/DEF/SPD/HP) +15% เมื่อสวมใส่ |
 | E | 🔷 | all_stats_e | Omega Crest | ตราโอเมก้า | All stats (ATK/DEF/SPD/HP) +25% when equipped | ทุก Stat (ATK/DEF/SPD/HP) +25% เมื่อสวมใส่ |
+| N | ❄️ | frost_bead | Frost Bead | ลูกปัดน้ำแข็ง | In battle: 8% chance to Freeze the enemy on hit | ในการต่อสู้: 8% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี |
+| R | 👁️ | clouded_lens | Clouded Lens | เลนส์หมอกมัว | In battle: 20% chance to Blind the enemy on hit | ในการต่อสู้: 20% โอกาสทำให้ศัตรูตาบอดเมื่อโจมตี |
+| R | ❄️ | rimefrost_fang | Rimefrost Fang | เขี้ยวน้ำแข็ง | In battle: 15% chance to Freeze the enemy on hit | ในการต่อสู้: 15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี |
+| E | 🔮 | tri_attack | Tri-Attack | ไตรอาวุธ | In battle: Each attack has a 25% chance to randomly inflict Freeze, Burn, or Poison on the enemy | ในการต่อสู้: ทุกการโจมตีมีโอกาส 25% สุ่มทำให้ศัตรูติด Freeze, Burn หรือ Poison อย่างใดอย่างหนึ่ง |
 
 ## Weapons
 
@@ -127,3 +131,8 @@ Source of truth for these 3 sheets going forward, migrated from `design/SYMBEAST
 | E |  | phantom_cloak | Phantom Cloak | เสื้อคลุมภูต | SPD +80, MaxHP +400 | SPD +80, HP สูงสุด +400 | 20% chance to poison when attacked | 20% โอกาสทำให้ศัตรูติดพิษ เมื่อถูกโจมตี |
 | E |  | titan_gauntlet | Titan Gauntlet | ถุงมือไททัน | ATK +80, MaxHP +400 | ATK +80, HP สูงสุด +400 | 10% chance to stun enemy | 10% โอกาสสตันศัตรู |
 | E | ⛈️ | storm_crown | Storm Crown | มงกุฎพายุ | DEF +80, SPD +80 | DEF +80, SPD +80 | damage recieve -10% | ดาเมจที่ได้รับ -10% |
+| R | ❄️ | glacial_aegis | Glacial Aegis | โล่ธารน้ำแข็ง | DEF +30, MaxHP +150 | DEF +30, HP สูงสุด +150 | 10% chance to Freeze the attacker when hit | 10% โอกาสทำให้ผู้โจมตีติด Freeze เมื่อถูกโจมตี |
+| R | 🧙 | blightthorn_lance | Blightthorn Lance | ทวนหนามสาป | ATK +30, DEF +30 | ATK +30, DEF +30 | 10% chance to Curse the enemy on a landed hit | 10% โอกาสสาป (Curse) ศัตรูเมื่อโจมตีโดน |
+| E | ❄️ | absolute_zero | Absolute Zero | ศูนย์สัมบูรณ์ | ATK +80, SPD +80 | ATK +80, SPD +80 | 15% chance to Freeze the enemy on a landed hit | 15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตีโดน |
+| E | 👁️ | chaos_scepter | Chaos Scepter | คทาจอมวุ่นวาย | ATK +80, MaxHP +400 | ATK +80, HP สูงสุด +400 | 15% chance to randomly inflict Blind, Curse, or Heal-Block on a landed hit | 15% โอกาสสุ่มทำให้ศัตรูติด Blind, Curse หรือ Heal-Block เมื่อโจมตีโดน |
+| E | ❄️ | permafrost_crown | Permafrost Crown | มงกุฎน้ำแข็งนิรันดร์ | DEF +80, SPD +80 | DEF +80, SPD +80 | 10% chance on hit to Freeze both sides — you're permanently immune to Freeze's SPD penalty | 10% โอกาสเมื่อโจมตีโดนทำให้ทั้งสองฝ่ายติด Freeze — ตัวเองมีภูมิคุ้มกันต่อผลลด SPD ของ Freeze ตลอดเวลา |

@@ -1534,14 +1534,19 @@ const ARTIFACTS = {
   reflect_ward:    { name:'Reflect Ward',     nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🛑', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
   piercing_fang:   { name:'Piercing Fang',    nameTh:'เขี้ยวทะลุทะลวง',      grade:'E', icon:'🔪', desc:'In battle: ATK +25% and attacks pierce 50% of enemy DEF and damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ DEF และเอฟเฟกต์ลดดาเมจของศัตรู 50%' },
   cursed_shackle:  { name:'Cursed Shackle',   nameTh:'ตรวนต้องสาป',         grade:'R', icon:'🕸️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
+  // ❄️ Freeze artifacts
+  frost_bead:      { name:'Frost Bead',       nameTh:'ลูกปัดน้ำแข็ง',       grade:'N', icon:'❄️', desc:'In battle: 8% chance to Freeze the enemy on hit', descTh:'ในการต่อสู้: 8% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี' },
+  clouded_lens:    { name:'Clouded Lens',     nameTh:'เลนส์หมอกมัว',        grade:'R', icon:'👁️', desc:'In battle: 20% chance to Blind the enemy on hit', descTh:'ในการต่อสู้: 20% โอกาสทำให้ศัตรูตาบอดเมื่อโจมตี' },
+  rimefrost_fang:  { name:'Rimefrost Fang',   nameTh:'เขี้ยวน้ำแข็ง',       grade:'R', icon:'❄️', desc:'In battle: 15% chance to Freeze the enemy on hit', descTh:'ในการต่อสู้: 15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี' },
+  tri_attack:      { name:'Tri-Attack',       nameTh:'ไตรอาวุธ',           grade:'E', icon:'🔮', desc:'In battle: Each attack has a 25% chance to randomly inflict Freeze, Burn, or Poison on the enemy', descTh:'ในการต่อสู้: ทุกการโจมตีมีโอกาส 25% สุ่มทำให้ศัตรูติด Freeze, Burn หรือ Poison อย่างใดอย่างหนึ่ง' },
 };
 // Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
 // have been moved to the Weapon system and removed from the drop pool below. Their ARTIFACTS entries and
 // equip/unequip math are kept intact (not deleted) so pre-existing saves with them equipped still work.
 const ARTIFACT_POOL = {
-  N: ['shock_bead','keen_edge','blade_shard','iron_plate','swift_ring','life_seed','crimson_fang','stone_skin','lucky_charm','venom_fang'],
-  R: ['death_mark','precision_stone','paralysis_fang','berserker_claw','victory_chain','reflect_coat','wind_step','rage_core','drain_aura','blood_pact','tide_breaker','crit_core','toxic_coat','antidote_charm','reflect_ward','cursed_shackle'],
-  E: ['iron_will','true_sight','moon_veil','double_attack','wild_card','execution','chain_strike','soul_reaper','deathblow','sniper_eye','plague_scythe','piercing_fang'],
+  N: ['shock_bead','keen_edge','blade_shard','iron_plate','swift_ring','life_seed','crimson_fang','stone_skin','lucky_charm','venom_fang','frost_bead'],
+  R: ['death_mark','precision_stone','paralysis_fang','berserker_claw','victory_chain','reflect_coat','wind_step','rage_core','drain_aura','blood_pact','tide_breaker','crit_core','toxic_coat','antidote_charm','reflect_ward','cursed_shackle','clouded_lens','rimefrost_fang'],
+  E: ['iron_will','true_sight','moon_veil','double_attack','wild_card','execution','chain_strike','soul_reaper','deathblow','sniper_eye','plague_scythe','piercing_fang','tri_attack'],
 };
 function rollArtifactGrade(floor) {
   const r = Math.random();
@@ -1645,11 +1650,17 @@ const WEAPONS = {
   titan_gauntlet_high: { name:'Titan Gauntlet +',  nameTh:'ถุงมือไททัน +',      grade:'E', icon:'👊', stats:{atk:100,hp:500},  effect:{type:'stun_on_hit', chance:0.13},               desc:'13% chance to stun enemy', descTh:'13% โอกาสสตันศัตรู' },
   storm_crown_low:     { name:'Storm Crown -',     nameTh:'มงกุฎพายุ -',        grade:'E', icon:'⛈️', stats:{def:60,spd:60},   effect:{type:'dmg_reduce', mult:0.92},                  desc:'Damage received -8%', descTh:'ดาเมจที่ได้รับ -8%' },
   storm_crown_high:    { name:'Storm Crown +',     nameTh:'มงกุฎพายุ +',        grade:'E', icon:'⛈️', stats:{def:100,spd:100}, effect:{type:'dmg_reduce', mult:0.87},                  desc:'Damage received -13%', descTh:'ดาเมจที่ได้รับ -13%' },
+  // ❄️ Freeze / status weapons
+  glacial_aegis:    { name:'Glacial Aegis',    nameTh:'โล่ธารน้ำแข็ง',      grade:'R', icon:'❄️', stats:{def:30,hp:150},   effect:{type:'freeze_when_hit', chance:0.10},           desc:'10% chance to Freeze the attacker when hit', descTh:'10% โอกาสทำให้ผู้โจมตีติด Freeze เมื่อถูกโจมตี' },
+  blightthorn_lance:{ name:'Blightthorn Lance',nameTh:'ทวนหนามสาป',        grade:'R', icon:'🧙', stats:{atk:30,def:30},   effect:{type:'curse_on_hit', chance:0.10},              desc:'10% chance to Curse the enemy on a landed hit', descTh:'10% โอกาสสาป (Curse) ศัตรูเมื่อโจมตีโดน' },
+  absolute_zero:    { name:'Absolute Zero',    nameTh:'ศูนย์สัมบูรณ์',      grade:'E', icon:'❄️', stats:{atk:80,spd:80},   effect:{type:'freeze_on_hit', chance:0.15},             desc:'15% chance to Freeze the enemy on a landed hit', descTh:'15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตีโดน' },
+  chaos_scepter:    { name:'Chaos Scepter',    nameTh:'คทาจอมวุ่นวาย',      grade:'E', icon:'👁️', stats:{atk:80,hp:400},   effect:{type:'random_debuff_on_hit', chance:0.15, pool:['blind','curse','healblock']}, desc:'15% chance to randomly inflict Blind, Curse, or Heal-Block on the enemy on a landed hit', descTh:'15% โอกาสสุ่มทำให้ศัตรูติด Blind, Curse หรือ Heal-Block เมื่อโจมตีโดน' },
+  permafrost_crown: { name:'Permafrost Crown', nameTh:'มงกุฎน้ำแข็งนิรันดร์', grade:'E', icon:'❄️', stats:{def:80,spd:80},  effect:{type:'freeze_both_on_hit', chance:0.10},        desc:"10% chance on a landed hit to Freeze both sides — you're permanently immune to Freeze's SPD penalty", descTh:'10% โอกาสเมื่อโจมตีโดน ทำให้ทั้งสองฝ่ายติด Freeze พร้อมกัน — ตัวเองมีภูมิคุ้มกันต่อผลลด SPD ของ Freeze ตลอดเวลา' },
 };
 const WEAPON_POOL = {
   N: ['iron_sword','iron_shield','iron_boots','iron_amulet','iron_bow','iron_plate','modest_crest','iron_spear','iron_cloak','iron_gauntlet','iron_circlet'],
-  R: ['steel_blade','steel_wall','steel_greaves','steel_heart','twin_fang','guardian_plate','balanced_crest','steel_lance','steel_mantle','steel_fist','steel_crown'],
-  E: ['dragonfang_blade','aegis_bulwark','windwalker_greaves','titans_heart','berserkers_fury','fortress_core','omega_blade','dragon_spear','phantom_cloak','titan_gauntlet','storm_crown'],
+  R: ['steel_blade','steel_wall','steel_greaves','steel_heart','twin_fang','guardian_plate','balanced_crest','steel_lance','steel_mantle','steel_fist','steel_crown','glacial_aegis','blightthorn_lance'],
+  E: ['dragonfang_blade','aegis_bulwark','windwalker_greaves','titans_heart','berserkers_fury','fortress_core','omega_blade','dragon_spear','phantom_cloak','titan_gauntlet','storm_crown','absolute_zero','chaos_scepter','permafrost_crown'],
 };
 function rollWeaponGrade() {
   const r = Math.random();
@@ -3124,8 +3135,8 @@ function getEnemyEffSpd(enemy, bs) {
   if(bs?.enemyFreezeSpdTurns > 0) {
     // ALIEN-GHOST enemy: Freeze's SPD-25% is inverted into SPD buff
     if(enemy.isEvolve2Enemy && enemy.evolve2Key==='ALIEN-GHOST') val = Math.round(val * 1.25);
-    // ❄️ Freeze Absorb: ice-themed enemies absorb freeze — SPD+25%
-    else if(enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) val = Math.round(val * 1.25);
+    // ❄️ Freeze Absorb: ice-themed enemies (or Permafrost Crown wielders) absorb freeze — SPD+25%
+    else if((enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown') val = Math.round(val * 1.25);
     else val = Math.round(val * 0.75);
   }
   if(bs?.eGhostBunnyAtkBuff) val = Math.round(val * 1.5);
@@ -3144,8 +3155,8 @@ function getEffStat(stat) {
     // ALIEN-GHOST: Freeze's SPD-25% is inverted into a SPD buff instead, while the debuff still ticks down
     if(creature.phase==='final' && creature.finalKey==='ALIEN-GHOST') val = Math.round(val * 1.15);
     else if(creature.inheritedPassive==='ALIEN-GHOST') val = Math.round(val * 1.08);
-    // ❄️ Freeze Absorb: ice-themed monsters absorb freeze — SPD+25%
-    else if(creature.phase==='final' && (creature.finalKey==='SHIVA-GHOST'||creature.finalKey==='CRYSTAWOLF-BASTION'||creature.finalKey==='PENGUIN-GHOST'||creature.finalKey==='CHILL-SHIELDWING'||creature.finalKey==='GAIA-SHIELDWING')) val = Math.round(val * 1.25);
+    // ❄️ Freeze Absorb: ice-themed monsters (or Permafrost Crown wielders) absorb freeze — SPD+25%
+    else if((creature.phase==='final' && (creature.finalKey==='SHIVA-GHOST'||creature.finalKey==='CRYSTAWOLF-BASTION'||creature.finalKey==='PENGUIN-GHOST'||creature.finalKey==='CHILL-SHIELDWING'||creature.finalKey==='GAIA-SHIELDWING')) || creature.weapon==='permafrost_crown') val = Math.round(val * 1.25);
     else val = Math.round(val * 0.75);
   }
   if(stat==='spd' && battleState?.ghostBunnyAtkBuff) val = Math.round(val * 1.5);
@@ -5352,7 +5363,7 @@ function doOverdriveTurn() {
     pd=_pierceHit(3.0,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'👽',text:`COSMIC ANOMALY ×3.0 (pierce)→${pd} | 50% Blind/turn (3T)`});
   } else if(ff==='SHIVA-GHOST') {
-    const h=_hit(4.0); pd=h.d; const eFreezeAbsorbOD = enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING');
+    const h=_hit(4.0); pd=h.d; const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown';
     ed=0; if(eFreezeAbsorbOD) { ed=_ed(); } /* freeze absorbed: damage goes through, SPD inverted in getEnemyEffSpd */
     bs.enemyFreezeSpdTurns=3; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🔱',text:`COSMIC DESTRUCTION ×4.0→${pd}${eFreezeAbsorbOD?' (FREEZE ABSORBED)':''} + FREEZE | SPD+100% (3T)`});
@@ -5600,7 +5611,7 @@ function doTurn(moveIdx) {
     const {type} = bs.odBuff;
     const _atk = getEffStat('atk');
     // ❄️ Enemy freeze absorb check for OD buff freeze procs (defined here since OD runs before main freezeAbsorb)
-    const eFreezeAbsorbOD = enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING');
+    const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown';
     if(type==='RAGING-BRAWLER') { /* Crit+25% via OD_CRIT_BONUS */ passives.push({icon:'💥',text:'APOCALYPSE Crit+25%'}); }
     if(type==='CRIMSON-BRAWLER') { pd=Math.round(pd*1.3); if(Math.random()<0.15){const orig=pd;pd=orig*2;pdHits=[orig,orig];} passives.push({icon:'☯️',text:`APOCALYPSE RUSH ATK+30%,SPD+30%,double15%→${pd}`}); }
     if(type==='KAIJU-BRAWLER') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'💥',text:`APOCALYPSE WALL Crit+15%,dmgTaken-15%→${ed}`}); }
@@ -5904,8 +5915,8 @@ function doTurn(moveIdx) {
     if(pd>0 && Math.random()<0.15) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`PHOENIX BURN! Enemy is on fire→${pd}`}); }
   }
   // ❄️ Freeze Absorb: ice-themed monsters absorb freeze — SPD inverted + no stun
-  const freezeAbsorb = ff==='SHIVA-GHOST' || ff==='CRYSTAWOLF-BASTION' || ff==='PENGUIN-GHOST' || ff==='CHILL-SHIELDWING' || ff==='GAIA-SHIELDWING';
-  const eFreezeAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST' || enemy.evolve2Key==='CRYSTAWOLF-BASTION' || enemy.evolve2Key==='PENGUIN-GHOST' || enemy.evolve2Key==='CHILL-SHIELDWING' || enemy.evolve2Key==='GAIA-SHIELDWING');
+  const freezeAbsorb = ff==='SHIVA-GHOST' || ff==='CRYSTAWOLF-BASTION' || ff==='PENGUIN-GHOST' || ff==='CHILL-SHIELDWING' || ff==='GAIA-SHIELDWING' || wpnId==='permafrost_crown';
+  const eFreezeAbsorb = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST' || enemy.evolve2Key==='CRYSTAWOLF-BASTION' || enemy.evolve2Key==='PENGUIN-GHOST' || enemy.evolve2Key==='CHILL-SHIELDWING' || enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown';
 
   // GAIA: 10% freeze on hit every turn
   if(ff==='GAIA-SHIELDWING' && pd>0 && Math.random()<0.10) {
@@ -6219,6 +6230,16 @@ function doTurn(moveIdx) {
       else if(roll<0.90) { if(!enemyReflectImmune) { const ref=Math.round(ed*0.50); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🎲',text:`Wild Card Reflect ${ref}`}); } }
       else { ed=Math.round(ed*1.50); passives.push({icon:'🎲',text:`Wild Card BAD LUCK! ed×1.5 → ${ed}`}); }
     }
+    // ❄️ Freeze / random-debuff artifacts
+    if(artId==='frost_bead' && pd>0 && Math.random()<0.08) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:'Frost Bead Freeze→ABSORBED!'});}else{ if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} passives.push({icon:'❄️',text:'Frost Bead froze the enemy!'}); } }
+    if(artId==='clouded_lens' && pd>0 && Math.random()<0.20) { bs.eBlindTurns=3; passives.push({icon:'👁️',text:'Clouded Lens blinded the enemy!'}); }
+    if(artId==='rimefrost_fang' && pd>0 && Math.random()<0.15) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:'Rimefrost Fang Freeze→ABSORBED!'});}else{ if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} passives.push({icon:'❄️',text:'Rimefrost Fang froze the enemy!'}); } }
+    if(artId==='tri_attack' && pd>0 && Math.random()<0.25) {
+      const pick=['freeze','burn','poison'][Math.floor(Math.random()*3)];
+      if(pick==='freeze') { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:'Tri-Attack Freeze→ABSORBED!'});}else{ if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} passives.push({icon:'❄️',text:'Tri-Attack froze the enemy!'}); } }
+      else if(pick==='burn') { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:'Tri-Attack burned the enemy!'}); }
+      else if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:'Tri-Attack poisoned the enemy!'}); }
+    }
   }
   _applyArtifact(creature.artifact, bs.artifactStacks);
   _applyArtifact(creature.artifact2, bs.artifactStacks2);
@@ -6239,6 +6260,24 @@ function doTurn(moveIdx) {
     if(we.type==='poison_when_hit' && ed>0 && Math.random()<we.chance) { if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} poisoned the attacker!`}); } }
     if(we.type==='on_lose_dr' && cmp==='lose') { ed=Math.round(ed*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} dmg-${Math.round((1-we.mult)*100)}% → ${ed}`}); }
     if(we.type==='dmg_reduce') { ed=Math.round(ed*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} dmg-${Math.round((1-we.mult)*100)}% → ${ed}`}); }
+    // ❄️ Freeze / status weapons
+    if(we.type==='freeze_on_hit' && pd>0 && Math.random()<we.chance) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:`${wpn.name} Freeze→ABSORBED!`});}else{ if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} passives.push({icon:wpn.icon,text:`${wpn.name} froze the enemy!`}); } }
+    if(we.type==='freeze_when_hit' && ed>0 && Math.random()<we.chance) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:`${wpn.name} Freeze→ABSORBED!`});}else{ if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} passives.push({icon:wpn.icon,text:`${wpn.name} froze the attacker!`}); } }
+    if(we.type==='curse_on_hit' && pd>0 && Math.random()<we.chance) { bs.e2CurseTurns=2; passives.push({icon:wpn.icon,text:`${wpn.name} cursed the enemy!`}); }
+    if(we.type==='random_debuff_on_hit' && pd>0 && Math.random()<we.chance) {
+      const pick = we.pool[Math.floor(Math.random()*we.pool.length)];
+      if(pick==='blind') { bs.eBlindTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} blinded the enemy!`}); }
+      else if(pick==='curse') { bs.e2CurseTurns=2; passives.push({icon:wpn.icon,text:`${wpn.name} cursed the enemy!`}); }
+      else if(pick==='healblock') { bs.enemyHealBlockTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} blocked enemy healing!`}); }
+      else if(pick==='freeze') { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:`${wpn.name} Freeze→ABSORBED!`});}else{ if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} passives.push({icon:wpn.icon,text:`${wpn.name} froze the enemy!`}); } }
+      else if(pick==='burn') { bs.enemyBurnTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} burned the enemy!`}); }
+      else if(pick==='poison' && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} poisoned the enemy!`}); }
+    }
+    if(we.type==='freeze_both_on_hit' && pd>0 && Math.random()<we.chance) {
+      bs.playerFreezeSpdTurns=3; bs.enemyFreezeSpdTurns=3;
+      if(!eFreezeAbsorb) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();}else{ed=0;enemyStunned=true;SFX.stun();} }
+      passives.push({icon:wpn.icon,text:`${wpn.name} froze both sides! (you're immune)`});
+    }
   }
 
   // ===== ENEMY WEAPON EFFECTS (Gauntlet bosses only — mirrors the player weapon block above) =====
@@ -6258,6 +6297,24 @@ function doTurn(moveIdx) {
     if(ewe.type==='poison_when_hit' && pd>0 && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you back!`}); }
     if(ewe.type==='on_lose_dr' && cmp==='win') { pd=Math.round(pd*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} dmg-${Math.round((1-ewe.mult)*100)}% →${pd}`}); }
     if(ewe.type==='dmg_reduce') { pd=Math.round(pd*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} dmg-${Math.round((1-ewe.mult)*100)}% →${pd}`}); }
+    // ❄️ Freeze / status weapons (enemy mirror)
+    if(ewe.type==='freeze_on_hit' && ed>0 && Math.random()<ewe.chance) { bs.playerFreezeSpdTurns=3; if(freezeAbsorb){passives.push({icon:'❄️✨',text:`[E] ${ewpn.name} Freeze→YOU ABSORBED!`});}else{ if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();}else{pd=0;playerStunned=true;SFX.stun();} passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} froze you!`}); } }
+    if(ewe.type==='freeze_when_hit' && pd>0 && Math.random()<ewe.chance) { bs.playerFreezeSpdTurns=3; if(freezeAbsorb){passives.push({icon:'❄️✨',text:`[E] ${ewpn.name} Freeze→YOU ABSORBED!`});}else{ if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();}else{pd=0;playerStunned=true;SFX.stun();} passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} froze you back!`}); } }
+    if(ewe.type==='curse_on_hit' && ed>0 && Math.random()<ewe.chance) { bs.e2CurseTurnsE=2; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} cursed you!`}); }
+    if(ewe.type==='random_debuff_on_hit' && ed>0 && Math.random()<ewe.chance) {
+      const pick = ewe.pool[Math.floor(Math.random()*ewe.pool.length)];
+      if(pick==='blind') { bs.pBlindTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} blinded you!`}); }
+      else if(pick==='curse') { bs.e2CurseTurnsE=2; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} cursed you!`}); }
+      else if(pick==='healblock') { bs.playerHealBlockTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} blocked your healing!`}); }
+      else if(pick==='freeze') { bs.playerFreezeSpdTurns=3; if(freezeAbsorb){passives.push({icon:'❄️✨',text:`[E] ${ewpn.name} Freeze→YOU ABSORBED!`});}else{ if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();}else{pd=0;playerStunned=true;SFX.stun();} passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} froze you!`}); } }
+      else if(pick==='burn') { bs.playerBurnTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} burned you!`}); }
+      else if(pick==='poison' && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you!`}); }
+    }
+    if(ewe.type==='freeze_both_on_hit' && ed>0 && Math.random()<ewe.chance) {
+      bs.enemyFreezeSpdTurns=3; bs.playerFreezeSpdTurns=3;
+      if(!freezeAbsorb) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();}else{pd=0;playerStunned=true;SFX.stun();} }
+      passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} froze both sides! (enemy immune)`});
+    }
   }
 
   // ===== GAUNTLET BOSS / SECRET DUNGEON: HP<30% one-time finisher + post-finisher Enrage buff =====

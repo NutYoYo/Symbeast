@@ -1209,8 +1209,8 @@ const EVOLVE2_FORMS = {
     passive:'20% chance to dodge; every 3 turns, attacks cannot miss, deal +50% damage, and guarantee a critical hit',
     passiveTh:'20% โอกาสหลบการโจมตี, ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ +50% และติดคริติคอลแน่นอน' },
   'CRYSTAWOLF-BASTION': { name:'CRYSTAWOLF-BASTION', color:'#88aacc', hp:189, atk:21, spd:16, def:25, passiveIcon:'💎',
-    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, counter-attacks every round for 75% damage, and 10% chance to stun the enemy when hit',
-    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และมีโอกาส 10% ทำให้ศัตรูสต้นเมื่อโดนโจมตี' },
+    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, counter-attacks every round for 75% damage, and 5% chance to Freeze the enemy when hit',
+    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และมีโอกาส 5% ทำให้ศัตรูติดแช่แข็งเมื่อโดนโจมตี' },
   'GOLEM-BASTION':      { name:'GOLEM-BASTION',      color:'#1a2733', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿',
     passive:'All damage taken -20%; while HP < 30%, ATK +30% and recovers 5% HP each round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP < 30% ATK+30%, ฟื้นฟู HP 5%' },
@@ -2513,7 +2513,7 @@ const FUSION_ECHO_INFO = {
   'FATTY-SHIELDWING':   {name:'FATTY ECHO',       icon:'🛡', desc:'Damage taken -10%; while HP > 70%, ATK/DEF +15%; while HP < 70%, ATK +25%', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP > 70% ATK/DEF+15% เมื่อ HP < 70% ATK+25%'},
   'GUANLET-BASTION':    {name:'GUANLET ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +8% per stack (max 5 stacks per battle)', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
   'IRON-BASTION':       {name:'BASTION ECHO',     icon:'🎯', desc:'10% chance to dodge; every 3 turns, attacks cannot miss, deal +25% damage, and guarantee a crit', descTh:'10% โอกาสหลบการโจมตี ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ+25% และติดคริแน่นอน'},
-  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, counter-attacks for 35% damage, 5% chance to stun when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, โต้กลับดาเมจ 35%, 5% โอกาสสตันเมื่อโดนโจมตี'},
+  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, counter-attacks for 35% damage, 5% chance to Freeze when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, โต้กลับดาเมจ 35%, 5% โอกาสแช่แข็งเมื่อโดนโจมตี'},
   'GOLEM-BASTION':      {name:'GOLEM ECHO',       icon:'🗿', desc:'Damage taken -10%; while HP < 30%, ATK +15% and recovers 2.5% HP each round', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP < 30% ATK+15% และฟื้นฟู HP 2.5%'},
   // === GHOST Echo Passives (half-strength Fusion versions) ===
   'RAGEBEAR-GHOST':     {name:'RAGE ECHO',      icon:'💢', desc:'Damage +50% when enemy HP > 50%', descTh:'ดาเมจ +50% เมื่อศัตรูมี HP > 50%'},
@@ -2979,11 +2979,20 @@ function spdDodgeChance(mySpd, theirSpd) {
   const leadPct = (mySpd / theirSpd - 1) * 100;
   return Math.min(0.20, Math.floor(leadPct / 25) * 0.04);
 }
+// ❄️ Freeze status: target can't attack next turn (reuses the existing stun mechanic) + SPD-25%
+// for 3 turns. The SPD leg is read live via getEffStat (player) / getEnemyEffSpd (enemy) rather
+// than mutating the underlying stat, so repeated procs just refresh the duration, never stack.
+function getEnemyEffSpd(enemy, bs) {
+  let val = enemy.spd;
+  if(bs?.enemyFreezeSpdTurns > 0) val = Math.round(val * 0.75);
+  return val;
+}
 function getEffStat(stat) {
   const now = Date.now();
   const base = creature[stat] || 0;
   const exp = creature.buffExpiry?.[stat] || 0;
   let val = (exp > now) ? Math.round(base * 1.2) : base;
+  if(stat==='spd' && battleState?.playerFreezeSpdTurns > 0) val = Math.round(val * 0.75);
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   // Ghost branch skill modifiers (battle-only, temporary — resets every battle)
@@ -4859,7 +4868,7 @@ function doEnemyOnlyTurn() {
   const em = pickEnemyMove(et.ai);
   let ed = Math.max(1, Math.round((em.dmg + enemy.atk/3 + Math.random()*4)) - Math.floor(getEffStat('def')/2));
   const eoPassives = [];
-  if(Math.random() < spdDodgeChance(getEffStat('spd'), enemy.spd)) { ed=0; eoPassives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
+  if(Math.random() < spdDodgeChance(getEffStat('spd'), getEnemyEffSpd(enemy,bs))) { ed=0; eoPassives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
   bs.preAnimPlayerHp = creature.hp;
   bs.preAnimEnemyHp  = enemy.hp;
   creature.hp = Math.max(0, creature.hp - ed);
@@ -5141,8 +5150,8 @@ function doOverdriveTurn() {
     if(ed>0) ed = Math.round(ed * bs.stalemateAtkMult);
   }
   // ⚡ SPD-based passive dodge (on top of any skill/artifact dodge already applied above)
-  if(pd>0 && Math.random() < spdDodgeChance(enemy.spd, getEffStat('spd'))) { pd=0; passives.push({icon:'💨',text:T('ศัตรูว่องไวกว่า หลบการโจมตี!','Enemy is faster — dodged the attack!')}); }
-  if(ed>0 && Math.random() < spdDodgeChance(getEffStat('spd'), enemy.spd)) { ed=0; passives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
+  if(pd>0 && Math.random() < spdDodgeChance(getEnemyEffSpd(enemy,bs), getEffStat('spd'))) { pd=0; passives.push({icon:'💨',text:T('ศัตรูว่องไวกว่า หลบการโจมตี!','Enemy is faster — dodged the attack!')}); }
+  if(ed>0 && Math.random() < spdDodgeChance(getEffStat('spd'), getEnemyEffSpd(enemy,bs))) { ed=0; passives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
   // apply damage
   bs.preAnimPlayerHp = creature.hp;
   bs.preAnimEnemyHp  = enemy.hp;
@@ -5237,7 +5246,7 @@ function doTurn(moveIdx) {
   const _pHeal = (h, icon, txt) => { if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon,text:txt});return true;} };
   const _eHeal = (h, icon, txt) => { if(bs.enemyHealBlockTurns>0||bs.e2NoHealTurns>0){healBlockedEnemy+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+h);enemyHeal+=h;passives.push({icon,text:txt});return true;} };
   const spdBoost = (artId==='moon_veil'||artId2==='moon_veil') ? 1.10 : 1.0;
-  const playerFirst = Math.round(getEffStat('spd')*spdBoost) >= enemy.spd;
+  const playerFirst = Math.round(getEffStat('spd')*spdBoost) >= getEnemyEffSpd(enemy,bs);
 
   const minPd = Math.floor(getEffStat('atk') / 6);
   // Piercing Fang (artifact): ignores enemy DEF and all incoming damage-reduction effects below
@@ -5632,7 +5641,7 @@ function doTurn(moveIdx) {
       ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
       const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
       passives.push({icon:'💎',text:`CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${ed}`});
-      if(ed>0 && Math.random()<0.10) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'CRYSTAWOLF STUN!'}); }
+      if(ed>0 && Math.random()<0.05) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} bs.enemyFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAWOLF แช่แข็งศัตรู!','CRYSTAWOLF froze the enemy!')}); }
     }
   }
 
@@ -6157,7 +6166,7 @@ function doTurn(moveIdx) {
       pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
       const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c);
       passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${pd}`});
-      if(pd>0 && Math.random()<0.10) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'[E] CRYSTAWOLF STUN!'}); }
+      if(pd>0 && Math.random()<0.05) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} bs.playerFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'❄️',text:T('[ศัตรู] CRYSTAWOLF แช่แข็งคุณ!','[E] CRYSTAWOLF froze you!')}); }
     }
   }
 
@@ -6469,7 +6478,7 @@ function doTurn(moveIdx) {
         ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
         const c=Math.max(1,Math.round(pCurseAtk/3*0.35)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
         passives.push({icon:'💎',text:`CRYSTAL ECHO HP<50% DEF+12% Counter -${c}`});
-        if(pd>0 && Math.random()<0.05) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'💎',text:'CRYSTAL ECHO STUN!'}); }
+        if(pd>0 && Math.random()<0.05) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} bs.enemyFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAL ECHO แช่แข็งศัตรู!','CRYSTAL ECHO froze the enemy!')}); }
       }
     }
     else if(ip==='GOLEM-BASTION') {
@@ -6820,8 +6829,8 @@ function doTurn(moveIdx) {
   }
 
   // ⚡ SPD-based passive dodge (on top of any skill/artifact dodge already applied above)
-  if(pd>0 && Math.random() < spdDodgeChance(enemy.spd, getEffStat('spd')*spdBoost)) { pd=0; passives.push({icon:'💨',text:T('ศัตรูว่องไวกว่า หลบการโจมตี!','Enemy is faster — dodged the attack!')}); }
-  if(ed>0 && Math.random() < spdDodgeChance(getEffStat('spd')*spdBoost, enemy.spd)) { ed=0; passives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
+  if(pd>0 && Math.random() < spdDodgeChance(getEnemyEffSpd(enemy,bs), getEffStat('spd')*spdBoost)) { pd=0; passives.push({icon:'💨',text:T('ศัตรูว่องไวกว่า หลบการโจมตี!','Enemy is faster — dodged the attack!')}); }
+  if(ed>0 && Math.random() < spdDodgeChance(getEffStat('spd')*spdBoost, getEnemyEffSpd(enemy,bs))) { ed=0; passives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
 
   // ===== DAMAGE: sequential closures called from animation callbacks =====
   bs.preAnimPlayerHp = creature.hp;
@@ -7036,6 +7045,11 @@ function doTurn(moveIdx) {
     }
     bs.playerBurnTurns--;
   }
+  // ❄️ Freeze SPD-debuff ticks — the "can't attack" leg reuses the stun mechanic at the proc site;
+  // this just counts down the 3-turn SPD-25% leg (read live via getEffStat/getEnemyEffSpd, so no
+  // stat mutation to undo here).
+  if(bs.enemyFreezeSpdTurns>0) { bs.enemyFreezeSpdTurns--; passives.push({icon:'❄️',text:T(`ศัตรูติดแช่แข็ง! SPD-25% (เหลือ ${bs.enemyFreezeSpdTurns} เทิร์น)`,`Enemy Frozen! SPD-25% (${bs.enemyFreezeSpdTurns} turns left)`)}); }
+  if(bs.playerFreezeSpdTurns>0) { bs.playerFreezeSpdTurns--; passives.push({icon:'❄️',text:T(`ติดแช่แข็ง! SPD-25% (เหลือ ${bs.playerFreezeSpdTurns} เทิร์น)`,`Frozen! SPD-25% (${bs.playerFreezeSpdTurns} turns left)`)}); }
 
   const turnNum = battleState.turn;
   battleState.lastCmp = cmp;

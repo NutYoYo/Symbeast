@@ -1656,6 +1656,16 @@ const WEAPONS = {
   absolute_zero:    { name:'Absolute Zero',    nameTh:'ศูนย์สัมบูรณ์',      grade:'E', icon:'❄️', stats:{atk:80,spd:80},   effect:{type:'freeze_on_hit', chance:0.15},             desc:'15% chance to Freeze the enemy on a landed hit', descTh:'15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตีโดน' },
   chaos_scepter:    { name:'Chaos Scepter',    nameTh:'คทาจอมวุ่นวาย',      grade:'E', icon:'👁️', stats:{atk:80,hp:400},   effect:{type:'random_debuff_on_hit', chance:0.15, pool:['blind','curse','healblock']}, desc:'15% chance to randomly inflict Blind, Curse, or Heal-Block on the enemy on a landed hit', descTh:'15% โอกาสสุ่มทำให้ศัตรูติด Blind, Curse หรือ Heal-Block เมื่อโจมตีโดน' },
   permafrost_crown: { name:'Permafrost Crown', nameTh:'มงกุฎน้ำแข็งนิรันดร์', grade:'E', icon:'❄️', stats:{def:80,spd:80},  effect:{type:'freeze_both_on_hit', chance:0.10},        desc:"10% chance on a landed hit to Freeze both sides — you're permanently immune to Freeze's SPD penalty", descTh:'10% โอกาสเมื่อโจมตีโดน ทำให้ทั้งสองฝ่ายติด Freeze พร้อมกัน — ตัวเองมีภูมิคุ้มกันต่อผลลด SPD ของ Freeze ตลอดเวลา' },
+  glacial_aegis_low:     { name:'Glacial Aegis -',     nameTh:'โล่ธารน้ำแข็ง -',      grade:'R', icon:'❄️', stats:{def:23,hp:113},    effect:{type:'freeze_when_hit', chance:0.08},           desc:'8% chance to Freeze the attacker when hit', descTh:'8% โอกาสทำให้ผู้โจมตีติด Freeze เมื่อถูกโจมตี' },
+  glacial_aegis_high:    { name:'Glacial Aegis +',     nameTh:'โล่ธารน้ำแข็ง +',      grade:'R', icon:'❄️', stats:{def:38,hp:188},    effect:{type:'freeze_when_hit', chance:0.13},           desc:'13% chance to Freeze the attacker when hit', descTh:'13% โอกาสทำให้ผู้โจมตีติด Freeze เมื่อถูกโจมตี' },
+  blightthorn_lance_low: { name:'Blightthorn Lance -', nameTh:'ทวนหนามสาป -',        grade:'R', icon:'🧙', stats:{atk:23,def:23},    effect:{type:'curse_on_hit', chance:0.08},              desc:'8% chance to Curse the enemy on a landed hit', descTh:'8% โอกาสสาป (Curse) ศัตรูเมื่อโจมตีโดน' },
+  blightthorn_lance_high:{ name:'Blightthorn Lance +', nameTh:'ทวนหนามสาป +',        grade:'R', icon:'🧙', stats:{atk:38,def:38},    effect:{type:'curse_on_hit', chance:0.13},              desc:'13% chance to Curse the enemy on a landed hit', descTh:'13% โอกาสสาป (Curse) ศัตรูเมื่อโจมตีโดน' },
+  absolute_zero_low:     { name:'Absolute Zero -',     nameTh:'ศูนย์สัมบูรณ์ -',      grade:'E', icon:'❄️', stats:{atk:60,spd:60},    effect:{type:'freeze_on_hit', chance:0.11},             desc:'11% chance to Freeze the enemy on a landed hit', descTh:'11% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตีโดน' },
+  absolute_zero_high:    { name:'Absolute Zero +',     nameTh:'ศูนย์สัมบูรณ์ +',      grade:'E', icon:'❄️', stats:{atk:100,spd:100},  effect:{type:'freeze_on_hit', chance:0.19},             desc:'19% chance to Freeze the enemy on a landed hit', descTh:'19% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตีโดน' },
+  chaos_scepter_low:     { name:'Chaos Scepter -',     nameTh:'คทาจอมวุ่นวาย -',      grade:'E', icon:'👁️', stats:{atk:60,hp:300},   effect:{type:'random_debuff_on_hit', chance:0.11, pool:['blind','curse','healblock']}, desc:'11% chance to randomly inflict Blind, Curse, or Heal-Block on a landed hit', descTh:'11% โอกาสสุ่มทำให้ศัตรูติด Blind, Curse หรือ Heal-Block เมื่อโจมตีโดน' },
+  chaos_scepter_high:    { name:'Chaos Scepter +',     nameTh:'คทาจอมวุ่นวาย +',      grade:'E', icon:'👁️', stats:{atk:100,hp:500},  effect:{type:'random_debuff_on_hit', chance:0.19, pool:['blind','curse','healblock']}, desc:'19% chance to randomly inflict Blind, Curse, or Heal-Block on a landed hit', descTh:'19% โอกาสสุ่มทำให้ศัตรูติด Blind, Curse หรือ Heal-Block เมื่อโจมตีโดน' },
+  permafrost_crown_low:  { name:'Permafrost Crown -',  nameTh:'มงกุฎน้ำแข็งนิรันดร์ -', grade:'E', icon:'❄️', stats:{def:60,spd:60},  effect:{type:'freeze_both_on_hit', chance:0.08},        desc:"8% chance on a landed hit to Freeze both sides — you're permanently immune to Freeze's SPD penalty", descTh:'8% โอกาสเมื่อโจมตีโดน ทำให้ทั้งสองฝ่ายติด Freeze พร้อมกัน — ตัวเองมีภูมิคุ้มกันต่อผลลด SPD ของ Freeze ตลอดเวลา' },
+  permafrost_crown_high: { name:'Permafrost Crown +',  nameTh:'มงกุฎน้ำแข็งนิรันดร์ +', grade:'E', icon:'❄️', stats:{def:100,spd:100}, effect:{type:'freeze_both_on_hit', chance:0.13},        desc:"13% chance on a landed hit to Freeze both sides — you're permanently immune to Freeze's SPD penalty", descTh:'13% โอกาสเมื่อโจมตีโดน ทำให้ทั้งสองฝ่ายติด Freeze พร้อมกัน — ตัวเองมีภูมิคุ้มกันต่อผลลด SPD ของ Freeze ตลอดเวลา' },
 };
 const WEAPON_POOL = {
   N: ['iron_sword','iron_shield','iron_boots','iron_amulet','iron_bow','iron_plate','modest_crest','iron_spear','iron_cloak','iron_gauntlet','iron_circlet'],
@@ -3136,7 +3146,7 @@ function getEnemyEffSpd(enemy, bs) {
     // ALIEN-GHOST enemy: Freeze's SPD-25% is inverted into SPD buff
     if(enemy.isEvolve2Enemy && enemy.evolve2Key==='ALIEN-GHOST') val = Math.round(val * 1.25);
     // ❄️ Freeze Absorb: ice-themed enemies (or Permafrost Crown wielders) absorb freeze — SPD+25%
-    else if((enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown') val = Math.round(val * 1.25);
+    else if((enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown')) val = Math.round(val * 1.25);
     else val = Math.round(val * 0.75);
   }
   if(bs?.eGhostBunnyAtkBuff) val = Math.round(val * 1.5);
@@ -3156,7 +3166,7 @@ function getEffStat(stat) {
     if(creature.phase==='final' && creature.finalKey==='ALIEN-GHOST') val = Math.round(val * 1.15);
     else if(creature.inheritedPassive==='ALIEN-GHOST') val = Math.round(val * 1.08);
     // ❄️ Freeze Absorb: ice-themed monsters (or Permafrost Crown wielders) absorb freeze — SPD+25%
-    else if((creature.phase==='final' && (creature.finalKey==='SHIVA-GHOST'||creature.finalKey==='CRYSTAWOLF-BASTION'||creature.finalKey==='PENGUIN-GHOST'||creature.finalKey==='CHILL-SHIELDWING'||creature.finalKey==='GAIA-SHIELDWING')) || creature.weapon==='permafrost_crown') val = Math.round(val * 1.25);
+    else if((creature.phase==='final' && (creature.finalKey==='SHIVA-GHOST'||creature.finalKey==='CRYSTAWOLF-BASTION'||creature.finalKey==='PENGUIN-GHOST'||creature.finalKey==='CHILL-SHIELDWING'||creature.finalKey==='GAIA-SHIELDWING')) || creature.weapon?.startsWith('permafrost_crown')) val = Math.round(val * 1.25);
     else val = Math.round(val * 0.75);
   }
   if(stat==='spd' && battleState?.ghostBunnyAtkBuff) val = Math.round(val * 1.5);
@@ -5363,7 +5373,7 @@ function doOverdriveTurn() {
     pd=_pierceHit(3.0,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'👽',text:`COSMIC ANOMALY ×3.0 (pierce)→${pd} | 50% Blind/turn (3T)`});
   } else if(ff==='SHIVA-GHOST') {
-    const h=_hit(4.0); pd=h.d; const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown';
+    const h=_hit(4.0); pd=h.d; const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown');
     ed=0; if(eFreezeAbsorbOD) { ed=_ed(); } /* freeze absorbed: damage goes through, SPD inverted in getEnemyEffSpd */
     bs.enemyFreezeSpdTurns=3; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🔱',text:`COSMIC DESTRUCTION ×4.0→${pd}${eFreezeAbsorbOD?' (FREEZE ABSORBED)':''} + FREEZE | SPD+100% (3T)`});
@@ -5611,7 +5621,7 @@ function doTurn(moveIdx) {
     const {type} = bs.odBuff;
     const _atk = getEffStat('atk');
     // ❄️ Enemy freeze absorb check for OD buff freeze procs (defined here since OD runs before main freezeAbsorb)
-    const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown';
+    const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown');
     if(type==='RAGING-BRAWLER') { /* Crit+25% via OD_CRIT_BONUS */ passives.push({icon:'💥',text:'APOCALYPSE Crit+25%'}); }
     if(type==='CRIMSON-BRAWLER') { pd=Math.round(pd*1.3); if(Math.random()<0.15){const orig=pd;pd=orig*2;pdHits=[orig,orig];} passives.push({icon:'☯️',text:`APOCALYPSE RUSH ATK+30%,SPD+30%,double15%→${pd}`}); }
     if(type==='KAIJU-BRAWLER') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'💥',text:`APOCALYPSE WALL Crit+15%,dmgTaken-15%→${ed}`}); }
@@ -5915,8 +5925,8 @@ function doTurn(moveIdx) {
     if(pd>0 && Math.random()<0.15) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`PHOENIX BURN! Enemy is on fire→${pd}`}); }
   }
   // ❄️ Freeze Absorb: ice-themed monsters absorb freeze — SPD inverted + no stun
-  const freezeAbsorb = ff==='SHIVA-GHOST' || ff==='CRYSTAWOLF-BASTION' || ff==='PENGUIN-GHOST' || ff==='CHILL-SHIELDWING' || ff==='GAIA-SHIELDWING' || wpnId==='permafrost_crown';
-  const eFreezeAbsorb = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST' || enemy.evolve2Key==='CRYSTAWOLF-BASTION' || enemy.evolve2Key==='PENGUIN-GHOST' || enemy.evolve2Key==='CHILL-SHIELDWING' || enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon==='permafrost_crown';
+  const freezeAbsorb = ff==='SHIVA-GHOST' || ff==='CRYSTAWOLF-BASTION' || ff==='PENGUIN-GHOST' || ff==='CHILL-SHIELDWING' || ff==='GAIA-SHIELDWING' || wpnId?.startsWith('permafrost_crown');
+  const eFreezeAbsorb = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST' || enemy.evolve2Key==='CRYSTAWOLF-BASTION' || enemy.evolve2Key==='PENGUIN-GHOST' || enemy.evolve2Key==='CHILL-SHIELDWING' || enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown');
 
   // GAIA: 10% freeze on hit every turn
   if(ff==='GAIA-SHIELDWING' && pd>0 && Math.random()<0.10) {

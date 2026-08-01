@@ -1349,8 +1349,8 @@ const EVOLVE2_FORMS = {
     passive:'On WIN: attacks pierce DEF and 50% chance to Burn the enemy. On LOSE: DEF+25%',
     passiveTh:'เมื่อ WIN: โจมตีทะลุ DEF และมีโอกาส 50% ทำให้ศัตรูติดเผาไหม้ เมื่อ LOSE: DEF+25%' },
   'ALIEN-GHOST':        { name:'ALIEN-GHOST',        color:'#66ff99', hp:128, atk:34, spd:28, def:14, passiveIcon:'👽',
-    passive:'When hit by Poison/Burn/Curse, receives the opposite beneficial effect instead; 15% chance to Blind the enemy on hit',
-    passiveTh:'เมื่อโดน พิษ/เผาไหม้/คำสาป จะได้รับผลตรงกันข้าม และมีโอกาส 15% ทำให้ศัตรูตาบอดเมื่อโจมตี' },
+    passive:'While Poisoned/Burned/Cursed/Frozen, the debuff runs its normal duration but its effect is inverted into a benefit instead; 15% chance to Blind the enemy on hit',
+    passiveTh:'เมื่อโดน พิษ/เผาไหม้/คำสาป/แช่แข็ง ดีบัฟจะยังคงอยู่ตามเวลาปกติ แต่ผลที่ได้รับกลายเป็นตรงกันข้าม (เป็นผลดีแทน) และมีโอกาส 15% ทำให้ศัตรูตาบอดเมื่อโจมตี' },
   'SHIVA-GHOST':        { name:'SHIVA-GHOST',        color:'#66ccff', hp:138, atk:37, spd:23, def:18, passiveIcon:'🔱',
     passive:'Every 3rd turn: damage dealt ×2.0, 50% chance to Freeze the enemy, and immune to debuffs that turn',
     passiveTh:'ทุก 3 เทิร์น: ดาเมจที่สร้าง ×2.0 และมีโอกาส 50% แช่แข็งศัตรู และภูมิคุ้มกันดีบัฟในเทิร์นนั้น' },
@@ -2665,8 +2665,8 @@ const FUSION_ECHO_INFO = {
     descTh:'เมื่อ WIN: ATK+50% DEF-25% เมื่อ LOSE: DEF+50% ATK-25%'},
   'DRAGON-TAMER-GHOST': {name:'BONDED ECHO',     icon:'🤝', desc:'On WIN: attacks pierce DEF and 25% chance to Burn the enemy. On LOSE: DEF+15%',
     descTh:'เมื่อ WIN: โจมตีทะลุ DEF และ โอกาส 25% ทำให้ศัตรูติดเผาไหม้ เมื่อ LOSE: DEF+15%'},
-  'ALIEN-GHOST':        {name:'ALIEN RESISTANCE',icon:'👽', desc:'50% chance to receive the opposite beneficial effect instead of Poison/Burn/Curse/Freeze; 8% chance to Blind the enemy on hit',
-    descTh:'โอกาส 50% ได้รับผลตรงกันข้ามแทน เมื่อโดนพิษ/เผาไหม้/คำสาป/แช่แข็ง (แทนที่จะติดสถานะปกติ) และโอกาส 8% ทำให้ศัตรูตาบอดเมื่อโจมตี'},
+  'ALIEN-GHOST':        {name:'ALIEN RESISTANCE',icon:'👽', desc:'While Poisoned/Burned/Cursed/Frozen, the debuff runs its normal duration but its effect is inverted into a benefit instead (half strength); 8% chance to Blind the enemy on hit',
+    descTh:'เมื่อโดน พิษ/เผาไหม้/คำสาป/แช่แข็ง ดีบัฟจะยังคงอยู่ตามเวลาปกติ แต่ผลที่ได้รับกลายเป็นตรงกันข้าม (เป็นผลดีแทน ครึ่งกำลัง) และโอกาส 8% ทำให้ศัตรูตาบอดเมื่อโจมตี'},
   'SHIVA-GHOST':        {name:'BALANCE ECHO',    icon:'🔱', desc:'Every 3 turns: damage dealt x1.5 and 25% chance to Freeze the enemy',
     descTh:'ทุก 3 เทิร์น: ดาเมจที่สร้าง x1.5 และโอกาส 25% แช่แข็งศัตรู'},
 };
@@ -3125,7 +3125,12 @@ function getEffStat(stat) {
   const base = creature[stat] || 0;
   const exp = creature.buffExpiry?.[stat] || 0;
   let val = (exp > now) ? Math.round(base * 1.2) : base;
-  if(stat==='spd' && battleState?.playerFreezeSpdTurns > 0) val = Math.round(val * 0.75);
+  if(stat==='spd' && battleState?.playerFreezeSpdTurns > 0) {
+    // ALIEN-GHOST: Freeze's SPD-25% is inverted into a SPD buff instead, while the debuff still ticks down
+    if(creature.phase==='final' && creature.finalKey==='ALIEN-GHOST') val = Math.round(val * 1.15);
+    else if(creature.inheritedPassive==='ALIEN-GHOST') val = Math.round(val * 1.08);
+    else val = Math.round(val * 0.75);
+  }
   if(stat==='spd' && battleState?.ghostBunnyAtkBuff) val = Math.round(val * 1.5);
   if(stat==='spd' && battleState?.echoBunnyAtkBuff) val = Math.round(val * 1.25);
   if(stat==='spd' && creature.phase==='final' && creature.finalKey==='TRICKFOX-GHOST') val = Math.round(val * 1.25);
@@ -5053,7 +5058,7 @@ function doOverdriveTurn() {
   const passives = [];
   let pd=0, ed=0, playerHeal=0, enemyHeal=0, reflectDmg=0, counterDmg=0, pdHits=[], fullyReflected=false;
   const atk = getEffStat('atk');
-  const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(atk*0.75) : atk;
+  const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(atk * (ff==='ALIEN-GHOST' ? 1.25 : 0.75)) : atk;
   const _hit = (mult=1.0, critBonus=0) => {
     const c = Math.random()<(0.12+critBonus);
     const d = Math.max(1, Math.round((atk/3+Math.random()*4)*mult*(c?1.6:1)) - Math.floor(enemy.def/2));
@@ -5338,7 +5343,7 @@ function doOverdriveTurn() {
   const eFireAbsorbOD = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION');
   const pFireAbsorbOD = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION';
   if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorbOD ? Math.round(pd*0.75) : Math.round(pd*1.25);
-  if(bs.playerBurnTurns>0 && ed>0) ed = pFireAbsorbOD ? Math.round(ed*0.75) : Math.round(ed*1.25);
+  if(bs.playerBurnTurns>0 && ed>0) ed = pFireAbsorbOD ? Math.round(ed*0.75) : ff==='ALIEN-GHOST' ? Math.round(ed*0.75) : Math.round(ed*1.25);
   // ⏰ Stalemate Breaker
   if(bs.stalemateAtkMult && bs.stalemateAtkMult>1) {
     if(pd>0) pd = Math.round(pd * bs.stalemateAtkMult);
@@ -5390,6 +5395,10 @@ function doTurn(moveIdx) {
   const fk = creature.phase==='final' ? creature.baseFormKey : creature.formKey;
   const ff = creature.phase==='final' ? creature.finalKey : null;
   const bs = battleState;
+  // ALIEN-GHOST: while Poison/Burn/Curse/Freeze is ticking, its effect is inverted into a
+  // beneficial one instead of being cleansed — the debuff still runs its normal duration.
+  // 1 = full Skill strength, 0.5 = Echo (half strength), 0 = not an Alien-lineage creature.
+  const alienReverse = ff==='ALIEN-GHOST' ? 1 : (creature.inheritedPassive==='ALIEN-GHOST' ? 0.5 : 0);
   bs.playerTrueStrike = false; // one-turn flag; the Overdrive buff or a branch skill may re-arm it below
   // STORM-BLITZ Echo's true-strike buff must be armed before the "Enemy dodge" check further below —
   // the Echo passives section itself runs much later in the passive chain (after that check), so
@@ -5459,7 +5468,7 @@ function doTurn(moveIdx) {
   if(eArtId==='deathblow'      || eArtId2==='deathblow')      eCritBonus += 0.15;
   const enemyAtk = (eArtId==='berserker_claw' || eArtId2==='berserker_claw') ? Math.round(enemy.atk*1.25) : enemy.atk;
   const eCurseAtk = bs.e2CurseTurns>0 ? Math.round(enemyAtk*0.75) : enemyAtk;
-  const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(getEffStat('atk')*0.75) : getEffStat('atk');
+  const pCurseAtk = bs.e2CurseTurnsE>0 ? Math.round(getEffStat('atk') * (alienReverse>0 ? (1+0.25*alienReverse) : 0.75)) : getEffStat('atk');
   // Evolve II enemy mimic — mirrors the player's branch-skill crit modifiers (no Overdrive)
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='DARK-SPECTER') eCritBonus += 0.25;
   if(enemy.isEvolve2Enemy && enemy.evolve2Key==='FIGHT-SWIFTGUARD' && cmp==='lose') bs.e2StackE = Math.min(3, (bs.e2StackE||0)+1);
@@ -6058,10 +6067,9 @@ function doTurn(moveIdx) {
     } else if(cmp==='lose') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.75)); passives.push({icon:'🤝',text:`DRAGON TAMER LOSE DEF+25%→${ed}`}); }
   }
   if(ff==='ALIEN-GHOST') {
-    if(bs.playerPoisonTurns>0) { bs.playerPoisonTurns=0; const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'👽',`ALIEN reversed Poison→Heal+${heal}`); }
-    if(bs.playerBurnTurns>0) { bs.playerBurnTurns=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Burn→ATK+15%→${pd}`}); }
-    if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Curse→ATK+15%→${pd}`}); }
-    if(bs.playerFreezeSpdTurns>0) { bs.playerFreezeSpdTurns=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Freeze→ATK+15%→${pd}`}); }
+    // Poison/Burn/Curse/Freeze reversal happens continuously wherever each debuff's effect is
+    // applied (poison/burn ticks, curse's pCurseAtk, freeze's SPD leg in getEffStat) — the debuff
+    // still runs its normal duration instead of being cleansed here. See `alienReverse` above.
     if(pd>0 && Math.random()<0.15) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'ALIEN BLIND!'}); }
   }
   if(ff==='SHIVA-GHOST' && bs.turn%3===0) {
@@ -7029,12 +7037,7 @@ function doTurn(moveIdx) {
       } else if(cmp==='lose') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'🤝',text:`BONDED ECHO LOSE DEF+15%→${ed}`}); }
     }
     else if(ip==='ALIEN-GHOST') {
-      if(Math.random()<0.50) {
-        if(bs.playerPoisonTurns>0) { bs.playerPoisonTurns=0; const heal=Math.round(creature.maxHp*0.03); _pHeal(heal,'👽',`ALIEN RESISTANCE reversed Poison→Heal+${heal}`); }
-        else if(bs.playerBurnTurns>0) { bs.playerBurnTurns=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Burn→ATK+8%→${pd}`}); }
-        else if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Curse→ATK+8%→${pd}`}); }
-        else if(bs.playerFreezeSpdTurns>0) { bs.playerFreezeSpdTurns=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Freeze→ATK+8%→${pd}`}); }
-      }
+      // Same continuous reversal as the base Skill, at half strength via `alienReverse` (0.5) above.
       if(pd>0 && Math.random()<0.08) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'ALIEN RESISTANCE BLIND!'}); }
     }
     else if(ip==='SHIVA-GHOST' && bs.turn%3===0) {
@@ -7437,7 +7440,7 @@ function doTurn(moveIdx) {
   const fireAbsorb = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION';
   const eFireAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION');
   if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorb ? Math.round(pd*0.75) : Math.round(pd*1.25);
-  if(bs.playerBurnTurns>0 && ed>0) ed = fireAbsorb ? Math.round(ed*0.75) : Math.round(ed*1.25);
+  if(bs.playerBurnTurns>0 && ed>0) ed = fireAbsorb ? Math.round(ed*0.75) : alienReverse>0 ? Math.round(ed*(1-0.25*alienReverse)) : Math.round(ed*1.25);
 
   // ⏰ Stalemate Breaker: ramping ATK boost after turn 50
   if(bs.stalemateAtkMult && bs.stalemateAtkMult>1) {
@@ -7454,9 +7457,16 @@ function doTurn(moveIdx) {
   }
   if(ff==='POISON-FORTRESS') bs.playerPoisonTurns=0; // POISON-FORTRESS: immune to poison
   if(bs.playerPoisonTurns>0 && creature.hp>0) {
-    const pdmg=Math.max(1,Math.round(creature.maxHp*0.06)); creature.hp=Math.max(0,creature.hp-pdmg); bs.playerPoisonTurns--;
-    poisonDmgPlayer = pdmg;
-    passives.push({icon:'☠️',text:T(`พิษ! -${pdmg} HP (เหลือ ${bs.playerPoisonTurns} เทิร์น)`,`Poison! -${pdmg} HP (${bs.playerPoisonTurns} turns left)`)});
+    const pdmg=Math.max(1,Math.round(creature.maxHp*0.06));
+    if(alienReverse>0) {
+      const heal=Math.round(pdmg*alienReverse);
+      _pHeal(heal,'👽',T(`ALIEN REVERSED POISON! +${heal} HP (เหลือ ${bs.playerPoisonTurns-1} เทิร์น)`,`ALIEN REVERSED POISON! +${heal} HP (${bs.playerPoisonTurns-1} turns left)`));
+    } else {
+      creature.hp=Math.max(0,creature.hp-pdmg);
+      poisonDmgPlayer = pdmg;
+      passives.push({icon:'☠️',text:T(`พิษ! -${pdmg} HP (เหลือ ${bs.playerPoisonTurns-1} เทิร์น)`,`Poison! -${pdmg} HP (${bs.playerPoisonTurns-1} turns left)`)});
+    }
+    bs.playerPoisonTurns--;
   }
   // 🔥 Burn ticks — 3% MaxHP/turn, 3 turns (Fire Absorb: heal instead)
   if(bs.enemyBurnTurns>0 && enemy.hp>0) {
@@ -7475,6 +7485,9 @@ function doTurn(moveIdx) {
     if(fireAbsorb) {
       const heal=Math.min(bdmg, creature.maxHp-creature.hp);
       if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0){healBlockedPlayer+=heal;passives.push({icon:'🚫🔥',text:T(`Heal Block: Fire Absorb +${heal} ล็อค`,'Heal Block: Fire Absorb +'+heal+' BLOCKED')});}else{creature.hp=Math.min(creature.maxHp,creature.hp+bdmg);playerHeal+=heal;passives.push({icon:'🔥',text:T(`ดูดซับไฟ! +${heal} HP (เหลือ ${bs.playerBurnTurns} เทิร์น)`,`Fire Absorb! +${heal} HP (${bs.playerBurnTurns} turns left)`)});}
+    } else if(alienReverse>0) {
+      const heal=Math.round(bdmg*alienReverse);
+      _pHeal(heal,'👽',T(`ALIEN REVERSED BURN! +${heal} HP (เหลือ ${bs.playerBurnTurns-1} เทิร์น)`,`ALIEN REVERSED BURN! +${heal} HP (${bs.playerBurnTurns-1} turns left)`));
     } else {
       creature.hp=Math.max(0,creature.hp-bdmg); burnDmgPlayer=bdmg;
       passives.push({icon:'🔥',text:T(`เผาไหม้! -${bdmg} HP (เหลือ ${bs.playerBurnTurns} เทิร์น)`,`Burn! -${bdmg} HP (${bs.playerBurnTurns} turns left)`)});

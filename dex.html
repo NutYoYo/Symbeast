@@ -319,6 +319,41 @@ GHOST_FORMS['PANDA-GHOST']={ name:'PANDA-GHOST', color:'#2F4F4F', hp:120, atk:33
 PET_BRANCH['DRAGON-GHOST']='BALANCE';PET_BRANCH['GRIFFON-GHOST']='BALANCE';PET_BRANCH['OCTOPUS-GHOST']='BALANCE';PET_BRANCH['PHOENIX-GHOST']='BALANCE';PET_BRANCH['UNICORN-GHOST']='BALANCE';PET_BRANCH['PANDA-GHOST']='BALANCE';
 PET_SPRITE['DRAGON-GHOST']='DRAGON-GHOST';PET_SPRITE['GRIFFON-GHOST']='GRIFFON-GHOST';PET_SPRITE['OCTOPUS-GHOST']='OCTOPUS-GHOST';PET_SPRITE['PHOENIX-GHOST']='PHOENIX-GHOST';PET_SPRITE['UNICORN-GHOST']='UNICORN-GHOST';PET_SPRITE['PANDA-GHOST']='PANDA-GHOST';
 
+// EPIC GHOST Forms (16)
+const EPIC_GHOST_FORMS = {};
+
+// FIST pool
+EPIC_GHOST_FORMS['RED-SENTINEL-GHOST']={ name:'RED-SENTINEL-GHOST', color:'#ff2222', hp:135, atk:55, spd:18, def:8, passiveIcon:'🔴', passive:'On WIN: ATK+15% per stack (max 5). Every 3rd attack lands a guaranteed critical hit (×2.0 damage)', passiveTh:'เมื่อ WIN: ATK+15% ต่อครั้ง (สูงสุด 5 ครั้ง) ทุก 3 เทิร์น โจมตีติดคริติคอลแน่นอน (×2.0)' };
+EPIC_GHOST_FORMS['IFRIT-GHOST']={ name:'IFRIT-GHOST', color:'#ff5500', hp:120, atk:62, spd:19, def:6, passiveIcon:'🔥', passive:'30% Burn on attack (3% HP/turn, 3 turns); on WIN: ATK+10% per stack (max 5)', passiveTh:'โจมตี 30% เผาไหม้ (3% HP/เทิร์น 3 เทิร์น) เมื่อ WIN: ATK+10% (สูงสุด 5 ครั้ง)' };
+EPIC_GHOST_FORMS['BABARIAN-GHOST']={ name:'BABARIAN-GHOST', color:'#aa5522', hp:140, atk:58, spd:15, def:9, passiveIcon:'🪓', passive:'Damage dealt +20% per 10% HP missing (max +160%)', passiveTh:'ดาเมจเพิ่ม 20% ต่อทุก 10% HP ที่หายไป (สูงสุด +160%)' };
+EPIC_GHOST_FORMS['SAMURAI-GHOST']={ name:'SAMURAI-GHOST', color:'#b0b8c8', hp:125, atk:60, spd:21, def:7, passiveIcon:'⚔️', passive:'Guaranteed critical hit on every attack; dodge +20%', passiveTh:'โจมตีติดคริติคอลแน่นอน และหลบ +20%' };
+PET_BRANCH['RED-SENTINEL-GHOST']='FIST';PET_BRANCH['IFRIT-GHOST']='FIST';PET_BRANCH['BABARIAN-GHOST']='FIST';PET_BRANCH['SAMURAI-GHOST']='FIST';
+PET_SPRITE['RED-SENTINEL-GHOST']='RED-SENTINEL-GHOST';PET_SPRITE['IFRIT-GHOST']='IFRIT-GHOST';PET_SPRITE['BABARIAN-GHOST']='BABARIAN-GHOST';PET_SPRITE['SAMURAI-GHOST']='SAMURAI-GHOST';
+
+// WING pool
+EPIC_GHOST_FORMS['BLUE-SENTINEL-GHOST']={ name:'BLUE-SENTINEL-GHOST', color:'#2288ff', hp:112, atk:30, spd:52, def:7, passiveIcon:'🔵', passive:'25% dodge; on dodge, next attack ATK+50% and pierces DEF', passiveTh:'25% หลบ เมื่อหลบ โจมตีถัดไป ATK+50% และทะลุ DEF' };
+EPIC_GHOST_FORMS['RANGER-GHOST']={ name:'RANGER-GHOST', color:'#33aa55', hp:108, atk:34, spd:48, def:6, passiveIcon:'🏹', passive:'Attacks never miss; 20% chance to attack twice', passiveTh:'โจมตีไม่พลาดเป้า และ 20% โจมตี 2 ครั้ง' };
+EPIC_GHOST_FORMS['VALKYLIE-GHOST']={ name:'VALKYLIE-GHOST', color:'#ffdd88', hp:118, atk:32, spd:50, def:8, passiveIcon:'👼', passive:'On WIN: heal 10% Max HP, dodge+15%, ATK+20% next round', passiveTh:'เมื่อ WIN: ฟื้น 10% Max HP, หลบ+15%, ATK+20% รอบถัดไป' };
+EPIC_GHOST_FORMS['ARC-ANGEL-GHOST']={ name:'ARC-ANGEL-GHOST', color:'#f5f0ff', hp:115, atk:29, spd:54, def:8, passiveIcon:'😇', passive:'50% chance/turn to cleanse a debuff; HP<50%: 50% stun and dodge+15%', passiveTh:'ทุกเทิร์น 50% ล้างดีบัฟ 1 อย่าง HP<50%: 50% สตันและหลบ+15%' };
+PET_BRANCH['BLUE-SENTINEL-GHOST']='WING';PET_BRANCH['RANGER-GHOST']='WING';PET_BRANCH['VALKYLIE-GHOST']='WING';PET_BRANCH['ARC-ANGEL-GHOST']='WING';
+PET_SPRITE['BLUE-SENTINEL-GHOST']='BLUE-SENTINEL-GHOST';PET_SPRITE['RANGER-GHOST']='RANGER-GHOST';PET_SPRITE['VALKYLIE-GHOST']='VALKYLIE-GHOST';PET_SPRITE['ARC-ANGEL-GHOST']='ARC-ANGEL-GHOST';
+
+// SHIELD pool
+EPIC_GHOST_FORMS['GREEN-SENTINEL-GHOST']={ name:'GREEN-SENTINEL-GHOST', color:'#22aa22', hp:158, atk:24, spd:19, def:28, passiveIcon:'🟢', passive:'30% chance to halve incoming damage; regen 4% Max HP/turn', passiveTh:'30% ลดดาเมจที่รับครึ่งหนึ่ง และฟื้น HP 4% Max ทุกเทิร์น' };
+EPIC_GHOST_FORMS['SKELETON-KING-GHOST']={ name:'SKELETON-KING-GHOST', color:'#d8d0c0', hp:165, atk:27, spd:16, def:25, passiveIcon:'💀', passive:'20% lifesteal; upon death, revive with 100% HP (once per battle)', passiveTh:'ดูดเลือด 20% เมื่อตายฟื้นคืนชีพ HP 100% (1 ครั้ง/การต่อสู้)' };
+EPIC_GHOST_FORMS['DRAGON-KNIGHT-GHOST']={ name:'DRAGON-KNIGHT-GHOST', color:'#4477aa', hp:155, atk:26, spd:18, def:27, passiveIcon:'🐉', passive:'Reflects 30% damage; HP<50%: DEF+25% and regen 3% Max HP/turn', passiveTh:'สะท้อนดาเมจ 30% HP<50%: DEF+25% ฟื้น 3% Max/เทิร์น' };
+EPIC_GHOST_FORMS['ARC-DEMON-GHOST']={ name:'ARC-DEMON-GHOST', color:'#aa2244', hp:148, atk:29, spd:20, def:24, passiveIcon:'😈', passive:'50% chance on hit to inflict random debuff (Poison/Burn/Curse/Blind/Heal-Block)', passiveTh:'50% โอกาสสุ่มดีบัฟใส่ศัตรู (พิษ/เผา/สาป/ตาบอด/ห้ามฮีล)' };
+PET_BRANCH['GREEN-SENTINEL-GHOST']='SHIELD';PET_BRANCH['SKELETON-KING-GHOST']='SHIELD';PET_BRANCH['DRAGON-KNIGHT-GHOST']='SHIELD';PET_BRANCH['ARC-DEMON-GHOST']='SHIELD';
+PET_SPRITE['GREEN-SENTINEL-GHOST']='GREEN-SENTINEL-GHOST';PET_SPRITE['SKELETON-KING-GHOST']='SKELETON-KING-GHOST';PET_SPRITE['DRAGON-KNIGHT-GHOST']='DRAGON-KNIGHT-GHOST';PET_SPRITE['ARC-DEMON-GHOST']='ARC-DEMON-GHOST';
+
+// BALANCE pool
+EPIC_GHOST_FORMS['BAHAMUT-GHOST']={ name:'BAHAMUT-GHOST', color:'#6633cc', hp:145, atk:38, spd:24, def:17, passiveIcon:'🐲', passive:'On WIN: ATK+75%, DEF-50%. On LOSE: DEF+75%, ATK-50%', passiveTh:'เมื่อ WIN: ATK+75% DEF-50% เมื่อ LOSE: DEF+75% ATK-50%' };
+EPIC_GHOST_FORMS['DRAGON-TAMER-GHOST']={ name:'DRAGON-TAMER-GHOST', color:'#dd8844', hp:130, atk:35, spd:26, def:16, passiveIcon:'🤝', passive:'On WIN: pierce DEF + 50% Burn. On LOSE: DEF+25%', passiveTh:'เมื่อ WIN: ทะลุ DEF + 50% เผาไหม้ เมื่อ LOSE: DEF+25%' };
+EPIC_GHOST_FORMS['ALIEN-GHOST']={ name:'ALIEN-GHOST', color:'#66ff99', hp:128, atk:34, spd:28, def:14, passiveIcon:'👽', passive:'Debuffs (Poison/Burn/Curse/Freeze) are inverted into benefits; 15% Blind on hit', passiveTh:'ดีบัฟ (พิษ/เผา/สาป/แช่แข็ง) กลับด้านเป็นผลดี และ 15% ตาบอดเมื่อโจมตี' };
+EPIC_GHOST_FORMS['SHIVA-GHOST']={ name:'SHIVA-GHOST', color:'#66ccff', hp:138, atk:37, spd:23, def:18, passiveIcon:'🔱', passive:'Every 3rd turn: damage ×2.0, 50% Freeze, immune to debuffs that turn', passiveTh:'ทุก 3 เทิร์น: ดาเมจ ×2.0 + 50% แช่แข็ง + ภูมิคุ้มกันดีบัฟ' };
+PET_BRANCH['BAHAMUT-GHOST']='BALANCE';PET_BRANCH['DRAGON-TAMER-GHOST']='BALANCE';PET_BRANCH['ALIEN-GHOST']='BALANCE';PET_BRANCH['SHIVA-GHOST']='BALANCE';
+PET_SPRITE['BAHAMUT-GHOST']='BAHAMUT-GHOST';PET_SPRITE['DRAGON-TAMER-GHOST']='DRAGON-TAMER-GHOST';PET_SPRITE['ALIEN-GHOST']='ALIEN-GHOST';PET_SPRITE['SHIVA-GHOST']='SHIVA-GHOST';
+
 // WEAPONS — synced with game data (index.html)
 const WEAPONS = {
   // Normal — pure stats, no passive
@@ -357,6 +392,11 @@ const WEAPONS = {
   phantom_cloak:{ name:'Phantom Cloak', nameTh:'เสื้อคลุมภูต', grade:'E', icon:'👻', stats:{spd:80,hp:400}, effect:{type:'poison_when_hit',chance:0.20}, desc:'20% chance to poison the attacker when hit', descTh:'20% โอกาสวางพิษใส่ผู้โจมตีเมื่อถูกโจมตี' },
   titan_gauntlet:{ name:'Titan Gauntlet', nameTh:'ถุงมือไททัน', grade:'E', icon:'👊', stats:{atk:80,hp:400}, effect:{type:'stun_on_hit',chance:0.10}, desc:'10% chance to stun enemy', descTh:'10% โอกาสสตันศัตรู' },
   storm_crown:{ name:'Storm Crown', nameTh:'มงกุฎพายุ', grade:'E', icon:'⛈️', stats:{def:80,spd:80}, effect:{type:'dmg_reduce',mult:0.90}, desc:'Damage received -10%', descTh:'ดาเมจที่ได้รับ -10%' },
+  glacial_aegis:{ name:'Glacial Aegis', nameTh:'โล่ธารน้ำแข็ง', grade:'R', icon:'❄️', stats:{def:30,hp:150}, effect:{type:'freeze_when_hit',chance:0.10}, desc:'10% chance to Freeze the attacker when hit', descTh:'10% โอกาสทำให้ผู้โจมตีติด Freeze เมื่อถูกโจมตี' },
+  blightthorn_lance:{ name:'Blightthorn Lance', nameTh:'ทวนหนามสาป', grade:'R', icon:'🧙', stats:{atk:30,def:30}, effect:{type:'curse_on_hit',chance:0.10}, desc:'10% chance to Curse the enemy on hit', descTh:'10% โอกาสสาป (Curse) ศัตรูเมื่อโจมตีโดน' },
+  absolute_zero:{ name:'Absolute Zero', nameTh:'ศูนย์สัมบูรณ์', grade:'E', icon:'❄️', stats:{atk:80,spd:80}, effect:{type:'freeze_on_hit',chance:0.15}, desc:'15% chance to Freeze the enemy on hit', descTh:'15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตีโดน' },
+  chaos_scepter:{ name:'Chaos Scepter', nameTh:'คทาจอมวุ่นวาย', grade:'E', icon:'👁️', stats:{atk:80,hp:400}, effect:{type:'random_debuff_on_hit',chance:0.15}, desc:'15% chance to inflict Blind, Curse, or Heal-Block on hit', descTh:'15% โอกาสสุ่มทำให้ศัตรูติด Blind, Curse หรือ Heal-Block เมื่อโจมตีโดน' },
+  permafrost_crown:{ name:'Permafrost Crown', nameTh:'มงกุฎน้ำแข็งนิรันดร์', grade:'E', icon:'❄️', stats:{def:80,spd:80}, effect:{type:'freeze_both_on_hit',chance:0.10}, desc:"10% chance to Freeze both sides — you're immune to Freeze SPD penalty", descTh:'10% โอกาสแช่แข็งทั้งสองฝ่าย — ตัวเองภูมิคุ้มกัน Freeze' },
 };
 
 // ARTIFACTS — synced with game data (index.html)
@@ -373,6 +413,7 @@ const ARTIFACTS = [
   { key:'stone_skin', name:'Stone Skin', nameTh:'หนังหิน', grade:'N', icon:'🪨', desc:'In battle: Reduces damage taken by 10% while HP > 70%', descTh:'ในการต่อสู้: ลดดาเมจที่รับ 10% เมื่อ HP > 70%' },
   { key:'lucky_charm', name:'Lucky Charm', nameTh:'เครื่องรางโชค', grade:'N', icon:'🍀', desc:'After winning a battle: Gold earned ×1.5', descTh:'หลังชนะการต่อสู้: ได้ Gold เพิ่มขึ้น ×1.5' },
   { key:'venom_fang', name:'Venom Fang', nameTh:'เขี้ยวพิษ', grade:'N', icon:'🐍', desc:'In battle: On attack, 20% chance to poison the opponent (6% MaxHP/turn, 3 turns)', descTh:'ในการต่อสู้: เมื่อโจมตี 20% โอกาสวางพิษใส่คู่ต่อสู้ (6% MaxHP/เทิร์น นาน 3 เทิร์น)' },
+  { key:'frost_bead', name:'Frost Bead', nameTh:'ลูกปัดน้ำแข็ง', grade:'N', icon:'❄️', desc:'In battle: 8% chance to Freeze the enemy on hit', descTh:'ในการต่อสู้: 8% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี' },
   { key:'atk_shard', name:'ATK Shard', nameTh:'เศษพลังโจมตี', grade:'N', icon:'🗡', desc:'ATK +15% when equipped', descTh:'ATK +15% เมื่อสวมใส่' },
   { key:'def_shard', name:'DEF Shard', nameTh:'เศษพลังป้องกัน', grade:'N', icon:'🛡', desc:'DEF +15% when equipped', descTh:'DEF +15% เมื่อสวมใส่' },
   { key:'spd_shard', name:'SPD Shard', nameTh:'เศษความเร็ว', grade:'N', icon:'💨', desc:'SPD +15% when equipped', descTh:'SPD +15% เมื่อสวมใส่' },
@@ -395,6 +436,8 @@ const ARTIFACTS = [
   { key:'antidote_charm', name:'Antidote Charm', nameTh:'เครื่องรางแก้พิษ', grade:'R', icon:'💊', desc:'In battle: Complete immunity to poison', descTh:'ในการต่อสู้: ป้องกันพิษได้สมบูรณ์' },
   { key:'reflect_ward', name:'Reflect Ward', nameTh:'เครื่องรางกันสะท้อน', grade:'R', icon:'🛑', desc:'In battle: Takes no damage from any reflect/counter effect', descTh:'ในการต่อสู้: ไม่ได้รับดาเมจจากการสะท้อนหรือ Counter ใดๆ' },
   { key:'cursed_shackle', name:'Cursed Shackle', nameTh:'ตรวนต้องสาป', grade:'R', icon:'🕸️', desc:'In battle: 25% chance to prevent enemy healing for 3 turns', descTh:'ในการต่อสู้: 25% โอกาสสกัดกั้นการฟื้นฟูของศัตรู 3 เทิร์น' },
+  { key:'clouded_lens', name:'Clouded Lens', nameTh:'เลนส์หมอกมัว', grade:'R', icon:'👁️', desc:'In battle: 20% chance to Blind the enemy on hit', descTh:'ในการต่อสู้: 20% โอกาสทำให้ศัตรูตาบอดเมื่อโจมตี' },
+  { key:'rimefrost_fang', name:'Rimefrost Fang', nameTh:'เขี้ยวน้ำแข็ง', grade:'R', icon:'❄️', desc:'In battle: 15% chance to Freeze the enemy on hit', descTh:'ในการต่อสู้: 15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี' },
   // Epic
   { key:'sniper_eye', name:'Sniper Eye', nameTh:'ตานักแม่น', grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (×2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ ×2.0)' },
   { key:'soul_reaper', name:'Soul Reaper', nameTh:'เกี่ยวเกลียวจิตวิญญาณ', grade:'E', icon:'🪦', desc:'In battle: Drains 25% of damage dealt as HP each round', descTh:'ในการต่อสู้: ดูดเลือด 25% จากดาเมจที่โจมตีทุกรอบ' },
@@ -408,7 +451,8 @@ const ARTIFACTS = [
   { key:'all_stats_e', name:'Omega Crest', nameTh:'ตราโอเมก้า', grade:'E', icon:'🔷', desc:'All stats (ATK/DEF/SPD/HP) +25% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +25% เมื่อสวมใส่' },
   { key:'deathblow', name:'Deathblow', nameTh:'ฆ่าตัดตอน', grade:'E', icon:'⚰️', desc:'In battle: Crit chance +15% and crit deals ×2.0 damage', descTh:'ในการต่อสู้: โอกาสคริ +15% และคริดาเมจ ×2.0' },
   { key:'plague_scythe', name:'Plague Scythe', nameTh:'เคียวกาฬโรค', grade:'E', icon:'☣️', desc:'In battle: On attack, 30% chance to poison; deals +50% damage to an already-poisoned opponent', descTh:'ในการต่อสู้: เมื่อโจมตี 30% โอกาสวางพิษ และดาเมจ +50% ถ้าคู่ต่อสู้ติดพิษอยู่แล้ว' },
-  { key:'piercing_fang', name:'Piercing Fang', nameTh:'เขี้ยวทะลุทะลวง', grade:'E', icon:'🔪', desc:'In battle: ATK +25% and attacks pierce 50% of enemy DEF and damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ DEF และเอฟเฟกต์ลดดาเมจของศัตรู 50%' },
+  { key:'piercing_fang', name:'Piercing Fang', nameTh:'เขี้ยวทะลุทะลวง', grade:'E', icon:'🔪', desc:'In battle: ATK+25% and attacks pierce 50% of enemy DEF and damage-reduction effects', descTh:'ในการต่อสู้: ATK+25% และโจมตีทะลุ DEF และเอฟเฟกต์ลดดาเมจของศัตรู 50%' },
+  { key:'tri_attack', name:'Tri-Attack', nameTh:'ไตรอาวุธ', grade:'E', icon:'🔮', desc:'In battle: Each attack has 25% chance to randomly inflict Freeze, Burn, or Poison on the enemy', descTh:'ในการต่อสู้: ทุกการโจมตีมีโอกาส 25% สุ่มทำให้ศัตรูติด Freeze, Burn หรือ Poison อย่างใดอย่างหนึ่ง' },
 ];
 
 // ===================== OVERDRIVE INFO =====================
@@ -480,6 +524,23 @@ const OVERDRIVE_INFO = {
   'PHOENIX-GHOST':{name:'PHOENIX REBIRTH',icon:'🔱',desc:'Strike ×3.5 + recover 25% HP, then ATK/SPD+30% for 3 turns',descTh:'x3.5 + ฟื้น 25% HP จากนั้น ATK/SPD+30% 3T'},
   'UNICORN-GHOST':{name:'UNICORN BLESS',icon:'✨',desc:'Strike ×3.0 + recover 40% HP + full cleanse, then ATK/SPD/DEF+20% + recover 10%/turn for 3 turns',descTh:'x3.0 + ฟื้น 40% HP + ล้าง จากนั้น ATK/SPD/DEF+20% ฟื้น 10%/เทิร์น 3T'},
   'PANDA-GHOST':{name:'PANDA STRIKE',icon:'☯️',desc:'Strike ×4.0 (forced crit) + stun, then Crit+30% + stun+20% for 3 turns',descTh:'x4.0 (คริ) + สตัน จากนั้น Crit+30% สตัน+20% 3T'},
+  // EPIC GHOST
+  'RED-SENTINEL-GHOST':{name:'CRIMSON JUDGMENT',icon:'🔴',desc:'Strike ×3.5 pierce DEF + guaranteed crit, then ATK+30% for 3 turns',descTh:'โจมตี ×3.5 ทะลุ DEF + คริติคอลแน่นอน จากนั้น ATK+30% นาน 3 เทิร์น'},
+  'IFRIT-GHOST':{name:'HELLFIRE NOVA',icon:'🔥',desc:'Strike ×2.5 + guaranteed Burn (3 turns), then +100% damage to burning enemies for 3 turns',descTh:'โจมตี ×2.5 + เผาไหม้แน่นอน (3 เทิร์น) จากนั้นดาเมจ +100% ใส่ศัตรูที่ติดเผาไหม้ นาน 3 เทิร์น'},
+  'BABARIAN-GHOST':{name:'BLOOD FRENZY',icon:'🪓',desc:'Strike ×2.0 twice, then damage dealt +25% while below 50% HP for 3 turns',descTh:'โจมตี ×2.0 สองครั้ง จากนั้นดาเมจ +25% ระหว่าง HP ต่ำกว่า 50% นาน 3 เทิร์น'},
+  'SAMURAI-GHOST':{name:'MOONLIGHT SLASH',icon:'⚔️',desc:'Strike ×4.0 guaranteed crit, then dodge +25% for 3 turns',descTh:'โจมตี ×4.0 คริติคอลแน่นอน จากนั้น หลบหลีก +25% นาน 3 เทิร์น'},
+  'BLUE-SENTINEL-GHOST':{name:'AZURE STORM',icon:'🔵',desc:'Strike ×2.5 pierce DEF, cannot miss, then dodge +20% for 3 turns',descTh:'โจมตี ×2.5 ทะลุ DEF ไม่พลาดเป้า จากนั้นโอกาสหลบ +20% นาน 3 เทิร์น'},
+  'RANGER-GHOST':{name:'RAIN OF ARROWS',icon:'🏹',desc:'Strike ×2.0, hits 3 times (guaranteed), then SPD +50% for 3 turns',descTh:'โจมตี ×2.0 จำนวน 3 ครั้งติด (การันตี) จากนั้น SPD +50% นาน 3 เทิร์น'},
+  'VALKYLIE-GHOST':{name:"WINGS OF JUDGMENT",icon:'👼',desc:'Strike ×2.5 + full heal, then ATK/SPD+25% for 3 turns',descTh:'โจมตี ×2.5 + ฟื้น HP เต็ม จากนั้น ATK/SPD +25% นาน 3 เทิร์น'},
+  'ARC-ANGEL-GHOST':{name:"HEAVEN'S LIGHT",icon:'😇',desc:'Strike ×3.0 + Blinds the enemy, then heals 20% HP for 3 turns',descTh:'โจมตี ×3.0 + ทำให้ศัตรูตาบอด จากนั้นฟื้นฟู HP 20% นาน 3 เทิร์น'},
+  'GREEN-SENTINEL-GHOST':{name:"NATURE'S BASTION",icon:'🟢',desc:'Strike ×4.0 pierce DEF, then DEF+50% for 3 turns',descTh:'โจมตี ×4.0 ทะลุ DEF จากนั้น DEF+50% นาน 3 เทิร์น'},
+  'SKELETON-KING-GHOST':{name:'REGAL DECREE',icon:'💀',desc:'Strike ×3.0 + curse (ATK-25%, 2T), then lifesteal+50% for 3 turns',descTh:'โจมตี ×3.0 + สาปศัตรู (ATK-25% 2T) จากนั้นดูดเลือด 50% นาน 3 เทิร์น'},
+  'DRAGON-KNIGHT-GHOST':{name:'DRACONIC BULWARK',icon:'🐉',desc:'Strike ×2.5 pierce DEF, then reflects 100% damage for 3 turns',descTh:'โจมตี ×2.5 ทะลุ DEF จากนั้นสะท้อนดาเมจ 100% นาน 3 เทิร์น'},
+  'ARC-DEMON-GHOST':{name:'INFERNAL DECREE',icon:'😈',desc:'Strike ×2.0 + inflicts every debuff in the game (Poison,Burn,Curse,Blind,Heal-Block,Freeze), then ATK+25% for 3 turns',descTh:'โจมตี ×2.0 + เสกดีบัพทุกอย่างที่มีในเกมใส่ศัตรู จากนั้น ATK+25% นาน 3 เทิร์น'},
+  'BAHAMUT-GHOST':{name:"DRAGON'S ROAR",icon:'🐲',desc:'Strike ×3.0 twice (forced crit), then ATK/SPD+20% for 3 turns',descTh:'โจมตี ×3.0 สองครั้ง (คริบังคับทั้งคู่) จากนั้น ATK/SPD +20% นาน 3 เทิร์น'},
+  'DRAGON-TAMER-GHOST':{name:"TAMER'S CALL",icon:'🤝',desc:'Strike ×3.0 + pierce DEF, then damage taken -25% for 3 turns',descTh:'โจมตี ×3.0 + โจมตีทะลุ DEF จากนั้นได้รับดาเมจลดลง 25% นาน 3 เทิร์น'},
+  'ALIEN-GHOST':{name:'COSMIC ANOMALY',icon:'👽',desc:'Strike ×3.0 pierce DEF and cannot miss, then 50% Blind for 3 turns',descTh:'โจมตี ×3.0 ทะลุ DEF และไม่พลาดเป้า จากนั้น 3 เทิร์น: 50% ตาบอด'},
+  'SHIVA-GHOST':{name:'COSMIC DESTRUCTION',icon:'🔱',desc:'Strike ×4.0 + Freezes the enemy, then SPD+100% for 3 turns',descTh:'โจมตี ×4.0 + แช่แข็งศัตรู จากนั้น SPD+100% นาน 3 เทิร์น'},
 };
 
 // ===================== FUSION ECHO INFO =====================
@@ -550,6 +611,23 @@ const FUSION_ECHO_INFO = {
   'PHOENIX-GHOST':{name:'PHOENIX ECHO',icon:'🔱',desc:'Once: revive with 50% HP, Burn enemy for 5 turns',descTh:'ครั้งเดียว: ฟื้น 50% HP เผาศัตรู 5 เทิร์น'},
   'UNICORN-GHOST':{name:'UNICORN ECHO',icon:'✨',desc:'Recover 4% HP/turn; cleanse 1 debuff every turn',descTh:'ฟื้น 4% HP/เทิร์น ล้างดีบัฟ 1 อย่าง/เทิร์น'},
   'PANDA-GHOST':{name:'PANDA ECHO',icon:'☯️',desc:'Crit+15%; 10% chance to stun on hit',descTh:'Crit+15% 10% สตันเมื่อโจมตี'},
+  // EPIC GHOST Echo
+  'RED-SENTINEL-GHOST':{name:"SENTINEL'S FURY",icon:'🔴',desc:'On WIN: ATK+7% per stack (max 5); every 3 turns, guaranteed crit (x1.5)',descTh:'เมื่อ WIN: ATK+7% (สูงสุด 5) ทุก 3 เทิร์น คริแน่นอน (x1.5)'},
+  'IFRIT-GHOST':{name:'EMBER TOUCH',icon:'🔥',desc:'15% Burn on hit; on WIN: ATK+5% per stack (max 5)',descTh:'15% เผาเมื่อโจมตี เมื่อ WIN: ATK+5% (สูงสุด 5)'},
+  'BABARIAN-GHOST':{name:'BERSERK ECHO',icon:'🪓',desc:'Damage +15% per 10% HP missing (max +105%)',descTh:'ดาเมจ+15% ต่อ 10% HP ที่หายไป (สูงสุด +105%)'},
+  'SAMURAI-GHOST':{name:'SWIFT BLADE',icon:'⚔️',desc:'Crit+50%; dodge+10%',descTh:'Crit+50% หลบ+10%'},
+  'BLUE-SENTINEL-GHOST':{name:'WAVE STEP',icon:'🔵',desc:'12% dodge; on dodge, next attack ATK+25% and pierces DEF',descTh:'12% หลบ เมื่อหลบ โจมตีถัดไป ATK+25% ทะลุ DEF'},
+  'RANGER-GHOST':{name:'STEADY AIM',icon:'🏹',desc:'50% chance for attacks to never miss; 10% chance to attack twice',descTh:'50% โจมตีไม่พลาดเป้า 10% โจมตี 2 ครั้ง'},
+  'VALKYLIE-GHOST':{name:'GUARDIAN WING',icon:'👼',desc:'On WIN: heal 5% Max HP, dodge+8%, ATK+10% next round',descTh:'เมื่อ WIN: ฟื้น 5% Max HP หลบ+8% ATK+10%'},
+  'ARC-ANGEL-GHOST':{name:'BLESSED LIGHT',icon:'😇',desc:'50% chance/turn to cleanse debuff; HP<50%: 25% stun and dodge+7%',descTh:'50% ล้างดีบัฟ/เทิร์น HP<50%: 25% สตัน หลบ+7%'},
+  'GREEN-SENTINEL-GHOST':{name:'THORNED BARK',icon:'🟢',desc:'20% chance to halve incoming damage; regen 2% Max HP/turn',descTh:'20% ลดดาเมจครึ่ง ฟื้น 2% Max/เทิร์น'},
+  'SKELETON-KING-GHOST':{name:'BONE GUARD',icon:'💀',desc:'10% lifesteal; revive with 50% HP (once per battle)',descTh:'ดูดเลือด 10% ฟื้นคืนชีพ HP 50% (1 ครั้ง)'},
+  'DRAGON-KNIGHT-GHOST':{name:'SCALE GUARD',icon:'🐉',desc:'Reflects 20% damage; HP<50%: DEF+12% and regen 1.5% Max HP/turn',descTh:'สะท้อน 20% HP<50%: DEF+12% ฟื้น 1.5% Max/เทิร์น'},
+  'ARC-DEMON-GHOST':{name:'DARK WHISPER',icon:'😈',desc:'25% chance on hit to inflict random debuff (Poison/Burn/Curse/Blind/Heal-Block/Freeze)',descTh:'25% สุ่มดีบัฟใส่ศัตรู (พิษ/เผา/สาป/ตาบอด/ห้ามฮีล/แช่แข็ง)'},
+  'BAHAMUT-GHOST':{name:'DRACONIC PULSE',icon:'🐲',desc:'On WIN: ATK+50%, DEF-25%. On LOSE: DEF+50%, ATK-25%',descTh:'เมื่อ WIN: ATK+50% DEF-25% เมื่อ LOSE: DEF+50% ATK-25%'},
+  'DRAGON-TAMER-GHOST':{name:'BONDED ECHO',icon:'🤝',desc:'On WIN: pierce DEF + 25% Burn. On LOSE: DEF+15%',descTh:'เมื่อ WIN: ทะลุ DEF + 25% เผา เมื่อ LOSE: DEF+15%'},
+  'ALIEN-GHOST':{name:'ALIEN RESISTANCE',icon:'👽',desc:'Debuffs inverted into half-strength benefits; 8% Blind on hit',descTh:'ดีบัฟกลับด้านเป็นผลดีครึ่งกำลัง 8% ตาบอดเมื่อโจมตี'},
+  'SHIVA-GHOST':{name:'BALANCE ECHO',icon:'🔱',desc:'Every 3 turns: damage x1.5 + 25% Freeze',descTh:'ทุก 3 เทิร์น: ดาเมจ x1.5 + 25% แช่แข็ง'},
 };
 
 // ===================== RENDER LOGIC =====================
@@ -603,6 +681,10 @@ function getAllPets() {
   pets.push({ key: 'GHOST', ...FORMS['GHOST'], formType: 'Base', branch: getPetBranch('GHOST'), spriteKey: 'GHOST' });
   for (const [key, data] of Object.entries(GHOST_FORMS)) {
     pets.push({ key: data.name, ...data, formType: 'Ghost', branch: getPetBranch(data.name), spriteKey: PET_SPRITE[data.name] || data.name });
+  }
+  // Epic Ghost
+  for (const [key, data] of Object.entries(EPIC_GHOST_FORMS)) {
+    pets.push({ key: data.name, ...data, formType: 'Epic Ghost', branch: getPetBranch(data.name), spriteKey: PET_SPRITE[data.name] || data.name });
   }
   return pets;
 }
@@ -819,13 +901,14 @@ function showPetModal(name, dir) {
   for (const [,d] of Object.entries(FORMS)) { if (d.name === name) { pet = {...d, formType:'Base', key:name}; break; } }
   if (!pet) for (const [,d] of Object.entries(EVOLVE2_FORMS)) { if (d.name === name) { pet = {...d, formType:'Evolve II', key:name}; break; } }
   if (!pet) for (const [,d] of Object.entries(GHOST_FORMS)) { if (d.name === name) { pet = {...d, formType:'Ghost', key:name}; break; } }
+  if (!pet) for (const [,d] of Object.entries(EPIC_GHOST_FORMS)) { if (d.name === name) { pet = {...d, formType:'Epic Ghost', key:name}; break; } }
   if (!pet) return;
 
   const branch = getPetBranch(name);
   const branchBadge = getBranchBadge(branch);
   const spritePath = getSpritePath(name);
   const maxHp = 250, maxAtk = 60, maxSpd = 50, maxDef = 40;
-  const gradeLabel = { 'Base':'Base Form', 'Evolve II':'Evolve II', 'Ghost':'Ghost' }[pet.formType] || pet.formType;
+  const gradeLabel = { 'Base':'Base Form', 'Evolve II':'Evolve II', 'Ghost':'Ghost', 'Epic Ghost':'Epic Ghost' }[pet.formType] || pet.formType;
   const curIdx = filteredPetList.indexOf(name);
   const prevDisabled = curIdx <= 0 ? 'disabled' : '';
   const nextDisabled = curIdx >= filteredPetList.length - 1 ? 'disabled' : '';

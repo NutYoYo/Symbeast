@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4227,9 +4227,57 @@ function loadGame(slotNum) {
         if(typeof d.achGauntletHardFullClear==='boolean') achGauntletHardFullClear = d.achGauntletHardFullClear;
         if(Array.isArray(d.achModesPlayed)) achModesPlayed = new Set(d.achModesPlayed);
         _playTimeRef = Date.now();
-        // backfill from current pets/storage in case save predates this feature
+        // 🛡️ Time-cheat protection & save repair — fix corrupted timestamps from clock manipulation
+        const _now = Date.now();
+        const _MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
+        const _MAX_BUFF_MS = 30 * 60 * 1000;
+        const _MAX_DEAD_REST_MS = 5 * 60 * 1000;
+        // Fix savedAt if in the future (clock was changed forward then set back)
+        if (d.savedAt && d.savedAt > _now + 60000) { d.savedAt = _now; }
+        // Fix buffExpiry that was set way in the future
+        const _fixExpiry = (p) => {
+          if (p.buffExpiry) {
+            for (const stat of ['atk','spd','def']) {
+              if (p.buffExpiry[stat] && p.buffExpiry[stat] > _now + _MAX_BUFF_MS + 60000) {
+                p.buffExpiry[stat] = 0;
+              }
+            }
+          }
+          if (p.deadRestUntil && p.deadRestUntil > _now + _MAX_DEAD_REST_MS + 60000) { p.deadRestUntil = 0; }
+        };
+        pets.forEach(_fixExpiry);
+        if (Array.isArray(d.storage)) {
+          storage = d.storage.map(p => {
+            const np = { ...newPet(), ...p };
+            _fixExpiry(np);
+            return np;
+          });
+        }
+        if (Array.isArray(d.storage)) {
+          storage.forEach(p=>{ if(!p.buffExpiry) p.buffExpiry={atk:0,spd:0,def:0}; });
+          storage.forEach(p=>{ if(typeof p.trainCount !== 'number' || isNaN(p.trainCount)) p.trainCount = 0; });
+          storage.forEach(p=>{ p.symbols = (p.symbols||[]).map(s=>s.length>1?s.split('_').pop():s).filter(s=>'FWS'.includes(s)); });
+        }
+        if(d.savedAt) {
+          const elapsed = Math.floor(Math.max(0, Date.now() - d.savedAt) / 10000);
+          if(elapsed > 0) {
+            pets.forEach(p=>{ if(p.phase!=='egg') p.hp = Math.min(p.maxHp, p.hp + elapsed); });
+            storage.forEach(p=>{ if(p.phase!=='egg') p.hp = Math.min(p.maxHp, p.hp + elapsed); });
+          }
+          const staminaRegen = Math.floor(Math.max(0, Date.now() - d.savedAt) / 60000);
+          if(staminaRegen > 0) stamina = Math.min(MAX_STAMINA, stamina + staminaRegen);
+        }
+        // ⏳ Idle Hunt: add offline time to accumulated (cap 8h, min 5min for popup)
+        if(d.savedAt) {
+          const elapsedMs = Math.min(Math.max(0, Date.now() - d.savedAt), _MAX_OFFLINE_MS);
+          idleAccumulatedMs = Math.min(_MAX_OFFLINE_MS, idleAccumulatedMs + elapsedMs);
+          const accumMin = Math.floor(idleAccumulatedMs / 60000);
+          if(accumMin >= 5) {
+            idlePending = calculateIdleRewards(accumMin);
+          }
+        }
+        // backfill collection data
         pets.concat(storage).forEach(p=>{ if(p.phase==='evolved'&&p.formKey) seenEvolved.add(p.formKey); if(p.phase==='final'&&p.finalKey) seenFinal.add(p.finalKey); });
-        // backfill weapon/artifact collection from whatever's currently owned/equipped, in case save predates this feature
         weaponBag.forEach(s=>seenWeapons.add(s.key.replace(/_low$|_high$/, '')));
         artifactBag.forEach(s=>seenArtifacts.add(s.key));
         pets.forEach(p=>{
@@ -4237,30 +4285,6 @@ function loadGame(slotNum) {
           if(p.artifact) seenArtifacts.add(p.artifact);
           if(p.artifact2) seenArtifacts.add(p.artifact2);
         });
-        if(Array.isArray(d.storage)) {
-          storage = d.storage.map(p=>({...newPet(),...p}));
-          storage.forEach(p=>{ if(!p.buffExpiry) p.buffExpiry={atk:0,spd:0,def:0}; });
-          storage.forEach(p=>{ if(typeof p.trainCount !== 'number' || isNaN(p.trainCount)) p.trainCount = 0; });
-          storage.forEach(p=>{ p.symbols = (p.symbols||[]).map(s=>s.length>1?s.split('_').pop():s).filter(s=>'FWS'.includes(s)); });
-        }
-        if(d.savedAt) {
-          const elapsed = Math.floor((Date.now() - d.savedAt) / 10000);
-          if(elapsed > 0) {
-            pets.forEach(p=>{ if(p.phase!=='egg') p.hp = Math.min(p.maxHp, p.hp + elapsed); });
-            storage.forEach(p=>{ if(p.phase!=='egg') p.hp = Math.min(p.maxHp, p.hp + elapsed); });
-          }
-          const staminaRegen = Math.floor((Date.now() - d.savedAt) / 60000);
-          if(staminaRegen > 0) stamina = Math.min(MAX_STAMINA, stamina + staminaRegen);
-        }
-        // ⏳ Idle Hunt: add offline time to accumulated (cap 8h, min 5min for popup)
-        if(d.savedAt) {
-          const elapsedMs = Math.min(Date.now() - d.savedAt, 8*60*60*1000); // max 8h added per session
-          idleAccumulatedMs = Math.min(8*60*60*1000, idleAccumulatedMs + elapsedMs);
-          const accumMin = Math.floor(idleAccumulatedMs / 60000);
-          if(accumMin >= 5) {
-            idlePending = calculateIdleRewards(accumMin);
-          }
-        }
         syncCreature();
 
         return true;

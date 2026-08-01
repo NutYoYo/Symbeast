@@ -3135,6 +3135,8 @@ function getEffStat(stat) {
   if(stat==='spd' && creature.phase==='final' && creature.finalKey==='GRIFFON-GHOST') val = Math.round(val * 1.15);
   if(stat==='spd' && creature.inheritedPassive==='GRIFFON-GHOST') val = Math.round(val * 1.10);
   if(stat==='spd' && battleState?.epicGhostBuffTypes?.includes('spd')) val = Math.round(val * 1.25);
+  if(stat==='spd' && battleState?.odBuff?.type==='RANGER-GHOST') val = Math.round(val * 1.5);
+  if(stat==='spd' && battleState?.odBuff?.type==='SHIVA-GHOST') val = Math.round(val * 2.0);
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   // Ghost branch skill modifiers (battle-only, temporary — resets every battle)
@@ -5279,6 +5281,57 @@ function doOverdriveTurn() {
   } else if(ff==='PANDA-GHOST') {
     const h=_hit(4.0,0.88); pd=h.d; ed=0; bs.enemyStunTurns=1; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'☯️',text:`PANDA STRIKE ×4.0 forced crit→${pd} + STUN | Crit+30%,stun+20% (3T)`});
+  // === EPIC GHOST Evolve II Overdrives ===
+  } else if(ff==='RED-SENTINEL-GHOST') {
+    pd=_pierceHit(3.5,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🔴',text:`CRIMSON JUDGMENT ×3.5 (pierce,crit)→${pd} | ATK+30% (3T)`});
+  } else if(ff==='IFRIT-GHOST') {
+    const h=_hit(2.5); pd=h.d; ed=_ed(); bs.enemyBurnTurns=3; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🔥',text:`HELLFIRE NOVA ×2.5→${pd} + BURN | dmg+100% vs burning (3T)`});
+  } else if(ff==='BABARIAN-GHOST') {
+    const h1=_hit(2.0), h2=_hit(2.0); pd=h1.d+h2.d; ed=_ed(); pdHits=[h1.d,h2.d]; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🪓',text:`BLOOD FRENZY ×2.0×2→${pd} | dmg+25% while HP<50% (3T)`});
+  } else if(ff==='SAMURAI-GHOST') {
+    const h=_hit(4.0,1.0); pd=h.d; ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'⚔️',text:`MOONLIGHT SLASH ×4.0→${pd} | dodge+25% (3T)`});
+  } else if(ff==='BLUE-SENTINEL-GHOST') {
+    pd=_pierceHit(2.5,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🔵',text:`AZURE STORM ×2.5 (pierce)→${pd} | dodge+20% (3T)`});
+  } else if(ff==='RANGER-GHOST') {
+    const h1=_hit(2.0),h2=_hit(2.0),h3=_hit(2.0); pd=h1.d+h2.d+h3.d; ed=0; pdHits=[h1.d,h2.d,h3.d]; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🏹',text:`RAIN OF ARROWS ×2.0×3→${pd} | SPD+50% (3T)`});
+  } else if(ff==='VALKYLIE-GHOST') {
+    const h=_hit(2.5); pd=h.d; ed=_ed(); const heal=creature.maxHp-creature.hp; creature.hp=creature.maxHp; playerHeal+=heal; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'👼',text:`WINGS OF JUDGMENT ×2.5→${pd} + Full Heal | ATK/SPD+25% (3T)`});
+  } else if(ff==='ARC-ANGEL-GHOST') {
+    const h=_hit(3.0); pd=h.d; ed=_ed(); bs.eBlindTurns=3; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'😇',text:`HEAVEN'S LIGHT ×3.0→${pd} + BLIND | heal20%/turn (3T)`});
+  } else if(ff==='GREEN-SENTINEL-GHOST') {
+    pd=_pierceHit(4.0,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🟢',text:`NATURE'S BASTION ×4.0 (pierce)→${pd} | DEF+50% (3T)`});
+  } else if(ff==='SKELETON-KING-GHOST') {
+    const h=_hit(3.0); pd=h.d; ed=_ed(); bs.e2CurseTurns=2; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'💀',text:`REGAL DECREE ×3.0→${pd} + CURSE | lifesteal50% (3T)`});
+  } else if(ff==='DRAGON-KNIGHT-GHOST') {
+    pd=_pierceHit(2.5,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🐉',text:`DRACONIC BULWARK ×2.5 (pierce)→${pd} | reflect100% (3T)`});
+  } else if(ff==='ARC-DEMON-GHOST') {
+    const h=_hit(2.0); pd=h.d; ed=_ed();
+    bs.enemyPoisonTurns=3; bs.enemyBurnTurns=3; bs.e2CurseTurns=2; bs.eBlindTurns=3; bs.enemyHealBlockTurns=3; bs.enemyFreezeSpdTurns=3;
+    bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'😈',text:`INFERNAL DECREE ×2.0→${pd} + ALL DEBUFFS | ATK+25% (3T)`});
+  } else if(ff==='BAHAMUT-GHOST') {
+    const h1=_hit(3.0,1.0), h2=_hit(3.0,1.0); pd=h1.d+h2.d; ed=_ed(); pdHits=[h1.d,h2.d]; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🐲',text:`DRAGON'S ROAR ×3.0×2 (crit)→${pd} | ATK/SPD+20% (3T)`});
+  } else if(ff==='DRAGON-TAMER-GHOST') {
+    pd=_pierceHit(3.0,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🤝',text:`TAMER'S CALL ×3.0 (pierce)→${pd} | dmgTaken-25% (3T)`});
+  } else if(ff==='ALIEN-GHOST') {
+    pd=_pierceHit(3.0,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'👽',text:`COSMIC ANOMALY ×3.0 (pierce)→${pd} | 50% Blind/turn (3T)`});
+  } else if(ff==='SHIVA-GHOST') {
+    const h=_hit(4.0); pd=h.d; ed=0; bs.enemyFreezeSpdTurns=3; bs.odBuff={type:ff,turnsLeft:3};
+    passives.push({icon:'🔱',text:`COSMIC DESTRUCTION ×4.0→${pd} + FREEZE | SPD+100% (3T)`});
   }
   // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit
   // 🔥 Fire Absorb: Phoenix-form monsters absorb fire — take -25% dmg instead of +25%
@@ -5370,6 +5423,7 @@ function doTurn(moveIdx) {
   if(ff==='LION-GHOST' && bs.turn<=5) critChance = 1;
   if(ff==='GRIFFON-GHOST') critChance += 0.15;
   if(ff==='PANDA-GHOST') critChance += 0.25;
+  if(ff==='SAMURAI-GHOST') critChance = 1;
   // Fusion Echo crit bonuses
   if(creature.inheritedPassive) {
     const ip = creature.inheritedPassive;
@@ -5561,6 +5615,22 @@ function doTurn(moveIdx) {
     if(type==='POISON-FORTRESS') { pd=Math.round(pd*1.20); ed=Math.round(ed*0.50); if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')&&Math.random()<0.25&&!hasAntiPoison){bs.enemyPoisonTurns=3;} passives.push({icon:'☠️',text:`VENOM EARTHSHATTER ATK+20%,reflect50%,poisonOnHit→${pd}`}); }
     if(type==='MAGE-SPECTER') { if(Math.random()<0.30){bs.e2CurseTurns=2;} passives.push({icon:'🧙',text:`MAGE SCYTHE crit+30%,curse30%→${pd}`}); }
     if(type==='CRYSTAWOLF-BASTION') { ed=Math.max(1,Math.round(ed*0.70)); pd=Math.round(pd*1.5); const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'💎',`CRYSTAL BEAM dmgTaken-30%,ATK+50%,+${heal}HP`); }
+    if(type==='RED-SENTINEL-GHOST') { pd=Math.round(pd*1.3); passives.push({icon:'🔴',text:`CRIMSON JUDGMENT ATK+30%→${pd}`}); }
+    if(type==='IFRIT-GHOST' && bs.enemyBurnTurns>0) { pd=Math.round(pd*2.0); passives.push({icon:'🔥',text:`HELLFIRE NOVA dmg+100% vs burning→${pd}`}); }
+    if(type==='BABARIAN-GHOST' && creature.hp<creature.maxHp*0.5) { pd=Math.round(pd*1.25); passives.push({icon:'🪓',text:`BLOOD FRENZY HP<50% dmg+25%→${pd}`}); }
+    if(type==='SAMURAI-GHOST' && !enemyTrueStrike && Math.random()<0.25) { ed=0; passives.push({icon:'⚔️',text:'MOONLIGHT SLASH DODGE!'}); }
+    if(type==='BLUE-SENTINEL-GHOST' && !enemyTrueStrike && Math.random()<0.20) { ed=0; passives.push({icon:'🔵',text:'AZURE STORM DODGE!'}); }
+    if(type==='RANGER-GHOST') { pd=Math.round(pd*1.0); /* SPD+50% handled via getEffStat */ passives.push({icon:'🏹',text:`RAIN OF ARROWS SPD+50%→${pd}`}); }
+    if(type==='VALKYLIE-GHOST') { pd=Math.round(pd*1.25); ed=Math.round(ed*1.0); passives.push({icon:'👼',text:`WINGS OF JUDGMENT ATK+25%→${pd}`}); }
+    if(type==='ARC-ANGEL-GHOST') { const heal=Math.round(creature.maxHp*0.20); _pHeal(heal,'😇',`HEAVEN'S LIGHT +${heal}HP`); }
+    if(type==='GREEN-SENTINEL-GHOST') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🟢',text:`NATURE'S BASTION DEF+50%→${ed}`}); }
+    if(type==='SKELETON-KING-GHOST' && pd>0) { const ls=Math.max(1,Math.round(pd*0.5)); _pHeal(ls,'💀',`REGAL DECREE lifesteal50% +${ls}HP`); }
+    if(type==='DRAGON-KNIGHT-GHOST' && ed>0 && !enemyReflectImmune) { const ref=Math.max(1,Math.round(ed)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🐉',text:`DRACONIC BULWARK Reflect100% ${ref}`}); }
+    if(type==='ARC-DEMON-GHOST') { pd=Math.round(pd*1.25); passives.push({icon:'😈',text:`INFERNAL DECREE ATK+25%→${pd}`}); }
+    if(type==='BAHAMUT-GHOST') { pd=Math.round(pd*1.2); ed=Math.round(ed*1.0); passives.push({icon:'🐲',text:`DRAGON'S ROAR ATK/SPD+20%→${pd}`}); }
+    if(type==='DRAGON-TAMER-GHOST') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.75)); passives.push({icon:'🤝',text:`TAMER'S CALL dmgTaken-25%→${ed}`}); }
+    if(type==='ALIEN-GHOST' && Math.random()<0.50) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'COSMIC ANOMALY BLIND!'}); }
+    if(type==='SHIVA-GHOST') { pd=Math.round(pd*1.0); /* SPD+100% handled via getEffStat */ passives.push({icon:'🔱',text:`COSMIC DESTRUCTION SPD+100%→${pd}`}); }
     bs.odBuff.turnsLeft--;
 
     if(bs.odBuff.turnsLeft<=0) bs.odBuff=null;
@@ -5903,6 +5973,101 @@ function doTurn(moveIdx) {
   }
   if(ff==='PANDA-GHOST' && !enemyStunned && pd>0 && Math.random()<0.20) {
     if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'☯️',text:'PANDA STUN!'});
+  }
+
+  // === EPIC GHOST Evolve II Branch Skills (player) ===
+  if(ff==='RED-SENTINEL-GHOST') {
+    if(cmp==='win') bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1);
+    if(bs.e2Stack>0) pd=Math.round(pd*(1+0.15*bs.e2Stack));
+    if(bs.turn%3===0) { pd=Math.round(pd*2.0); passives.push({icon:'🔴',text:`RED SENTINEL 3T GUARANTEED CRIT×2.0 Stack×${bs.e2Stack||0}→${pd}`}); }
+    else passives.push({icon:'🔴',text:`RED SENTINEL Stack×${bs.e2Stack||0}→${pd}`});
+  }
+  if(ff==='IFRIT-GHOST') {
+    if(cmp==='win') bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1);
+    if(bs.e2Stack>0) pd=Math.round(pd*(1+0.10*bs.e2Stack));
+    if(pd>0 && Math.random()<0.30 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`IFRIT BURN! Stack×${bs.e2Stack||0}→${pd}`}); }
+    else passives.push({icon:'🔥',text:`IFRIT Stack×${bs.e2Stack||0}→${pd}`});
+  }
+  if(ff==='BABARIAN-GHOST') {
+    const missingPct = Math.max(0, Math.min(1, 1 - creature.hp/creature.maxHp));
+    const bonus = Math.min(1.6, Math.floor(missingPct*10)*0.20);
+    pd=Math.round(pd*(1+bonus));
+    passives.push({icon:'🪓',text:`BABARIAN dmg+${Math.round(bonus*100)}%→${pd}`});
+  }
+  if(ff==='SAMURAI-GHOST' && !enemyTrueStrike && Math.random()<0.20) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⚔️',text:'SAMURAI DODGE!'}); }
+  if(ff==='BLUE-SENTINEL-GHOST') {
+    if(bs.e2NextBuff) { pd+=Math.floor(enemy.def/2); pd=Math.round(pd*1.5); bs.e2NextBuff=false; passives.push({icon:'🔵',text:`BLUE SENTINEL BUFF ATK+50%+pierce→${pd}`}); }
+    if(!enemyTrueStrike && Math.random()<0.25) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🔵',text:'BLUE SENTINEL DODGE! next ATK+50%+pierce'}); }
+  }
+  if(ff==='RANGER-GHOST') {
+    bs.playerTrueStrike = true;
+    if(Math.random()<0.20) { const extra=pd; pd+=extra; passives.push({icon:'🏹',text:`RANGER DOUBLE SHOT! NEVER MISS→${pd}`}); }
+    else passives.push({icon:'🏹',text:'RANGER NEVER MISS'});
+  }
+  if(ff==='VALKYLIE-GHOST') {
+    if(bs.e2NextBuff) { pd=Math.round(pd*1.2); if(!enemyTrueStrike && Math.random()<0.15){ed=0;_dodgeEffectApplied=true;} bs.e2NextBuff=false; passives.push({icon:'👼',text:`VALKYLIE BUFF ATK+20%,dodge+15%→${pd}${ed===0?' DODGE!':''}`}); }
+    if(cmp==='win') { const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'👼',`VALKYLIE WIN +${heal}HP`); bs.e2NextBuff=true; }
+  }
+  if(ff==='ARC-ANGEL-GHOST') {
+    if(Math.random()<0.50) {
+      let cleansed=false;
+      if(bs.e2CurseTurnsE>0){bs.e2CurseTurnsE=0;cleansed=true;}
+      if(!cleansed&&bs.e2NoHealTurnsE>0){bs.e2NoHealTurnsE=0;cleansed=true;}
+      if(!cleansed&&bs.playerBurnTurns>0){bs.playerBurnTurns=0;cleansed=true;}
+      if(!cleansed&&bs.playerPoisonTurns>0){bs.playerPoisonTurns=0;cleansed=true;}
+      if(!cleansed&&bs.playerStunnedNextTurn){bs.playerStunnedNextTurn=false;cleansed=true;}
+      if(!cleansed&&bs.pBlindTurns>0){bs.pBlindTurns=0;cleansed=true;}
+      if(!cleansed&&bs.playerHealBlockTurns>0){bs.playerHealBlockTurns=0;cleansed=true;}
+      if(!cleansed&&bs.playerFreezeSpdTurns>0){bs.playerFreezeSpdTurns=0;cleansed=true;}
+      if(cleansed) passives.push({icon:'😇',text:'ARC-ANGEL CLEANSED!'});
+    }
+    if(creature.hp < creature.maxHp*0.5) {
+      if(!enemyTrueStrike && Math.random()<0.15) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'😇',text:'ARC-ANGEL DODGE!'}); }
+      if(ed>0 && !enemyStunned && Math.random()<0.50) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'😇',text:'ARC-ANGEL STUN!'}); }
+    }
+  }
+  if(ff==='GREEN-SENTINEL-GHOST') {
+    const heal=Math.round(creature.maxHp*0.04); _pHeal(heal,'🟢',`GREEN SENTINEL +${heal}HP`);
+    if(Math.random()<0.30) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🟢',text:`GREEN SENTINEL dmg-50%→${ed}`}); }
+  }
+  if(ff==='SKELETON-KING-GHOST' && pd>0) { const steal=Math.max(1,Math.round(pd*0.20)); _pHeal(steal,'💀',`SKELETON KING lifesteal +${steal}HP`); }
+  if(ff==='DRAGON-KNIGHT-GHOST') {
+    if(ed>0 && !enemyReflectImmune) { const ref=Math.max(1,Math.round(ed*0.30)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🐉',text:`DRAGON KNIGHT Reflect30% ${ref}`}); }
+    if(creature.hp < creature.maxHp*0.5) {
+      ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
+      const heal=Math.round(creature.maxHp*0.03); _pHeal(heal,'🐉',`DRAGON KNIGHT HP<50% DEF+25% +${heal}HP`);
+    }
+  }
+  if(ff==='ARC-DEMON-GHOST' && pd>0 && Math.random()<0.50 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) {
+    const roll=Math.floor(Math.random()*5);
+    if(roll===0){bs.enemyPoisonTurns=3;passives.push({icon:'😈',text:'ARC-DEMON POISON!'});}
+    else if(roll===1){bs.enemyBurnTurns=3;passives.push({icon:'😈',text:'ARC-DEMON BURN!'});}
+    else if(roll===2){bs.e2CurseTurns=2;passives.push({icon:'😈',text:'ARC-DEMON CURSE!'});}
+    else if(roll===3){bs.eBlindTurns=3;passives.push({icon:'😈',text:'ARC-DEMON BLIND!'});}
+    else {bs.enemyHealBlockTurns=3;passives.push({icon:'😈',text:'ARC-DEMON HEAL-BLOCK!'});}
+  }
+  if(ff==='BAHAMUT-GHOST') {
+    if(cmp==='win') { pd=Math.round(pd*1.75); ed=Math.round(ed*1.25); passives.push({icon:'🐲',text:`BAHAMUT WIN ATK+75%,DEF-50%→${pd}/${ed}`}); }
+    else if(cmp==='lose') { pd=Math.round(pd*0.5); ed=(enemyIgnoresDef?ed:Math.round(ed*0.25)); passives.push({icon:'🐲',text:`BAHAMUT LOSE DEF+75%,ATK-50%→${pd}/${ed}`}); }
+  }
+  if(ff==='DRAGON-TAMER-GHOST') {
+    if(cmp==='win') {
+      pd+=Math.floor(enemy.def/2);
+      if(pd>0 && Math.random()<0.50 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyBurnTurns=3; passives.push({icon:'🤝',text:`DRAGON TAMER WIN pierce+BURN→${pd}`}); }
+      else passives.push({icon:'🤝',text:`DRAGON TAMER WIN pierce→${pd}`});
+    } else if(cmp==='lose') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.75)); passives.push({icon:'🤝',text:`DRAGON TAMER LOSE DEF+25%→${ed}`}); }
+  }
+  if(ff==='ALIEN-GHOST') {
+    if(bs.playerPoisonTurns>0) { bs.playerPoisonTurns=0; const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'👽',`ALIEN reversed Poison→Heal+${heal}`); }
+    if(bs.playerBurnTurns>0) { bs.playerBurnTurns=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Burn→ATK+15%→${pd}`}); }
+    if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE=0; pd=Math.round(pd*1.15); passives.push({icon:'👽',text:`ALIEN reversed Curse→ATK+15%→${pd}`}); }
+    if(pd>0 && Math.random()<0.15) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'ALIEN BLIND!'}); }
+  }
+  if(ff==='SHIVA-GHOST' && bs.turn%3===0) {
+    pd=Math.round(pd*2.0);
+    bs.playerFreezeSpdTurns=0; bs.playerPoisonTurns=0; bs.playerBurnTurns=0; bs.e2CurseTurnsE=0; bs.pBlindTurns=0; bs.playerHealBlockTurns=0; bs.playerStunnedNextTurn=false;
+    if(pd>0 && Math.random()<0.50) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} bs.enemyFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'🔱',text:`SHIVA 3T dmg×2.0+FREEZE, immune debuffs this turn→${pd}`}); }
+    else passives.push({icon:'🔱',text:`SHIVA 3T dmg×2.0, immune debuffs this turn→${pd}`});
   }
 
   // Enemy dodge — runs BEFORE player artifact procs so pd>0 guards are accurate
@@ -6783,6 +6948,98 @@ function doTurn(moveIdx) {
         SFX.stun(); passives.push({icon:'☯️',text:'PANDA ECHO STUN!'});
       }
     }
+    // === EPIC GHOST Echo Passives ===
+    else if(ip==='RED-SENTINEL-GHOST') {
+      if(cmp==='win') bs.echoRedSentinelStack=Math.min(5,(bs.echoRedSentinelStack||0)+1);
+      if(bs.echoRedSentinelStack>0) pd=Math.round(pd*(1+0.07*bs.echoRedSentinelStack));
+      if(bs.turn%3===0) { pd=Math.round(pd*1.5); passives.push({icon:'🔴',text:`SENTINEL ECHO 3T crit×1.5 Stack×${bs.echoRedSentinelStack||0}→${pd}`}); }
+      else passives.push({icon:'🔴',text:`SENTINEL ECHO Stack×${bs.echoRedSentinelStack||0}→${pd}`});
+    }
+    else if(ip==='IFRIT-GHOST') {
+      if(cmp==='win') bs.echoIfritStack=Math.min(5,(bs.echoIfritStack||0)+1);
+      if(bs.echoIfritStack>0) pd=Math.round(pd*(1+0.05*bs.echoIfritStack));
+      if(pd>0 && Math.random()<0.15 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`EMBER TOUCH BURN! Stack×${bs.echoIfritStack||0}→${pd}`}); }
+      else passives.push({icon:'🔥',text:`EMBER TOUCH Stack×${bs.echoIfritStack||0}→${pd}`});
+    }
+    else if(ip==='BABARIAN-GHOST') {
+      const missingPct = Math.max(0, Math.min(1, 1 - creature.hp/creature.maxHp));
+      const bonus = Math.min(1.05, Math.floor(missingPct*10)*0.15);
+      pd=Math.round(pd*(1+bonus));
+      passives.push({icon:'🪓',text:`BERSERK ECHO dmg+${Math.round(bonus*100)}%→${pd}`});
+    }
+    else if(ip==='SAMURAI-GHOST') {
+      if(!enemyTrueStrike && Math.random()<0.10) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⚔️',text:'SWIFT BLADE DODGE!'}); }
+    }
+    else if(ip==='BLUE-SENTINEL-GHOST') {
+      if(bs.echoBlueBuff) { pd+=Math.floor(enemy.def/2); pd=Math.round(pd*1.25); bs.echoBlueBuff=false; passives.push({icon:'🔵',text:`WAVE STEP BUFF ATK+25%+pierce→${pd}`}); }
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.echoBlueBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🔵',text:'WAVE STEP DODGE! next ATK+25%+pierce'}); }
+    }
+    else if(ip==='RANGER-GHOST') {
+      if(!enemyTrueStrike && Math.random()<0.50) { bs.playerTrueStrike=true; }
+      if(Math.random()<0.10) { const extra=pd; pd+=extra; passives.push({icon:'🏹',text:`STEADY AIM DOUBLE SHOT!→${pd}`}); }
+    }
+    else if(ip==='VALKYLIE-GHOST') {
+      if(bs.echoValkylieBuff) { pd=Math.round(pd*1.10); if(!enemyTrueStrike && Math.random()<0.08){ed=0;_dodgeEffectApplied=true;} bs.echoValkylieBuff=false; passives.push({icon:'👼',text:`GUARDIAN WING BUFF ATK+10%,dodge+8%→${pd}${ed===0?' DODGE!':''}`}); }
+      if(cmp==='win') { const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'👼',`GUARDIAN WING WIN +${heal}HP`); bs.echoValkylieBuff=true; }
+    }
+    else if(ip==='ARC-ANGEL-GHOST') {
+      if(Math.random()<0.50) {
+        let cleansed=false;
+        if(bs.e2CurseTurnsE>0){bs.e2CurseTurnsE=0;cleansed=true;}
+        if(!cleansed&&bs.playerBurnTurns>0){bs.playerBurnTurns=0;cleansed=true;}
+        if(!cleansed&&bs.playerPoisonTurns>0){bs.playerPoisonTurns=0;cleansed=true;}
+        if(cleansed) passives.push({icon:'😇',text:'BLESSED LIGHT CLEANSED!'});
+      }
+      if(creature.hp < creature.maxHp*0.5) {
+        if(!enemyTrueStrike && Math.random()<0.07) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'😇',text:'BLESSED LIGHT DODGE!'}); }
+        if(ed>0 && !enemyStunned && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'😇',text:'BLESSED LIGHT STUN!'}); }
+      }
+    }
+    else if(ip==='GREEN-SENTINEL-GHOST') {
+      const heal=Math.round(creature.maxHp*0.02); _pHeal(heal,'🟢',`THORNED BARK +${heal}HP`);
+      if(Math.random()<0.20) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🟢',text:`THORNED BARK dmg-50%→${ed}`}); }
+    }
+    else if(ip==='SKELETON-KING-GHOST' && pd>0) { const steal=Math.max(1,Math.round(pd*0.10)); _pHeal(steal,'💀',`BONE GUARD lifesteal +${steal}HP`); }
+    else if(ip==='DRAGON-KNIGHT-GHOST') {
+      if(ed>0 && !enemyReflectImmune) { const ref=Math.max(1,Math.round(ed*0.20)); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:'🐉',text:`SCALE GUARD Reflect20% ${ref}`}); }
+      if(creature.hp < creature.maxHp*0.5) {
+        ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
+        const heal=Math.round(creature.maxHp*0.015); _pHeal(heal,'🐉',`SCALE GUARD HP<50% DEF+12% +${heal}HP`);
+      }
+    }
+    else if(ip==='ARC-DEMON-GHOST' && pd>0 && Math.random()<0.25 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) {
+      const roll=Math.floor(Math.random()*6);
+      if(roll===0){bs.enemyPoisonTurns=3;passives.push({icon:'😈',text:'DARK WHISPER POISON!'});}
+      else if(roll===1){bs.enemyBurnTurns=3;passives.push({icon:'😈',text:'DARK WHISPER BURN!'});}
+      else if(roll===2){bs.e2CurseTurns=2;passives.push({icon:'😈',text:'DARK WHISPER CURSE!'});}
+      else if(roll===3){bs.eBlindTurns=3;passives.push({icon:'😈',text:'DARK WHISPER BLIND!'});}
+      else if(roll===4){bs.enemyHealBlockTurns=3;passives.push({icon:'😈',text:'DARK WHISPER HEAL-BLOCK!'});}
+      else {bs.enemyFreezeSpdTurns=3;passives.push({icon:'😈',text:'DARK WHISPER FREEZE!'});}
+    }
+    else if(ip==='BAHAMUT-GHOST') {
+      if(cmp==='win') { pd=Math.round(pd*1.5); ed=Math.round(ed*1.10); passives.push({icon:'🐲',text:`DRACONIC PULSE WIN ATK+50%,DEF-25%→${pd}/${ed}`}); }
+      else if(cmp==='lose') { pd=Math.round(pd*0.75); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🐲',text:`DRACONIC PULSE LOSE DEF+50%,ATK-25%→${pd}/${ed}`}); }
+    }
+    else if(ip==='DRAGON-TAMER-GHOST') {
+      if(cmp==='win') {
+        pd+=Math.floor(enemy.def/2);
+        if(pd>0 && Math.random()<0.25 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyBurnTurns=3; passives.push({icon:'🤝',text:`BONDED ECHO WIN pierce+BURN→${pd}`}); }
+        else passives.push({icon:'🤝',text:`BONDED ECHO WIN pierce→${pd}`});
+      } else if(cmp==='lose') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'🤝',text:`BONDED ECHO LOSE DEF+15%→${ed}`}); }
+    }
+    else if(ip==='ALIEN-GHOST') {
+      if(Math.random()<0.50) {
+        if(bs.playerPoisonTurns>0) { bs.playerPoisonTurns=0; const heal=Math.round(creature.maxHp*0.03); _pHeal(heal,'👽',`ALIEN RESISTANCE reversed Poison→Heal+${heal}`); }
+        else if(bs.playerBurnTurns>0) { bs.playerBurnTurns=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Burn→ATK+8%→${pd}`}); }
+        else if(bs.e2CurseTurnsE>0) { bs.e2CurseTurnsE=0; pd=Math.round(pd*1.08); passives.push({icon:'👽',text:`ALIEN RESISTANCE reversed Curse→ATK+8%→${pd}`}); }
+      }
+      if(pd>0 && Math.random()<0.08) { bs.eBlindTurns=3; passives.push({icon:'👽',text:'ALIEN RESISTANCE BLIND!'}); }
+    }
+    else if(ip==='SHIVA-GHOST' && bs.turn%3===0) {
+      pd=Math.round(pd*1.5);
+      if(pd>0 && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} bs.enemyFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'🔱',text:`BALANCE ECHO 3T dmg×1.5+FREEZE→${pd}`}); }
+      else passives.push({icon:'🔱',text:`BALANCE ECHO 3T dmg×1.5→${pd}`});
+    }
   }
 
   // Blind status check (enemy 50% miss chance)
@@ -6968,6 +7225,22 @@ function doTurn(moveIdx) {
     else { const healAmt=targetHp-creature.hp; ed=0; creature.hp=Math.min(creature.maxHp,creature.hp+healAmt); playerHeal+=healAmt; }
     bs.echoPhoenixUsed=true; bs.enemyBurnTurns=5;
     if(!(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0)) passives.push({icon:'🔱',text:`PHOENIX ECHO REBIRTH! HP→50%, BURN 5T`});
+  }
+  if(ff==='SKELETON-KING-GHOST' && !bs.egSkeletonKingUsed && creature.hp-ed<=0) {
+    const targetHp=creature.maxHp;
+    if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0) { ed = 0; passives.push({icon:'🚫💀',text:T('SKELETON KING REBIRTH! (Heal Block: ฟื้นฟูถูกล็อค)','SKELETON KING REBIRTH! (Heal Block: heal blocked)')}); }
+    else if(creature.hp > targetHp) { ed=creature.hp-targetHp; playerHeal+=targetHp; }
+    else { const healAmt=targetHp-creature.hp; ed=0; creature.hp=Math.min(creature.maxHp,creature.hp+healAmt); playerHeal+=healAmt; }
+    bs.egSkeletonKingUsed=true;
+    if(!(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0)) passives.push({icon:'💀',text:'SKELETON KING REBIRTH! HP→100%'});
+  }
+  if(creature.inheritedPassive==='SKELETON-KING-GHOST' && !bs.echoSkeletonKingUsed && creature.hp-ed<=0) {
+    const targetHp=Math.round(creature.maxHp*0.5);
+    if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0) { ed = 0; passives.push({icon:'🚫💀',text:T('SKELETON KING ECHO REBIRTH! (Heal Block: ฟื้นฟูถูกล็อค)','SKELETON KING ECHO REBIRTH! (Heal Block: heal blocked)')}); }
+    else if(creature.hp > targetHp) { ed=creature.hp-targetHp; playerHeal+=targetHp; }
+    else { const healAmt=targetHp-creature.hp; ed=0; creature.hp=Math.min(creature.maxHp,creature.hp+healAmt); playerHeal+=healAmt; }
+    bs.echoSkeletonKingUsed=true;
+    if(!(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0)) passives.push({icon:'💀',text:'SKELETON KING ECHO REBIRTH! HP→50%'});
   }
 
   // ===== IRON WILL FINAL CAP (after all enemy passives) =====
@@ -7257,6 +7530,14 @@ function doTurn(moveIdx) {
     if(creature.inheritedPassive==='PHOENIX-GHOST' && !bs.echoPhoenixUsed && creature.hp<=0) {
       creature.hp=Math.round(creature.maxHp*0.5); bs.echoPhoenixUsed=true; bs.enemyBurnTurns=5;
       battleState.log.push(`  🔱 PHOENIX ECHO REBIRTH! HP→50%, BURN 5T`);
+    }
+    if(ff==='SKELETON-KING-GHOST' && !bs.egSkeletonKingUsed && creature.hp<=0) {
+      creature.hp=creature.maxHp; bs.egSkeletonKingUsed=true;
+      battleState.log.push(`  💀 SKELETON KING REBIRTH! HP→100%`);
+    }
+    if(creature.inheritedPassive==='SKELETON-KING-GHOST' && !bs.echoSkeletonKingUsed && creature.hp<=0) {
+      creature.hp=Math.round(creature.maxHp*0.5); bs.echoSkeletonKingUsed=true;
+      battleState.log.push(`  💀 SKELETON KING ECHO REBIRTH! HP→50%`);
     }
     // Iron Will — same safety net: the early check only catches the main combat hit
     if(hasIronWill && iwStacks && !iwStacks.ironWillUsed && creature.hp<=0) {

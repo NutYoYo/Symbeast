@@ -11211,6 +11211,8 @@ function renderBattleScreen() {
               badges.push(badge(`🔥 BURN ${battleState.playerBurnTurns}T`,'#ff7722','rgba(60,20,0,0.7)','0.8'));
             if((battleState.pBlindTurns||0)>0)
               badges.push(badge(`👁️ BLIND ${battleState.pBlindTurns}T`,'#88aaff','rgba(0,20,60,0.7)','0.9'));
+            if((battleState.playerFreezeSpdTurns||0)>0)
+              badges.push(badge(`❄️ FROZEN ${battleState.playerFreezeSpdTurns}T`,'#66ccff','rgba(0,30,60,0.7)','1.0'));
             // Evolve II Branch Skill conditional/stack status — shows what's currently ACTIVE, not just what exists
             const ff2 = creature.phase==='final' ? creature.finalKey : null;
             const e2Stack = battleState.e2Stack||0;
@@ -11305,6 +11307,8 @@ function renderBattleScreen() {
               ebadges.push(ebadge(`👁️ BLIND ${battleState.eBlindTurns}T`,'#88aaff','rgba(0,20,60,0.7)','0.9'));
             if((battleState.enemyBurnTurns||0)>0)
               ebadges.push(ebadge(`🔥 BURN ${battleState.enemyBurnTurns}T`,'#ff7722','rgba(60,20,0,0.7)','0.8'));
+            if((battleState.enemyFreezeSpdTurns||0)>0)
+              ebadges.push(ebadge(`❄️ FROZEN ${battleState.enemyFreezeSpdTurns}T`,'#66ccff','rgba(0,30,60,0.7)','1.0'));
             return ebadges.length?`<div style="display:flex;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap">${ebadges.join('')}</div>`:'';
           })()}
           ${(enemy.passives||[]).length ? `<div style="display:flex;gap:3px;justify-content:flex-end;margin-top:2px">${(enemy.passives).map(id=>{

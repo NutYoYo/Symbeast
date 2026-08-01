@@ -5533,8 +5533,16 @@ function doTurn(moveIdx) {
   const startHp = creature.hp; // HP at start of turn (before any heals/modifications)
 
   // Apply stun carried from previous turn
-  if(bs.playerStunnedNextTurn) { pd=0; playerStunned=true; bs.playerStunnedNextTurn=false; SFX.stun(); passives.push({icon:'⚡',text:T('STUN! โจมตีพลาด (ค้างจากเทิร์นที่แล้ว)','STUN! Miss (carried from last turn)')}); }
-  if(bs.enemyStunnedNextTurn)  { ed=0; enemyStunned=true;  bs.enemyStunnedNextTurn=false;  SFX.stun(); passives.push({icon:'⚡',text:T('STUN! ศัตรูยังขยับไม่ได้ (ค้างจากเทิร์นที่แล้ว)','STUN! Enemy still cannot act (carried)')}); }
+  if(bs.playerStunnedNextTurn) {
+    pd=0; playerStunned=true; bs.playerStunnedNextTurn=false; SFX.stun();
+    if(bs.playerFreezeSpdTurns>0) passives.push({icon:'❄️',text:T('FROZEN! โจมตีพลาด (ค้างจากเทิร์นที่แล้ว)','FROZEN! Miss (carried from last turn)')});
+    else passives.push({icon:'⚡',text:T('STUN! โจมตีพลาด (ค้างจากเทิร์นที่แล้ว)','STUN! Miss (carried from last turn)')});
+  }
+  if(bs.enemyStunnedNextTurn) {
+    ed=0; enemyStunned=true; bs.enemyStunnedNextTurn=false; SFX.stun();
+    if(bs.enemyFreezeSpdTurns>0) passives.push({icon:'❄️',text:T('FROZEN! ศัตรูยังขยับไม่ได้ (ค้างจากเทิร์นที่แล้ว)','FROZEN! Enemy still cannot act (carried)')});
+    else passives.push({icon:'⚡',text:T('STUN! ศัตรูยังขยับไม่ได้ (ค้างจากเทิร์นที่แล้ว)','STUN! Enemy still cannot act (carried)')});
+  }
 
   const ep = enemy.passives || [];
   const enemyReflectImmune = ep.includes('reflect_immune');

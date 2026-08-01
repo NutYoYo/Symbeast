@@ -1242,8 +1242,8 @@ const EVOLVE2_FORMS = {
     passive:'Dodge 20%. On dodge: ATK/SPD+50% next round',
     passiveTh:'หลบ 20% เมื่อหลบสำเร็จ ATK/SPD+50% รอบถัดไป' },
   'TRICKFOX-GHOST':     { name:'TRICKFOX-GHOST',     color:'#FF6347', hp:104, atk:30, spd:42, def:5,  passiveIcon:'🦊',
-    passive:'50% chance to Burn the enemy for 3 turns',
-    passiveTh:'โอกาส 50% ทำให้ศัตรูติดสถานะเผาไหม้ เป็นเวลา 3 เทิร์น' },
+    passive:'SPD+25% for the whole battle; 50% chance to Burn the enemy for 3 turns',
+    passiveTh:'ในการต่อสู้ SPD+25% และโอกาส 50% ทำให้ศัตรูติดสถานะเผาไหม้ เป็นเวลา 3 เทิร์น' },
   'OWL-GHOST':          { name:'OWL-GHOST',          color:'#8B7355', hp:108, atk:26, spd:40, def:6,  passiveIcon:'🦉',
     passive:'Attacks never miss. 15% chance to Blind enemy on hit (50% miss for 3 turns)',
     passiveTh:'โจมตีไม่พลาดเป้า และมีโอกาส 15% ทำให้ศัตรูติดสถานะตาบอด (โจมตีพลาด 50% เป็นเวลา 3 เทิร์น)' },
@@ -1251,8 +1251,8 @@ const EVOLVE2_FORMS = {
     passive:'Every turn: random effect — stun enemy, enemy ATK-50%, enemy DEF-50%, or give enemy ATK+25%',
     passiveTh:'ทุกเทิร์นมีโอกาสสุ่ม ทำให้ศัตรูสตัน, ลด ATK 50%, ลด DEF 50%, เพิ่ม ATK 25%(ให้ศัตรู)' },
   'PENGUIN-GHOST':      { name:'PENGUIN-GHOST',      color:'#2F4F4F', hp:112, atk:22, spd:38, def:8,  passiveIcon:'🐧',
-    passive:'Damage taken -15%. When HP<50%: dodge+25% and ATK+25%',
-    passiveTh:'ลดดาเมจ 15% เมื่อ HP<50% หลบ+25% ATK+25%' },
+    passive:'Damage taken -15%. When HP<50%: dodge+25%, ATK+25%, and 15% chance to Freeze the enemy',
+    passiveTh:'ลดดาเมจ 15%, โอกาสแช่แข็งศัตรู 15% เมื่อ HP<50% หลบ+25% ATK+25%' },
   // SHIELD
   'COCKROACH-GHOST':    { name:'COCKROACH-GHOST',    color:'#8B4513', hp:135, atk:22, spd:16, def:24, passiveIcon:'🪳',
     passive:'Survive a fatal blow with 1 HP (once per battle), then ATK+100%, DEF+100% and SPD+100% for the rest of battle',
@@ -2524,10 +2524,10 @@ const FUSION_ECHO_INFO = {
   'MANTIS-GHOST':       {name:'MANTIS ECHO',    icon:'⚔️', desc:'Crit damage x2. When HP<20%: damage +25%', descTh:'คริติคอลดาเมจ x2 เมื่อ HP<20%: ดาเมจ+25%'},
   'BEE-GHOST':          {name:'SWARM ECHO',     icon:'🐝', desc:'10% chance to attack 3 times; on success, 25% chance to poison enemy', descTh:'โอกาส 10% โจมตี 3 ครั้ง เมื่อสำเร็จ โอกาส 25% ทำให้ศัตรูติดพิษ'},
   'BUNNY-GHOST':        {name:'BUNNY ECHO',     icon:'🐰', desc:'10% dodge; on dodge: ATK/SPD+25% next round', descTh:'หลบ 10% เมื่อหลบสำเร็จ ATK/SPD+25% รอบถัดไป'},
-  'TRICKFOX-GHOST':     {name:'TRICK ECHO',     icon:'🎭', desc:'25% chance to Burn the enemy for 3 turns', descTh:'โอกาส 25% ทำให้ศัตรูติดสถานะเผาไหม้ 3 เทิร์น'},
+  'TRICKFOX-GHOST':     {name:'TRICK ECHO',     icon:'🎭', desc:'SPD+12% for the whole battle; 25% chance to Burn the enemy for 3 turns', descTh:'SPD+12% ในการต่อสู้ และโอกาส 25% ทำให้ศัตรูติดสถานะเผาไหม้ 3 เทิร์น'},
   'OWL-GHOST':          {name:'OWL ECHO',       icon:'👁️', desc:'Attacks never miss; 10% chance to Blind enemy on hit', descTh:'โจมตีไม่พลาดเป้า โอกาส 10% ทำให้ศัตรูตาบอดเมื่อโจมตี'},
   'VOLTMOUSE-GHOST':    {name:'VOLT ECHO',      icon:'⚡', desc:'Every turn: random effect — stun enemy, ATK-50%, DEF-50%, or give enemy ATK+25%', descTh:'ทุกเทิร์นมีโอกาสสุ่ม ทำให้ศัตรูสตัน,ลด ATK 50%,ลด DEF 50%, เพิ่ม ATK 25%(ให้ศัตรู)'},
-  'PENGUIN-GHOST':      {name:'PENGUIN ECHO',   icon:'🐧', desc:'Damage taken -10%; when HP<50%: dodge+10% and ATK+15%', descTh:'ลดดาเมจ 10% เมื่อ HP<50%: หลบ+10% และ ATK+15%'},
+  'PENGUIN-GHOST':      {name:'PENGUIN ECHO',   icon:'🐧', desc:'Damage taken -10%; when HP<50%: dodge+10%, ATK+15%, and 7% chance to Freeze the enemy', descTh:'ลดดาเมจ 10% เมื่อ HP<50%: หลบ+10%, ATK+15% และ 7% โอกาสแช่แข็งศัตรู'},
   'COCKROACH-GHOST':    {name:'ROACH ECHO',     icon:'🪳', desc:'Survive a fatal blow with 1 HP (once), then ATK/DEF/SPD+50% for rest of battle', descTh:'เหลือ HP 1 เมื่อถูกโจมตีถึงตาย (1 ครั้ง) จากนั้น ATK/DEF/SPD+50% ตลอดการต่อสู้'},
   'SLIME-GHOST':        {name:'OOZE ECHO',      icon:'🟢', desc:'Recover 3% HP/round; 15% chance to poison on attack or when hit', descTh:'ฟื้น HP 3% ทุกรอบ โอกาส 15% ทำให้ศัตรูติดพิษเมื่อโจมตีหรือถูกโจมตี'},
   'LEAPFROG-GHOST':     {name:'FROG ECHO',      icon:'💦', desc:'15% chance to reflect 25% damage and poison the enemy', descTh:'โอกาส 15% สะท้อนดาเมจ 25% และทำให้ศัตรูติดพิษ'},
@@ -2986,6 +2986,7 @@ function getEnemyEffSpd(enemy, bs) {
   let val = enemy.spd;
   if(bs?.enemyFreezeSpdTurns > 0) val = Math.round(val * 0.75);
   if(bs?.eGhostBunnyAtkBuff) val = Math.round(val * 1.5);
+  if(enemy.isEvolve2Enemy && enemy.evolve2Key==='TRICKFOX-GHOST') val = Math.round(val * 1.25);
   return val;
 }
 function getEffStat(stat) {
@@ -2996,6 +2997,8 @@ function getEffStat(stat) {
   if(stat==='spd' && battleState?.playerFreezeSpdTurns > 0) val = Math.round(val * 0.75);
   if(stat==='spd' && battleState?.ghostBunnyAtkBuff) val = Math.round(val * 1.5);
   if(stat==='spd' && battleState?.echoBunnyAtkBuff) val = Math.round(val * 1.25);
+  if(stat==='spd' && creature.phase==='final' && creature.finalKey==='TRICKFOX-GHOST') val = Math.round(val * 1.25);
+  if(stat==='spd' && creature.inheritedPassive==='TRICKFOX-GHOST') val = Math.round(val * 1.12);
   if(stat==='atk' && (creature.artifact==='berserker_claw' || creature.artifact2==='berserker_claw')) val = Math.round(val * 1.25);
   if(stat==='atk' && (creature.artifact==='piercing_fang' || creature.artifact2==='piercing_fang')) val = Math.round(val * 1.25);
   // Ghost branch skill modifiers (battle-only, temporary — resets every battle)
@@ -5697,6 +5700,7 @@ function doTurn(moveIdx) {
       pd=Math.round(pd*1.25);
       if(!enemyTrueStrike && Math.random()<0.25) { ed=0; _dodgeEffectApplied=true; }
       passives.push({icon:'🐧',text:`PENGUIN HP<50% dmg-15%,dodge+25%,ATK+25%→${pd}${ed===0?' DODGE!':''}`});
+      if(pd>0 && Math.random()<0.15) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} bs.enemyFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'❄️',text:T('PENGUIN แช่แข็งศัตรู!','PENGUIN froze the enemy!')}); }
     } else passives.push({icon:'🐧',text:`PENGUIN dmg-15%→${ed}`});
   }
   if(ff==='COCKROACH-GHOST' && bs.ghostCockroachActive) { pd=Math.round(pd*2); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🪳',text:`ROACH ACTIVE: ATK+100%→${pd},dmg-50%,SPD+100%`}); }
@@ -6221,6 +6225,7 @@ function doTurn(moveIdx) {
       ed=Math.round(ed*1.25);
       if(!bs.playerTrueStrike && Math.random()<0.25) { pd=0; }
       passives.push({icon:'🐧',text:`[E] PENGUIN HP<50% dmg-15%,dodge+25%,ATK+25%→${ed}${pd===0?' DODGE!':''}`});
+      if(ed>0 && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} bs.playerFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'❄️',text:T('[ศัตรู] PENGUIN แช่แข็งคุณ!','[E] PENGUIN froze you!')}); }
     } else passives.push({icon:'🐧',text:`[E] PENGUIN dmg-15%→${pd}`});
   }
   if(fk2==='COCKROACH-GHOST' && bs.eGhostCockroachActive) { ed=Math.round(ed*2); pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'🪳',text:`[E] ROACH ACTIVE: ATK+100%→${ed},dmg-50%,SPD+100%`}); }
@@ -6553,6 +6558,7 @@ function doTurn(moveIdx) {
         pd = Math.round(pd * 1.15);
         if(!enemyTrueStrike && Math.random() < 0.10) { ed = 0; _dodgeEffectApplied = true; }
         passives.push({icon:'🐧',text:`PENGUIN ECHO HP<50% dmg-10%,dodge+10%,ATK+15%→${pd}${ed===0?' DODGE!':''}`});
+        if(pd>0 && Math.random()<0.07) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} bs.enemyFreezeSpdTurns=3; SFX.stun(); passives.push({icon:'❄️',text:T('PENGUIN ECHO แช่แข็งศัตรู!','PENGUIN ECHO froze the enemy!')}); }
       } else {
         passives.push({icon:'🐧',text:`PENGUIN ECHO dmg-10%→${ed}`});
       }

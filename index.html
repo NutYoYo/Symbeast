@@ -2606,12 +2606,12 @@ const FUSION_ECHO_INFO = {
   'KAIJU-BRAWLER':      {name:'KAIJU ECHO',       icon:'🦖', desc:'On LOSE: next round ATK+25%, DEF+25%, and 12% chance to burn the enemy', descTh:'เมื่อ LOSE รอบถัดไป ATK+25%, DEF+25% และ 12% โอกาสทำให้ศัตรูติดเผาไหม้'},
   'FIGHTER-PANDA':      {name:'FIGHTER ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +35% that turn', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้น 35% ในเทิร์นนั้น'},
   'PANDA-NINJA':         {name:'NINJA ECHO',      icon:'🥷', desc:'12% chance to dodge; on dodge, crit chance +50% next attack', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ โอกาสคริ+50% ในการโจมตีถัดไป'},
-  'PANDA-WARRIOR':      {name:'WARRIOR ECHO',     icon:'🐼', desc:'12% chance to take half damage and counter-attack for 35% damage', descTh:'12% โอกาสรับดาเมจครึ่งหนึ่งและโต้กลับด้วยดาเมจ 35%'},
-  'ARMOR-PANDA':        {name:'ARMOR ECHO',       icon:'🛡', desc:'Damage taken -10%; 25% chance to counter-attack for 35% damage', descTh:'ลดดาเมจที่รับ 10% และ 25% โอกาสโต้กลับด้วยดาเมจ 35%'},
+  'PANDA-WARRIOR':      {name:'WARRIOR ECHO',     icon:'🐼', desc:'12% chance to take half damage and counter-attack for 75% damage', descTh:'12% โอกาสรับดาเมจครึ่งหนึ่งและโต้กลับด้วยดาเมจ 75%'},
+  'ARMOR-PANDA':        {name:'ARMOR ECHO',       icon:'🛡', desc:'Damage taken -10%; 25% chance to counter-attack for 75% damage', descTh:'ลดดาเมจที่รับ 10% และ 25% โอกาสโต้กลับด้วยดาเมจ 75%'},
   'TYRANT-IRONJAW':     {name:'TYRANT ECHO',      icon:'🩸', desc:'Damage dealt +10% and lifesteal +5%', descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และดูดเลือดเพิ่ม 5%'},
   'AGILE-IRONJAW':      {name:'AGILE ECHO',       icon:'⚔', desc:'15% chance to attack twice, 8% chance to dodge', descTh:'15% โอกาสโจมตี 2 ครั้ง และ 8% โอกาสหลบหลีก'},
   'RUNE-IRONJAW':       {name:'RUNE ECHO',        icon:'🔮', desc:'8% chance to stun the enemy; each round gains a random Rune: ATK+25% or DEF+25%', descTh:'8% โอกาสสตันศัตรู และทุกรอบได้รับ Rune สุ่ม: ATK+25% หรือ DEF+25%'},
-  'FULLARMOR-IRONJAW':  {name:'FULLARMOR ECHO',   icon:'🛡', desc:'While HP < 50%: damage taken -10% and counter-attacks for 35% damage', descTh:'เมื่อ HP < 50% ลดดาเมจที่รับ 10% และโต้กลับด้วยดาเมจ 35%'},
+  'FULLARMOR-IRONJAW':  {name:'FULLARMOR ECHO',   icon:'🛡', desc:'While HP < 50%: damage taken -10% and counter-attacks for 75% damage', descTh:'เมื่อ HP < 50% ลดดาเมจที่รับ 10% และโต้กลับด้วยดาเมจ 75%'},
   'STRONG-BLITZ':       {name:'STRONG ECHO',      icon:'⚡', desc:'On WIN: damage dealt +10% and 8% chance to stun the enemy for 1 round', descTh:'เมื่อ WIN ดาเมจเพิ่มขึ้น 10% และ 8% โอกาส Stun ศัตรู 1 รอบ'},
   'STORM-BLITZ':        {name:'STORM ECHO',       icon:'🌩', desc:'10% chance to dodge; on dodge, ATK+25% and attacks never miss next round', descTh:'10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ ATK+25% และโจมตีไม่พลาดเป้า ในรอบถัดไป'},
   'THUNDERCLOUD-BLITZ': {name:'THUNDERCLOUD ECHO',icon:'⛈️', desc:'8% chance to stun the enemy; if not stunned, gains 12% dodge that round instead', descTh:'8% โอกาส Stun ศัตรู ถ้าไม่ติดจะได้โอกาสหลบ 12% แทนในรอบนั้น'},
@@ -2624,12 +2624,12 @@ const FUSION_ECHO_INFO = {
   'SWIFT-FORTRESS':     {name:'SWIFT ECHO',       icon:'🔄', desc:'Every 3 turns: reflects 35% of damage taken, recovers 5% HP, and 25% chance to poison the enemy', descTh:'ทุก 3 เทิร์น สะท้อนดาเมจที่รับ 35% ฟื้นฟู HP 5% และ 25% โอกาสทำให้ศัตรูติดพิษ'},
   'POISON-FORTRESS':    {name:'POISON ECHO',      icon:'☠️', desc:'Damage taken -5%; 12% chance to poison the enemy when hit (6% MaxHP/turn, 3 turns)', descTh:'ลดดาเมจที่รับ 5% และ 12% โอกาสทำให้ศัตรูติดพิษเมื่อถูกโจมตี (6% MaxHP/เทิร์น นาน 3 เทิร์น)'},
   'GUARDIAN-FORTRESS':  {name:'GUARDIAN ECHO',    icon:'🏰', desc:'Damage taken -12%; while HP < 50%, reflects an extra 12% of damage taken back', descTh:'ลดดาเมจที่รับ 12% และเมื่อ HP < 50% จะสะท้อนดาเมจเพิ่มอีก 12%'},
-  'DARK-SPECTER':       {name:'DARK ECHO',        icon:'🌑', desc:'Damage dealt +10%, and lifesteal 7%', descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10% และดูดเลือด 7%'},
+  'DARK-SPECTER':       {name:'DARK ECHO',        icon:'🌑', desc:'Damage dealt +10%, Crit +12%, and lifesteal 7%', descTh:'ดาเมจที่สร้างเพิ่มขึ้น 10%, คริ+12%, ดูดเลือด 7%'},
   'SOUL-SPECTER':       {name:'SPECTER ECHO',     icon:'👻', desc:'10% chance to dodge; on dodge, the next attack hits twice', descTh:'10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ การโจมตีถัดไปโจมตี 2 ครั้ง'},
   'MAGE-SPECTER':       {name:'MAGE ECHO',        icon:'🧙', desc:'On WIN: curses the enemy, ATK -12% for 2 turns; on DRAW: enemy cannot heal for 3 turns; on LOSE: damage taken -5%', descTh:'เมื่อ WIN: สาปศัตรู ATK-12% นาน 2 เทิร์น เมื่อ DRAW: สาปให้ศัตรูฟื้นฟู HP ไม่ได้ 3 เทิร์น เมื่อ LOSE: ลดดาเมจที่รับ 5%'},
   'GRAVE-SPECTER':      {name:'GRAVE ECHO',       icon:'⚰️', desc:'Damage taken -12%; 25% chance to recover 5% HP each round', descTh:'ลดดาเมจที่รับ 12% และมีโอกาส 25% ฟื้นฟู HP 5%'},
-  'FIGHT-SWIFTGUARD':   {name:'FIGHT ECHO',       icon:'🥋', desc:'On WIN: damage dealt +8% per stack (max 3 stacks)', descTh:'เมื่อ WIN ดาเมจ+8% สะสม (สูงสุด 3 ครั้ง)'},
-  'QUICK-SWIFTGUARD':   {name:'QUICK ECHO',       icon:'💨', desc:'12% chance to dodge; on dodge, the next attack deals +25% damage and cannot miss', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ การโจมตีถัดไปดาเมจ+25% และไม่พลาดเป้า'},
+  'FIGHT-SWIFTGUARD':   {name:'FIGHT ECHO',       icon:'🥋', desc:'On WIN: damage dealt +8%, dodge +3%, Crit +3% per stack (max 3 stacks)', descTh:'เมื่อ WIN ดาเมจ+8%, หลบ+3%, คริ+3% (สะสมสูงสุด 3 ครั้ง)'},
+  'QUICK-SWIFTGUARD':   {name:'QUICK ECHO',       icon:'💨', desc:'12% chance to dodge; on dodge, the next attack pierces DEF and cannot miss', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ การโจมตีถัดไปทะลุ DEF และไม่พลาดเป้า'},
   'PHEONIX-SWIFTGUARD': {name:'PHOENIX ECHO',     icon:'🔥', desc:'Every attack has an 8% chance to burn the enemy; once per battle when HP < 30%: heal 50% HP + ATK/DEF/SPD +8%', descTh:'ทุกการโจมตีมีโอกาส 8% ทำให้ศัตรูติดเผาไหม้ เมื่อ HP<30% (ครั้งเดียว): ฟื้น HP 50% + ATK/DEF/SPD +8%'},
   'IRON-SWIFTGUARD':    {name:'IRON ECHO',        icon:'🛡', desc:'On LOSE: damage taken -8% per stack (max 3 stacks per battle)', descTh:'เมื่อ LOSE ลดดาเมจที่รับ 8% สะสม (สูงสุด 3 ครั้ง)'},
   'HAMMER-SHIELDWING':  {name:'HAMMER ECHO',      icon:'🔨', desc:'On WIN: damage dealt +10%, 8% chance to stun, and the attack pierces DEF', descTh:'เมื่อ WIN ดาเมจ+10%, 8% โอกาสสตัน และโจมตีทะลุ DEF'},
@@ -2638,7 +2638,7 @@ const FUSION_ECHO_INFO = {
   'FATTY-SHIELDWING':   {name:'FATTY ECHO',       icon:'🛡', desc:'Damage taken -10%; while HP > 70%, ATK/DEF +15%; while HP < 70%, ATK +25%', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP > 70% ATK/DEF+15% เมื่อ HP < 70% ATK+25%'},
   'GUANLET-BASTION':    {name:'GUANLET ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +8% per stack (max 5 stacks per battle)', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
   'IRON-BASTION':       {name:'BASTION ECHO',     icon:'🎯', desc:'10% chance to dodge; every 3 turns, attacks cannot miss, deal +25% damage, and guarantee a crit', descTh:'10% โอกาสหลบการโจมตี ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ+25% และติดคริแน่นอน'},
-  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, counter-attacks for 35% damage, 5% chance to Freeze when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, โต้กลับดาเมจ 35%, 5% โอกาสแช่แข็งเมื่อโดนโจมตี'},
+  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, counter-attacks for 75% damage, 5% chance to Freeze when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, โต้กลับดาเมจ 75%, 5% โอกาสแช่แข็งเมื่อโดนโจมตี'},
   'GOLEM-BASTION':      {name:'GOLEM ECHO',       icon:'🗿', desc:'Damage taken -10%; while HP < 30%, ATK +15% and recovers 2.5% HP each round', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP < 30% ATK+15% และฟื้นฟู HP 2.5%'},
   // === GHOST Echo Passives (half-strength Fusion versions) ===
   'RAGEBEAR-GHOST':     {name:'RAGE ECHO',      icon:'💢', desc:'Damage +50% when enemy HP > 50%', descTh:'ดาเมจ +50% เมื่อศัตรูมี HP > 50%'},
@@ -5504,6 +5504,9 @@ function doTurn(moveIdx) {
     if(ip==='LION-GHOST' && bs.turn <= 5) critChance += 0.50;
     if(ip==='GRIFFON-GHOST') critChance += 0.10;
     if(ip==='PANDA-GHOST') critChance += 0.15;
+    if(ip==='DARK-SPECTER') critChance += 0.12;
+    if(ip==='FIGHT-SWIFTGUARD' && cmp==='win') bs.echoFightStack = Math.min(3, (bs.echoFightStack||0)+1);
+    if(ip==='FIGHT-SWIFTGUARD') critChance += 0.03 * (bs.echoFightStack||0);
   }
   const sniperReady = (artId==='sniper_eye' || artId2==='sniper_eye') && bs.turn % 3 === 0;
   const crit = sniperReady ? true : Math.random() < critChance;
@@ -5731,7 +5734,7 @@ function doTurn(moveIdx) {
   if(fk==='FWW' && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้เทิร์นถัดไป','STUN! Enemy cannot act next turn')});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('STUN! ศัตรูขยับไม่ได้','STUN! Enemy cannot act')});} }
   if(fk==='WWW' && Math.random()<0.25) { ed=0; passives.push({icon:'👻',text:'DODGE!'}); }
   if(fk==='WWS' && Math.random()<0.15) {
-    const healed=Math.round(creature.maxHp*0.10);
+    const healed=Math.round(creature.maxHp*0.15);
     _pHeal(healed,'🌀',T(`DODGE + ฟื้น +${healed} HP`,`DODGE + Healed +${healed} HP`));
     ed=0;
     _dodgeEffectApplied = true;
@@ -6387,7 +6390,7 @@ function doTurn(moveIdx) {
   }
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
   if(ed===0 && !_dodgeEffectApplied && !enemyTrueStrike) {
-    if(fk==='WWS') { const h=Math.round(creature.maxHp*0.10); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
+    if(fk==='WWS') { const h=Math.round(creature.maxHp*0.15); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
     else if(ff==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`WINDBLADE Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
     else if(ff==='STORM-BLITZ') { bs.e2NextBuff=true; passives.push({icon:'🌩',text:'STORM BUFF from dodge! ATK+50% next round'}); _dodgeEffectApplied=true; }
     else if(ff==='KING-CHAMPION') { bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); passives.push({icon:'👑',text:`KING Stack from dodge! ×${bs.e2Stack}`}); _dodgeEffectApplied=true; }
@@ -6922,7 +6925,7 @@ function doTurn(moveIdx) {
     else if(ip==='FULLARMOR-IRONJAW') {
       if(creature.hp<creature.maxHp*0.5) {
         ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
-        const c=Math.max(1,Math.round(pCurseAtk/3*0.35)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
+        const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
         passives.push({icon:'🛡',text:`FULLARMOR ECHO HP<50% dmg-10% Counter -${c}`});
       }
     }
@@ -7010,12 +7013,15 @@ function doTurn(moveIdx) {
       if(Math.random()<0.25) { const heal=Math.round(creature.maxHp*0.05); _pHeal(heal,'⚰️',`GRAVE ECHO +${heal}HP`); }
     }
     else if(ip==='FIGHT-SWIFTGUARD') {
-      if(cmp==='win') bs.echoFightStack=Math.min(3,(bs.echoFightStack||0)+1);
-      if(bs.echoFightStack>0) { pd=Math.round(pd*(1+0.08*bs.echoFightStack)); passives.push({icon:'🥋',text:`FIGHT ECHO ×${bs.echoFightStack} dmg+${bs.echoFightStack*8}%→${pd}`}); }
+      if(bs.echoFightStack>0) {
+        pd=Math.round(pd*(1+0.08*bs.echoFightStack));
+        if(!enemyTrueStrike && Math.random()<0.03*bs.echoFightStack) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'🥋',text:`FIGHT ECHO ×${bs.echoFightStack} dmg+${bs.echoFightStack*8}%,dodge+${bs.echoFightStack*3}%,crit+${bs.echoFightStack*3}%→${pd} DODGE!`}); }
+        else passives.push({icon:'🥋',text:`FIGHT ECHO ×${bs.echoFightStack} dmg+${bs.echoFightStack*8}%,dodge+${bs.echoFightStack*3}%,crit+${bs.echoFightStack*3}%→${pd}`});
+      }
     }
     else if(ip==='QUICK-SWIFTGUARD') {
-      if(bs.echoQuickBuff) { pd=Math.round(pd*1.25); bs.playerTrueStrike=true; bs.echoQuickBuff=false; passives.push({icon:'💨',text:`QUICK ECHO BUFF pierce-like→${pd}`}); }
-      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.echoQuickBuff=true; _dodgeEffectApplied=true; passives.push({icon:'💨',text:'QUICK ECHO DODGE! next empowered'}); }
+      if(bs.echoQuickBuff) { pd+=Math.floor(enemy.def/4); bs.playerTrueStrike=true; bs.echoQuickBuff=false; passives.push({icon:'💨',text:`QUICK ECHO BUFF pierce DEF→${pd}`}); }
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.echoQuickBuff=true; _dodgeEffectApplied=true; passives.push({icon:'💨',text:'QUICK ECHO DODGE! next pierces DEF'}); }
     }
     else if(ip==='PHEONIX-SWIFTGUARD') {
       if(!bs.echoPhoenixUsed && creature.hp>0 && creature.hp<creature.maxHp*0.3) {
@@ -7060,7 +7066,7 @@ function doTurn(moveIdx) {
       if(creature.hp>creature.maxHp*0.5) { pd=Math.round(pd*1.12); passives.push({icon:'💎',text:`CRYSTAL ECHO HP>50% ATK+12%→${pd}`}); }
       else {
         ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
-        const c=Math.max(1,Math.round(pCurseAtk/3*0.35)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
+        const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
         passives.push({icon:'💎',text:`CRYSTAL ECHO HP<50% DEF+12% Counter -${c}`});
         if(pd>0 && Math.random()<0.05) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb) { passives.push({icon:'❄️✨',text:T('CRYSTAL ECHO แช่แข็ง→ดูดซับ!','CRYSTAL ECHO freeze→ABSORBED!')}); } else { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAL ECHO แช่แข็งศัตรู!','CRYSTAL ECHO froze the enemy!')}); } }
       }

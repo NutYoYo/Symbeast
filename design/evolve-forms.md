@@ -17,7 +17,7 @@ Source of truth for pet Evolve I/II forms and Fusion Echo passives. Migrated fro
 | FWS |  | CHAMPION | 75 | 16 | 14 | 8 | เมื่อชนะ: ATK +20% และรับดาเมจ -20% ในรอบนั้น |
 | FSS |  | FORTRESS | 90 | 16 | 10 | 12 | สะท้อนดาเมจที่รับ 25% กลับไปยังศัตรูทุกรอบ |
 | WWW |  | SPECTER | 60 | 12 | 22 | 4 | 25% โอกาสหลบการโจมตีของศัตรูได้สมบูรณ์ |
-| WWS |  | SWIFTGUARD | 75 | 12 | 18 | 8 | 15% โอกาสหลบ และฟื้น HP สูงสุด 10% ทันที (nerf จากเดิม 50%) |
+| WWS |  | SWIFTGUARD | 75 | 12 | 18 | 8 | 15% โอกาสหลบ และฟื้น HP สูงสุด 15% ทันที |
 | WSS |  | SHIELDWING | 90 | 12 | 14 | 12 | เมื่อชนะ: ลดดาเมจที่รับ 50% เมื่อแพ้: ลดดาเมจที่รับ 15% |
 | SSS | ⬛ | BASTION | 105 | 12 | 10 | 16 | 35% โอกาสลดดาเมจที่รับครึ่งหนึ่ง |
 | GHOST | 🌟 | GHOST | 75 | 20 | 16 | 10 | เมื่อเริ่มต่อสู้ สุ่มได้รับ 1 บัฟ: ATK+25%, โอกาสหลบ +25% หรือ DEF+25% (ตลอดการต่อสู้) |
@@ -59,7 +59,7 @@ Source of truth for pet Evolve I/II forms and Fusion Echo passives. Migrated fro
 |  |  |  | WING | SOUL-SPECTER | 96 | 19 | 46 | 5 | 20% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จ การโจมตีถัดไปจะโจมตี 2 ครั้ง | SOUL SCYTHE  | โจมตี ×4.0 + หลบเทิร์นนี้ + วางพิษ ☠️ ใส่ศัตรู 3 เทิร์น จากนั้นโอกาสหลบ +40% นาน 3 เทิร์น |
 |  |  |  | BALANCE | MAGE-SPECTER | 108 | 21 | 35 | 6 | เมื่อ WIN จะสาปศัตรู ลด ATK ของศัตรู 25% เป็นเวลา 2 รอบ, เมื่อ DRAW จะสาปให้ศัตรูฟื้นฟู HP ไม่ได้ 3 รอบ, เมื่อ LOSE ลดดาเมจที่ได้รับ 10% | MAGE SCYTHE | โจมตี ×4.0 + หลบเทิร์นนี้ + สาปศัตรู (ATK-25%, 2 เทิร์น) จากนั้น Crit +30% และโอกาส 30% สาปเมื่อโจมตี นาน 3 เทิร์น |
 |  |  |  | SHIELD | GRAVE-SPECTER | 126 | 18 | 29 | 8 | ลดดาเมจที่รับทั้งหมด 25% และมีโอกาส 50% ฟื้นฟู HP 5% | GRAVEYARD WARD | โจมตี ×4.0 + ลดดาเมจที่รับครึ่งเทิร์นนี้ + วางพิษ ☠️ ใส่ศัตรู 3 เทิร์น จากนั้นลดดาเมจที่รับ 50% และฟื้นฟู HP 10% นาน 3 เทิร์น |
-| WWS | SWIFTGUARD | 15% โอกาสหลบ และฟื้น HP สูงสุด 10% ทันที | FIST | FIGHT-SWIFTGUARD | 128 | 25 | 24 | 10 | เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15%, โอกาสหลบ +5%, Crit Rate +5% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้) | POWER STRIKE | โจมตี ×3.5 + ฟื้นฟู HP 40% เทิร์นนี้ จากนั้น ATK+50% และการโจมตีจะไม่พลาดเป้า นาน 3 เทิร์น |
+| WWS | SWIFTGUARD | 15% โอกาสหลบ และฟื้น HP สูงสุด 15% ทันที | FIST | FIGHT-SWIFTGUARD | 128 | 25 | 24 | 10 | เมื่อ WIN ดาเมจที่สร้างเพิ่มขึ้นครั้งละ 15%, โอกาสหลบ +5%, Crit Rate +5% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้) | POWER STRIKE | โจมตี ×3.5 + ฟื้นฟู HP 40% เทิร์นนี้ จากนั้น ATK+50% และการโจมตีจะไม่พลาดเป้า นาน 3 เทิร์น |
 |  |  |  | WING | QUICK-SWIFTGUARD | 120 | 19 | 38 | 10 | 25% โอกาสหลบการโจมตีได้สมบูรณ์ เมื่อหลบสำเร็จการโจมตีครั้งถัดไปจะทะลุ DEF ฝั่งตรงข้ามและไม่พลาดเป้า | SWIFT STRIKE | โจมตี ×3.0 จากนั้น ATK×2 และเพิ่มโอกาสหลบ 15% (คงที่) ต่อเทิร์น นาน 3 เทิร์น |
 |  |  |  | BALANCE | PHEONIX-SWIFTGUARD | 135 | 21 | 28 | 12 | ทุกการโจมตีมีโอกาส 15% ทำให้ศัตรูติดเผาไหม้ เมื่อ HP<30% (ครั้งเดียว/การต่อสู้): ฟื้น HP 100% ทันที + ATK/DEF/SPD +15% | PHOENIX STRIKE | โจมตี ×3.0 + ฟื้นฟู HP 30% เทิร์นนี้ จากนั้นเป็นเวลา 3 เทิร์น: ATK +50%, ฟื้นฟู HP 15% ต่อเทิร์น และมีโอกาส 50% ทำให้ศัตรูติดเผาไหม้เมื่อโดนโจมตี |
 |  |  |  | SHIELD | IRON-SWIFTGUARD | 158 | 18 | 23 | 17 | เมื่อ LOSE ลดดาเมจที่รับทั้งหมด 15% (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้) | IRON CURTAIN WALL | ชาร์จโล่เต็ม + สะท้อนดาเมจเทิร์นนี้ จากนั้นลดดาเมจที่รับ 25% ATK+50% และฟื้นฟู HP 15% ต่อเทิร์น นาน 3 เทิร์น |
@@ -132,12 +132,12 @@ Source of truth for pet Evolve I/II forms and Fusion Echo passives. Migrated fro
 | ARMOR-PANDA | 🛡 | ARMOR ECHO | Damage taken -10%; 25% chance to counter-attack for 75% damage | ลดดาเมจที่รับ 10% และ 25% โอกาสโต้กลับด้วยดาเมจ 75% |
 | TYRANT-IRONJAW | 🩸 | TYRANT ECHO | Damage dealt +10% and lifesteal +5% | ดาเมจที่สร้างเพิ่มขึ้น 10% และดูดเลือดเพิ่ม 5% |
 | AGILE-IRONJAW | ⚔ | AGILE ECHO | 15% chance to attack twice, 8% chance to dodge | 15% โอกาสโจมตี 2 ครั้ง และ 8% โอกาสหลบหลีก |
-| RUNE-IRONJAW | 🔮 | RUNE ECHO | 8% chance to stun the enemy; each round gains a random Rune: ATK+50% or DEF+50% | 8% โอกาสสตันศัตรู และทุกรอบได้รับ Rune สุ่ม: ATK+50% หรือ DEF+50% |
+| RUNE-IRONJAW | 🔮 | RUNE ECHO | 8% chance to stun the enemy; each round gains a random Rune: ATK+25% or DEF+25% | 8% โอกาสสตันศัตรู และทุกรอบได้รับ Rune สุ่ม: ATK+25% หรือ DEF+25% |
 | FULLARMOR-IRONJAW | 🛡 | FULLARMOR ECHO | While HP < 50%: damage taken -10% and counter-attacks for 75% damage | เมื่อ HP < 50% ลดดาเมจที่รับ 10% และโต้กลับด้วยดาเมจ 75% |
 | STRONG-BLITZ | ⚡ | STRONG ECHO | On WIN: damage dealt +10% and 8% chance to stun the enemy for 1 round | เมื่อ WIN ดาเมจเพิ่มขึ้น 10% และ 8% โอกาส Stun ศัตรู 1 รอบ |
 | STORM-BLITZ | 🌩 | STORM ECHO | 10% chance to dodge; on dodge, ATK+25% and attacks never miss next round | 10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ ATK+25% และโจมตีไม่พลาดเป้า ในรอบถัดไป |
-| THUNDERCLOUD-BLITZ | ⛈️ | THUNDERCLOUD ECHO | 8% chance to stun the enemy; if not stunned, gains 25% dodge that round instead | 8% โอกาส Stun ศัตรู ถ้าไม่ติดจะได้โอกาสหลบ 25% แทนในรอบนั้น |
-| BULWARK-BLITZ | 🛡 | BULWARK ECHO | Damage taken -10%; when hit, 15% chance to stun the attacker for 1 round | ลดดาเมจที่รับ 10% และเมื่อถูกโจมตีมีโอกาส 15% ทำให้อีกฝ่าย Stun 1 รอบ |
+| THUNDERCLOUD-BLITZ | ⛈️ | THUNDERCLOUD ECHO | 8% chance to stun the enemy; if not stunned, gains 12% dodge that round instead | 8% โอกาส Stun ศัตรู ถ้าไม่ติดจะได้โอกาสหลบ 12% แทนในรอบนั้น |
+| BULWARK-BLITZ | 🛡 | BULWARK ECHO | Damage taken -10%; when hit, 8% chance to stun the attacker for 1 round | ลดดาเมจที่รับ 10% และเมื่อถูกโจมตีมีโอกาส 8% ทำให้อีกฝ่าย Stun 1 รอบ |
 | WARLORD-CHAMPION | ⚔️ | WARLORD ECHO | Damage dealt +10%; 5% chance to attack 4 times | ดาเมจที่สร้างเพิ่มขึ้น 10% และมีโอกาส 5% ที่จะโจมตี 4 ครั้ง |
 | KING-CHAMPION | 👑 | KING ECHO | 10% chance to dodge; on dodge, ATK/DEF/SPD +5% (max 5 stacks per battle) | 10% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ ATK/DEF/SPD+5% (สะสมสูงสุด 5 ครั้ง) |
 | SOUL-CHAMPION | ⚖️ | SOUL ECHO | On WIN: ATK+12% and 12% chance to burn the enemy; on LOSE: dodge +12% and damage dealt +12% that round | เมื่อ WIN: ATK+12% และ 12% โอกาสทำให้ศัตรูติดเผาไหม้ เมื่อ LOSE: โอกาสหลบ+12% และดาเมจเพิ่ม 12% ในรอบนั้น |

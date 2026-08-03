@@ -1219,8 +1219,8 @@ const EVOLVE2_FORMS = {
     passive:'20% chance to dodge; every 3 turns, attacks cannot miss, deal +50% damage, and guarantee a critical hit',
     passiveTh:'20% โอกาสหลบการโจมตี, ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ +50% และติดคริติคอลแน่นอน' },
   'CRYSTAWOLF-BASTION': { name:'CRYSTAWOLF-BASTION', color:'#88aacc', hp:189, atk:21, spd:16, def:25, passiveIcon:'💎',
-    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, counter-attacks every round for 75% damage, and 5% chance to Freeze the enemy when hit',
-    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และมีโอกาส 5% ทำให้ศัตรูติดแช่แข็งเมื่อโดนโจมตี' },
+    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, counter-attacks every round for 75% damage, and 10% chance to Freeze the enemy when hit',
+    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และมีโอกาส 10% ทำให้ศัตรูติดแช่แข็งเมื่อโดนโจมตี' },
   'GOLEM-BASTION':      { name:'GOLEM-BASTION',      color:'#1a2733', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿',
     passive:'All damage taken -20%; while HP < 30%, ATK +30% and recovers 5% HP each round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP < 30% ATK+30%, ฟื้นฟู HP 5%' },
@@ -5979,7 +5979,7 @@ function doTurn(moveIdx) {
       ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
       const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
       passives.push({icon:'💎',text:`CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${ed}`});
-      if(ed>0 && Math.random()<0.05) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb) { passives.push({icon:'❄️✨',text:T('CRYSTAWOLF แช่แข็ง→ดูดซับ SPD+25%!','CRYSTAWOLF freeze→ABSORBED SPD UP!')}); } else { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAWOLF แช่แข็งศัตรู!','CRYSTAWOLF froze the enemy!')}); } }
+      if(ed>0 && Math.random()<0.10) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb) { passives.push({icon:'❄️✨',text:T('CRYSTAWOLF แช่แข็ง→ดูดซับ SPD+25%!','CRYSTAWOLF freeze→ABSORBED SPD UP!')}); } else { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAWOLF แช่แข็งศัตรู!','CRYSTAWOLF froze the enemy!')}); } }
     }
   }
 
@@ -6654,7 +6654,7 @@ function doTurn(moveIdx) {
       pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
       const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c);
       passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${pd}`});
-      if(pd>0 && Math.random()<0.05) { bs.playerFreezeSpdTurns=3; if(freezeAbsorb) { passives.push({icon:'❄️✨',text:T('[ศัตรู] CRYSTAWOLF แช่แข็ง→คุณดูดซับ SPD+25%!','[E] CRYSTAWOLF freeze→YOU ABSORBED SPD UP!')}); } else { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('[ศัตรู] CRYSTAWOLF แช่แข็งคุณ!','[E] CRYSTAWOLF froze you!')}); } }
+      if(pd>0 && Math.random()<0.10) { bs.playerFreezeSpdTurns=3; if(freezeAbsorb) { passives.push({icon:'❄️✨',text:T('[ศัตรู] CRYSTAWOLF แช่แข็ง→คุณดูดซับ SPD+25%!','[E] CRYSTAWOLF freeze→YOU ABSORBED SPD UP!')}); } else { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('[ศัตรู] CRYSTAWOLF แช่แข็งคุณ!','[E] CRYSTAWOLF froze you!')}); } }
     }
   }
 

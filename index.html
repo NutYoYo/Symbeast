@@ -555,6 +555,11 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
+.pg-pet { position:absolute; bottom:10px; transition:left 2.6s ease-in-out; cursor:pointer; }
+.pg-pet.face-left { transform:scaleX(-1); }
+@keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
+.pg-marker { animation:pgSlide 1.3s linear infinite alternate; }
+
 @keyframes rpsPickPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 @keyframes rpsClashBurst { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.2) rotate(0deg)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(20deg)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(-10deg)} }
 @keyframes rpsWinGlow { 0%,100%{box-shadow:0 0 8px #4ecdc4} 50%{box-shadow:0 0 20px #4ecdc4} }
@@ -3015,7 +3020,72 @@ function newPet() {
            hp:60, maxHp:60, atk:12, spd:10, def:4, name:'???',
            buffExpiry:{atk:0,spd:0,def:0},
            trainCount:0, trainBonuses:{hp:0,atk:0,spd:0,def:0}, resting:false, deadRestUntil:0, locked:false, shiny:false,
-           inheritedPassive:null };
+           inheritedPassive:null,
+           affection:0, lastFeedAt:0, playWindowStart:0, playsUsedInWindow:0, lastGiftDay:'' };
+}
+
+// ============================================================
+// PET PLAYGROUND — Affection system
+// ============================================================
+const AFFECTION_MAX = 100;
+const AFFECTION_FEED_GAIN = 2;
+const AFFECTION_FEED_COOLDOWN_MS = 4*3600*1000;
+const AFFECTION_PLAY_WIN_GAIN = 2;
+const AFFECTION_PLAY_LOSE_GAIN = 1;
+const AFFECTION_PLAY_WINDOW_MS = 4*3600*1000;
+const AFFECTION_PLAY_MAX_PER_WINDOW = 3;
+const AFFECTION_DEATH_LOSS = 2;
+
+function heartsOf(pet) {
+  if(!pet) return 0;
+  return Math.min(5, Math.floor((pet.affection||0) / 20));
+}
+
+function gainAffection(pet, amount) {
+  pet.affection = Math.max(0, Math.min(AFFECTION_MAX, (pet.affection||0) + amount));
+}
+
+function canFeedPet(pet) {
+  return Date.now() - (pet.lastFeedAt||0) >= AFFECTION_FEED_COOLDOWN_MS;
+}
+
+function feedPetTimeLeft(pet) {
+  return Math.max(0, AFFECTION_FEED_COOLDOWN_MS - (Date.now() - (pet.lastFeedAt||0)));
+}
+
+function playsLeftForPet(pet) {
+  const now = Date.now();
+  if(now - (pet.playWindowStart||0) >= AFFECTION_PLAY_WINDOW_MS) return AFFECTION_PLAY_MAX_PER_WINDOW;
+  return Math.max(0, AFFECTION_PLAY_MAX_PER_WINDOW - (pet.playsUsedInWindow||0));
+}
+
+function usePlayAttempt(pet) {
+  const now = Date.now();
+  if(now - (pet.playWindowStart||0) >= AFFECTION_PLAY_WINDOW_MS) { pet.playWindowStart = now; pet.playsUsedInWindow = 0; }
+  pet.playsUsedInWindow = (pet.playsUsedInWindow||0) + 1;
+}
+
+// Stage-scaled daily gift pool — reuses the game's existing stage-tiered item pools
+function affectionGiftPool() {
+  const pool = [{t:'hp_potion',w:20},{t:'super_potion',w:12},{t:'power_shard',w:8},{t:'speed_shard',w:8},{t:'guard_shard',w:8},{t:'essence',w:6}];
+  if(stage>=10||hardMode||hellMode) pool.push({t:'max_potion',w:8},{t:'map_scroll',w:5});
+  if(stage>=20||hardMode||hellMode) pool.push({t:'artifact_box',w:3});
+  if(hardMode||hellMode) pool.push({t:'weapon_box',w:3});
+  return pool;
+}
+
+function tryGrantDailyGift(pet) {
+  if(heartsOf(pet) < 4) return null;
+  const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+  if(pet.lastGiftDay === today) return null;
+  pet.lastGiftDay = today;
+  const pool = affectionGiftPool();
+  const totalW = pool.reduce((a,p)=>a+p.w,0);
+  let r = Math.random()*totalW;
+  let picked = pool[0].t;
+  for(const p of pool) { if(r<p.w) { picked=p.t; break; } r-=p.w; }
+  addItemToInventory(picked);
+  return picked;
 }
 
 function applyShinyStats(pet) {
@@ -3189,6 +3259,8 @@ function getEffStat(stat) {
     if(stat==='atk' && battleState.ghostAtkMult !== undefined) val = Math.round(val * battleState.ghostAtkMult);
     if(stat==='spd' && battleState.ghostSpdMult !== undefined) val = Math.round(val * battleState.ghostSpdMult);
   }
+  // Playground Affection bond bonus: +1% ATK/DEF/SPD per heart (max 5 hearts), battle-only
+  if((stat==='atk'||stat==='def'||stat==='spd') && heartsOf(creature)>0) val = Math.round(val * (1 + 0.01*heartsOf(creature)));
   return val;
 }
 
@@ -7979,6 +8051,7 @@ function flashWeaponRegen(bs) {
 function endBattle(won) {
   if(!battleState || battleState.ended) return; // guard against a stray auto-battle tick re-firing endBattle during the delayed next-enemy transition
   battleState.ended = true; // idempotency only — do NOT also force battleState.waiting here: if any transition path below doesn't fully replace battleState, a stuck `waiting:true` would permanently block doTurn() on both sides
+  if(creature.hp<=0 && creature.phase!=='egg') gainAffection(creature, -AFFECTION_DEATH_LOSS);
   // ─ Achievement tracking (uniform across every mode/every battle end) ─
   const achMode = battleState.isDuelBattle ? 'duel' : battleState.isVsBattle ? 'vs' : battleState.isTowerBattle ? 'tower' : battleState.isRaidBattle ? 'raid' : battleState.isGauntletBattle ? 'gauntlet' : 'scout';
   if(['tower','raid','gauntlet','vs','duel'].includes(achMode)) achModesPlayed.add(achMode);
@@ -8764,6 +8837,7 @@ function render() {
   else if(state==='rest') renderRest();
   else if(state==='status') renderStatus();
   else if(state==='train') renderTrain();
+  else if(state==='playground') renderPlayground();
   else if(state==='tower') renderTower();
   else if(state==='gauntlet') renderGauntlet();
   else if(state==='raid') renderRaid();
@@ -9095,6 +9169,12 @@ const TRAIN_TYPES = [
 ];
 
 let trainPetIdx = 0;
+let trainReturnState = 'menu'; // where the Train screen's back button returns to
+let playgroundZoomIdx = null; // pet index currently zoomed-in on in Playground
+let playgroundMenu = null; // 'feed' | 'play' | null — sub-panel open in the zoom view
+let playgroundGiftToast = '';
+let playgroundGame = null; // active minigame state, e.g. {petIdx, phase, targetPos, startTime}
+let playgroundPositions = {}; // petIdx -> {x, dir, nextMoveAt} for the walking animation
 
 function getTrainPet() { return pets[trainPetIdx] || creature; }
 
@@ -10860,6 +10940,90 @@ function renderTrain() {
     </div>`;
 }
 
+function renderPlaygroundMinigame(pet) {
+  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:51;border-radius:inherit">
+    <div style="background:#0a0a18;border:2px solid #2277cc;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;width:85%;max-width:300px;align-items:center">
+      <div style="font-family:Kanit,sans-serif;font-size:13px;color:#66bbff;text-align:center">${T('จับจังหวะ! แตะตอนแถบสีขาวอยู่ในโซนเขียว','Timing game! Tap when the white bar is in the green zone')}</div>
+      <div id="pgTrack" style="position:relative;width:100%;height:36px;background:#050510;border-radius:8px;overflow:hidden;border:1px solid #2a2a5a">
+        <div id="pgTargetZone" style="position:absolute;left:40%;width:20%;height:100%;background:rgba(60,220,120,0.35);border-left:2px solid #3adc78;border-right:2px solid #3adc78"></div>
+        <div id="pgMarker" class="pg-marker" style="position:absolute;top:0;width:18px;height:100%;background:#fff;border-radius:3px"></div>
+      </div>
+      <div data-pg-tap style="padding:12px 30px;border-radius:10px;background:#0a2a0a;border:2px solid #44cc44;font-family:Kanit,sans-serif;font-size:14px;color:#88ff88;cursor:pointer;font-weight:bold">TAP!</div>
+    </div>
+  </div>`;
+}
+
+function renderPlaygroundZoom(pet, idx) {
+  if(!pet) return '';
+  if(playgroundGame) return renderPlaygroundMinigame(pet);
+  const hearts = heartsOf(pet);
+  const canFeed = canFeedPet(pet);
+  const feedLeft = feedPetTimeLeft(pet);
+  const playsLeft = playsLeftForPet(pet);
+  const heartsHtml = [0,1,2,3,4].map(h=>`<span style="font-size:20px">${h<hearts?'💗':'🤍'}</span>`).join('');
+  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:inherit" data-pg-zoom-bg>
+    <div style="background:#0a0a18;border:2px solid #5040a0;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;width:85%;max-width:300px;align-items:center">
+      <div style="font-family:Kanit,sans-serif;font-size:14px;color:#c0a0ff">${petName(pet)}</div>
+      ${buildPetSvg(pet, 100, true)}
+      <div style="display:flex;gap:2px">${heartsHtml}</div>
+      <div style="font-size:11px;color:#8878b8">Affection ${pet.affection||0}%</div>
+      <div style="display:flex;gap:8px;width:100%">
+        <div data-pg-feed="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:${canFeed?'pointer':'default'};background:${canFeed?'#0a2a0a':'#151515'};border:1px solid ${canFeed?'#44cc44':'#2a2a2a'};color:${canFeed?'#88ff88':'#5a5a5a'}">
+          🍖 FEED${canFeed?'':`<br><span style="font-size:9px">${fmtTime(feedLeft)}</span>`}
+        </div>
+        <div data-pg-play="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:${playsLeft>0?'pointer':'default'};background:${playsLeft>0?'#0a1a2a':'#151515'};border:1px solid ${playsLeft>0?'#2277cc':'#2a2a2a'};color:${playsLeft>0?'#66bbff':'#5a5a5a'}">
+          🎮 PLAY<br><span style="font-size:9px">${playsLeft}/${AFFECTION_PLAY_MAX_PER_WINDOW}</span>
+        </div>
+        <div data-pg-train="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:#1a0a2a;border:1px solid #8040c0;color:#c080ff">
+          🏋️ TRAIN
+        </div>
+      </div>
+      <div data-pg-close style="margin-top:4px;padding:6px 20px;border-radius:8px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:11px;color:#5050a0;cursor:pointer">${T('ปิด','CLOSE')}</div>
+    </div>
+  </div>`;
+}
+
+function renderPlayground() {
+  labelStrip.textContent = '🌼 PLAYGROUND';
+  const roster = pets.filter(p=>p.phase!=='egg');
+  const laneW = roster.length>0 ? 100/roster.length : 100;
+
+  const petsHtml = roster.map((p,i)=>{
+    const idx = pets.indexOf(p);
+    if(!playgroundPositions[idx]) {
+      const lo = i*laneW+8, hi = (i+1)*laneW-8;
+      playgroundPositions[idx] = { x:(lo+hi)/2, dir:1 };
+    }
+    const pos = playgroundPositions[idx];
+    const hearts = heartsOf(p);
+    return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%">
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+        ${buildPetSvg(p, 60, false)}
+        <div style="display:flex;gap:1px;margin-top:2px;${pos.dir<0?'transform:scaleX(-1)':''}">${[0,1,2,3,4].map(h=>`<span style="font-size:9px">${h<hearts?'💗':'🤍'}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const zoomHtml = playgroundZoomIdx!==null ? renderPlaygroundZoom(pets[playgroundZoomIdx], playgroundZoomIdx) : '';
+  const giftToastHtml = playgroundGiftToast ? `
+    <div style="position:absolute;inset:0;background:#000000aa;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:#0e0e22;border:2px solid #5040a0;border-radius:14px;padding:20px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:240px;text-align:center">
+        <div style="font-size:13px;color:#c0b0ff;line-height:1.5">${playgroundGiftToast}</div>
+        <div data-pg-gift-close style="padding:8px 24px;border-radius:8px;background:#1a0a3a;border:2px solid #8040ff;font-family:Kanit,sans-serif;font-size:12px;color:#c080ff;cursor:pointer">OK</div>
+      </div>
+    </div>` : '';
+
+  screenContent.innerHTML = `
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:2px 0;position:relative">
+      ${giftToastHtml}
+      ${zoomHtml}
+      <div style="position:relative;flex:1;min-height:220px;border-radius:14px;overflow:hidden;background-image:url('Background/BG-Grass-Day.jpg');background-size:cover;background-position:center bottom">
+        ${roster.length ? petsHtml : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Kanit,sans-serif;font-size:13px;text-align:center;padding:20px">${T('ยังไม่มี Pet ใน Party','No pets in your Party')}</div>`}
+      </div>
+      <div style="text-align:center;font-size:10px;color:#7060aa;font-family:Kanit,sans-serif">${T('แตะ Pet เพื่อ Feed / Play / Train','Tap a pet to Feed / Play / Train')}</div>
+    </div>`;
+}
+
 function renderEgg() {
   labelStrip.textContent = '✦ SYMBEAST ✦ TAP TO HATCH';
   const pct = Math.min(100, Math.round(creature.tapCount/creature.tapTarget*100));
@@ -10921,6 +11085,7 @@ function renderMenu() {
         <div class="menu-icon" data-action="action-menu" style="border-color:rgba(255,80,80,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.5),0 0 10px rgba(220,60,60,0.15)">⚔<span>ACTION</span></div>
         <div class="menu-icon" data-action="party">🐾<span>PARTY</span></div>
         <div class="menu-icon" data-action="train">🏋️<span>TRAIN</span></div>
+        <div class="menu-icon" data-action="playground">🌼<span>PLAYGROUND</span></div>
         <div class="menu-icon" data-action="inventory">🎒<span>ITEMS</span></div>
         <div class="menu-icon" data-action="shop" style="border-color:rgba(40,200,100,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.5),0 0 10px rgba(20,180,80,0.15)">🛒<span>SHOP</span></div>
       </div>
@@ -11586,6 +11751,8 @@ function renderBattleScreen() {
             const iwS = a1==='iron_will'?stacks1 : a2==='iron_will'?stacks2 : null;
             const badges=[];
             const badge=(txt,col,bg,sec)=>`<span style="font-size:10px;font-family:Kanit,sans-serif;color:${col};background:${bg};border:1px solid ${col};border-radius:4px;padding:1px 5px;animation:pulseRed ${sec}s ease-in-out infinite alternate">${txt}</span>`;
+            if(heartsOf(creature)>0)
+              badges.push(badge(`💕+${heartsOf(creature)}%`,'#ff88bb','rgba(60,10,40,0.7)','1.5'));
             if((a1==='execution'||a2==='execution') && hp<mhp*0.20)
               badges.push(badge('☠ EXECUTION','#ff2222','rgba(80,0,0,0.7)','0.7'));
             if((a1==='death_mark'||a2==='death_mark') && hp<mhp*0.30)
@@ -12030,7 +12197,8 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='vs_lobby') { vsTab='ladder'; pvpTab='deploy'; pvpBattleData=null; state='menu'; render(); }
   else if(state==='vs_result'){ vsTab='ladder'; pvpTab='deploy'; pvpBattleData=null; state='menu'; render(); }
   else if(state==='duel_result'){ state='menu'; render(); }
-  else if(state==='train')     { state='menu'; render(); }
+  else if(state==='train')     { state=trainReturnState; trainReturnState='menu'; render(); }
+  else if(state==='playground'){ playgroundZoomIdx=null; state='menu'; render(); }
   else if(state==='party')     { if(rebirthConfirm!==null){rebirthConfirm=null;render();}else if(partyDetailIdx!==null){partyDetailIdx=null;render();}else{partyViewTab='party';rebirthConfirm=null;state='menu';render();} }
   else if(state==='idle') { state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
@@ -12128,6 +12296,64 @@ screenContent.addEventListener('click', e=>{
       shopBuyConfirm = null; shopBuyQty = 1;
       saveGame(); render(); return;
     }
+    return;
+  }
+
+  if(state==='playground') {
+    if(el.closest('[data-pg-gift-close]')) { playgroundGiftToast=''; render(); return; }
+    if(playgroundGame) {
+      const tapBtn = el.closest('[data-pg-tap]');
+      if(tapBtn) {
+        SFX.click();
+        const pet = pets[playgroundGame.petIdx];
+        const marker = document.getElementById('pgMarker');
+        const zone = document.getElementById('pgTargetZone');
+        let win = false;
+        if(marker && zone) {
+          const mr = marker.getBoundingClientRect(), zr = zone.getBoundingClientRect();
+          win = (mr.left + mr.width/2) >= zr.left && (mr.left + mr.width/2) <= zr.right;
+        }
+        usePlayAttempt(pet);
+        gainAffection(pet, win ? AFFECTION_PLAY_WIN_GAIN : AFFECTION_PLAY_LOSE_GAIN);
+        playgroundGame = null;
+        playgroundGiftToast = win
+          ? T(`🎉 ชนะ! Affection +${AFFECTION_PLAY_WIN_GAIN}%`, `🎉 You won! Affection +${AFFECTION_PLAY_WIN_GAIN}%`)
+          : T(`😅 พลาด! Affection +${AFFECTION_PLAY_LOSE_GAIN}%`, `😅 Missed! Affection +${AFFECTION_PLAY_LOSE_GAIN}%`);
+        saveGame(); render(); return;
+      }
+      return;
+    }
+    const zoomBg = el.closest('[data-pg-zoom-bg]');
+    if((zoomBg && zoomBg===el) || el.closest('[data-pg-close]')) { playgroundZoomIdx=null; render(); return; }
+    const feedBtn = el.closest('[data-pg-feed]');
+    if(feedBtn) {
+      const idx = parseInt(feedBtn.dataset.pgFeed);
+      const pet = pets[idx];
+      if(pet && canFeedPet(pet)) {
+        SFX.click();
+        pet.lastFeedAt = Date.now();
+        gainAffection(pet, AFFECTION_FEED_GAIN);
+        playgroundGiftToast = T(`🍖 ให้อาหารแล้ว! Affection +${AFFECTION_FEED_GAIN}%`, `🍖 Fed! Affection +${AFFECTION_FEED_GAIN}%`);
+        saveGame(); render();
+      }
+      return;
+    }
+    const playBtn = el.closest('[data-pg-play]');
+    if(playBtn) {
+      const idx = parseInt(playBtn.dataset.pgPlay);
+      const pet = pets[idx];
+      if(pet && playsLeftForPet(pet)>0) { SFX.click(); playgroundGame = { petIdx: idx }; render(); }
+      return;
+    }
+    const trainBtn = el.closest('[data-pg-train]');
+    if(trainBtn) {
+      const idx = parseInt(trainBtn.dataset.pgTrain);
+      SFX.click();
+      trainPetIdx = idx; trainReturnState = 'playground'; playgroundZoomIdx = null;
+      state = 'train'; render(); return;
+    }
+    const petTap = el.closest('[data-pg-pet]');
+    if(petTap) { SFX.click(); playgroundZoomIdx = parseInt(petTap.dataset.pgPet); render(); return; }
     return;
   }
 
@@ -12452,7 +12678,16 @@ screenContent.addEventListener('click', e=>{
     if(action==='action-menu') { actionMenuOpen=true; render(); return; }
     if(action==='scout')     { actionMenuOpen=false; enterScout(); return; }
     if(el.closest('[data-action-menu-close]') && !el.closest('.menu-icon')) { actionMenuOpen=false; render(); return; }
-    else if(action==='train')     { state='train'; render(); }
+    else if(action==='train')     { trainReturnState='menu'; state='train'; render(); }
+    else if(action==='playground'){
+      state='playground';
+      const gifts = pets.filter(p=>p.phase!=='egg').map(p=>({p, got:tryGrantDailyGift(p)})).filter(x=>x.got);
+      if(gifts.length) {
+        playgroundGiftToast = gifts.map(g=>T(`🎁 ${petName(g.p)} มอบ ${ITEMS[g.got]?.icon||''} ${ITEMS[g.got]?.name||g.got} ให้!`,`🎁 ${petName(g.p)} gave you ${ITEMS[g.got]?.icon||''} ${ITEMS[g.got]?.name||g.got}!`)).join('<br>');
+        saveGame();
+      }
+      render();
+    }
     else if(action==='party')     { state='party'; render(); }
     else if(action==='inventory') { state='inventory'; render(); }
     else if(action==='evolve' || action==='symbols') { state='evolve'; render(); }
@@ -15844,6 +16079,27 @@ setInterval(() => {
     if((state==='scout' || state==='menu') && !helpOpen && !settingsOpen && !minigameOpen && !mgPendingType) render();
   }
 }, 60000);
+
+// Playground: wander pets to a new random spot within their lane every ~3s.
+// Mutates the existing DOM node's `left` directly (no full render) so the CSS
+// `transition:left` on .pg-pet actually animates instead of snapping.
+setInterval(() => {
+  if(state !== 'playground' || playgroundZoomIdx !== null || playgroundGame) return;
+  const roster = pets.filter(p=>p.phase!=='egg');
+  const laneW = roster.length>0 ? 100/roster.length : 100;
+  roster.forEach((p,i) => {
+    const idx = pets.indexOf(p);
+    const el = document.querySelector(`[data-pg-pet="${idx}"]`);
+    if(!el) return;
+    const lo = i*laneW+8, hi = (i+1)*laneW-8;
+    const cur = playgroundPositions[idx] || { x:(lo+hi)/2, dir:1 };
+    const newX = lo + Math.random()*Math.max(1, hi-lo);
+    const dir = newX < cur.x ? -1 : 1;
+    playgroundPositions[idx] = { x:newX, dir };
+    el.style.left = newX+'%';
+    el.classList.toggle('face-left', dir<0);
+  });
+}, 3000);
 </script>
 </body>
 </html>

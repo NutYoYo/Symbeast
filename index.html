@@ -555,7 +555,7 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; }
+.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 0.7s linear infinite alternate; }
@@ -16971,8 +16971,8 @@ function endPetDrag(e) {
     playgroundDragJustEnded = idx;
     setTimeout(() => { playgroundDragJustEnded = null; }, 200);
   }
-  // Resume wander
-  wanderTimers[idx] = setTimeout(() => wanderPet(idx), 500);
+  // Resume wander (longer delay after manual drag so pet stays where placed)
+  wanderTimers[idx] = setTimeout(() => wanderPet(idx), wasMoved ? 5000 : 500);
 }
 
 // Resting pets regen 1% Max HP every 5s, auto-exit when full

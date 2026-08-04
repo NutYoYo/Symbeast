@@ -16945,9 +16945,6 @@ function startPetDrag(e) {
 function movePetDrag(e) {
   if(!playgroundDrag) return;
   if(!playgroundDrag.ready) return; // not yet held long enough
-  // Defense-in-depth: if a mouseup somehow got missed (e.g. released over an element that
-  // swallowed it), don't keep dragging on later mousemoves where the button isn't held anymore.
-  if(!e.touches && e.buttons === 0) { endPetDrag(e); return; }
   const pt = e.touches ? e.touches[0] : e;
   const dx = pt.clientX - playgroundDrag.startX;
   const dy = pt.clientY - playgroundDrag.startY;

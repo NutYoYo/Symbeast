@@ -555,8 +555,8 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; -webkit-user-drag:none; user-drag:none; -webkit-user-select:none; user-select:none; }
-.pg-pet img { -webkit-user-drag:none; user-drag:none; pointer-events:none; }
+.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; -webkit-user-drag:none; user-drag:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+.pg-pet img { -webkit-user-drag:none; user-drag:none; pointer-events:none; -webkit-touch-callout:none; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 0.7s linear infinite alternate; }

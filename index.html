@@ -9273,6 +9273,7 @@ const DOLL_COST = 2500;
 const DOLL_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
 let playgroundDrag = null; // { idx, startX, startY, moved } — pet drag state
 let playgroundDragJustEnded = null; // pet idx that just finished being dragged (blocks click→zoom)
+let playgroundDragHoldTimer = null; // 2s hold-to-drag timer
 
 function getTrainPet() { return pets[trainPetIdx] || creature; }
 
@@ -16909,7 +16910,6 @@ function startPetDrag(e) {
   const idx = parseInt(petEl.dataset.pgPet);
   const groundEl = document.querySelector('[data-pg-ground]');
   if(!groundEl) return;
-  e.preventDefault();
   // Read actual visual position from DOM (may be mid-transition) and sync
   const rect = groundEl.getBoundingClientRect();
   const style = getComputedStyle(petEl);
@@ -16919,18 +16919,26 @@ function startPetDrag(e) {
     playgroundPositions[idx] = { x:(px/rect.width)*100, y:(py/rect.height)*100, dir: playgroundPositions[idx]?.dir || 1 };
   }
   const pt = e.touches ? e.touches[0] : e;
-  playgroundDrag = { idx, startX: pt.clientX, startY: pt.clientY, moved: false };
-  // Pause wander for this pet while dragging
+  // Pause wander immediately during hold (resumed in endPetDrag if not dragged)
   if(wanderTimers[idx]) { clearTimeout(wanderTimers[idx]); wanderTimers[idx] = null; }
+  // Start hold timer — after 2s, drag activates
+  playgroundDrag = { idx, startX: pt.clientX, startY: pt.clientY, moved: false, ready: false };
+  clearTimeout(playgroundDragHoldTimer);
+  playgroundDragHoldTimer = setTimeout(() => {
+    if(playgroundDrag && playgroundDrag.idx === idx) {
+      playgroundDrag.ready = true;
+    }
+  }, e.touches ? 600 : 1000); // 0.6s on mobile, 1s on desktop
 }
 
 function movePetDrag(e) {
   if(!playgroundDrag) return;
-  e.preventDefault();
+  if(!playgroundDrag.ready) return; // not yet held long enough
   const pt = e.touches ? e.touches[0] : e;
   const dx = pt.clientX - playgroundDrag.startX;
   const dy = pt.clientY - playgroundDrag.startY;
   if(Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+  e.preventDefault(); // only prevent default when actually dragging
   playgroundDrag.moved = true;
   const groundEl = document.querySelector('[data-pg-ground]');
   if(!groundEl) return;
@@ -16952,6 +16960,8 @@ function movePetDrag(e) {
 }
 
 function endPetDrag(e) {
+  clearTimeout(playgroundDragHoldTimer);
+  playgroundDragHoldTimer = null;
   if(!playgroundDrag) return;
   const idx = playgroundDrag.idx;
   const wasMoved = playgroundDrag.moved;
@@ -16961,7 +16971,7 @@ function endPetDrag(e) {
     playgroundDragJustEnded = idx;
     setTimeout(() => { playgroundDragJustEnded = null; }, 200);
   }
-  // Resume wander for this pet
+  // Resume wander
   wanderTimers[idx] = setTimeout(() => wanderPet(idx), 500);
 }
 

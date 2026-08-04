@@ -555,7 +555,7 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; transition:left 5s linear, bottom 5s linear; cursor:pointer; }
+.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:pointer; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 1.3s linear infinite alternate; }
@@ -10993,7 +10993,7 @@ function renderPlayground() {
   const petsHtml = roster.map((p,i)=>{
     const idx = pets.indexOf(p);
     if(!playgroundPositions[idx]) {
-      const lo = i*laneW+8, hi = (i+1)*laneW-8;
+      const lo = i*laneW+10, hi = (i+1)*laneW-10;
       playgroundPositions[idx] = { x:(lo+hi)/2, y:8+Math.random()*40, dir:1 };
     }
     const pos = playgroundPositions[idx];
@@ -16079,7 +16079,7 @@ setInterval(() => {
   }
 }, 60000);
 
-// Playground: wander pets to a new random spot within their lane every ~6.5s.
+// Playground: wander pets to a new random spot within their lane every ~10s.
 // Mutates the existing DOM node's `left` directly (no full render) so the CSS
 // `transition:left` on .pg-pet actually animates instead of snapping.
 setInterval(() => {
@@ -16090,7 +16090,7 @@ setInterval(() => {
     const idx = pets.indexOf(p);
     const el = document.querySelector(`[data-pg-pet="${idx}"]`);
     if(!el) return;
-    const lo = i*laneW+8, hi = (i+1)*laneW-8;
+    const lo = i*laneW+10, hi = (i+1)*laneW-10;
     const cur = playgroundPositions[idx] || { x:(lo+hi)/2, y:8+Math.random()*40, dir:1 };
     const newX = lo + Math.random()*Math.max(1, hi-lo);
     const newY = 8 + Math.random()*40;
@@ -16101,7 +16101,7 @@ setInterval(() => {
     el.style.zIndex = Math.round(100 - newY);
     el.classList.toggle('face-left', dir<0);
   });
-}, 6500);
+}, 10000);
 </script>
 </body>
 </html>

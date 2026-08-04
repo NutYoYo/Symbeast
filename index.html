@@ -558,7 +558,7 @@ body::after {
 .pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:pointer; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
-.pg-marker { animation:pgSlide 1.3s linear infinite alternate; }
+.pg-marker { animation:pgSlide 0.7s linear infinite alternate; }
 
 @keyframes rpsPickPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 @keyframes rpsClashBurst { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.2) rotate(0deg)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(20deg)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(-10deg)} }
@@ -3028,13 +3028,20 @@ function newPet() {
 // PET PLAYGROUND — Affection system
 // ============================================================
 const AFFECTION_MAX = 100;
-const AFFECTION_FEED_GAIN = 2;
 const AFFECTION_FEED_COOLDOWN_MS = 4*3600*1000;
 const AFFECTION_PLAY_WIN_GAIN = 2;
 const AFFECTION_PLAY_LOSE_GAIN = 1;
 const AFFECTION_PLAY_WINDOW_MS = 4*3600*1000;
 const AFFECTION_PLAY_MAX_PER_WINDOW = 3;
 const AFFECTION_DEATH_LOSS = 2;
+
+const FOOD_TIERS = [
+  { id:'cheap', icon:'🍗',  price:100,  gain:1 },
+  { id:'mid',   icon:'🍖',  price:500,  gain:2 },
+  { id:'rare',  icon:'🍗✨', price:1000, gain:4 },
+];
+
+function isPetHungry(pet) { return canFeedPet(pet); }
 
 function heartsOf(pet) {
   if(!pet) return 0;
@@ -3047,10 +3054,6 @@ function gainAffection(pet, amount) {
 
 function canFeedPet(pet) {
   return Date.now() - (pet.lastFeedAt||0) >= AFFECTION_FEED_COOLDOWN_MS;
-}
-
-function feedPetTimeLeft(pet) {
-  return Math.max(0, AFFECTION_FEED_COOLDOWN_MS - (Date.now() - (pet.lastFeedAt||0)));
 }
 
 function playsLeftForPet(pet) {
@@ -9174,7 +9177,10 @@ let playgroundZoomIdx = null; // pet index currently zoomed-in on in Playground
 let playgroundMenu = null; // 'feed' | 'play' | null — sub-panel open in the zoom view
 let playgroundGiftToast = '';
 let playgroundGame = null; // active minigame state, e.g. {petIdx, phase, targetPos, startTime}
-let playgroundPositions = {}; // petIdx -> {x, dir, nextMoveAt} for the walking animation
+let playgroundPositions = {}; // petIdx -> {x, y, dir, seeking} for the walking animation
+let playgroundSelectedFood = null; // FOOD_TIERS id currently selected to throw, or null
+let playgroundFoodDrop = null; // {x, y, tierId, petIdx} while food is on the ground / a pet is en route
+let playgroundGamePick = null; // 'timing' | 'rps' | 'dice' — which Play minigame is active, null = show picker
 
 function getTrainPet() { return pets[trainPetIdx] || creature; }
 
@@ -10940,49 +10946,133 @@ function renderTrain() {
     </div>`;
 }
 
-function renderPlaygroundMinigame(pet) {
-  const zoomBg = (()=>{ const b = BATTLE_BGS[currentBiome]||BATTLE_BGS.desert; const hr=new Date().getHours(); return (hr>=6&&hr<18)?b.day:b.night; })();
-  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;border-radius:inherit">
-    <div style="background-image:linear-gradient(rgba(3,2,12,0.55),rgba(3,2,12,0.72)),url('${zoomBg}');background-size:cover;background-position:center;border:2px solid #2277cc;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;width:85%;max-width:300px;align-items:center">
-      <div style="font-family:Kanit,sans-serif;font-size:13px;color:#66bbff;text-align:center">${T('จับจังหวะ! แตะตอนแถบสีขาวอยู่ในโซนเขียว','Timing game! Tap when the white bar is in the green zone')}</div>
-      <div id="pgTrack" style="position:relative;width:100%;height:36px;background:#050510;border-radius:8px;overflow:hidden;border:1px solid #2a2a5a">
-        <div id="pgTargetZone" style="position:absolute;left:40%;width:20%;height:100%;background:rgba(60,220,120,0.35);border-left:2px solid #3adc78;border-right:2px solid #3adc78"></div>
-        <div id="pgMarker" class="pg-marker" style="position:absolute;top:0;width:18px;height:100%;background:#fff;border-radius:3px"></div>
-      </div>
-      <div data-pg-tap style="padding:12px 30px;border-radius:10px;background:#0a2a0a;border:2px solid #44cc44;font-family:Kanit,sans-serif;font-size:14px;color:#88ff88;cursor:pointer;font-weight:bold">TAP!</div>
+function playgroundZoomBg() {
+  const b = BATTLE_BGS[currentBiome]||BATTLE_BGS.desert; const hr=new Date().getHours(); return (hr>=6&&hr<18)?b.day:b.night;
+}
+function playgroundPopupOpen(borderColor, inner) {
+  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:199;border-radius:inherit" data-pg-zoom-bg>
+    <div style="background-image:linear-gradient(rgba(3,2,12,0.55),rgba(3,2,12,0.72)),url('${playgroundZoomBg()}');background-size:cover;background-position:center;border:2px solid ${borderColor};border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;width:85%;max-width:300px;align-items:center">
+      ${inner}
     </div>
   </div>`;
 }
 
+const PLAYGROUND_GAMES = [
+  { id:'timing', icon:'⏱️', label:T('จับจังหวะ','Timing') },
+  { id:'rps',    icon:'✊',  label:T('ใจตรงกัน','In Sync') },
+  { id:'dice',   icon:'🎲', label:T('ทอยลูกเต๋า','Dice Duel') },
+];
+
+function renderPlaygroundGamePicker() {
+  return playgroundPopupOpen('#2277cc', `
+    <div style="font-family:Kanit,sans-serif;font-size:13px;color:#66bbff;text-align:center">${T('เลือกเกม','Choose a game')}</div>
+    <div style="display:flex;gap:10px">
+      ${PLAYGROUND_GAMES.map(g=>`<div data-pg-game-pick="${g.id}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:10px;background:#0a1a2a;border:2px solid #2277cc;cursor:pointer;font-family:Kanit,sans-serif;font-size:10px;color:#66bbff">
+        <span style="font-size:26px">${g.icon}</span>${g.label}
+      </div>`).join('')}
+    </div>
+    <div data-pg-close style="padding:6px 20px;border-radius:8px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:11px;color:#5050a0;cursor:pointer">${T('ปิด','CLOSE')}</div>
+  `);
+}
+
+function renderPlaygroundTimingGame() {
+  return playgroundPopupOpen('#2277cc', `
+    <div style="font-family:Kanit,sans-serif;font-size:13px;color:#66bbff;text-align:center">${T('จับจังหวะ! แตะตอนแถบสีขาวอยู่ในโซนเขียว','Timing game! Tap when the white bar is in the green zone')}</div>
+    <div id="pgTrack" style="position:relative;width:100%;height:36px;background:#050510;border-radius:8px;overflow:hidden;border:1px solid #2a2a5a">
+      <div id="pgTargetZone" style="position:absolute;left:40%;width:20%;height:100%;background:rgba(60,220,120,0.35);border-left:2px solid #3adc78;border-right:2px solid #3adc78"></div>
+      <div id="pgMarker" class="pg-marker" style="position:absolute;top:0;width:18px;height:100%;background:#fff;border-radius:3px"></div>
+    </div>
+    <div data-pg-tap style="padding:12px 30px;border-radius:10px;background:#0a2a0a;border:2px solid #44cc44;font-family:Kanit,sans-serif;font-size:14px;color:#88ff88;cursor:pointer;font-weight:bold">TAP!</div>
+  `);
+}
+
+function renderPlaygroundRpsGame() {
+  const CHOICES = [{id:'rock',icon:'✊'},{id:'paper',icon:'✋'},{id:'scissors',icon:'✌️'}];
+  return playgroundPopupOpen('#cc66ff', `
+    <div style="font-family:Kanit,sans-serif;font-size:13px;color:#d0a0ff;text-align:center">${T('ใจตรงกัน! เลือกให้เหมือน Pet ถึงจะชนะ',"In Sync! Match the pet's pick to win")}</div>
+    <div style="display:flex;gap:10px">
+      ${CHOICES.map(c=>`<div data-pg-rps="${c.id}" style="font-size:32px;cursor:pointer;padding:12px 16px;border-radius:10px;background:#1a0a2a;border:2px solid #cc66ff">${c.icon}</div>`).join('')}
+    </div>
+  `);
+}
+
+function renderPlaygroundDiceGame() {
+  return playgroundPopupOpen('#ffaa44', `
+    <div style="font-family:Kanit,sans-serif;font-size:13px;color:#ffcc88;text-align:center">${T('ทอยลูกเต๋าแข่งกับ Pet! ใครแต้มเยอะกว่าชนะ (เสมอทอยใหม่)','Dice duel vs the pet! Higher roll wins (ties reroll)')}</div>
+    <div data-pg-dice-roll style="padding:12px 30px;border-radius:10px;background:#2a1a00;border:2px solid #ffaa44;font-family:Kanit,sans-serif;font-size:14px;color:#ffcc88;cursor:pointer;font-weight:bold">🎲 ROLL!</div>
+  `);
+}
+
+function renderPlaygroundGameFlow() {
+  if(!playgroundGamePick) return renderPlaygroundGamePicker();
+  if(playgroundGamePick==='timing') return renderPlaygroundTimingGame();
+  if(playgroundGamePick==='rps') return renderPlaygroundRpsGame();
+  if(playgroundGamePick==='dice') return renderPlaygroundDiceGame();
+  return renderPlaygroundGamePicker();
+}
+
 function renderPlaygroundZoom(pet, idx) {
   if(!pet) return '';
-  if(playgroundGame) return renderPlaygroundMinigame(pet);
+  if(playgroundGame) return renderPlaygroundGameFlow();
   const hearts = heartsOf(pet);
-  const canFeed = canFeedPet(pet);
-  const feedLeft = feedPetTimeLeft(pet);
   const playsLeft = playsLeftForPet(pet);
   const heartsHtml = [0,1,2,3,4].map(h=>`<span style="font-size:20px">${h<hearts?'💗':'🤍'}</span>`).join('');
-  const zoomBg = (()=>{ const b = BATTLE_BGS[currentBiome]||BATTLE_BGS.desert; const hr=new Date().getHours(); return (hr>=6&&hr<18)?b.day:b.night; })();
-  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:199;border-radius:inherit" data-pg-zoom-bg>
-    <div style="background-image:linear-gradient(rgba(3,2,12,0.55),rgba(3,2,12,0.72)),url('${zoomBg}');background-size:cover;background-position:center;border:2px solid #5040a0;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;width:85%;max-width:300px;align-items:center">
-      <div style="font-family:Kanit,sans-serif;font-size:14px;color:#c0a0ff">${petName(pet)}</div>
-      ${buildPetSvg(pet, 100, true)}
-      <div style="display:flex;gap:2px">${heartsHtml}</div>
-      <div style="font-size:11px;color:#8878b8">Affection ${pet.affection||0}%</div>
-      <div style="display:flex;gap:8px;width:100%">
-        <div data-pg-feed="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:${canFeed?'pointer':'default'};background:${canFeed?'#0a2a0a':'#151515'};border:1px solid ${canFeed?'#44cc44':'#2a2a2a'};color:${canFeed?'#88ff88':'#5a5a5a'}">
-          🍖 FEED${canFeed?'':`<br><span style="font-size:9px">${fmtTime(feedLeft)}</span>`}
-        </div>
-        <div data-pg-play="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:${playsLeft>0?'pointer':'default'};background:${playsLeft>0?'#0a1a2a':'#151515'};border:1px solid ${playsLeft>0?'#2277cc':'#2a2a2a'};color:${playsLeft>0?'#66bbff':'#5a5a5a'}">
-          🎮 PLAY<br><span style="font-size:9px">${playsLeft}/${AFFECTION_PLAY_MAX_PER_WINDOW}</span>
-        </div>
-        <div data-pg-train="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:#1a0a2a;border:1px solid #8040c0;color:#c080ff">
-          🏋️ TRAIN
-        </div>
+  return playgroundPopupOpen('#5040a0', `
+    <div style="font-family:Kanit,sans-serif;font-size:14px;color:#c0a0ff">${petName(pet)}</div>
+    ${buildPetSvg(pet, 100, true)}
+    <div style="display:flex;gap:2px">${heartsHtml}</div>
+    <div style="font-size:11px;color:#8878b8">Affection ${pet.affection||0}%</div>
+    <div style="display:flex;gap:8px;width:100%">
+      <div data-pg-play="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:${playsLeft>0?'pointer':'default'};background:${playsLeft>0?'#0a1a2a':'#151515'};border:1px solid ${playsLeft>0?'#2277cc':'#2a2a2a'};color:${playsLeft>0?'#66bbff':'#5a5a5a'}">
+        🎮 PLAY<br><span style="font-size:9px">${playsLeft}/${AFFECTION_PLAY_MAX_PER_WINDOW}</span>
       </div>
-      <div data-pg-close style="margin-top:4px;padding:6px 20px;border-radius:8px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:11px;color:#5050a0;cursor:pointer">${T('ปิด','CLOSE')}</div>
+      <div data-pg-train="${idx}" style="flex:1;padding:10px 4px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:#1a0a2a;border:1px solid #8040c0;color:#c080ff">
+        🏋️ TRAIN
+      </div>
     </div>
-  </div>`;
+    <div data-pg-close style="margin-top:4px;padding:6px 20px;border-radius:8px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:11px;color:#5050a0;cursor:pointer">${T('ปิด','CLOSE')}</div>
+  `);
+}
+
+// Sends pet `idx` walking to (dropX,dropY) to eat the food dropped there, at a
+// speed proportional to distance rather than the fixed wander duration. Mutates
+// the DOM directly after the initial render (same trick as the wander interval)
+// so the CSS transition actually animates from the pet's current spot.
+function startPgSeek(idx, dropX, dropY, tierId) {
+  playgroundFoodDrop = { x:dropX, y:dropY, tierId, petIdx:idx };
+  render();
+  const pos = playgroundPositions[idx] || { x:dropX, y:dropY, dir:1 };
+  const dist = Math.max(1, Math.hypot(dropX-pos.x, dropY-pos.y));
+  const dur = Math.max(1, dist/14);
+  const dir = dropX < pos.x ? -1 : 1;
+  requestAnimationFrame(() => {
+    const el = document.querySelector(`[data-pg-pet="${idx}"]`);
+    if(el) {
+      el.style.transition = `left ${dur}s linear, bottom ${dur}s linear`;
+      el.style.left = dropX+'%';
+      el.style.bottom = dropY+'%';
+      el.style.zIndex = 300;
+      el.classList.toggle('face-left', dir<0);
+    }
+  });
+  playgroundPositions[idx] = { x:dropX, y:dropY, dir, seeking:true };
+  setTimeout(() => arrivePgFood(idx, tierId), dur*1000 + 80);
+}
+
+function arrivePgFood(idx, tierId) {
+  if(!playgroundFoodDrop || playgroundFoodDrop.petIdx!==idx) return; // drop was cancelled/replaced
+  const pet = pets[idx];
+  const tier = FOOD_TIERS.find(f=>f.id===tierId);
+  if(pet && tier) {
+    pet.lastFeedAt = Date.now();
+    gainAffection(pet, tier.gain);
+    playgroundGiftToast = T(`${tier.icon} ให้อาหารสำเร็จ! Affection +${tier.gain}%`, `${tier.icon} Fed! Affection +${tier.gain}%`);
+  }
+  playgroundFoodDrop = null;
+  if(playgroundPositions[idx]) playgroundPositions[idx].seeking = false;
+  const el = document.querySelector(`[data-pg-pet="${idx}"]`);
+  if(el) el.style.transition = '';
+  saveGame(); render();
 }
 
 function renderPlayground() {
@@ -10998,10 +11088,16 @@ function renderPlayground() {
     }
     const pos = playgroundPositions[idx];
     const zIndex = Math.round(100 - pos.y);
+    const hungry = isPetHungry(p) && !pos.seeking;
     return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
-      <div class="pg-pet-sprite">${buildPetSvg(p, 84, false)}</div>
+      <div style="position:relative">
+        ${hungry?`<div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:16px;animation:bob 1.2s ease-in-out infinite;pointer-events:none">🍖</div>`:''}
+        <div class="pg-pet-sprite">${buildPetSvg(p, 84, false)}</div>
+      </div>
     </div>`;
   }).join('');
+
+  const foodDropHtml = playgroundFoodDrop ? `<div style="position:absolute;left:${playgroundFoodDrop.x}%;bottom:${playgroundFoodDrop.y}%;transform:translateX(-50%);font-size:26px;z-index:1;pointer-events:none">${FOOD_TIERS.find(f=>f.id===playgroundFoodDrop.tierId)?.icon||'🍖'}</div>` : '';
 
   const zoomHtml = playgroundZoomIdx!==null ? renderPlaygroundZoom(pets[playgroundZoomIdx], playgroundZoomIdx) : '';
   const giftToastHtml = playgroundGiftToast ? `
@@ -11012,14 +11108,32 @@ function renderPlayground() {
       </div>
     </div>` : '';
 
+  const foodTrayHtml = `
+    <div style="display:flex;align-items:center;gap:6px">
+      ${FOOD_TIERS.map(f=>{
+        const selected = playgroundSelectedFood===f.id;
+        const canAfford = gold>=f.price;
+        return `<div data-pg-food-select="${f.id}" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 4px;border-radius:10px;cursor:pointer;background:${selected?'#2a1a00':'#0a0a18'};border:1px solid ${selected?'#ffaa44':'#2a2a3a'};opacity:${canAfford?1:0.5}">
+          <span style="font-size:18px">${f.icon}</span>
+          <span style="font-family:Kanit,sans-serif;font-size:10px;color:${selected?'#ffcc88':'#7060aa'}">${f.price}G <span style="color:#66bbff">+${f.gain}%</span></span>
+        </div>`;
+      }).join('')}
+    </div>`;
+
   screenContent.innerHTML = `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:2px 0;position:relative">
       ${giftToastHtml}
       ${zoomHtml}
-      <div style="position:relative;flex:1;min-height:220px;border-radius:14px;overflow:hidden;background-image:url('Background/BG-Grass-Day.jpg');background-size:cover;background-position:center bottom">
-        ${roster.length ? petsHtml : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Kanit,sans-serif;font-size:13px;text-align:center;padding:20px">${T('ยังไม่มี Pet ใน Party','No pets in your Party')}</div>`}
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#7060aa">${playgroundSelectedFood?T('แตะพื้นเพื่อโยนอาหาร','Tap the ground to toss the food'):T('เลือกอาหารเพื่อโยนให้ Pet','Pick a food to toss to a pet')}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:12px;color:#ffcc44">💰${gold.toLocaleString()}G</div>
       </div>
-      <div style="text-align:center;font-size:10px;color:#7060aa;font-family:Kanit,sans-serif">${T('แตะ Pet เพื่อ Feed / Play / Train','Tap a pet to Feed / Play / Train')}</div>
+      <div data-pg-ground style="position:relative;flex:1;min-height:220px;border-radius:14px;overflow:hidden;background-image:url('Background/BG-Grass-Day.jpg');background-size:cover;background-position:center bottom;cursor:${playgroundSelectedFood?'crosshair':'default'}">
+        ${roster.length ? petsHtml : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Kanit,sans-serif;font-size:13px;text-align:center;padding:20px;pointer-events:none">${T('ยังไม่มี Pet ใน Party','No pets in your Party')}</div>`}
+        ${foodDropHtml}
+      </div>
+      ${foodTrayHtml}
+      <div style="text-align:center;font-size:10px;color:#7060aa;font-family:Kanit,sans-serif">${T('แตะ Pet เพื่อ Play / Train','Tap a pet to Play / Train')}</div>
     </div>`;
 }
 
@@ -12301,10 +12415,20 @@ screenContent.addEventListener('click', e=>{
   if(state==='playground') {
     if(el.closest('[data-pg-gift-close]')) { playgroundGiftToast=''; render(); return; }
     if(playgroundGame) {
+      if(el.closest('[data-pg-close]')) { SFX.click(); playgroundGame=null; playgroundGamePick=null; render(); return; }
+      const gamePick = el.closest('[data-pg-game-pick]');
+      if(gamePick) { SFX.click(); playgroundGamePick = gamePick.dataset.pgGamePick; render(); return; }
+      const pet = pets[playgroundGame.petIdx];
+      const resolvePlay = (win, resultMsg) => {
+        usePlayAttempt(pet);
+        gainAffection(pet, win ? AFFECTION_PLAY_WIN_GAIN : AFFECTION_PLAY_LOSE_GAIN);
+        playgroundGame = null; playgroundGamePick = null;
+        playgroundGiftToast = resultMsg;
+        saveGame(); render();
+      };
       const tapBtn = el.closest('[data-pg-tap]');
       if(tapBtn) {
         SFX.click();
-        const pet = pets[playgroundGame.petIdx];
         const marker = document.getElementById('pgMarker');
         const zone = document.getElementById('pgTargetZone');
         let win = false;
@@ -12312,36 +12436,44 @@ screenContent.addEventListener('click', e=>{
           const mr = marker.getBoundingClientRect(), zr = zone.getBoundingClientRect();
           win = (mr.left + mr.width/2) >= zr.left && (mr.left + mr.width/2) <= zr.right;
         }
-        usePlayAttempt(pet);
-        gainAffection(pet, win ? AFFECTION_PLAY_WIN_GAIN : AFFECTION_PLAY_LOSE_GAIN);
-        playgroundGame = null;
-        playgroundGiftToast = win
+        resolvePlay(win, win
           ? T(`🎉 ชนะ! Affection +${AFFECTION_PLAY_WIN_GAIN}%`, `🎉 You won! Affection +${AFFECTION_PLAY_WIN_GAIN}%`)
-          : T(`😅 พลาด! Affection +${AFFECTION_PLAY_LOSE_GAIN}%`, `😅 Missed! Affection +${AFFECTION_PLAY_LOSE_GAIN}%`);
-        saveGame(); render(); return;
+          : T(`😅 พลาด! Affection +${AFFECTION_PLAY_LOSE_GAIN}%`, `😅 Missed! Affection +${AFFECTION_PLAY_LOSE_GAIN}%`));
+        return;
+      }
+      const rpsBtn = el.closest('[data-pg-rps]');
+      if(rpsBtn) {
+        SFX.click();
+        const CHOICES = ['rock','paper','scissors'];
+        const ICONS = {rock:'✊',paper:'✋',scissors:'✌️'};
+        const mine = rpsBtn.dataset.pgRps;
+        const theirs = CHOICES[Math.floor(Math.random()*3)];
+        const win = mine===theirs;
+        resolvePlay(win, win
+          ? T(`🎉 ใจตรงกัน! ${ICONS[mine]} เหมือนกัน Affection +${AFFECTION_PLAY_WIN_GAIN}%`, `🎉 In sync! Both picked ${ICONS[mine]} — Affection +${AFFECTION_PLAY_WIN_GAIN}%`)
+          : T(`😅 ไม่ตรงกัน (คุณ${ICONS[mine]} Pet${ICONS[theirs]}) Affection +${AFFECTION_PLAY_LOSE_GAIN}%`, `😅 Not in sync (you ${ICONS[mine]}, pet ${ICONS[theirs]}) — Affection +${AFFECTION_PLAY_LOSE_GAIN}%`));
+        return;
+      }
+      const diceBtn = el.closest('[data-pg-dice-roll]');
+      if(diceBtn) {
+        SFX.click();
+        let mine, theirs;
+        do { mine = 1+Math.floor(Math.random()*6); theirs = 1+Math.floor(Math.random()*6); } while(mine===theirs);
+        const win = mine>theirs;
+        resolvePlay(win, win
+          ? T(`🎉 ชนะ! คุณ🎲${mine} Pet🎲${theirs} Affection +${AFFECTION_PLAY_WIN_GAIN}%`, `🎉 You won! You 🎲${mine} vs Pet 🎲${theirs} — Affection +${AFFECTION_PLAY_WIN_GAIN}%`)
+          : T(`😅 แพ้! คุณ🎲${mine} Pet🎲${theirs} Affection +${AFFECTION_PLAY_LOSE_GAIN}%`, `😅 You lost! You 🎲${mine} vs Pet 🎲${theirs} — Affection +${AFFECTION_PLAY_LOSE_GAIN}%`));
+        return;
       }
       return;
     }
     const zoomBg = el.closest('[data-pg-zoom-bg]');
     if((zoomBg && zoomBg===el) || el.closest('[data-pg-close]')) { playgroundZoomIdx=null; render(); return; }
-    const feedBtn = el.closest('[data-pg-feed]');
-    if(feedBtn) {
-      const idx = parseInt(feedBtn.dataset.pgFeed);
-      const pet = pets[idx];
-      if(pet && canFeedPet(pet)) {
-        SFX.click();
-        pet.lastFeedAt = Date.now();
-        gainAffection(pet, AFFECTION_FEED_GAIN);
-        playgroundGiftToast = T(`🍖 ให้อาหารแล้ว! Affection +${AFFECTION_FEED_GAIN}%`, `🍖 Fed! Affection +${AFFECTION_FEED_GAIN}%`);
-        saveGame(); render();
-      }
-      return;
-    }
     const playBtn = el.closest('[data-pg-play]');
     if(playBtn) {
       const idx = parseInt(playBtn.dataset.pgPlay);
       const pet = pets[idx];
-      if(pet && playsLeftForPet(pet)>0) { SFX.click(); playgroundGame = { petIdx: idx }; render(); }
+      if(pet && playsLeftForPet(pet)>0) { SFX.click(); playgroundGame = { petIdx: idx }; playgroundGamePick = null; render(); }
       return;
     }
     const trainBtn = el.closest('[data-pg-train]');
@@ -12350,6 +12482,34 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       trainPetIdx = idx; trainReturnState = 'playground'; playgroundZoomIdx = null;
       state = 'train'; render(); return;
+    }
+    const foodSelectBtn = el.closest('[data-pg-food-select]');
+    if(foodSelectBtn) {
+      SFX.click();
+      const id = foodSelectBtn.dataset.pgFoodSelect;
+      playgroundSelectedFood = playgroundSelectedFood===id ? null : id;
+      render(); return;
+    }
+    const groundEl = el.closest('[data-pg-ground]');
+    if(groundEl && playgroundSelectedFood && !playgroundFoodDrop) {
+      const tier = FOOD_TIERS.find(f=>f.id===playgroundSelectedFood);
+      if(gold < tier.price) { playgroundGiftToast = T('💰 เงินไม่พอ!','💰 Not enough Gold!'); render(); return; }
+      const rect = groundEl.getBoundingClientRect();
+      const dropX = Math.min(92, Math.max(8, ((e.clientX-rect.left)/rect.width)*100));
+      const dropY = Math.min(48, Math.max(8, (1-(e.clientY-rect.top)/rect.height)*100));
+      let bestIdx=-1, bestDist=Infinity;
+      pets.forEach((p,idx)=>{
+        if(p.phase==='egg' || !isPetHungry(p) || playgroundPositions[idx]?.seeking) return;
+        const pos = playgroundPositions[idx] || {x:50,y:20};
+        const d = Math.hypot(dropX-pos.x, dropY-pos.y);
+        if(d<bestDist) { bestDist=d; bestIdx=idx; }
+      });
+      if(bestIdx===-1) { playgroundGiftToast = T('😴 ยังไม่มี Pet ตัวไหนหิวเลย','😴 No pet is hungry right now'); render(); return; }
+      SFX.click();
+      gold -= tier.price;
+      playgroundSelectedFood = null;
+      startPgSeek(bestIdx, dropX, dropY, tier.id);
+      return;
     }
     const petTap = el.closest('[data-pg-pet]');
     if(petTap) { SFX.click(); playgroundZoomIdx = parseInt(petTap.dataset.pgPet); render(); return; }
@@ -16088,6 +16248,7 @@ setInterval(() => {
   const laneW = roster.length>0 ? 100/roster.length : 100;
   roster.forEach((p,i) => {
     const idx = pets.indexOf(p);
+    if(playgroundPositions[idx]?.seeking) return; // en route to food — let startPgSeek's own timer finish the trip
     const el = document.querySelector(`[data-pg-pet="${idx}"]`);
     if(!el) return;
     const lo = i*laneW+10, hi = (i+1)*laneW-10;
@@ -16096,6 +16257,7 @@ setInterval(() => {
     const newY = 8 + Math.random()*40;
     const dir = newX < cur.x ? -1 : 1;
     playgroundPositions[idx] = { x:newX, y:newY, dir };
+    el.style.transition = '';
     el.style.left = newX+'%';
     el.style.bottom = newY+'%';
     el.style.zIndex = Math.round(100 - newY);

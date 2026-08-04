@@ -555,7 +555,7 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; transition:left 2.6s ease-in-out, bottom 2.6s ease-in-out; cursor:pointer; }
+.pg-pet { position:absolute; transition:left 5s linear, bottom 5s linear; cursor:pointer; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 1.3s linear infinite alternate; }
@@ -10941,8 +10941,9 @@ function renderTrain() {
 }
 
 function renderPlaygroundMinigame(pet) {
-  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:51;border-radius:inherit">
-    <div style="background:#0a0a18;border:2px solid #2277cc;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;width:85%;max-width:300px;align-items:center">
+  const zoomBg = (()=>{ const b = BATTLE_BGS[currentBiome]||BATTLE_BGS.desert; const hr=new Date().getHours(); return (hr>=6&&hr<18)?b.day:b.night; })();
+  return `<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(3,2,12,0.6),rgba(3,2,12,0.78)),url('${zoomBg}');background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;z-index:200;border-radius:inherit">
+    <div style="background:rgba(10,10,24,0.85);border:2px solid #2277cc;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;width:85%;max-width:300px;align-items:center">
       <div style="font-family:Kanit,sans-serif;font-size:13px;color:#66bbff;text-align:center">${T('จับจังหวะ! แตะตอนแถบสีขาวอยู่ในโซนเขียว','Timing game! Tap when the white bar is in the green zone')}</div>
       <div id="pgTrack" style="position:relative;width:100%;height:36px;background:#050510;border-radius:8px;overflow:hidden;border:1px solid #2a2a5a">
         <div id="pgTargetZone" style="position:absolute;left:40%;width:20%;height:100%;background:rgba(60,220,120,0.35);border-left:2px solid #3adc78;border-right:2px solid #3adc78"></div>
@@ -10961,8 +10962,9 @@ function renderPlaygroundZoom(pet, idx) {
   const feedLeft = feedPetTimeLeft(pet);
   const playsLeft = playsLeftForPet(pet);
   const heartsHtml = [0,1,2,3,4].map(h=>`<span style="font-size:20px">${h<hearts?'💗':'🤍'}</span>`).join('');
-  return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:inherit" data-pg-zoom-bg>
-    <div style="background:#0a0a18;border:2px solid #5040a0;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;width:85%;max-width:300px;align-items:center">
+  const zoomBg = (()=>{ const b = BATTLE_BGS[currentBiome]||BATTLE_BGS.desert; const hr=new Date().getHours(); return (hr>=6&&hr<18)?b.day:b.night; })();
+  return `<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(3,2,12,0.55),rgba(3,2,12,0.72)),url('${zoomBg}');background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;z-index:199;border-radius:inherit" data-pg-zoom-bg>
+    <div style="background:rgba(10,10,24,0.85);border:2px solid #5040a0;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;width:85%;max-width:300px;align-items:center">
       <div style="font-family:Kanit,sans-serif;font-size:14px;color:#c0a0ff">${petName(pet)}</div>
       ${buildPetSvg(pet, 100, true)}
       <div style="display:flex;gap:2px">${heartsHtml}</div>
@@ -10995,19 +10997,15 @@ function renderPlayground() {
       playgroundPositions[idx] = { x:(lo+hi)/2, y:8+Math.random()*40, dir:1 };
     }
     const pos = playgroundPositions[idx];
-    const hearts = heartsOf(p);
     const zIndex = Math.round(100 - pos.y);
     return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div class="pg-pet-sprite">${buildPetSvg(p, 60, false)}</div>
-        <div style="display:flex;gap:1px;margin-top:2px">${[0,1,2,3,4].map(h=>`<span style="font-size:9px">${h<hearts?'💗':'🤍'}</span>`).join('')}</div>
-      </div>
+      <div class="pg-pet-sprite">${buildPetSvg(p, 84, false)}</div>
     </div>`;
   }).join('');
 
   const zoomHtml = playgroundZoomIdx!==null ? renderPlaygroundZoom(pets[playgroundZoomIdx], playgroundZoomIdx) : '';
   const giftToastHtml = playgroundGiftToast ? `
-    <div style="position:absolute;inset:0;background:#000000aa;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="position:absolute;inset:0;background:#000000aa;z-index:201;display:flex;align-items:center;justify-content:center;padding:20px">
       <div style="background:#0e0e22;border:2px solid #5040a0;border-radius:14px;padding:20px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:240px;text-align:center">
         <div style="font-size:13px;color:#c0b0ff;line-height:1.5">${playgroundGiftToast}</div>
         <div data-pg-gift-close style="padding:8px 24px;border-radius:8px;background:#1a0a3a;border:2px solid #8040ff;font-family:Kanit,sans-serif;font-size:12px;color:#c080ff;cursor:pointer">OK</div>
@@ -16081,7 +16079,7 @@ setInterval(() => {
   }
 }, 60000);
 
-// Playground: wander pets to a new random spot within their lane every ~3s.
+// Playground: wander pets to a new random spot within their lane every ~6.5s.
 // Mutates the existing DOM node's `left` directly (no full render) so the CSS
 // `transition:left` on .pg-pet actually animates instead of snapping.
 setInterval(() => {
@@ -16103,7 +16101,7 @@ setInterval(() => {
     el.style.zIndex = Math.round(100 - newY);
     el.classList.toggle('face-left', dir<0);
   });
-}, 3000);
+}, 6500);
 </script>
 </body>
 </html>

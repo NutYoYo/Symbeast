@@ -3021,7 +3021,7 @@ function newPet() {
            buffExpiry:{atk:0,spd:0,def:0},
            trainCount:0, trainBonuses:{hp:0,atk:0,spd:0,def:0}, resting:false, deadRestUntil:0, locked:false, shiny:false,
            inheritedPassive:null,
-           affection:0, lastFeedAt:0, playWindowStart:0, playsUsedInWindow:0, lastGiftDay:'' };
+           affection:0, lastFeedAt:0, playWindowStart:0, playsUsedInWindow:0, lastGiftDay:'', pendingGiftItem:null };
 }
 
 // ============================================================
@@ -3036,10 +3036,15 @@ const AFFECTION_PLAY_MAX_PER_WINDOW = 3;
 const AFFECTION_DEATH_LOSS = 2;
 
 const FOOD_TIERS = [
-  { id:'cheap', icon:'🍗',  price:100,  gain:1 },
-  { id:'mid',   icon:'🍖',  price:500,  gain:2 },
-  { id:'rare',  icon:'🍗✨', price:1000, gain:4 },
+  { id:'cheap', icon:'🍗', price:100,  gain:1 },
+  { id:'mid',   icon:'🍽️', badge:'🐟', price:500,  gain:2 },
+  { id:'rare',  icon:'🍽️', badge:'🥩', price:1000, gain:4 },
 ];
+
+function pgFoodIcon(tier, size=18) {
+  if(!tier.badge) return `<span style="font-size:${size}px">${tier.icon}</span>`;
+  return `<span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;font-size:${size}px">${tier.icon}<span style="position:absolute;font-size:${Math.round(size*0.6)}px">${tier.badge}</span></span>`;
+}
 
 function isPetHungry(pet) { return canFeedPet(pet); }
 
@@ -3077,16 +3082,25 @@ function affectionGiftPool() {
   return pool;
 }
 
-function tryGrantDailyGift(pet) {
-  if(heartsOf(pet) < 4) return null;
+// Flags a gift as ready to claim (doesn't grant it yet) — the player taps the
+// 🎁 icon over the pet in Playground to actually collect it via claimPgGift().
+function tryFlagDailyGift(pet) {
+  if(heartsOf(pet) < 4 || pet.pendingGiftItem) return;
   const today = new Date(Date.now()+7*3600000).toISOString().slice(0,10);
-  if(pet.lastGiftDay === today) return null;
+  if(pet.lastGiftDay === today) return;
   pet.lastGiftDay = today;
   const pool = affectionGiftPool();
   const totalW = pool.reduce((a,p)=>a+p.w,0);
   let r = Math.random()*totalW;
   let picked = pool[0].t;
   for(const p of pool) { if(r<p.w) { picked=p.t; break; } r-=p.w; }
+  pet.pendingGiftItem = picked;
+}
+
+function claimPgGift(pet) {
+  if(!pet.pendingGiftItem) return null;
+  const picked = pet.pendingGiftItem;
+  pet.pendingGiftItem = null;
   addItemToInventory(picked);
   return picked;
 }
@@ -9181,6 +9195,9 @@ let playgroundPositions = {}; // petIdx -> {x, y, dir, seeking} for the walking 
 let playgroundSelectedFood = null; // FOOD_TIERS id currently selected to throw, or null
 let playgroundFoodDrop = null; // {x, y, tierId, petIdx} while food is on the ground / a pet is en route
 let playgroundGamePick = null; // 'timing' | 'rps' | 'dice' — which Play minigame is active, null = show picker
+let playgroundFeedMenuOpen = false; // whether the food-tier tray is expanded
+let playgroundDiceCycleVal = 1; // live value shown while the dice-roll number is spinning
+let playgroundDiceCycleTimer = null;
 
 function getTrainPet() { return pets[trainPetIdx] || creature; }
 
@@ -10996,10 +11013,26 @@ function renderPlaygroundRpsGame() {
   `);
 }
 
+const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+
+function startPgDiceCycle() {
+  stopPgDiceCycle();
+  playgroundDiceCycleTimer = setInterval(() => {
+    playgroundDiceCycleVal = 1 + Math.floor(Math.random()*6);
+    const el = document.getElementById('pgDiceFace');
+    if(el) el.textContent = DICE_FACES[playgroundDiceCycleVal-1];
+  }, 80);
+}
+function stopPgDiceCycle() {
+  if(playgroundDiceCycleTimer) { clearInterval(playgroundDiceCycleTimer); playgroundDiceCycleTimer = null; }
+}
+
 function renderPlaygroundDiceGame() {
+  if(!playgroundDiceCycleTimer) startPgDiceCycle();
   return playgroundPopupOpen('#ffaa44', `
-    <div style="font-family:Kanit,sans-serif;font-size:13px;color:#ffcc88;text-align:center">${T('ทอยลูกเต๋าแข่งกับ Pet! ใครแต้มเยอะกว่าชนะ (เสมอทอยใหม่)','Dice duel vs the pet! Higher roll wins (ties reroll)')}</div>
-    <div data-pg-dice-roll style="padding:12px 30px;border-radius:10px;background:#2a1a00;border:2px solid #ffaa44;font-family:Kanit,sans-serif;font-size:14px;color:#ffcc88;cursor:pointer;font-weight:bold">🎲 ROLL!</div>
+    <div style="font-family:Kanit,sans-serif;font-size:13px;color:#ffcc88;text-align:center">${T('แตะ STOP! ตอนได้เลขที่ต้องการ แข่งกับ Pet ใครแต้มเยอะกว่าชนะ (เสมอทอยใหม่)','Tap STOP! on the number you want. Higher roll than the pet wins (ties reroll)')}</div>
+    <div id="pgDiceFace" style="font-size:48px;line-height:1">${DICE_FACES[playgroundDiceCycleVal-1]}</div>
+    <div data-pg-dice-roll style="padding:12px 30px;border-radius:10px;background:#2a1a00;border:2px solid #ffaa44;font-family:Kanit,sans-serif;font-size:14px;color:#ffcc88;cursor:pointer;font-weight:bold">🛑 STOP!</div>
   `);
 }
 
@@ -11066,7 +11099,7 @@ function arrivePgFood(idx, tierId) {
   if(pet && tier) {
     pet.lastFeedAt = Date.now();
     gainAffection(pet, tier.gain);
-    playgroundGiftToast = T(`${tier.icon} ให้อาหารสำเร็จ! Affection +${tier.gain}%`, `${tier.icon} Fed! Affection +${tier.gain}%`);
+    playgroundGiftToast = T(`${tier.icon}${tier.badge||''} ให้อาหารสำเร็จ! Affection +${tier.gain}%`, `${tier.icon}${tier.badge||''} Fed! Affection +${tier.gain}%`);
   }
   playgroundFoodDrop = null;
   if(playgroundPositions[idx]) playgroundPositions[idx].seeking = false;
@@ -11075,8 +11108,16 @@ function arrivePgFood(idx, tierId) {
   saveGame(); render();
 }
 
+// Small speech-bubble-style callout used for the hungry/gift emotes floating above a pet.
+function pgBubble(inner, extraAttrs='') {
+  return `<div ${extraAttrs} style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;animation:bob 1.2s ease-in-out infinite;pointer-events:${extraAttrs?'auto':'none'};${extraAttrs?'cursor:pointer':''}">
+    <div style="background:#fff;border:2px solid #2a2a3a;border-radius:8px;padding:2px 5px;font-size:14px;line-height:1;box-shadow:0 2px 4px rgba(0,0,0,0.4)">${inner}</div>
+    <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #2a2a3a;margin-top:-1px"></div>
+  </div>`;
+}
+
 function renderPlayground() {
-  labelStrip.textContent = '🌼 PLAYGROUND';
+  labelStrip.textContent = '🌼 TRAINING GROUND';
   const roster = pets.filter(p=>p.phase!=='egg');
   const laneW = roster.length>0 ? 100/roster.length : 100;
 
@@ -11088,16 +11129,23 @@ function renderPlayground() {
     }
     const pos = playgroundPositions[idx];
     const zIndex = Math.round(100 - pos.y);
-    const hungry = isPetHungry(p) && !pos.seeking;
+    const hasGift = !!p.pendingGiftItem;
+    const hungry = !hasGift && isPetHungry(p) && !pos.seeking;
+    let bubble = '';
+    if(hasGift) bubble = pgBubble('🎁', `data-pg-gift-claim="${idx}"`);
+    else if(hungry) bubble = pgBubble('🍖');
     return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
       <div style="position:relative">
-        ${hungry?`<div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:16px;animation:bob 1.2s ease-in-out infinite;pointer-events:none">🍖</div>`:''}
+        ${bubble}
         <div class="pg-pet-sprite">${buildPetSvg(p, 84, false)}</div>
       </div>
     </div>`;
   }).join('');
 
-  const foodDropHtml = playgroundFoodDrop ? `<div style="position:absolute;left:${playgroundFoodDrop.x}%;bottom:${playgroundFoodDrop.y}%;transform:translateX(-50%);font-size:26px;z-index:1;pointer-events:none">${FOOD_TIERS.find(f=>f.id===playgroundFoodDrop.tierId)?.icon||'🍖'}</div>` : '';
+  const foodDropHtml = playgroundFoodDrop ? (()=>{
+    const tier = FOOD_TIERS.find(f=>f.id===playgroundFoodDrop.tierId);
+    return `<div style="position:absolute;left:${playgroundFoodDrop.x}%;bottom:${playgroundFoodDrop.y}%;transform:translateX(-50%);z-index:1;pointer-events:none">${tier?pgFoodIcon(tier,26):'🍖'}</div>`;
+  })() : '';
 
   const zoomHtml = playgroundZoomIdx!==null ? renderPlaygroundZoom(pets[playgroundZoomIdx], playgroundZoomIdx) : '';
   const giftToastHtml = playgroundGiftToast ? `
@@ -11108,32 +11156,34 @@ function renderPlayground() {
       </div>
     </div>` : '';
 
-  const foodTrayHtml = `
+  const feedMenuHtml = playgroundFeedMenuOpen ? `
     <div style="display:flex;align-items:center;gap:6px">
       ${FOOD_TIERS.map(f=>{
         const selected = playgroundSelectedFood===f.id;
         const canAfford = gold>=f.price;
         return `<div data-pg-food-select="${f.id}" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 4px;border-radius:10px;cursor:pointer;background:${selected?'#2a1a00':'#0a0a18'};border:1px solid ${selected?'#ffaa44':'#2a2a3a'};opacity:${canAfford?1:0.5}">
-          <span style="font-size:18px">${f.icon}</span>
+          ${pgFoodIcon(f,18)}
           <span style="font-family:Kanit,sans-serif;font-size:10px;color:${selected?'#ffcc88':'#7060aa'}">${f.price}G <span style="color:#66bbff">+${f.gain}%</span></span>
         </div>`;
       }).join('')}
-    </div>`;
+    </div>` : '';
 
   screenContent.innerHTML = `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:2px 0;position:relative">
       ${giftToastHtml}
       ${zoomHtml}
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#7060aa">${playgroundSelectedFood?T('แตะพื้นเพื่อโยนอาหาร','Tap the ground to toss the food'):T('เลือกอาหารเพื่อโยนให้ Pet','Pick a food to toss to a pet')}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#7060aa">${playgroundSelectedFood?T('แตะพื้นเพื่อโยนอาหาร','Tap the ground to toss the food'):T('แตะ Pet เพื่อ Play / Train','Tap a pet to Play / Train')}</div>
         <div style="font-family:Kanit,sans-serif;font-size:12px;color:#ffcc44">💰${gold.toLocaleString()}G</div>
       </div>
       <div data-pg-ground style="position:relative;flex:1;min-height:220px;border-radius:14px;overflow:hidden;background-image:url('Background/BG-Grass-Day.jpg');background-size:cover;background-position:center bottom;cursor:${playgroundSelectedFood?'crosshair':'default'}">
         ${roster.length ? petsHtml : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Kanit,sans-serif;font-size:13px;text-align:center;padding:20px;pointer-events:none">${T('ยังไม่มี Pet ใน Party','No pets in your Party')}</div>`}
         ${foodDropHtml}
       </div>
-      ${foodTrayHtml}
-      <div style="text-align:center;font-size:10px;color:#7060aa;font-family:Kanit,sans-serif">${T('แตะ Pet เพื่อ Play / Train','Tap a pet to Play / Train')}</div>
+      ${feedMenuHtml}
+      <div style="display:flex;gap:6px">
+        <div data-pg-feed-menu-toggle style="flex:1;padding:8px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:${playgroundFeedMenuOpen?'#2a1a00':'#0a0a18'};border:1px solid ${playgroundFeedMenuOpen?'#ffaa44':'#2a2a3a'};color:${playgroundFeedMenuOpen?'#ffcc88':'#7060aa'}">🍖 ${T('ให้อาหาร','FEED')}</div>
+      </div>
     </div>`;
 }
 
@@ -11197,8 +11247,7 @@ function renderMenu() {
       <div class="menu-icons">
         <div class="menu-icon" data-action="action-menu" style="border-color:rgba(255,80,80,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.5),0 0 10px rgba(220,60,60,0.15)">⚔<span>ACTION</span></div>
         <div class="menu-icon" data-action="party">🐾<span>PARTY</span></div>
-        <div class="menu-icon" data-action="train">🏋️<span>TRAIN</span></div>
-        <div class="menu-icon" data-action="playground">🌼<span>PLAYGROUND</span></div>
+        <div class="menu-icon" data-action="playground">🌼<span>TRAINING GROUND</span></div>
         <div class="menu-icon" data-action="inventory">🎒<span>ITEMS</span></div>
         <div class="menu-icon" data-action="shop" style="border-color:rgba(40,200,100,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.5),0 0 10px rgba(20,180,80,0.15)">🛒<span>SHOP</span></div>
       </div>
@@ -12311,7 +12360,7 @@ document.getElementById('btnBack').addEventListener('click', ()=>{ SFX.click();
   else if(state==='vs_result'){ vsTab='ladder'; pvpTab='deploy'; pvpBattleData=null; state='menu'; render(); }
   else if(state==='duel_result'){ state='menu'; render(); }
   else if(state==='train')     { state=trainReturnState; trainReturnState='menu'; render(); }
-  else if(state==='playground'){ playgroundZoomIdx=null; state='menu'; render(); }
+  else if(state==='playground'){ stopPgDiceCycle(); playgroundZoomIdx=null; playgroundGame=null; playgroundGamePick=null; playgroundFeedMenuOpen=false; playgroundSelectedFood=null; state='menu'; render(); }
   else if(state==='party')     { if(rebirthConfirm!==null){rebirthConfirm=null;render();}else if(partyDetailIdx!==null){partyDetailIdx=null;render();}else{partyViewTab='party';rebirthConfirm=null;state='menu';render();} }
   else if(state==='idle') { state='menu'; render(); }
   else if(state==='inventory') { invSellMode=false; invTab='items'; state='menu'; render(); }
@@ -12415,11 +12464,12 @@ screenContent.addEventListener('click', e=>{
   if(state==='playground') {
     if(el.closest('[data-pg-gift-close]')) { playgroundGiftToast=''; render(); return; }
     if(playgroundGame) {
-      if(el.closest('[data-pg-close]')) { SFX.click(); playgroundGame=null; playgroundGamePick=null; render(); return; }
+      if(el.closest('[data-pg-close]')) { SFX.click(); stopPgDiceCycle(); playgroundGame=null; playgroundGamePick=null; render(); return; }
       const gamePick = el.closest('[data-pg-game-pick]');
-      if(gamePick) { SFX.click(); playgroundGamePick = gamePick.dataset.pgGamePick; render(); return; }
+      if(gamePick) { SFX.click(); stopPgDiceCycle(); playgroundGamePick = gamePick.dataset.pgGamePick; render(); return; }
       const pet = pets[playgroundGame.petIdx];
       const resolvePlay = (win, resultMsg) => {
+        stopPgDiceCycle();
         usePlayAttempt(pet);
         gainAffection(pet, win ? AFFECTION_PLAY_WIN_GAIN : AFFECTION_PLAY_LOSE_GAIN);
         playgroundGame = null; playgroundGamePick = null;
@@ -12457,8 +12507,14 @@ screenContent.addEventListener('click', e=>{
       const diceBtn = el.closest('[data-pg-dice-roll]');
       if(diceBtn) {
         SFX.click();
-        let mine, theirs;
-        do { mine = 1+Math.floor(Math.random()*6); theirs = 1+Math.floor(Math.random()*6); } while(mine===theirs);
+        const mine = playgroundDiceCycleVal;
+        const theirs = 1+Math.floor(Math.random()*6);
+        if(mine===theirs) {
+          // tie — no resolution, just keep the cycle spinning for another attempt
+          startPgDiceCycle();
+          render();
+          return;
+        }
         const win = mine>theirs;
         resolvePlay(win, win
           ? T(`🎉 ชนะ! คุณ🎲${mine} Pet🎲${theirs} Affection +${AFFECTION_PLAY_WIN_GAIN}%`, `🎉 You won! You 🎲${mine} vs Pet 🎲${theirs} — Affection +${AFFECTION_PLAY_WIN_GAIN}%`)
@@ -12482,6 +12538,25 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       trainPetIdx = idx; trainReturnState = 'playground'; playgroundZoomIdx = null;
       state = 'train'; render(); return;
+    }
+    const feedMenuToggle = el.closest('[data-pg-feed-menu-toggle]');
+    if(feedMenuToggle) {
+      SFX.click();
+      playgroundFeedMenuOpen = !playgroundFeedMenuOpen;
+      if(!playgroundFeedMenuOpen) playgroundSelectedFood = null;
+      render(); return;
+    }
+    const giftClaimBtn = el.closest('[data-pg-gift-claim]');
+    if(giftClaimBtn) {
+      SFX.click();
+      const idx = parseInt(giftClaimBtn.dataset.pgGiftClaim);
+      const pet = pets[idx];
+      const got = pet ? claimPgGift(pet) : null;
+      if(got) {
+        playgroundGiftToast = T(`🎁 ${petName(pet)} มอบ ${ITEMS[got]?.icon||''} ${ITEMS[got]?.name||got} ให้!`,`🎁 ${petName(pet)} gave you ${ITEMS[got]?.icon||''} ${ITEMS[got]?.name||got}!`);
+        saveGame();
+      }
+      render(); return;
     }
     const foodSelectBtn = el.closest('[data-pg-food-select]');
     if(foodSelectBtn) {
@@ -12508,6 +12583,7 @@ screenContent.addEventListener('click', e=>{
       SFX.click();
       gold -= tier.price;
       playgroundSelectedFood = null;
+      playgroundFeedMenuOpen = false;
       startPgSeek(bestIdx, dropX, dropY, tier.id);
       return;
     }
@@ -12840,11 +12916,8 @@ screenContent.addEventListener('click', e=>{
     else if(action==='train')     { trainReturnState='menu'; state='train'; render(); }
     else if(action==='playground'){
       state='playground';
-      const gifts = pets.filter(p=>p.phase!=='egg').map(p=>({p, got:tryGrantDailyGift(p)})).filter(x=>x.got);
-      if(gifts.length) {
-        playgroundGiftToast = gifts.map(g=>T(`🎁 ${petName(g.p)} มอบ ${ITEMS[g.got]?.icon||''} ${ITEMS[g.got]?.name||g.got} ให้!`,`🎁 ${petName(g.p)} gave you ${ITEMS[g.got]?.icon||''} ${ITEMS[g.got]?.name||g.got}!`)).join('<br>');
-        saveGame();
-      }
+      pets.filter(p=>p.phase!=='egg').forEach(p=>tryFlagDailyGift(p));
+      saveGame();
       render();
     }
     else if(action==='party')     { state='party'; render(); }

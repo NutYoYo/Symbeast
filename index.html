@@ -555,8 +555,8 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; bottom:10px; transition:left 2.6s ease-in-out; cursor:pointer; }
-.pg-pet.face-left { transform:scaleX(-1); }
+.pg-pet { position:absolute; transition:left 2.6s ease-in-out, bottom 2.6s ease-in-out; cursor:pointer; }
+.pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 1.3s linear infinite alternate; }
 
@@ -10992,14 +10992,15 @@ function renderPlayground() {
     const idx = pets.indexOf(p);
     if(!playgroundPositions[idx]) {
       const lo = i*laneW+8, hi = (i+1)*laneW-8;
-      playgroundPositions[idx] = { x:(lo+hi)/2, dir:1 };
+      playgroundPositions[idx] = { x:(lo+hi)/2, y:8+Math.random()*40, dir:1 };
     }
     const pos = playgroundPositions[idx];
     const hearts = heartsOf(p);
-    return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%">
-      <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-        ${buildPetSvg(p, 60, false)}
-        <div style="display:flex;gap:1px;margin-top:2px;${pos.dir<0?'transform:scaleX(-1)':''}">${[0,1,2,3,4].map(h=>`<span style="font-size:9px">${h<hearts?'💗':'🤍'}</span>`).join('')}</div>
+    const zIndex = Math.round(100 - pos.y);
+    return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="pg-pet-sprite">${buildPetSvg(p, 60, false)}</div>
+        <div style="display:flex;gap:1px;margin-top:2px">${[0,1,2,3,4].map(h=>`<span style="font-size:9px">${h<hearts?'💗':'🤍'}</span>`).join('')}</div>
       </div>
     </div>`;
   }).join('');
@@ -16092,11 +16093,14 @@ setInterval(() => {
     const el = document.querySelector(`[data-pg-pet="${idx}"]`);
     if(!el) return;
     const lo = i*laneW+8, hi = (i+1)*laneW-8;
-    const cur = playgroundPositions[idx] || { x:(lo+hi)/2, dir:1 };
+    const cur = playgroundPositions[idx] || { x:(lo+hi)/2, y:8+Math.random()*40, dir:1 };
     const newX = lo + Math.random()*Math.max(1, hi-lo);
+    const newY = 8 + Math.random()*40;
     const dir = newX < cur.x ? -1 : 1;
-    playgroundPositions[idx] = { x:newX, dir };
+    playgroundPositions[idx] = { x:newX, y:newY, dir };
     el.style.left = newX+'%';
+    el.style.bottom = newY+'%';
+    el.style.zIndex = Math.round(100 - newY);
     el.classList.toggle('face-left', dir<0);
   });
 }, 3000);

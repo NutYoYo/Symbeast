@@ -592,8 +592,6 @@ body::after {
 /* Spartan brawl - pets charge at monster */
 @keyframes pgBrawl { 0%,100%{transform:translateY(0) scale(1)} 25%{transform:translateY(-5px) scale(0.95)} 50%{transform:translateY(2px) scale(1.05)} 75%{transform:translateY(-3px) scale(1.02)} }
 .pg-brawl-pet .pg-pet-sprite { animation: pgBrawl 0.35s ease-in-out infinite; }
-@keyframes pgGroundShake { 0%,100%{transform:translate(0,0) rotate(0)} 20%{transform:translate(-3px,1px) rotate(-0.6deg)} 40%{transform:translate(3px,-1px) rotate(0.6deg)} 60%{transform:translate(-2px,1px) rotate(-0.3deg)} 80%{transform:translate(2px,-1px) rotate(0.3deg)} }
-.pg-ground-shake { animation: pgGroundShake 0.22s ease-in-out; }
 @keyframes pgPetHitSplat { 0%{opacity:1;transform:scale(0.4) translateY(0)} 100%{opacity:0;transform:scale(1.1) translateY(-22px)} }
 /* Roulette Wheel */
 .mg-roulette-wrap { position:relative; width:270px; height:270px; margin:0 auto; }
@@ -9229,6 +9227,7 @@ let playgroundRpsPetChoice = null; // pre-rolled pet RPS choice for hint display
 let playgroundHappyPetIdx = null; // show 😊 above this pet after feed/play
 let playgroundHappyPetTimer = null;
 let playgroundSpartanCelebrate = false; // all pets celebrate after Spartan win
+let playgroundSpartanSad = false; // all pets look sad after Spartan loss
 // Spartan (Monster Doll) state
 let playgroundDollState = 'idle'; // idle | placing | fighting | result
 let playgroundDollPos = null; // {x, y} ตำแหน่งบนแมพตอนวาง
@@ -9239,6 +9238,7 @@ let playgroundDollTimer = null;
 let playgroundDollMonster = null; // {key, name, sprite, isBoss, typeKey}
 let playgroundDollReward = null;
 let playgroundDollRewardDetail = null; // [{name, stat, amount}] แสดงสรุปทีละตัว
+let playgroundDollWon = false; // true after dollWin(), false after dollLose() — for the shared result popup's wording
 const DOLL_COST = 2500;
 const DOLL_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
 
@@ -11369,6 +11369,7 @@ function dollWin() {
     });
     playgroundDollReward = T(`🎉 ชนะ! ${pick.toUpperCase()} +4 ถาวรให้ทุกตัวในทีม!`, `🎉 Victory! ${pick.toUpperCase()} +4 permanent to all team pets!`);
   }
+  playgroundDollWon = true;
   playgroundDollState = 'result';
   playgroundSpartanCelebrate = true;
   if(playgroundHappyPetTimer) clearTimeout(playgroundHappyPetTimer);
@@ -11377,21 +11378,39 @@ function dollWin() {
 }
 
 function dollLose() {
+  const m = playgroundDollMonster;
+  const roster = pets.filter(p => p.phase !== 'egg');
+  playgroundDollRewardDetail = [];
+  if(m?.isBoss) {
+    roster.forEach(p => {
+      p.trainBonuses = p.trainBonuses || {hp:0,atk:0,def:0,spd:0};
+      p.trainBonuses.atk = (p.trainBonuses.atk||0)+3;
+      p.trainBonuses.def = (p.trainBonuses.def||0)+3;
+      p.trainBonuses.spd = (p.trainBonuses.spd||0)+3;
+      playgroundDollRewardDetail.push({name: petName(p), stat:'ATK/DEF/SPD', amount:3});
+    });
+  } else if(m) {
+    const stats = ['atk','def','spd'];
+    const pick = stats[Math.floor(Math.random()*3)];
+    roster.forEach(p => {
+      p.trainBonuses = p.trainBonuses || {hp:0,atk:0,def:0,spd:0};
+      p.trainBonuses[pick] = (p.trainBonuses[pick]||0)+2;
+      playgroundDollRewardDetail.push({name: petName(p), stat: pick.toUpperCase(), amount:2});
+    });
+  }
+  playgroundDollWon = false;
   playgroundDollState = 'result';
-  playgroundDollReward = T(`😞 ไม่ทัน! แตะได้ ${playgroundDollTapCount}/${playgroundDollTapNeeded} ครั้ง`, `😞 Not enough! ${playgroundDollTapCount}/${playgroundDollTapNeeded} taps`);
-  render();
-  setTimeout(() => { resetDoll(); render(); }, 3000);
+  playgroundDollReward = T(`😞 ไม่ทัน! แตะได้ ${playgroundDollTapCount}/${playgroundDollTapNeeded} ครั้ง (ได้รางวัลปลอบใจครึ่งหนึ่ง)`, `😞 Not enough! ${playgroundDollTapCount}/${playgroundDollTapNeeded} taps (half reward as a consolation)`);
+  playgroundSpartanSad = true;
+  saveGame(); render();
+  setTimeout(() => { playgroundSpartanSad = false; }, 3000);
 }
 
 function handleDollTap() {
   if(playgroundDollState !== 'fighting') return;
   playgroundDollTapCount++;
   SFX.hit();
-  // Brief shake on the whole ground container (not the monster div itself, so the
-  // invisible tap-hitbox — a sibling inside the same container — shakes in lockstep
-  // and stays aligned; doesn't affect tappability).
   const ground = document.querySelector('[data-pg-ground]');
-  if(ground) { ground.classList.remove('pg-ground-shake'); void ground.offsetWidth; ground.classList.add('pg-ground-shake'); }
   // Hit splat effect (no shake - keeps monster stable for tapping)
   const hits = document.getElementById('pgDollHits');
   if(hits && playgroundDollMonster) {
@@ -11436,6 +11455,7 @@ function resetDoll() {
   playgroundDollMonster = null;
   playgroundDollReward = null;
   playgroundDollRewardDetail = null;
+  playgroundSpartanSad = false;
 }
 
 function renderSpartanOnMap() {
@@ -11500,6 +11520,7 @@ function renderPlayground() {
     let bubble = '';
     if(hasGift) bubble = pgBubble('🎁', `data-pg-gift-claim="${idx}"`);
     else if(playgroundHappyPetIdx===idx || playgroundSpartanCelebrate) bubble = pgBubble('😊');
+    else if(playgroundSpartanSad) bubble = pgBubble('😢');
     else if(hungry) bubble = pgBubble('🍖');
     return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
       <div style="position:relative">
@@ -11538,9 +11559,9 @@ function renderPlayground() {
   // Spartan result popup (win only - shows per-pet stat gains)
   const spartanResultHtml = (playgroundDollState === 'result' && playgroundDollRewardDetail && playgroundDollRewardDetail.length > 0) ? `
     <div style="position:absolute;inset:0;background:#000000cc;z-index:400;display:flex;align-items:center;justify-content:center;padding:20px">
-      <div style="background:#0e0e22;border:2px solid ${playgroundDollMonster?.isBoss?'#ff6644':'#44dd44'};border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:280px;width:100%;text-align:center">
-        <div style="font-size:28px">${playgroundDollMonster?.isBoss?'👑':'🎉'}</div>
-        <div style="font-size:13px;font-weight:bold;color:#ffcc44;font-family:Kanit,sans-serif">${playgroundDollMonster?.name||''} ${T('พ่ายแพ้!','Defeated!')}</div>
+      <div style="background:#0e0e22;border:2px solid ${playgroundDollWon?(playgroundDollMonster?.isBoss?'#ff6644':'#44dd44'):'#6a6a8a'};border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:280px;width:100%;text-align:center">
+        <div style="font-size:28px">${playgroundDollWon?(playgroundDollMonster?.isBoss?'👑':'🎉'):'😞'}</div>
+        <div style="font-size:13px;font-weight:bold;color:#ffcc44;font-family:Kanit,sans-serif">${playgroundDollWon?T(`${playgroundDollMonster?.name||''} พ่ายแพ้!`,`${playgroundDollMonster?.name||''} Defeated!`):T('ไม่ทัน! รางวัลปลอบใจ','Not enough! Consolation reward')}</div>
         <div style="width:100%;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
           ${playgroundDollRewardDetail.map(d=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border-radius:6px;background:#1a1a2a">

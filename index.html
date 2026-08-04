@@ -11503,7 +11503,7 @@ function renderSpartanOnMap() {
 }
 
 function renderPlayground() {
-  labelStrip.textContent = '🌼 TRAINING GROUND';
+  labelStrip.textContent = '🏋️ TRAINING GROUND';
   const roster = pets.filter(p=>p.phase!=='egg');
   const laneW = roster.length>0 ? 100/roster.length : 100;
 
@@ -11544,8 +11544,11 @@ function renderPlayground() {
       </div>
     </div>` : '';
 
+  // Absolutely positioned within data-pg-ground (not a flex sibling below it) so opening/closing
+  // it never resizes the ground container — pets' stored %-based positions stay pinned to the
+  // same pixel spot instead of jumping when the container's flex height shifts.
   const feedMenuHtml = playgroundFeedMenuOpen ? `
-    <div style="display:flex;align-items:center;gap:6px">
+    <div style="position:absolute;left:6px;right:6px;bottom:6px;z-index:5;display:flex;align-items:center;gap:6px;background:rgba(5,5,15,0.55);border-radius:10px;padding:4px">
       ${FOOD_TIERS.map(f=>{
         const selected = playgroundSelectedFood===f.id;
         const canAfford = gold>=f.price;
@@ -11585,16 +11588,16 @@ function renderPlayground() {
       ${giftToastHtml}
       ${spartanResultHtml}
       ${zoomHtml}
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="font-family:Kanit,sans-serif;font-size:10px;color:${isSpartanPlacing?'#ffcc44':'#7060aa'}">${hintText}</div>
-        <div style="font-family:Kanit,sans-serif;font-size:12px;color:#ffcc44">💰${gold.toLocaleString()}G</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;height:14px;flex-shrink:0">
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:${isSpartanPlacing?'#ffcc44':'#7060aa'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hintText}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:12px;color:#ffcc44;flex-shrink:0;margin-left:6px">💰${gold.toLocaleString()}G</div>
       </div>
       <div data-pg-ground style="position:relative;flex:1;min-height:220px;border-radius:14px;overflow:hidden;background-image:url('Background/BG-Grass-Day.jpg');background-size:cover;background-position:center bottom;cursor:${(playgroundSelectedFood||isSpartanPlacing)?'crosshair':'default'}">
         ${roster.length ? petsHtml : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Kanit,sans-serif;font-size:13px;text-align:center;padding:20px;pointer-events:none">${T('ยังไม่มี Pet ใน Party','No pets in your Party')}</div>`}
         ${foodDropHtml}
         ${isSpartanActive ? renderSpartanOnMap() : ''}
+        ${feedMenuHtml}
       </div>
-      ${feedMenuHtml}
       <div style="display:flex;gap:6px">
         <div data-pg-feed-menu-toggle style="flex:1;padding:8px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:${playgroundFeedMenuOpen?'#2a1a00':'#0a0a18'};border:1px solid ${playgroundFeedMenuOpen?'#ffaa44':'#2a2a3a'};color:${playgroundFeedMenuOpen?'#ffcc88':'#7060aa'}">🍖 ${T('ให้อาหาร','FEED')}</div>
         <div data-pg-spartan-btn style="flex:1;padding:8px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:${isSpartanActive||isSpartanPlacing?'#2a1a00':'#0a0a18'};border:1px solid ${isSpartanActive||isSpartanPlacing?'#ffaa44':'#2a2a3a'};color:${isSpartanActive||isSpartanPlacing?'#ffcc88':'#7060aa'}">⚔️ Spartan!!</div>
@@ -11662,7 +11665,7 @@ function renderMenu() {
       <div class="menu-icons">
         <div class="menu-icon" data-action="action-menu" style="border-color:rgba(255,80,80,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.5),0 0 10px rgba(220,60,60,0.15)">⚔<span>ACTION</span></div>
         <div class="menu-icon" data-action="party">🐾<span>PARTY</span></div>
-        <div class="menu-icon" data-action="playground">🌼<span>TRAINING GROUND</span></div>
+        <div class="menu-icon" data-action="playground">🏋️<span>TRAINING GROUND</span></div>
         <div class="menu-icon" data-action="inventory">🎒<span>ITEMS</span></div>
         <div class="menu-icon" data-action="shop" style="border-color:rgba(40,200,100,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.5),0 0 10px rgba(20,180,80,0.15)">🛒<span>SHOP</span></div>
       </div>

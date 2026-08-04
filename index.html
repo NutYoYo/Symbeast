@@ -16921,14 +16921,20 @@ function startPetDrag(e) {
   const pt = e.touches ? e.touches[0] : e;
   // Pause wander immediately during hold (resumed in endPetDrag if not dragged)
   if(wanderTimers[idx]) { clearTimeout(wanderTimers[idx]); wanderTimers[idx] = null; }
-  // Start hold timer — after 2s, drag activates
-  playgroundDrag = { idx, startX: pt.clientX, startY: pt.clientY, moved: false, ready: false };
+  const isTouch = !!e.touches;
+  // Mouse: no hold needed — a mouse drag has no scroll to disambiguate from, so requiring a
+  // stationary hold before movement "counts" just eats the first second of a normal click-drag
+  // gesture (users naturally start moving well before 1s), making it look like dragging does
+  // nothing. Touch still needs the hold, since a moving finger is normally a page-scroll gesture.
+  playgroundDrag = { idx, startX: pt.clientX, startY: pt.clientY, moved: false, ready: !isTouch };
   clearTimeout(playgroundDragHoldTimer);
-  playgroundDragHoldTimer = setTimeout(() => {
-    if(playgroundDrag && playgroundDrag.idx === idx) {
-      playgroundDrag.ready = true;
-    }
-  }, e.touches ? 600 : 1000); // 0.6s on mobile, 1s on desktop
+  if(isTouch) {
+    playgroundDragHoldTimer = setTimeout(() => {
+      if(playgroundDrag && playgroundDrag.idx === idx) {
+        playgroundDrag.ready = true;
+      }
+    }, 600); // 0.6s hold on mobile before drag activates
+  }
 }
 
 function movePetDrag(e) {

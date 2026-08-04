@@ -16894,12 +16894,17 @@ function checkDailyEnergyDrink() {
 render();
 
 // ── Pet drag-to-move in playground ──
+// mousemove/mouseup/touchmove/touchend are bound to window, not screenContent: if the pointer
+// leaves screenContent's bounds before release (easy to do mid-drag), an element-scoped mouseup
+// would never fire, leaving playgroundDrag stuck "on" forever — every later mousemove over
+// screenContent would then keep dragging with no button even held. window always sees the release.
 screenContent.addEventListener('mousedown', e => { startPetDrag(e); });
 screenContent.addEventListener('touchstart', e => { startPetDrag(e); }, {passive:false});
-screenContent.addEventListener('mousemove', e => { movePetDrag(e); });
-screenContent.addEventListener('touchmove', e => { movePetDrag(e); }, {passive:false});
-screenContent.addEventListener('mouseup', e => { endPetDrag(e); });
-screenContent.addEventListener('touchend', e => { endPetDrag(e); });
+window.addEventListener('mousemove', e => { movePetDrag(e); });
+window.addEventListener('touchmove', e => { movePetDrag(e); }, {passive:false});
+window.addEventListener('mouseup', e => { endPetDrag(e); });
+window.addEventListener('touchend', e => { endPetDrag(e); });
+window.addEventListener('blur', () => { endPetDrag({}); }); // e.g. alt-tab mid-drag
 
 function startPetDrag(e) {
   if(state !== 'playground' || playgroundDollState === 'fighting' || playgroundDollState === 'placing') return;
@@ -16940,6 +16945,9 @@ function startPetDrag(e) {
 function movePetDrag(e) {
   if(!playgroundDrag) return;
   if(!playgroundDrag.ready) return; // not yet held long enough
+  // Defense-in-depth: if a mouseup somehow got missed (e.g. released over an element that
+  // swallowed it), don't keep dragging on later mousemoves where the button isn't held anymore.
+  if(!e.touches && e.buttons === 0) { endPetDrag(e); return; }
   const pt = e.touches ? e.touches[0] : e;
   const dx = pt.clientX - playgroundDrag.startX;
   const dy = pt.clientY - playgroundDrag.startY;

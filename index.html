@@ -555,7 +555,8 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; }
+.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; -webkit-user-drag:none; user-drag:none; -webkit-user-select:none; user-select:none; }
+.pg-pet img { -webkit-user-drag:none; user-drag:none; pointer-events:none; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 0.7s linear infinite alternate; }
@@ -16898,6 +16899,11 @@ render();
 // leaves screenContent's bounds before release (easy to do mid-drag), an element-scoped mouseup
 // would never fire, leaving playgroundDrag stuck "on" forever — every later mousemove over
 // screenContent would then keep dragging with no button even held. window always sees the release.
+// A real mousedown-drag on an <img> triggers the browser's native "drag this image out" gesture
+// (HTML5 drag-and-drop), which hijacks the pointer away from our mousemove/mouseup handlers
+// entirely and never fires a normal mouseup — the CSS user-drag:none above doesn't cover every
+// browser (Firefox ignores it), so also cancel it here as a hard stop.
+screenContent.addEventListener('dragstart', e => { if(e.target.closest('[data-pg-pet]')) e.preventDefault(); });
 screenContent.addEventListener('mousedown', e => { startPetDrag(e); });
 screenContent.addEventListener('touchstart', e => { startPetDrag(e); }, {passive:false});
 window.addEventListener('mousemove', e => { movePetDrag(e); });

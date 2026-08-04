@@ -2337,6 +2337,8 @@ let seenFinal   = new Set(); // finalKeys (Evolve II forms) ที่เคย�
 let seenWeapons = new Set();   // base weapon keys (no _low/_high suffix) ที่เคยได้ครอบครองแล้ว
 let seenArtifacts = new Set(); // artifact keys ที่เคยได้ครอบครองแล้ว
 let gold = 0;
+let artifactFragment = 0;
+let weaponFragment = 0;
 let stage = 1;
 let hardMode = false;
 let replayStage = 0; // >0 = replay mode (ไม่ advance stage)
@@ -4070,7 +4072,7 @@ function saveGame(skipCloudSync) {
     const _now = Date.now(); totalPlayTime += Math.max(0, _now - _playTimeRef); _playTimeRef = _now;
     idleAccumulatedMs = Math.min(idleAccumulatedMs, 8*60*60*1000); // cap 8h
     gauntletSyncOut();
-    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, achievementStatus, achFuseCount, achRebirthUsedCount, achEssenceCollected, achBoxesOpenedCount, achFirstBoxGradeE, achFirstBoxGradeR, achSecretShopPurchases, achTotalWinsAll, achWinStreak, achWinStreakBest, achPerfectWinCount, achTrainTotalAll, achTrainMaxSinglePet, achFinalPhaseReachedCount, achFuseShinyInheritFirst, achEnrageBossKilled, achGauntletFirstRoomWin, achGauntletNormalFullClear, achGauntletHardFullClear, achModesPlayed:[...achModesPlayed], inSecretDungeon, secretDungeonIdx, dungeonBossesKilled, dungeonSpecialBossSpawned, savedScoutGrid, savedScoutPos}));
+    localStorage.setItem(SLOT_KEY(currentSlot), JSON.stringify({pets, storage, activePetIdx, inventory, artifactBag, weaponBag, gold, artifactFragment, weaponFragment, stage, hardMode, hardStage, scoutGrid, scoutPos, savedAt: Date.now(), lastScrollDay, lastEnergyDrinkDay, currentBiome, stamina, firstBossKilled, overdriveCharge, towerFloor, towerHighest, towerCheckpoint, towerPendingGold, towerPendingArtifacts, towerPendingEssence, towerRunSummary, seenEvolved:[...seenEvolved], seenFinal:[...seenFinal], seenWeapons:[...seenWeapons], seenArtifacts:[...seenArtifacts], totalPlayTime, replayStage, replayHard, replayHell, towerFirstClears:[...towerFirstClears], scoutFirstClears:[...scoutFirstClears], hellMode, hellStage, vsCurrentStage, towerRunsToday, towerRunsDate, towerWeekKey, towerNeedsEntry, raidRunsToday, raidRunsDate, raidDailyBossDate, raidDailyBossIdx, raidProgress, _raidSundayPick, idleAccumulatedMs, lastSeenPatch, tutorialDone, pvpWins, pvpLosses, pvpRating, pvpHistory, pvpDefenseLog, gauntletTier, gauntletHardUnlocked, gauntletStash, gauntletRunsToday, gauntletRunsDate, gauntletChampionBadgeWeek, achievementStatus, achFuseCount, achRebirthUsedCount, achEssenceCollected, achBoxesOpenedCount, achFirstBoxGradeE, achFirstBoxGradeR, achSecretShopPurchases, achTotalWinsAll, achWinStreak, achWinStreakBest, achPerfectWinCount, achTrainTotalAll, achTrainMaxSinglePet, achFinalPhaseReachedCount, achFuseShinyInheritFirst, achEnrageBossKilled, achGauntletFirstRoomWin, achGauntletNormalFullClear, achGauntletHardFullClear, achModesPlayed:[...achModesPlayed], inSecretDungeon, secretDungeonIdx, dungeonBossesKilled, dungeonSpecialBossSpawned, savedScoutGrid, savedScoutPos}));
     if(!skipCloudSync) cloudAutoUploadIfDue(currentSlot);
   } catch(e) {}
 }
@@ -4107,6 +4109,8 @@ function loadGame(slotNum) {
         if(Array.isArray(d.inventory)) d.inventory.filter(s=>s.type.startsWith('artifact_')&&s.type!=='artifact_box').forEach(s=>{ addArtifactToBag(s.type.slice('artifact_'.length), s.qty); });
         if(typeof d.stage==='number') stage = d.stage;
         gold = (typeof d.gold==='number' && !isNaN(d.gold)) ? d.gold : 0;
+        artifactFragment = (typeof d.artifactFragment==='number' && !isNaN(d.artifactFragment)) ? d.artifactFragment : 0;
+        weaponFragment = (typeof d.weaponFragment==='number' && !isNaN(d.weaponFragment)) ? d.weaponFragment : 0;
         pets.forEach(p=>{ if(typeof p.trainCount !== 'number' || isNaN(p.trainCount)) p.trainCount = 0; });
         // Normalize old symbol format: 'sym_F' → 'F'
         pets.forEach(p=>{ p.symbols = (p.symbols||[]).map(s=>s.length>1?s.split('_').pop():s).filter(s=>'FWS'.includes(s)); });
@@ -9214,10 +9218,69 @@ const SHOP_ITEMS = [
   { type:'map_scroll',   price:200 },
 ];
 
+const FRAGMENT_SHOP_ITEMS = [
+  { type:'artifact_box', price:50,  currency:'artifactFragment' },
+  { type:'weapon_box',   price:50,  currency:'weaponFragment' },
+];
+
+let shopBuyConfirm = null; // {type, price, currency}
+let shopBuyQty = 1;
+let shopToast = '';
+
+function shopItemIcon(type, it) {
+  return type==='weapon_box'
+    ? `<span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:20px">📦<span style="position:absolute;top:-2px;right:-4px;font-size:11px">🗡️</span></span>`
+    : it.icon;
+}
+
 function renderShop() {
   labelStrip.textContent = '🛒 SHOP';
+  const allShopItems = [...SHOP_ITEMS, ...FRAGMENT_SHOP_ITEMS];
+
+  const toastHtml = shopToast ? `
+    <div id="shopToastOverlay" style="position:absolute;inset:0;background:#000000aa;z-index:99;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:#0e0e22;border:2px solid #5040a0;border-radius:14px;padding:20px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:240px;text-align:center">
+        <div style="font-size:28px">${shopToast.match(/^[\p{Emoji}]/u)?.[0]||'ℹ️'}</div>
+        <div style="font-size:13px;color:#c0b0ff;line-height:1.5">${shopToast}</div>
+        <div id="shopToastClose" style="padding:8px 24px;border-radius:8px;background:#1a0a3a;border:2px solid #8040ff;font-family:Kanit,sans-serif;font-size:12px;color:#c080ff;cursor:pointer">OK</div>
+      </div>
+    </div>` : '';
+
+  const confirmHtml = shopBuyConfirm ? (()=>{
+    const s = allShopItems.find(x=>x.type===shopBuyConfirm.type);
+    const it = ITEMS[s.type];
+    const isFrag = !!s.currency;
+    const balance = s.currency==='artifactFragment' ? artifactFragment : s.currency==='weaponFragment' ? weaponFragment : gold;
+    const maxQty = Math.max(1, Math.floor(balance / s.price)) || 1;
+    if(shopBuyQty > maxQty) shopBuyQty = maxQty;
+    const total = s.price * shopBuyQty;
+    const unitLabel = isFrag ? `🧩${s.price}` : `${s.price}G`;
+    const totalLabel = isFrag ? `🧩${total}` : `${total}G`;
+    const accent = isFrag ? '#2277cc' : '#44cc44';
+    const accentText = isFrag ? '#66bbff' : '#88ff88';
+    return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:inherit">
+      <div style="background:#0a0a18;border:2px solid ${accent};border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;width:80%;max-width:280px;align-items:center">
+        <div style="font-size:28px">${shopItemIcon(s.type, it)}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:13px;color:${it.color};text-align:center">${N(it)}</div>
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#8878b8;text-align:center">${unitLabel} / ${T('ชิ้น','each')}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:4px 0">
+          <div id="shopQtyMinus" style="width:28px;height:28px;border-radius:6px;background:#1a1a3a;border:1px solid #3a3a6a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#c0a0ff;font-weight:bold;user-select:none">−</div>
+          <div style="font-family:Kanit,sans-serif;font-size:20px;color:#fff;min-width:24px;text-align:center">${shopBuyQty}</div>
+          <div id="shopQtyPlus" style="width:28px;height:28px;border-radius:6px;background:#1a1a3a;border:1px solid #3a3a6a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#c0a0ff;font-weight:bold;user-select:none">+</div>
+        </div>
+        <div style="font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;text-align:center">${T('ซื้อ','Buy')} ×${shopBuyQty} ${T('รวม','total')} <span style="color:${accentText}">${totalLabel}</span></div>
+        <div style="display:flex;gap:10px;width:100%">
+          <div id="shopBuyConfirmNo" style="flex:1;padding:8px;border-radius:10px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:12px;color:#5050a0;text-align:center;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
+          <div id="shopBuyConfirmYes" style="flex:1;padding:8px;border-radius:10px;background:${isFrag?'#0a1a2a':'#0a2a0a'};border:2px solid ${accent};font-family:Kanit,sans-serif;font-size:12px;color:${accentText};text-align:center;cursor:pointer;font-weight:bold">${T('ซื้อ','BUY')} ×${shopBuyQty}</div>
+        </div>
+      </div>
+    </div>`;
+  })() : '';
+
   screenContent.innerHTML = `
-    <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:12px;overflow-y:auto">
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:12px;overflow-y:auto;position:relative">
+      ${toastHtml}
+      ${confirmHtml}
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div style="font-family:Kanit,sans-serif;font-size:13px;color:#8878b8;letter-spacing:2px">GENERAL STORE</div>
         <div style="font-family:Kanit,sans-serif;font-size:15px;color:#ffcc44">💰 ${gold.toLocaleString()} G</div>
@@ -9232,8 +9295,32 @@ function renderShop() {
               <div style="font-family:Kanit,sans-serif;font-size:13px;color:${it.color}">${N(it)}</div>
               <div style="font-size:11px;color:#7060aa;margin-top:2px">${D(it)}</div>
             </div>
-            <div data-shopbuy="${s.type}" data-shopprice="${s.price}" style="padding:6px 12px;border-radius:8px;background:${canAfford?'#0a2a0a':'#1a1a1a'};border:1px solid ${canAfford?'#44cc44':'#2a2a2a'};font-family:Kanit,sans-serif;font-size:12px;color:${canAfford?'#88ff88':'#4a4a4a'};cursor:${canAfford?'pointer':'default'};white-space:nowrap">
+            <div data-shopbuy="${s.type}" style="padding:6px 12px;border-radius:8px;background:${canAfford?'#0a2a0a':'#1a1a1a'};border:1px solid ${canAfford?'#44cc44':'#2a2a2a'};font-family:Kanit,sans-serif;font-size:12px;color:${canAfford?'#88ff88':'#4a4a4a'};cursor:${canAfford?'pointer':'default'};white-space:nowrap">
               ${s.price}G
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+        <div style="font-family:Kanit,sans-serif;font-size:13px;color:#8878b8;letter-spacing:2px">FRAGMENT EXCHANGE</div>
+        <div style="font-family:Kanit,sans-serif;font-size:13px;color:#66bbff;display:flex;gap:12px;align-items:center">
+          <span style="display:flex;align-items:center;gap:4px"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:15px">🧩<span style="position:absolute;top:-4px;right:-6px;font-size:9px">💎</span></span>${artifactFragment.toLocaleString()}</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-size:15px">🧩<span style="position:absolute;top:-4px;right:-6px;font-size:9px">🗡️</span></span>${weaponFragment.toLocaleString()}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${FRAGMENT_SHOP_ITEMS.map(s=>{
+          const it = ITEMS[s.type];
+          const balance = s.currency==='artifactFragment' ? artifactFragment : weaponFragment;
+          const canAfford = balance >= s.price;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#0a0a18;border:1px solid #2a2a3a;opacity:${canAfford?1:0.5}">
+            <span style="font-size:24px">${shopItemIcon(s.type, it)}</span>
+            <div style="flex:1">
+              <div style="font-family:Kanit,sans-serif;font-size:13px;color:${it.color}">${N(it)}</div>
+              <div style="font-size:11px;color:#7060aa;margin-top:2px">${D(it)}</div>
+            </div>
+            <div data-shopbuy="${s.type}" style="padding:6px 12px;border-radius:8px;background:${canAfford?'#0a1a2a':'#1a1a1a'};border:1px solid ${canAfford?'#2277cc':'#2a2a2a'};font-family:Kanit,sans-serif;font-size:12px;color:${canAfford?'#66bbff':'#4a4a4a'};cursor:${canAfford?'pointer':'default'};white-space:nowrap">
+              🧩${s.price}
             </div>
           </div>`;
         }).join('')}
@@ -12011,14 +12098,34 @@ screenContent.addEventListener('click', e=>{
   }
 
   if(state==='shop') {
+    if(el.closest('#shopToastClose')||el.closest('#shopToastOverlay')===el.target) { shopToast=''; render(); return; }
     const shopBuy = el.closest('[data-shopbuy]');
     if(shopBuy) {
       SFX.click();
-      const type = shopBuy.dataset.shopbuy;
-      const price = Number(shopBuy.dataset.shopprice);
-      if(gold < price) return;
-      gold -= price;
-      addItemToInventory(type);
+      shopBuyQty = 1; shopBuyConfirm = { type: shopBuy.dataset.shopbuy };
+      render(); return;
+    }
+    if(el.closest('#shopQtyMinus') && shopBuyConfirm) { shopBuyQty = Math.max(1, shopBuyQty-1); render(); return; }
+    if(el.closest('#shopQtyPlus') && shopBuyConfirm) {
+      const s = [...SHOP_ITEMS, ...FRAGMENT_SHOP_ITEMS].find(x=>x.type===shopBuyConfirm.type);
+      const balance = s.currency==='artifactFragment' ? artifactFragment : s.currency==='weaponFragment' ? weaponFragment : gold;
+      const maxQty = Math.max(1, Math.floor(balance / s.price)) || 1;
+      shopBuyQty = Math.min(maxQty, shopBuyQty+1); render(); return;
+    }
+    if(el.closest('#shopBuyConfirmNo')) { shopBuyConfirm = null; shopBuyQty = 1; render(); return; }
+    if(el.closest('#shopBuyConfirmYes')) {
+      const s = [...SHOP_ITEMS, ...FRAGMENT_SHOP_ITEMS].find(x=>x.type===shopBuyConfirm.type);
+      const it = ITEMS[s.type];
+      const total = s.price * shopBuyQty;
+      const currency = s.currency || 'gold';
+      const balance = currency==='artifactFragment' ? artifactFragment : currency==='weaponFragment' ? weaponFragment : gold;
+      if(balance < total) { shopBuyConfirm = null; shopBuyQty = 1; render(); return; }
+      if(currency==='artifactFragment') artifactFragment -= total;
+      else if(currency==='weaponFragment') weaponFragment -= total;
+      else gold -= total;
+      addItemToInventory(s.type, shopBuyQty);
+      shopToast = T(`✅ ได้รับ ${it.icon} ${N(it)} ×${shopBuyQty}!`, `✅ Got ${it.icon} ${N(it)} ×${shopBuyQty}!`);
+      shopBuyConfirm = null; shopBuyQty = 1;
       saveGame(); render(); return;
     }
     return;
@@ -12876,22 +12983,24 @@ screenContent.addEventListener('click', e=>{
     }
     if(el.closest('[data-invfullcancel]')) { invFullPending = null; render(); return; }
     const tabBtn = el.closest('[data-inv-tab]');
-    if(tabBtn) { invTab=tabBtn.dataset.invTab; invSellMode=false; invSellConfirm=null; bagArtifactPending=null; bagWeaponPending=null; invSellWeaponConfirm=null; render(); return; }
+    if(tabBtn) { invTab=tabBtn.dataset.invTab; invSellMode=false; invSellConfirm=null; bagArtifactPending=null; bagWeaponPending=null; invSellWeaponConfirm=null; invDismantleArtConfirm=null; invDismantleWeaponConfirm=null; render(); return; }
     if(el.closest('#invArtSortBtn')) { invArtSort = invArtSort==='grade'?'name':'grade'; render(); return; }
     if(el.closest('#invToastClose')||el.closest('#invToastOverlay')===el.target) { invToast=''; render(); return; }
-    if(el.closest('#invModeBtn')) { invSellMode=!invSellMode; invSellConfirm=null; invSellQty=1; render(); return; }
+    if(el.closest('#invModeBtn')) { invSellMode=!invSellMode; invSellConfirm=null; invSellQty=1; invDismantleArtConfirm=null; invDismantleWeaponConfirm=null; render(); return; }
     if(el.closest('#sellCancel')) { invSellConfirm=null; invSellQty=1; render(); return; }
     // +/- quantity buttons in sell confirm
     const qtyMinus = el.closest('[data-sell-qty-minus]');
-    if(qtyMinus && (invSellConfirm||invSellArtConfirm||invSellWeaponConfirm)) {
+    if(qtyMinus && (invSellConfirm||invSellArtConfirm||invSellWeaponConfirm||invDismantleArtConfirm||invDismantleWeaponConfirm)) {
       invSellQty = Math.max(1, invSellQty-1); render(); return;
     }
     const qtyPlus = el.closest('[data-sell-qty-plus]');
-    if(qtyPlus && (invSellConfirm||invSellArtConfirm||invSellWeaponConfirm)) {
+    if(qtyPlus && (invSellConfirm||invSellArtConfirm||invSellWeaponConfirm||invDismantleArtConfirm||invDismantleWeaponConfirm)) {
       let maxQty = 999;
       if(invSellConfirm) { const s=inventory.find(x=>x.type===invSellConfirm.type); if(s) maxQty=s.qty; }
       else if(invSellArtConfirm) { const s=artifactBag.find(x=>x.key===invSellArtConfirm); if(s) maxQty=s.qty; }
       else if(invSellWeaponConfirm) { const s=weaponBag.find(x=>x.key===invSellWeaponConfirm); if(s) maxQty=s.qty; }
+      else if(invDismantleArtConfirm) { const s=artifactBag.find(x=>x.key===invDismantleArtConfirm); if(s) maxQty=s.qty; }
+      else if(invDismantleWeaponConfirm) { const s=weaponBag.find(x=>x.key===invDismantleWeaponConfirm); if(s) maxQty=s.qty; }
       invSellQty = Math.min(maxQty, invSellQty+1); render(); return;
     }
     const confirmBtn = el.closest('#sellConfirm');
@@ -12966,6 +13075,25 @@ screenContent.addEventListener('click', e=>{
       invSellArtConfirm = null; invSellQty = 1;
       render(); return;
     }
+    const dismantleArtBtn = el.closest('[data-dismantle-artifact]');
+    if(dismantleArtBtn && invSellMode) {
+      SFX.click();
+      invSellQty = 1; invDismantleArtConfirm = dismantleArtBtn.dataset.dismantleArtifact;
+      render(); return;
+    }
+    if(el.closest('#dismantleArtConfirmYes')) {
+      const key = invDismantleArtConfirm;
+      const art = ARTIFACTS[key];
+      const price = {N:5,R:20,E:50}[art?.grade]||2;
+      removeArtifactFromBag(key, invSellQty);
+      artifactFragment += price * invSellQty;
+      invDismantleArtConfirm = null; invSellQty = 1;
+      saveGame(); render(); return;
+    }
+    if(el.closest('#dismantleArtConfirmNo')) {
+      invDismantleArtConfirm = null; invSellQty = 1;
+      render(); return;
+    }
     const bagArtBtn = el.closest('[data-equip-bag-artifact]');
     if(bagArtBtn && !invSellMode) { bagArtifactPending=bagArtBtn.dataset.equipBagArtifact; render(); return; }
     if(el.closest('#bagArtCancel')) { bagArtifactPending=null; render(); return; }
@@ -13003,6 +13131,25 @@ screenContent.addEventListener('click', e=>{
     }
     if(el.closest('#sellWeaponConfirmNo')) {
       invSellWeaponConfirm = null; invSellQty = 1;
+      render(); return;
+    }
+    const dismantleWeaponBtn = el.closest('[data-dismantle-weapon]');
+    if(dismantleWeaponBtn && invSellMode) {
+      SFX.click();
+      invSellQty = 1; invDismantleWeaponConfirm = dismantleWeaponBtn.dataset.dismantleWeapon;
+      render(); return;
+    }
+    if(el.closest('#dismantleWeaponConfirmYes')) {
+      const key = invDismantleWeaponConfirm;
+      const w = WEAPONS[key];
+      const price = {N:5,R:20,E:50}[w?.grade]||2;
+      removeWeaponFromBag(key, invSellQty);
+      weaponFragment += price * invSellQty;
+      invDismantleWeaponConfirm = null; invSellQty = 1;
+      saveGame(); render(); return;
+    }
+    if(el.closest('#dismantleWeaponConfirmNo')) {
+      invDismantleWeaponConfirm = null; invSellQty = 1;
       render(); return;
     }
     const bagWeaponBtn = el.closest('[data-equip-bag-weapon]');
@@ -15061,6 +15208,8 @@ function renderRest() {
 let invSellMode = false;
 let invSellArtConfirm = null; // key of artifact pending sell confirm
 let invSellWeaponConfirm = null; // key of weapon pending sell confirm
+let invDismantleArtConfirm = null; // key of artifact pending dismantle confirm
+let invDismantleWeaponConfirm = null; // key of weapon pending dismantle confirm
 let invTab = 'items'; // 'items' | 'artifacts'
 let invArtSort = 'grade'; // 'grade' | 'name'
 let invToast = '';
@@ -15206,6 +15355,7 @@ function renderInventory() {
 
   // === WEAPONS TAB ===
   const WEAPON_SELL_PRICE = {N:200, R:1000, E:5000};
+  const WEAPON_FRAGMENT_PRICE = {N:5, R:20, E:50};
   const gradeOrderForWeapon = {E:0, R:1, N:2};
   const sortedWeaponBag = [...weaponBag].sort((a,b)=>{
     const aw = WEAPONS[a.key], bw = WEAPONS[b.key];
@@ -15218,6 +15368,7 @@ function renderInventory() {
     const gradeColor = w.grade==='E'?'#ff9944':w.grade==='R'?'#4488ff':'#b0b0c0';
     const gradeBorder = w.grade==='E'?'#cc6600':w.grade==='R'?'#2255cc':'#4a4a6a';
     const wSellPrice = WEAPON_SELL_PRICE[w.grade]||20;
+    const wFragPrice = WEAPON_FRAGMENT_PRICE[w.grade]||2;
     const statTxt = Object.entries(w.stats).map(([k,v])=>`${k.toUpperCase()} +${v}`).join(', ');
     const descTxt = `${statTxt}${w.effect?` | ${T(w.descTh,w.desc)}`:''}`;
     return `
@@ -15229,13 +15380,17 @@ function renderInventory() {
         </div>
         ${slot.qty>1?`<div style="font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;min-width:24px;text-align:center">×${slot.qty}</div>`:''}
         ${invSellMode
-          ? `<div data-sell-weapon="${slot.key}" style="padding:6px 12px;border-radius:8px;background:#3a1a00;border:2px solid #cc6600;font-family:Kanit,sans-serif;font-size:12px;color:#ffaa44;cursor:pointer;white-space:nowrap;font-weight:bold">💰 ${wSellPrice}G${slot.qty>1?` <span style="color:#cc8833;font-size:10px">(×${slot.qty})</span>`:''}</div>`
+          ? `<div style="display:flex;flex-direction:column;gap:4px">
+              <div data-sell-weapon="${slot.key}" style="padding:6px 12px;border-radius:8px;background:#3a1a00;border:2px solid #cc6600;font-family:Kanit,sans-serif;font-size:12px;color:#ffaa44;cursor:pointer;white-space:nowrap;font-weight:bold;text-align:center">💰 ${wSellPrice}G${slot.qty>1?` <span style="color:#cc8833;font-size:10px">(×${slot.qty})</span>`:''}</div>
+              <div data-dismantle-weapon="${slot.key}" style="padding:6px 12px;border-radius:8px;background:#0a1a2a;border:2px solid #2277cc;font-family:Kanit,sans-serif;font-size:12px;color:#66bbff;cursor:pointer;white-space:nowrap;font-weight:bold;text-align:center">🧩 ${wFragPrice}${slot.qty>1?` <span style="color:#4499dd;font-size:10px">(×${slot.qty})</span>`:''}</div>
+            </div>`
           : `<div data-equip-bag-weapon="${slot.key}" style="padding:6px 10px;border-radius:8px;background:#1a1a3a;border:1px solid ${gradeBorder};font-family:Kanit,sans-serif;font-size:11px;color:${gradeColor};cursor:pointer;white-space:nowrap">${T('ใส่ ▶','Equip ▶')}</div>`}
       </div>`;
   }).join('') : `<div style="text-align:center;color:#6858a0;font-size:13px;padding:20px">${T('ยังไม่มี Weapon','No Weapons yet')}<br><span style="font-size:11px">${T('ชนะ Wave 3 ใน Raid เพื่อรับการันตี','Clear Wave 3 in Raid to get a guaranteed drop')}</span></div>`;
 
   // === ARTIFACTS TAB ===
   const ART_SELL_PRICE = {N:200, R:1000, E:5000};
+  const ART_FRAGMENT_PRICE = {N:5, R:20, E:50};
   const gradeOrder = {E:0, R:1, N:2};
   const sortedArtifactBag = [...artifactBag].sort((a,b)=>{
     const aa = ARTIFACTS[a.key], ab = ARTIFACTS[b.key];
@@ -15249,6 +15404,7 @@ function renderInventory() {
     const gradeColor = art.grade==='E'?'#ff9944':art.grade==='R'?'#4488ff':'#b0b0c0';
     const gradeBorder = art.grade==='E'?'#cc6600':art.grade==='R'?'#2255cc':'#4a4a6a';
     const artSellPrice = ART_SELL_PRICE[art.grade]||20;
+    const artFragPrice = ART_FRAGMENT_PRICE[art.grade]||2;
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:${invSellMode?'#1a0a00':'#0a0a18'};border:1px solid ${invSellMode?'#cc6600':gradeBorder}">
         <span style="font-size:24px">${art.icon}</span>
@@ -15258,7 +15414,10 @@ function renderInventory() {
         </div>
         ${slot.qty>1?`<div style="font-family:Kanit,sans-serif;font-size:13px;color:#c0a0ff;min-width:24px;text-align:center">×${slot.qty}</div>`:''}
         ${invSellMode
-          ? `<div data-sell-artifact="${slot.key}" style="padding:6px 12px;border-radius:8px;background:#3a1a00;border:2px solid #cc6600;font-family:Kanit,sans-serif;font-size:12px;color:#ffaa44;cursor:pointer;white-space:nowrap;font-weight:bold">💰 ${artSellPrice}G${slot.qty>1?` <span style="color:#cc8833;font-size:10px">(×${slot.qty})</span>`:''}</div>`
+          ? `<div style="display:flex;flex-direction:column;gap:4px">
+              <div data-sell-artifact="${slot.key}" style="padding:6px 12px;border-radius:8px;background:#3a1a00;border:2px solid #cc6600;font-family:Kanit,sans-serif;font-size:12px;color:#ffaa44;cursor:pointer;white-space:nowrap;font-weight:bold;text-align:center">💰 ${artSellPrice}G${slot.qty>1?` <span style="color:#cc8833;font-size:10px">(×${slot.qty})</span>`:''}</div>
+              <div data-dismantle-artifact="${slot.key}" style="padding:6px 12px;border-radius:8px;background:#0a1a2a;border:2px solid #2277cc;font-family:Kanit,sans-serif;font-size:12px;color:#66bbff;cursor:pointer;white-space:nowrap;font-weight:bold;text-align:center">🧩 ${artFragPrice}${slot.qty>1?` <span style="color:#4499dd;font-size:10px">(×${slot.qty})</span>`:''}</div>
+            </div>`
           : `<div data-equip-bag-artifact="${slot.key}" style="padding:6px 10px;border-radius:8px;background:#1a1a3a;border:1px solid ${gradeBorder};font-family:Kanit,sans-serif;font-size:11px;color:${gradeColor};cursor:pointer;white-space:nowrap">${T('ใส่ ▶','Equip ▶')}</div>`}
       </div>`;
   }).join('') : `<div style="text-align:center;color:#6858a0;font-size:13px;padding:20px">${T('ยังไม่มี Artifact','No Artifacts yet')}<br><span style="font-size:11px">${T('ผ่านทุก 10 ชั้นในหอคอยเพื่อรับ','Clear every 10 Tower floors to earn')}</span></div>`;
@@ -15416,6 +15575,9 @@ function renderInventory() {
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:2px 0;position:relative">
       ${invToastHtml}
       ${buffHtml ? `<div style="display:flex;flex-direction:column;gap:4px">${buffHtml}</div>` : ''}
+      ${(invTab==='artifacts'||invTab==='weapons')?`<div style="display:flex;justify-content:flex-end;gap:10px;font-family:Kanit,sans-serif;font-size:12px">
+        <span style="color:#66bbff">🧩 ${invTab==='artifacts'?artifactFragment.toLocaleString():weaponFragment.toLocaleString()}</span>
+      </div>`:''}
       <div style="display:flex;gap:4px">
         <div data-inv-tab="items" style="flex:1;padding:6px;border-radius:8px;text-align:center;font-family:Kanit,sans-serif;font-size:11px;cursor:pointer;
           border:1px solid ${invTab==='items'?'#6040c0':'#2a2a4a'};background:${invTab==='items'?'#1a0a3a':'#0a0a1a'};color:${invTab==='items'?'#c0a0ff':'#5050a0'}">
@@ -15479,6 +15641,52 @@ function renderInventory() {
             <div style="display:flex;gap:10px;width:100%">
               <div id="sellWeaponConfirmNo" style="flex:1;padding:8px;border-radius:10px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:12px;color:#5050a0;text-align:center;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
               <div id="sellWeaponConfirmYes" style="flex:1;padding:8px;border-radius:10px;background:#3a1a00;border:2px solid #cc6600;font-family:Kanit,sans-serif;font-size:12px;color:#ffaa44;text-align:center;cursor:pointer;font-weight:bold">💰 ${T('ขาย','SELL')} ×${invSellQty}</div>
+            </div>
+          </div>
+        </div>`;
+      })() : ''}
+      ${invDismantleArtConfirm ? (()=>{
+        const a = ARTIFACTS[invDismantleArtConfirm];
+        const price = ART_FRAGMENT_PRICE[a?.grade]||2;
+        const gc = a?.grade==='E'?'#ff9944':a?.grade==='R'?'#4488ff':'#b0b0c0';
+        const slot = artifactBag.find(s=>s.key===invDismantleArtConfirm);
+        if(invSellQty > (slot?.qty||1)) invSellQty = slot?.qty||1;
+        return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:inherit">
+          <div style="background:#0a0a18;border:2px solid #2277cc;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;width:80%;max-width:280px;align-items:center">
+            <div style="font-size:28px">${a?.icon||'💎'}</div>
+            <div style="font-family:Kanit,sans-serif;font-size:13px;color:${gc};text-align:center">${N(a)} [${a?.grade}]${slot?.qty>1?` ×${slot.qty}`:''}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:4px 0">
+              <div data-sell-qty-minus style="width:28px;height:28px;border-radius:6px;background:#1a1a3a;border:1px solid #3a3a6a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#c0a0ff;font-weight:bold;user-select:none">−</div>
+              <div style="font-family:Kanit,sans-serif;font-size:20px;color:#fff;min-width:24px;text-align:center">${invSellQty}</div>
+              <div data-sell-qty-plus style="width:28px;height:28px;border-radius:6px;background:#1a1a3a;border:1px solid #3a3a6a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#c0a0ff;font-weight:bold;user-select:none">+</div>
+            </div>
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;text-align:center">${T('แยกชิ้นส่วน','Dismantle')} ×${invSellQty} ${T('ได้รับ','for')} <span style="color:#66bbff">🧩${price * invSellQty}</span></div>
+            <div style="display:flex;gap:10px;width:100%">
+              <div id="dismantleArtConfirmNo" style="flex:1;padding:8px;border-radius:10px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:12px;color:#5050a0;text-align:center;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
+              <div id="dismantleArtConfirmYes" style="flex:1;padding:8px;border-radius:10px;background:#0a1a2a;border:2px solid #2277cc;font-family:Kanit,sans-serif;font-size:12px;color:#66bbff;text-align:center;cursor:pointer;font-weight:bold">🧩 ${T('แยกชิ้นส่วน','DISMANTLE')} ×${invSellQty}</div>
+            </div>
+          </div>
+        </div>`;
+      })() : ''}
+      ${invDismantleWeaponConfirm ? (()=>{
+        const w = WEAPONS[invDismantleWeaponConfirm];
+        const price = WEAPON_FRAGMENT_PRICE[w?.grade]||2;
+        const gc = w?.grade==='E'?'#ff9944':w?.grade==='R'?'#4488ff':'#b0b0c0';
+        const slot = weaponBag.find(s=>s.key===invDismantleWeaponConfirm);
+        if(invSellQty > (slot?.qty||1)) invSellQty = slot?.qty||1;
+        return `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:inherit">
+          <div style="background:#0a0a18;border:2px solid #2277cc;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;width:80%;max-width:280px;align-items:center">
+            <div style="font-size:28px">${w?.icon||'🗡️'}</div>
+            <div style="font-family:Kanit,sans-serif;font-size:13px;color:${gc};text-align:center">${w?.name} [${w?.grade}]${slot?.qty>1?` ×${slot.qty}`:''}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:4px 0">
+              <div data-sell-qty-minus style="width:28px;height:28px;border-radius:6px;background:#1a1a3a;border:1px solid #3a3a6a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#c0a0ff;font-weight:bold;user-select:none">−</div>
+              <div style="font-family:Kanit,sans-serif;font-size:20px;color:#fff;min-width:24px;text-align:center">${invSellQty}</div>
+              <div data-sell-qty-plus style="width:28px;height:28px;border-radius:6px;background:#1a1a3a;border:1px solid #3a3a6a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#c0a0ff;font-weight:bold;user-select:none">+</div>
+            </div>
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:#8878b8;text-align:center">${T('แยกชิ้นส่วน','Dismantle')} ×${invSellQty} ${T('ได้รับ','for')} <span style="color:#66bbff">🧩${price * invSellQty}</span></div>
+            <div style="display:flex;gap:10px;width:100%">
+              <div id="dismantleWeaponConfirmNo" style="flex:1;padding:8px;border-radius:10px;background:#1a1a3a;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:12px;color:#5050a0;text-align:center;cursor:pointer">${T('ยกเลิก','CANCEL')}</div>
+              <div id="dismantleWeaponConfirmYes" style="flex:1;padding:8px;border-radius:10px;background:#0a1a2a;border:2px solid #2277cc;font-family:Kanit,sans-serif;font-size:12px;color:#66bbff;text-align:center;cursor:pointer;font-weight:bold">🧩 ${T('แยกชิ้นส่วน','DISMANTLE')} ×${invSellQty}</div>
             </div>
           </div>
         </div>`;

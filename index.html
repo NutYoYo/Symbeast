@@ -11428,6 +11428,7 @@ function dollWin() {
   if(m && m.isBoss) {
     roster.forEach(p => {
       p.trainBonuses = p.trainBonuses || {hp:0,atk:0,def:0,spd:0};
+      p.atk = (p.atk||0)+6; p.def = (p.def||0)+6; p.spd = (p.spd||0)+6;
       p.trainBonuses.atk = (p.trainBonuses.atk||0)+6;
       p.trainBonuses.def = (p.trainBonuses.def||0)+6;
       p.trainBonuses.spd = (p.trainBonuses.spd||0)+6;
@@ -11439,6 +11440,7 @@ function dollWin() {
     const pick = stats[Math.floor(Math.random()*3)];
     roster.forEach(p => {
       p.trainBonuses = p.trainBonuses || {hp:0,atk:0,def:0,spd:0};
+      p[pick] = (p[pick]||0)+4;
       p.trainBonuses[pick] = (p.trainBonuses[pick]||0)+4;
       playgroundDollRewardDetail.push({name: petName(p), stat: pick.toUpperCase(), amount:4});
     });
@@ -11460,6 +11462,7 @@ function dollLose() {
   if(m?.isBoss) {
     roster.forEach(p => {
       p.trainBonuses = p.trainBonuses || {hp:0,atk:0,def:0,spd:0};
+      p.atk = (p.atk||0)+3; p.def = (p.def||0)+3; p.spd = (p.spd||0)+3;
       p.trainBonuses.atk = (p.trainBonuses.atk||0)+3;
       p.trainBonuses.def = (p.trainBonuses.def||0)+3;
       p.trainBonuses.spd = (p.trainBonuses.spd||0)+3;
@@ -11470,6 +11473,7 @@ function dollLose() {
     const pick = stats[Math.floor(Math.random()*3)];
     roster.forEach(p => {
       p.trainBonuses = p.trainBonuses || {hp:0,atk:0,def:0,spd:0};
+      p[pick] = (p[pick]||0)+2;
       p.trainBonuses[pick] = (p.trainBonuses[pick]||0)+2;
       playgroundDollRewardDetail.push({name: petName(p), stat: pick.toUpperCase(), amount:2});
     });
@@ -11770,6 +11774,7 @@ function renderPlayground() {
       <div style="display:flex;gap:6px">
         <div data-pg-feed-menu-toggle style="flex:1;padding:8px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:${playgroundFeedMenuOpen?'#2a1a00':'#0a0a18'};border:1px solid ${playgroundFeedMenuOpen?'#ffaa44':'#2a2a3a'};color:${playgroundFeedMenuOpen?'#ffcc88':'#7060aa'}">🍖 ${T('ให้อาหาร','FEED')}</div>
         <div data-pg-spartan-btn style="flex:1;padding:8px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:${isSpartanActive||isSpartanPlacing?'#2a1a00':spartanOnCooldown?'#1a0a0a':'#0a0a18'};border:1px solid ${isSpartanActive||isSpartanPlacing?'#ffaa44':spartanOnCooldown?'#663333':'#2a2a3a'};color:${isSpartanActive||isSpartanPlacing?'#ffcc88':spartanOnCooldown?'#886666':'#7060aa'}">⚔️ Spartan!! <span style="font-size:10px;color:${spartanOnCooldown?'#ff6666':'#88cc88'}">(${spartanRemaining}/2)</span></div>
+        <div data-pg-train-btn style="flex:1;padding:8px;border-radius:10px;text-align:center;font-family:Kanit,sans-serif;font-size:12px;cursor:pointer;background:#0a0a18;border:1px solid #2a2a3a;color:#7060aa">🏋️ ${T('เทรน','TRAIN')}</div>
       </div>
     </div>`;
 }
@@ -13151,6 +13156,12 @@ screenContent.addEventListener('click', e=>{
       const idx = parseInt(trainBtn.dataset.pgTrain);
       SFX.click();
       trainPetIdx = idx; trainReturnState = 'playground'; playgroundZoomIdx = null;
+      state = 'train'; render(); return;
+    }
+    const trainGroundBtn = el.closest('[data-pg-train-btn]');
+    if(trainGroundBtn) {
+      SFX.click();
+      trainReturnState = 'playground';
       state = 'train'; render(); return;
     }
     const feedMenuToggle = el.closest('[data-pg-feed-menu-toggle]');

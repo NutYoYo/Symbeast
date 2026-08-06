@@ -1810,7 +1810,7 @@ const RAID_SPECIAL_BOSSES = [
   { name:'MONKEY',    typeKey:'W', sprite:'monster & boss/W-Monkey-specialboss.png',    icon:'🐒' },
 ];
 
-// ── SCOUT SECRET DUNGEONS ── Hell Stage 20 only, 10% chance to find an entrance cell.
+// ── SCOUT SECRET DUNGEONS ── any Hell Mode stage, 10% chance to find an entrance cell.
 // Each dungeon is fixed to one RAID_SPECIAL_BOSSES index (by array position above) and a
 // themed pool of EVOLVE2_FORMS keys for its regular monsters/dungeon-bosses.
 const SECRET_DUNGEONS = [
@@ -2458,8 +2458,8 @@ let gauntletRewardConfirm = null; // {reward} object shown as confirmation popup
 let scoutGrid = [];
 let scoutPos = {x:0, y:0};
 
-// ── Secret Dungeon (Scout Hell 20 only) ── swaps scoutGrid/scoutPos in place while active;
-// savedScoutGrid/savedScoutPos hold the real Hell 20 map to restore on exit.
+// ── Secret Dungeon (any Scout Hell Mode stage) ── swaps scoutGrid/scoutPos in place while active;
+// savedScoutGrid/savedScoutPos hold the real Hell stage map to restore on exit.
 let inSecretDungeon = false;
 let secretDungeonIdx = -1;      // index into SECRET_DUNGEONS
 let dungeonBossesKilled = 0;    // 0-3; special_boss cell spawns once this hits 3
@@ -4529,8 +4529,8 @@ function genScoutGrid() {
   place('treasure', 3);
   place('gold_chest', 2);
   place('rest', 2);
-  // Secret Dungeon entrance: Hell Stage 20 only, 10% chance per map generation.
-  if(hellMode && hellStage===20 && Math.random() < 0.10) {
+  // Secret Dungeon entrance: any Hell stage, 10% chance per map generation.
+  if(hellMode && Math.random() < 0.10) {
     place('dungeon_entrance', 1);
     const idx = Math.floor(Math.random()*SECRET_DUNGEONS.length);
     scoutGrid.forEach(c => { if(c.type==='dungeon_entrance') c.dungeonIdx = idx; });
@@ -4614,7 +4614,7 @@ function moveScout(dx,dy) {
 }
 
 // ── Secret Dungeon lifecycle ── swaps scoutGrid/scoutPos so moveScout/revealAround/rendering
-// work unmodified inside the dungeon; savedScoutGrid/savedScoutPos hold the real Hell 20 map.
+// work unmodified inside the dungeon; savedScoutGrid/savedScoutPos hold the real Hell stage map.
 function genDungeonGrid() {
   scoutGrid = Array(GRID*GRID).fill(null).map(() => ({type:'empty', vis:false}));
   const place = (type, n) => {
@@ -5049,7 +5049,7 @@ function startBattle(battleType) {
   const isEffectiveHell = replayStage>0 ? replayHell : hellMode;
   const effectiveHardStage = replayStage>0 ? replayStage : hellMode ? hellStage : hardStage;
   let scoutHardForm = null;
-  // Secret Dungeon (Hell 20 only): every enemy is lv120. Regular monster / dungeon-boss are pure
+  // Secret Dungeon (any Hell Mode stage): every enemy is lv120. Regular monster / dungeon-boss are pure
   // Evolve2 forms drawn from the dungeon's themed pool; special_boss is the dungeon's fixed
   // RAID_SPECIAL_BOSSES entry using the same ×1.8HP/×1.3ATK pattern Hell mode already uses for
   // its own special-boss roll. Skips the normal Hell/Hard fusion-roll chain entirely.
@@ -8443,7 +8443,7 @@ function endBattle(won) {
           checkAchievements();
           rewards.push(T('🎁 FIRST CLEAR! เช็ค Achievement เพื่อรับรางวัล','🎁 FIRST CLEAR! Check Achievements to claim your reward'));
         }
-        rewards.push(T(`🏆 ${dungeon.name} เคลียร์แล้ว! กลับสู่ Hell 20`,`🏆 ${dungeon.name} cleared! Returning to Hell 20`));
+        rewards.push(T(`🏆 ${dungeon.name} เคลียร์แล้ว! กลับสู่ Hell ${hellStage}`,`🏆 ${dungeon.name} cleared! Returning to Hell ${hellStage}`));
         battleState.clearedStageLabel = dungeon.name;
         battleState.isSecretDungeonClear = true;
         exitSecretDungeon();
@@ -11966,7 +11966,7 @@ Status Effects:
 💡 Some artifacts guard against these — e.g. Antidote Charm gives 100% poison immunity`
               )],
               ['🗺','SCOUT',T('สำรวจแผนที่ ต่อสู้กับมอนสเตอร์ เก็บของ และสะสม Symbol — ยิ่ง Stage สูง ของรางวัลยิ่งดี\n\n🔥 HARD MODE — ปลดล็อคหลังผ่าน Stage 20 (Normal) ศัตรูแข็งแกร่งขึ้น 2×\n💀 HELL MODE — ปลดล็อคหลังผ่าน Hard Mode ครบ 20 ด่าน ศัตรูแข็งแกร่งกว่า Hard Mode มาก ผลตอบแทนสูงตามความยากที่สูงขึ้น','Explore the map, battle monsters, collect loot and Symbols — higher Stages yield better rewards\n\n🔥 HARD MODE — unlocks after clearing Stage 20 (Normal), enemies are 2× stronger\n💀 HELL MODE — unlocks after completing all 20 Hard Mode stages, enemies are significantly stronger still. Rewards scale with the increased difficulty')],
-              ['🌀','SECRET DUNGEON',T('มีโอกาสพบทางเข้าดันเจี้ยนลับซ่อนอยู่ที่ Scout Hell Stage 20 — ภายในมาพร้อมความท้าทายสุดโหด','A hidden dungeon entrance may appear at Scout Hell Stage 20 — inside awaits an extremely tough challenge')],
+              ['🌀','SECRET DUNGEON',T('มีโอกาสพบทางเข้าดันเจี้ยนลับซ่อนอยู่ในแผนที่ Scout Hell Mode ทุกด่าน — ภายในมาพร้อมความท้าทายสุดโหด','A hidden dungeon entrance may appear on any Scout Hell Mode stage — inside awaits an extremely tough challenge')],
               ['🏯','TOWER',T('ปีนหอคอยทีละชั้น ยิ่งขึ้นสูง ศัตรูยิ่งโหด — เคลียร์ชั้นพิเศษ (ทุก 10 ชั้น) ครั้งแรกจะได้รางวัลพิเศษ!','Climb the Tower floor by floor — enemies get tougher the higher you go. First clear of every 10th floor earns a special one-time reward!')],
               ['⚔️','VS MODE',T('โหมดประลองไม่จำกัดครั้ง — ต่อสู้กับศัตรูในรูปแบบ Ladder ยิ่ง Stage สูง ศัตรูยิ่งแข็งแกร่ง ชนะเพื่อเลื่อน Stage และรับรางวัล','Unlimited PvE Ladder — battle increasingly powerful enemies as you climb the Stages. Win to advance and earn rewards')],
               ['🤝','DUEL MODE',T(

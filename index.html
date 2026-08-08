@@ -54,7 +54,7 @@
   }
 </script>
 <style>
-* { box-sizing:border-box; margin:0; padding:0; }
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 
 body {
   height:100vh; overflow:hidden;
@@ -582,6 +582,14 @@ body::after {
 .pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; -webkit-user-drag:none; user-drag:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 .pg-pet img { -webkit-user-drag:none; user-drag:none; pointer-events:none; -webkit-touch-callout:none; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
+/* Life for the Training Ground pets. The breathing/walk animation lives on .pg-pet-body (the wrapper),
+   NOT .pg-pet-sprite — the sprite carries the scaleX(-1) facing flip, so animating it there would fight
+   the flip. gentle idle breathing by default; a bouncier bob+waddle while .pg-walking is toggled on
+   (set/cleared by wanderPet around each walk). */
+.pg-pet-body { transform-origin:center bottom; animation:pgIdle 2.6s ease-in-out infinite; }
+.pg-pet.pg-walking .pg-pet-body { animation:pgWalk 0.5s ease-in-out infinite; }
+@keyframes pgIdle { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-2px) scale(1.015)} }
+@keyframes pgWalk { 0%,100%{transform:translateY(0) rotate(-2.5deg)} 25%{transform:translateY(-5px) scale(1.03,0.97)} 50%{transform:translateY(0) rotate(2.5deg)} 75%{transform:translateY(-5px) scale(1.03,0.97)} }
 @keyframes pgSlide { from{left:0%} to{left:calc(100% - 18px)} }
 .pg-marker { animation:pgSlide 0.7s linear infinite alternate; }
 
@@ -11728,7 +11736,7 @@ function renderPlayground() {
     else if(playgroundSpartanSad) bubble = pgBubble('😢');
     else if(hungry) bubble = pgBubble('🍖');
     return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
-      <div style="position:relative">
+      <div class="pg-pet-body" style="position:relative">
         ${bubble}
         <div class="pg-pet-sprite" style="position:relative">
           ${buildPetSvg(p, 100, false)}
@@ -17179,8 +17187,11 @@ function wanderPet(idx) {
   el.style.bottom = newY+'%';
   el.style.zIndex = Math.round(100 - newY);
   el.classList.toggle('face-left', dir<0);
+  el.classList.add('pg-walking'); // bouncy walk bob while moving (cleared on arrival below)
   // Delay position sync until CSS transition completes – prevents warp when render() fires mid-walk
   wanderTimers[idx] = setTimeout(() => {
+    const arrEl = document.querySelector(`[data-pg-pet="${idx}"]`);
+    if(arrEl) arrEl.classList.remove('pg-walking'); // back to idle breathing during the pause
     playgroundPositions[idx] = { x:newX, y:newY, dir };
     // Random pause 0-2.5s before next walk (~35% chance to pause, for natural feel)
     const pause = Math.random() < 0.35 ? 1500 + Math.random() * 1500 : 100;

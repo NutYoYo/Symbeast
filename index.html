@@ -8300,12 +8300,12 @@ function endBattle(won) {
       towerHighest = Math.max(towerHighest, towerFloor);
       pushTowerScore();
       towerPendingGold += Math.round(towerFloor * 6);
-      // Past floor 100: 1 Essence per floor cleared, +10 more every 10th floor
+      // Past floor 100: 1 Essence per floor cleared, +5 more every 10th floor
       if(towerFloor > 100) {
         towerPendingEssence += 1;
-        if(towerFloor % 10 === 0) towerPendingEssence += 10;
+        if(towerFloor % 10 === 0) towerPendingEssence += 5;
       }
-      if(towerFloor % 10 === 0) { towerPendingArtifacts.push(towerFloor>=100?'box_E':towerFloor>=50?'box_R':'box'); }
+      if(towerFloor % 10 === 0) { towerPendingArtifacts.push(towerFloor>=130?'box_E':towerFloor>=50?'box_R':'box'); }
       if(towerFloor % 10 === 0 && !towerFirstClears.has(towerFloor)) {
         towerFirstClears.add(towerFloor);
         const fcFloor = towerFloor;

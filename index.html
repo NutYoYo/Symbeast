@@ -579,7 +579,7 @@ body::after {
 .anim-shake { animation:eggShake 0.25s ease-in-out 3; }
 .anim-hatch { animation:hatch 0.6s ease-out forwards; }
 
-.pg-pet { position:absolute; transform:translateX(-50%); transition:left 9s linear, bottom 9s linear; cursor:grab; touch-action:none; -webkit-user-drag:none; user-drag:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+.pg-pet { position:absolute; transform:translateX(-50%); transform-origin:center bottom; transition:left 9s linear, bottom 9s linear, transform 9s linear; cursor:grab; touch-action:none; -webkit-user-drag:none; user-drag:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 .pg-pet img { -webkit-user-drag:none; user-drag:none; pointer-events:none; -webkit-touch-callout:none; }
 .pg-pet.face-left .pg-pet-sprite { transform:scaleX(-1); }
 /* Life for the Training Ground pets. The breathing/walk animation lives on .pg-pet-body (the wrapper),
@@ -3134,6 +3134,14 @@ function isPetHungry(pet) { return canFeedPet(pet); }
 function heartsOf(pet) {
   if(!pet) return 0;
   return Math.min(5, Math.floor((pet.affection||0) / 20));
+}
+
+// Training Ground perspective depth: pets lower on the ground (small bottom%) are "closer" and drawn
+// larger; higher up (big bottom%) are "farther" and smaller. Returns the scale factor for a given
+// bottom% y (8..85). Applied to .pg-pet's transform so it eases smoothly as a pet walks toward/away.
+function pgDepthScale(y) {
+  const yy = Math.max(8, Math.min(85, y||0));
+  return +(1.12 - (yy - 8) / 77 * 0.34).toFixed(3); // 1.12 (front) → 0.78 (back)
 }
 
 function gainAffection(pet, amount) {
@@ -11273,9 +11281,10 @@ function startPgSeek(idx, dropX, dropY, tierId) {
   requestAnimationFrame(() => {
     const el = document.querySelector(`[data-pg-pet="${idx}"]`);
     if(el) {
-      el.style.transition = `left ${dur}s linear, bottom ${dur}s linear`;
+      el.style.transition = `left ${dur}s linear, bottom ${dur}s linear, transform ${dur}s linear`;
       el.style.left = dropX+'%';
       el.style.bottom = dropY+'%';
+      el.style.transform = `translateX(-50%) scale(${pgDepthScale(dropY)})`;
       el.style.zIndex = 300;
       el.classList.toggle('face-left', dir<0);
     }
@@ -11750,7 +11759,7 @@ function renderPlayground() {
     else if(playgroundHappyPetIdx===idx || playgroundSpartanCelebrate) bubble = pgBubble('😊');
     else if(playgroundSpartanSad) bubble = pgBubble('😢');
     else if(hungry) bubble = pgBubble('🍖');
-    return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex}">
+    return `<div class="pg-pet ${pos.dir<0?'face-left':''}" data-pg-pet="${idx}" style="left:${pos.x}%;bottom:${pos.y}%;z-index:${zIndex};transform:translateX(-50%) scale(${pgDepthScale(pos.y)})">
       <div class="pg-pet-body" style="position:relative">
         ${bubble}
         <div class="pg-pet-sprite" style="position:relative">
@@ -17077,6 +17086,7 @@ function movePetDrag(e) {
     el.style.transition = 'none';
     el.style.left = newX + '%';
     el.style.bottom = newY + '%';
+    el.style.transform = `translateX(-50%) scale(${pgDepthScale(newY)})`; // depth updates live while dragging
     el.style.zIndex = Math.round(100 - newY);
     el.classList.toggle('face-left', dx < 0);
   }
@@ -17115,22 +17125,14 @@ setInterval(() => {
     return !!body && !body.querySelector('.pg-mood');
   }).map(({idx})=>idx);
   if(!eligible.length) return;
-  // 🤝 "Playing together": if two eligible pets overlap on screen, both react with a heart.
-  const rects = {};
-  eligible.forEach(idx=>{ const el=document.querySelector(`[data-pg-pet="${idx}"]`); if(el){const r=el.getBoundingClientRect(); rects[idx]={cx:r.left+r.width/2, cy:r.top+r.height/2, w:r.width};} });
-  for(let a=0;a<eligible.length;a++) for(let b=a+1;b<eligible.length;b++){
-    const ia=eligible[a], ib=eligible[b];
-    if(!rects[ia]||!rects[ib]) continue;
-    if(Math.hypot(rects[ia].cx-rects[ib].cx, rects[ia].cy-rects[ib].cy) < rects[ia].w*1.05){
-      pgShowMood(ia,'❤️'); pgShowMood(ib,'❤️');
-      return; // one interaction per tick
-    }
-  }
-  // 🎵 Otherwise ~45% chance a random pet shows a mood emote (fancier moods at higher affection).
+  // 🎵 ~45% chance a random pet shows a mood emote reflecting how bonded it is: lots of affection = happy
+  // / loving, some = content, little = grumpy/unhappy.
   if(Math.random()<0.45){
     const idx = eligible[Math.floor(Math.random()*eligible.length)];
     const h = heartsOf(pets[idx]);
-    const pool = h>=4 ? ['😊','❤️','🎵','😻'] : h>=2 ? ['🎵','😌','😊','🐾'] : ['💤','😴','🐾','🌱'];
+    const pool = h>=4 ? ['😊','❤️','🥰','😻','🎵']   // 4-5 hearts: happy & loving
+               : h>=2 ? ['🙂','😌','🎵','🐾']         // 2-3 hearts: content
+               :        ['😞','😒','💢','😾'];        // 0-1 hearts: not happy
     pgShowMood(idx, pool[Math.floor(Math.random()*pool.length)]);
   }
 }, 3000);
@@ -17231,9 +17233,10 @@ function wanderPet(idx) {
   const dist = Math.hypot(newX - cur.x, newY - cur.y);
   const dur = Math.max(5, Math.min(12, dist / 6)); // slow walk: 5-12s
   const dir = newX < cur.x ? -1 : 1;
-  el.style.transition = `left ${dur}s linear, bottom ${dur}s linear`;
+  el.style.transition = `left ${dur}s linear, bottom ${dur}s linear, transform ${dur}s linear`;
   el.style.left = newX+'%';
   el.style.bottom = newY+'%';
+  el.style.transform = `translateX(-50%) scale(${pgDepthScale(newY)})`; // depth: grow/shrink as it walks toward/away
   el.style.zIndex = Math.round(100 - newY);
   el.classList.toggle('face-left', dir<0);
   el.classList.add('pg-walking'); // bouncy walk bob while moving (cleared on arrival below)

@@ -275,7 +275,12 @@ body::after {
 .scout-grid {
   display:grid; grid-template-columns:repeat(8,1fr);
   gap:2px; width:100%; aspect-ratio:1;
+  transform-origin:0 0; will-change:transform;
+  transition:transform 0.35s ease;
 }
+/* 3x3 zoom camera: the viewport shows a 3-cell window; the grid is scaled up and translated to keep
+   the player centered (clamped at map edges). See renderScout for the transform math. */
+.scout-viewport { position:relative; width:100%; aspect-ratio:1; overflow:hidden; border-radius:8px; }
 .scout-cell {
   aspect-ratio:1; border-radius:3px;
   background:rgba(5,5,20,0.55); border:1px solid rgba(20,20,50,0.7);
@@ -828,15 +833,17 @@ const SFX = {
     _sweep('triangle', 280, 90, 0.25, t, 0.1, ctx);
   })},
 
-  // คริติคอล — หนักกว่า + เสียงสูงตาม
+  // คริติคอล — กระแทกหนักกว่า + "ชิ้ง" พุ่งขึ้นให้ต่างจากโจมตีธรรมดาชัดเจน
   crit() { _sfx(ctx => {
     const t = ctx.currentTime;
     // heavy impact
-    _noise(0.7, t, 0.05, ctx);
-    _sweep('sawtooth', 200, 40, 0.5, t, 0.18, ctx);
-    _sweep('triangle', 350, 80, 0.3, t, 0.15, ctx);
-    // high ping หลังกระแทก
-    _sweep('sine', 1800, 900, 0.2, t+0.06, 0.14, ctx);
+    _noise(0.8, t, 0.05, ctx);
+    _sweep('sawtooth', 220, 40, 0.5, t, 0.18, ctx);
+    _sweep('triangle', 360, 80, 0.3, t, 0.15, ctx);
+    // signature ascending "shing" + sparkle chimes (normal hits don't have this)
+    _sweep('sine', 900, 2400, 0.24, t+0.03, 0.13, ctx);
+    _osc('sine', 2600, 0.18, t+0.13, 0.10, ctx);
+    _osc('sine', 3300, 0.14, t+0.20, 0.09, ctx);
   })},
 
   // หลบ — whoosh เบา
@@ -2837,6 +2844,7 @@ function pickBiomeEnemyType(isBoss) {
 let battleState = null;
 let scoutToast = '';
 let stageSelectOpen = false;
+let scoutMinimapOpen = false; // tap the corner minimap to pop up a larger overview
 let replayHard = false;
 let replayHell = false;
 let pendingSymbol = null;
@@ -3141,7 +3149,7 @@ function heartsOf(pet) {
 // bottom% y (8..85). Applied to .pg-pet's transform so it eases smoothly as a pet walks toward/away.
 function pgDepthScale(y) {
   const yy = Math.max(8, Math.min(85, y||0));
-  return +(1.12 - (yy - 8) / 77 * 0.34).toFixed(3); // 1.12 (front) → 0.78 (back)
+  return +(1.30 - (yy - 8) / 77 * 0.50).toFixed(3); // 1.30 (front, closer) → 0.80 (back, farther)
 }
 
 function gainAffection(pet, amount) {
@@ -4473,6 +4481,16 @@ function loadGame(slotNum) {
         });
         syncCreature();
 
+        // Grid-size migration: a save from before a GRID change stores a differently-sized scoutGrid,
+        // which would make renderScout index past the array and crash. Regenerate a fresh map instead
+        // (and drop any mid-secret-dungeon state, which can't be salvaged across a resize).
+        if(!Array.isArray(scoutGrid) || scoutGrid.length !== GRID*GRID) {
+          inSecretDungeon = false; secretDungeonIdx = -1; dungeonBossesKilled = 0; dungeonSpecialBossSpawned = false;
+          savedScoutGrid = null; savedScoutPos = null;
+          genScoutGrid(); scoutPos = {x:0,y:0};
+        }
+        if(savedScoutGrid && savedScoutGrid.length !== GRID*GRID) { savedScoutGrid = null; savedScoutPos = null; }
+
         return true;
       }
     }
@@ -4541,7 +4559,7 @@ function calculateIdleRewards(elapsedMinutes) {
 // ============================================================
 // SCOUT GRID
 // ============================================================
-const GRID = 8;
+const GRID = 9;
 function idx(x,y) { return y*GRID+x; }
 
 function genScoutGrid() {
@@ -4554,7 +4572,7 @@ function genScoutGrid() {
       if (scoutGrid[i].type==='empty' && i!==0) { scoutGrid[i].type=type; c++; }
     }
   };
-  place('monster', 10);
+  place('monster', 13);
   place('boss', 1);
   if(Math.random() < 0.25) place('mini_boss', 1);
   if(Math.random() < 0.12) place('secret_shop', 1);
@@ -4565,7 +4583,6 @@ function genScoutGrid() {
   // sprite/hard-form/elite rolls, so revisiting (impossible here since it's consumed on first
   // step, but kept consistent) never changes the result.
   scoutGrid.forEach(c => { if(c.type==='minigame') c.minigameType = ['slot','hilo','rps'][Math.floor(Math.random()*3)]; });
-  place('heal', 1);
   place('treasure', 3);
   place('gold_chest', 2);
   place('rest', 2);
@@ -8085,6 +8102,7 @@ function doTurn(moveIdx) {
       // ศัตรูโจมตีมา
       if(pm.name==='GUARD' && cmp==='win') SFX.block(); // บล็อกสำเร็จ
       else if(ed === 0)                    SFX.dodge(); // หลบได้
+      else if(enemyCrit)                   SFX.crit();  // ศัตรูคริ — เสียงต่างจากโดนธรรมดา
       else                                 SFX.hit();   // โดนตี
     }
   };
@@ -12266,6 +12284,12 @@ Status Effects:
 
 function renderScout() {
   labelStrip.textContent = inSecretDungeon ? `${SECRET_DUNGEONS[secretDungeonIdx].name.toUpperCase()} ✦ BOSSES ${dungeonBossesKilled}/3${dungeonSpecialBossSpawned?' ✦ ⚡ SPECIAL BOSS ACTIVE':''}` : replayStage>0 ? `🔄 REPLAY ${replayHell?'HELL ':replayHard?'HARD ':''}STAGE ${replayStage} ✦ ${BIOMES[currentBiome].label}` : hellMode ? `💀 HELL MODE ✦ STAGE ${hellStage}/20 ✦ ${BIOMES[currentBiome].label}` : hardMode ? `🔥 HARD MODE ✦ STAGE ${hardStage}/20 ✦ ${BIOMES[currentBiome].label}` : `SCOUT ✦ STAGE ${stage} ✦ ${BIOMES[currentBiome].label}`;
+  // Icon maps + active-pet token name — hoisted so both the main grid and the minimap popup reuse them.
+  const mgIcons = {slot:'🎰',hilo:'🎲',rps:'⚔️'};
+  const specialBossIcon = inSecretDungeon ? RAID_SPECIAL_BOSSES[SECRET_DUNGEONS[secretDungeonIdx].bossIdx].icon : '⚡';
+  const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'💀',special_boss:specialBossIcon};
+  const _tokPet = pets[activePetIdx] || creature;
+  const tokName = _tokPet.phase==='larva' ? 'LARVA' : ((FORMS[_tokPet.formKey]||EVOLVE2_FORMS[_tokPet.finalKey||''])?.name || _tokPet.name);
   let cellsHtml = '';
   for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) {
     const cell = scoutGrid[idx(x,y)];
@@ -12274,15 +12298,11 @@ function renderScout() {
     const isAdj = !isPlayer && dx+dy===1;
     if(!cell.vis && !isPlayer) { cellsHtml+=`<div class="scout-cell fog"></div>`; continue; }
     const t = cell.type;
-    const mgIcons = {slot:'🎰',hilo:'🎲',rps:'⚔️'};
-    const specialBossIcon = inSecretDungeon ? RAID_SPECIAL_BOSSES[SECRET_DUNGEONS[secretDungeonIdx].bossIdx].icon : '⚡';
-    const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'💀',special_boss:specialBossIcon};
     const cls = `scout-cell visible ${isPlayer?'player':''} ${isAdj?'adjacent':''} ${!isPlayer?t:''} ${t==='minigame' && cell.minigameType ? 'minigame-'+cell.minigameType : ''}`;
     let inner;
     if(isPlayer) {
       // Token = the active pet's own sprite (falls back to ◉ if the image is missing).
-      const ap = pets[activePetIdx] || creature;
-      const spriteName = ap.phase==='larva' ? 'LARVA' : ((FORMS[ap.formKey]||EVOLVE2_FORMS[ap.finalKey||''])?.name || ap.name);
+      const spriteName = tokName;
       // Absolutely positioned so the sprite can slightly overflow the tiny cell for visibility WITHOUT
       // growing the auto-sized grid row (which pushed the whole grid down over the pet bar).
       inner = `<img src="${petImg(spriteName)}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:115%;height:115%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 3px #8060ff);pointer-events:none" onerror="this.replaceWith(document.createTextNode('◉'))">`;
@@ -12293,6 +12313,68 @@ function renderScout() {
     }
     cellsHtml += `<div class="${cls}" data-x="${x}" data-y="${y}">${inner}</div>`;
   }
+
+  // Zoom camera: scale the grid so a fixed-size window of columns fills the viewport, then translate to
+  // keep the player centered (clamped so we never scroll past the map edges). The camera shows a 5x5
+  // window while fog-of-war (revealAround) still only uncovers 3x3 — so the outer ring stays foggy
+  // until you actually walk there.
+  const CAM_VIEW = 5;
+  const CAM_S = GRID/CAM_VIEW; // show a CAM_VIEW-cell window regardless of grid size
+  const camClamp = (v)=>Math.max(100*(1-CAM_S), Math.min(0, v));
+  const camTX = camClamp(50 - CAM_S*(scoutPos.x+0.5)/GRID*100);
+  const camTY = camClamp(50 - CAM_S*(scoutPos.y+0.5)/GRID*100);
+  const camTransform = `transform:translate(${camTX.toFixed(3)}%,${camTY.toFixed(3)}%) scale(${CAM_S.toFixed(4)})`;
+
+  // Minimap: full-grid overview so the zoom camera doesn't lose the big picture. Respects fog
+  // (unexplored cells stay blank) so it never spoils where the boss/secret dungeon is.
+  // Small dot-thumbnail lives next to the reroll button; tapping pops up a large icon map (same
+  // icons as the real grid + the pet sprite as the player token).
+  const minimapDots = (()=>{
+    let s='';
+    for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++){
+      const c = scoutGrid[idx(x,y)];
+      const isP = x===scoutPos.x && y===scoutPos.y;
+      let col;
+      if(isP) col='#ffffff';
+      else if(!c || !c.vis) col='rgba(255,255,255,0.05)';
+      else if(c.type==='boss'||c.type==='special_boss') col='#ff4444';
+      else if(c.type==='dungeon_entrance') col='#c060ff';
+      else if(c.type==='secret_shop') col='#44ddaa';
+      else if(c.type==='mini_boss') col='#ff9944';
+      else if(c.type==='monster'||c.type==='dboss') col='#aa5566';
+      else if(c.type==='treasure'||c.type==='gold_chest') col='#ddcc44';
+      else if(c.type==='minigame') col='#66aaff';
+      else col='rgba(150,150,220,0.35)';
+      s+=`<div style="border-radius:1px;background:${col};${isP?'box-shadow:0 0 3px #fff':''}"></div>`;
+    }
+    return s;
+  })();
+  // Large popup map: each explored cell shows its real icon; player = pet sprite; fog stays blank.
+  const minimapIcons = (()=>{
+    let s='';
+    for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++){
+      const c = scoutGrid[idx(x,y)];
+      const isP = x===scoutPos.x && y===scoutPos.y;
+      if(isP){
+        s+=`<div style="display:flex;align-items:center;justify-content:center;background:rgba(96,64,255,0.4);border:1px solid #6040ff;border-radius:3px;position:relative;overflow:visible"><img src="${petImg(tokName)}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:125%;height:125%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 2px #8060ff)" onerror="this.replaceWith(document.createTextNode('◉'))"></div>`;
+        continue;
+      }
+      if(!c || !c.vis){ s+=`<div style="background:rgba(0,0,0,0.6);border-radius:2px"></div>`; continue; }
+      const t=c.type;
+      const ic = (t==='minigame'&&c.minigameType) ? (mgIcons[c.minigameType]||'🕹️') : (t==='empty'?'':(icons[t]||''));
+      s+=`<div style="display:flex;align-items:center;justify-content:center;background:rgba(40,42,80,0.5);border-radius:2px;font-size:min(4.2vw,17px);line-height:1">${ic}</div>`;
+    }
+    return s;
+  })();
+  // Small dot thumbnail placed in the header next to the reroll button.
+  const minimapHtml = `<div data-minimap-toggle title="${T('แผนที่','Map')}" style="width:40px;height:40px;flex-shrink:0;padding:2px;background:rgba(5,5,16,0.78);border:1px solid #3a2a6a;border-radius:5px;display:grid;grid-template-columns:repeat(${GRID},minmax(0,1fr));grid-template-rows:repeat(${GRID},minmax(0,1fr));gap:1px;cursor:pointer">${minimapDots}</div>`;
+  // Enlarged popup overview (shown on tap) — real icons + pet token.
+  const minimapPopupHtml = scoutMinimapOpen ? `
+    <div data-minimap-close style="position:absolute;inset:0;z-index:30;background:rgba(5,5,16,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px">
+      <div style="font-family:Kanit,sans-serif;font-size:12px;color:#a080ff;letter-spacing:1px">🗺️ ${T('แผนที่','MAP')}</div>
+      <div style="width:min(80vw,300px);aspect-ratio:1;padding:5px;background:rgba(5,5,16,0.9);border:1px solid #4a3a7a;border-radius:8px;display:grid;grid-template-columns:repeat(${GRID},minmax(0,1fr));grid-template-rows:repeat(${GRID},minmax(0,1fr));gap:2px">${minimapIcons}</div>
+      <div style="font-family:Kanit,sans-serif;font-size:10px;color:#6858a0">${T('แตะเพื่อปิด','Tap to close')}</div>
+    </div>` : '';
 
   // Pet switcher bar
   const petBarHtml = pets.map((p,i)=>{
@@ -12355,13 +12437,17 @@ function renderScout() {
             <div style="width:${Math.round(stamina/MAX_STAMINA*100)}%;height:100%;background:${stamina<=5?'#ff4444':stamina<=15?'#f39c12':'#4ecdc4'};border-radius:2px"></div>
           </div>
         </div>
-        ${(()=>{ const sl = hellMode?`💀${hellStage}`:hardMode?`H${hardStage}`:`S${stage}`; return inventory.some(s=>s.type==='map_scroll')
-          ? `<span id="rerollBtn" style="cursor:pointer;border:1px solid ${hellMode?'#ff2222':hardMode?'#ff6644':'#c0a0ff'};border-radius:5px;padding:1px 6px;color:${hellMode?'#ff4444':hardMode?'#ff8866':'#c0a0ff'}">🗺️ ${sl}</span>`
-          : `<span style="border:1px solid #2a2a4a;border-radius:5px;padding:1px 6px;color:#2a2a4a">🗺️ ${sl}</span>`; })()}
+        <div style="display:flex;align-items:center;gap:5px">
+          ${(()=>{ const sl = hellMode?`💀${hellStage}`:hardMode?`H${hardStage}`:`S${stage}`; return inventory.some(s=>s.type==='map_scroll')
+            ? `<span id="rerollBtn" style="cursor:pointer;border:1px solid ${hellMode?'#ff2222':hardMode?'#ff6644':'#c0a0ff'};border-radius:5px;padding:1px 6px;color:${hellMode?'#ff4444':hardMode?'#ff8866':'#c0a0ff'}">🗺️ ${sl}</span>`
+            : `<span style="border:1px solid #2a2a4a;border-radius:5px;padding:1px 6px;color:#2a2a4a">🗺️ ${sl}</span>`; })()}
+          ${minimapHtml}
+        </div>
       </div>
       ${buffBadges ? `<div style="display:flex;gap:4px;flex-wrap:wrap">${buffBadges}</div>` : ''}
       <div style="position:relative">
-        <div class="scout-grid" style="background-image:url('${getBiomeBg()}');background-size:cover;background-position:center">${cellsHtml}</div>
+        <div class="scout-viewport"><div class="scout-grid" style="grid-template-columns:repeat(${GRID},1fr);background-image:url('${getBiomeBg()}');background-size:cover;background-position:center;${camTransform}">${cellsHtml}</div></div>
+        ${minimapPopupHtml}
         ${stageSelectOpen ? `
         <div id="stageSelectOverlay" style="position:absolute;inset:0;background:rgba(5,5,20,0.95);border-radius:8px;z-index:10;display:flex;flex-direction:column;gap:6px;padding:10px;overflow-y:auto">
           <div style="font-family:Kanit,sans-serif;font-size:11px;color:#a080ff;text-align:center;letter-spacing:1px">📋 STAGE SELECT</div>
@@ -14725,6 +14811,8 @@ screenContent.addEventListener('click', e=>{
     }
     if(el.closest('#stageSelectBtn')) { stageSelectOpen=true; render(); return; }
     if(el.closest('#stageSelectClose')) { stageSelectOpen=false; render(); return; }
+    if(el.closest('[data-minimap-close]')) { scoutMinimapOpen=false; render(); return; }
+    if(el.closest('[data-minimap-toggle]')) { scoutMinimapOpen=true; render(); return; }
     const selStage = el.closest('[data-sel-stage]');
     if(selStage) {
       const s = parseInt(selStage.dataset.selStage);

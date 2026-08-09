@@ -11731,6 +11731,10 @@ function renderPlayground() {
     if(rect.width > 0 && rect.height > 0) {
       roster.forEach((p,i) => {
         const idx = pets.indexOf(p);
+        // Don't touch a pet that's walking to dropped food — syncing its live mid-walk position (and
+        // dropping the `seeking` flag) would strand it partway, so it never reaches the food it's
+        // heading to. Leave its stored target intact so it stays aligned with the drop.
+        if(playgroundPositions[idx]?.seeking) return;
         const el = document.querySelector(`[data-pg-pet="${idx}"]`);
         if(el) {
           const style = getComputedStyle(el);
@@ -14831,7 +14835,7 @@ function renderParty() {
         <div style="display:flex;flex-direction:column;align-items:center;padding:0 3px 8px 3px;border-radius:12px;gap:4px">
           <div style="position:relative;display:flex;align-items:center;width:100%;gap:0px">
             <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:0px">
-              <div id="pet-sprite-box" style="position:relative;flex:1;min-width:220px;display:flex;justify-content:center;align-items:center;border-radius:12px;overflow:hidden">
+              <div id="pet-sprite-box" style="position:relative;flex:1;min-width:0;display:flex;justify-content:center;align-items:center;border-radius:12px;overflow:hidden">
               ${(()=>{
                 const _glowC = pet.phase==='larva'?'#9b59b6':nameColor;
                 const _shinyAnim = pet.shiny ? 'animation:bob 2s ease-in-out infinite, shiny-aura-pulse 2s ease-in-out infinite;' : `filter:drop-shadow(0 0 4px ${_glowC});`;

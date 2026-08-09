@@ -11272,6 +11272,9 @@ function renderPlaygroundZoom(pet, idx) {
 // the DOM directly after the initial render (same trick as the wander interval)
 // so the CSS transition actually animates from the pet's current spot.
 function startPgSeek(idx, dropX, dropY, tierId) {
+  // Cancel any pending wander step for this pet — otherwise a stale wander callback fires mid-seek,
+  // sends the pet walking off to a random spot, and it never reaches the food (fed off-target).
+  clearTimeout(wanderTimers[idx]);
   playgroundFoodDrop = { x:dropX, y:dropY, tierId, petIdx:idx };
   render();
   const pos = playgroundPositions[idx] || { x:dropX, y:dropY, dir:1 };
@@ -11303,11 +11306,17 @@ function arrivePgFood(idx, tierId) {
     playgroundGiftToast = T(`${tier.icon}${tier.badge||''} ${petName(pet)} ได้กินแล้ว! Affection +${tier.gain}%`, `${tier.icon}${tier.badge||''} ${petName(pet)} ate! Affection +${tier.gain}%`);
     showPgHappy(pet);
   }
+  // Pin the pet's stored position to exactly where the food was, so it lines up with the drop and the
+  // resumed wander starts from the right spot.
+  const drop = playgroundFoodDrop;
+  playgroundPositions[idx] = { x:drop.x, y:drop.y, dir: playgroundPositions[idx]?.dir || 1, seeking:false };
   playgroundFoodDrop = null;
-  if(playgroundPositions[idx]) playgroundPositions[idx].seeking = false;
   const el = document.querySelector(`[data-pg-pet="${idx}"]`);
   if(el) el.style.transition = '';
   saveGame(); render();
+  // Resume wandering (it was cancelled at seek start).
+  clearTimeout(wanderTimers[idx]);
+  wanderTimers[idx] = setTimeout(() => wanderPet(idx), 1200);
 }
 
 // Small speech-bubble-style callout used for the hungry/gift emotes floating above a pet.

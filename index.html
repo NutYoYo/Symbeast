@@ -5656,6 +5656,7 @@ function doOverdriveTurn() {
   }, 850);
 }
 
+function _splitDmg(total, n){ const base=Math.floor(total/n); const arr=Array(n).fill(base); arr[n-1]+= total-base*n; return arr; }
 function doTurn(moveIdx) {
   if(!battleState || battleState.waiting) return;
   const enemy = battleState.enemy;
@@ -5721,7 +5722,7 @@ function doTurn(moveIdx) {
   const crit = sniperReady ? true : Math.random() < critChance;
   const hasDeathblow = artId==='deathblow' || artId2==='deathblow';
   const critMult = sniperReady ? 2.0 : hasDeathblow ? 2.0 : 1.6;
-  let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, burnDmgEnemy = 0, burnDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], extraHits = [];
+  let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, burnDmgEnemy = 0, burnDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], edHits = [], extraHits = [], pdHitCount = 1, edHitCount = 1;
   let healBlockedEnemy = 0, healBlockedPlayer = 0;
   let _dodgeEffectApplied = false; // track if any artifact/weapon dodge should trigger form secondary effects
   let _eDodgeEffectApplied = false; // same, but for the enemy side (enemy artifact/weapon dodge → enemy form secondary effect)
@@ -5837,7 +5838,7 @@ function doTurn(moveIdx) {
     if(crit && eHasA('blood_pact')) { const h=Math.round(pd*0.15); _eHeal(h,'🔴',`[E] Blood Pact +${h}`); }
     // double_attack: 20% attack twice
     if(!enemyStunned && eHasA('double_attack') && Math.random()<0.20)
-      { const ed2=Math.max(1,Math.round(ed)); ed+=ed2; passives.push({icon:'⚔',text:`[E] Double Attack +${ed2}→${ed}`}); }
+      { const ed2=Math.max(1,Math.round(ed)); ed+=ed2; edHitCount=2; passives.push({icon:'⚔',text:`[E] Double Attack +${ed2}→${ed}`}); }
     // chain_strike: WIN streak bonus on ed
     if(eHasA('chain_strike')) {
       if(cmp==='lose') { eas.chainStreak=(eas.chainStreak||0)+1; const rate=eas.chainStreak>=3?2.00:eas.chainStreak>=2?1.30:0.65; const bonus=Math.round(ed*rate); if(!enemyStunned){creature.hp=Math.max(0,creature.hp-bonus); eReflectDmg+=bonus;} passives.push({icon:'💥',text:`[E] Chain Strike ×${eas.chainStreak} +${bonus}`}); }
@@ -5879,14 +5880,14 @@ function doTurn(moveIdx) {
     if(type==='PANDA-WARRIOR') { pd+=Math.floor(enemy.def/2); if(!enemyTrueStrike && Math.random()<0.20){ed=0;} if(Math.random()<0.5){const c=Math.max(1,Math.round(_atk/3*0.5));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK RUSH pierce+counter+dodge→${pd}`}); }
     if(type==='ARMOR-PANDA') { odCounterOnHit=0.5; ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'🛡',text:`FORTRESS BREAK WALL reflect50%,dmgTaken-15%→${ed}`}); }
     if(type==='TYRANT-IRONJAW') { pd=Math.round(pd*1.25); passives.push({icon:'🩸',text:`CRIMSON REAPER ATK+25%→${pd}`}); }
-    if(type==='AGILE-IRONJAW') { if(Math.random()<0.30){const extra=pd;pd+=extra;} passives.push({icon:'🩸',text:`CRIMSON REAPER FANG doubleAttack+30%→${pd}`}); }
+    if(type==='AGILE-IRONJAW') { if(Math.random()<0.30){const extra=pd;pd+=extra;pdHitCount=2;} passives.push({icon:'🩸',text:`CRIMSON REAPER FANG doubleAttack+30%→${pd}`}); }
     if(type==='FULLARMOR-IRONJAW') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); odCounterOnHit=0.5; passives.push({icon:'🩸',text:`CRIMSON REAPER WARD dmgTaken-20%→${ed}`}); }
     if(type==='STRONG-BLITZ') { pd=Math.round(pd*2.0); if(!enemyStunned && Math.random()<0.25){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⚡',text:`THUNDER FANG ATK×2→${pd}`}); }
     if(type==='STORM-BLITZ') { pd=Math.round(pd*1.5); if(!enemyTrueStrike && Math.random()<0.25){ed=0;} passives.push({icon:'⚡',text:`THUNDER DASH ATK×1.5,SPD×1.5→${pd}`}); }
     if(type==='BULWARK-BLITZ') { pd=Math.round(pd*1.5); ed=(enemyIgnoresDef?ed:Math.round(ed*0.67)); if(!enemyStunned && Math.random()<0.20){if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;}SFX.stun();} passives.push({icon:'⚡',text:`THUNDER GUARD ATK×1.5,DEF×1.5→${pd}`}); }
-    if(type==='WARLORD-CHAMPION') { pd=Math.round(pd*1.2); if(Math.random()<0.25){const extra=pd;pd+=extra;} passives.push({icon:'⚔️',text:`CONQUEROR'S WRATH ATK×1.2,4hit+25%→${pd}`}); }
+    if(type==='WARLORD-CHAMPION') { pd=Math.round(pd*1.2); if(Math.random()<0.25){const extra=pd;pd+=extra;pdHitCount=2;} passives.push({icon:'⚔️',text:`CONQUEROR'S WRATH ATK×1.2,4hit+25%→${pd}`}); }
     if(type==='KING-CHAMPION') { pd=Math.round(pd*2.0); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const ls=Math.max(1,Math.round(pd*0.35)); _pHeal(ls,'👑',`BLOOD TRIBUTE ATK×2,lifesteal35%→${pd}`); }
-    if(type==='ROLLING-CHAMPION') { pd=Math.round(pd*2.0); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); if(Math.random()<0.5){const extra=pd;pd+=extra;} passives.push({icon:'🌀',text:`ROLLING STRIKE ATK×2,doubleAttack50%→${pd}`}); }
+    if(type==='ROLLING-CHAMPION') { pd=Math.round(pd*2.0); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); if(Math.random()<0.5){const extra=pd;pd+=extra;pdHitCount=2;} passives.push({icon:'🌀',text:`ROLLING STRIKE ATK×2,doubleAttack50%→${pd}`}); }
     if(type==='BLAZING-FORTRESS') { pd=Math.round(pd*1.2); odCounterOnHit=0.5; passives.push({icon:'🏔️',text:`EARTHSHATTER STRIKE ATK+20%,reflect50%→${pd}`}); }
     if(type==='SWIFT-FORTRESS') { odCounterOnHit=0.5; if(!enemyTrueStrike && Math.random()<0.15){ed=0;} const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🏔️',`EARTHSHATTER QUAKE reflect50%,dodge+15%,+${heal}HP`); }
     if(type==='GUARDIAN-FORTRESS') {
@@ -6030,7 +6031,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='TYRANT-IRONJAW') { pd=Math.round(pd*1.2); passives.push({icon:'🩸',text:`TYRANT dmg+20%→${pd}`}); }
   if(ff==='AGILE-IRONJAW') {
-    if(Math.random()<0.25) { const extra=pd; pd+=extra; passives.push({icon:'⚔',text:`AGILE DOUBLE ATTACK→${pd}`}); }
+    if(Math.random()<0.25) { const extra=pd; pd+=extra; pdHitCount=2; passives.push({icon:'⚔',text:`AGILE DOUBLE ATTACK→${pd}`}); }
     if(!enemyTrueStrike && Math.random()<0.15) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⚔',text:'AGILE DODGE!'}); }
   }
   if(ff==='RUNE-IRONJAW') {
@@ -6088,7 +6089,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='DARK-SPECTER') { pd=Math.round(pd*1.2); passives.push({icon:'🌑',text:`DARK dmg+20%→${pd}`}); }
   if(ff==='SOUL-SPECTER') {
-    if(bs.e2NextBuff) { const extra=pd; pd+=extra; bs.e2NextBuff=false; passives.push({icon:'👻',text:`SOUL DOUBLE HIT!→${pd}`}); }
+    if(bs.e2NextBuff) { const extra=pd; pd+=extra; pdHitCount=2; bs.e2NextBuff=false; passives.push({icon:'👻',text:`SOUL DOUBLE HIT!→${pd}`}); }
     if(!enemyTrueStrike && Math.random()<0.20) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'👻',text:'SOUL DODGE! next hits ×2'}); }
   }
   if(ff==='GRAVE-SPECTER') {
@@ -6211,7 +6212,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='WOLF-GHOST') {
     const wolfChance = creature.hp < creature.maxHp*0.5 ? 0.35 : 0.25;
-    if(Math.random()<wolfChance) { const extra=pd; pd+=extra; passives.push({icon:'🐺',text:`WOLF DOUBLE ATTACK (${Math.round(wolfChance*100)}%)→${pd}`}); }
+    if(Math.random()<wolfChance) { const extra=pd; pd+=extra; pdHitCount=2; passives.push({icon:'🐺',text:`WOLF DOUBLE ATTACK (${Math.round(wolfChance*100)}%)→${pd}`}); }
   }
   if(ff==='SHARK-GHOST' && enemy.hp < enemy.maxHp*0.5) {
     pd=Math.round(pd*1.3);
@@ -6223,7 +6224,7 @@ function doTurn(moveIdx) {
     if(creature.hp < creature.maxHp*0.2) { pd=Math.round(pd*1.5); passives.push({icon:'⚔️',text:`MANTIS HP<20% dmg+50%→${pd}`}); }
   }
   if(ff==='BEE-GHOST' && Math.random()<0.15) {
-    pd += pd*2;
+    pd += pd*2; pdHitCount=3;
     if(Math.random()<0.5 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'🐝',text:`BEE TRIPLE HIT+POISON!→${pd}`}); }
     else passives.push({icon:'🐝',text:`BEE TRIPLE HIT!→${pd}`});
   }
@@ -6332,7 +6333,7 @@ function doTurn(moveIdx) {
   }
   if(ff==='RANGER-GHOST') {
     bs.playerTrueStrike = true;
-    if(Math.random()<0.20) { const extra=pd; pd+=extra; passives.push({icon:'🏹',text:`RANGER DOUBLE SHOT! NEVER MISS→${pd}`}); }
+    if(Math.random()<0.20) { const extra=pd; pd+=extra; pdHitCount=2; passives.push({icon:'🏹',text:`RANGER DOUBLE SHOT! NEVER MISS→${pd}`}); }
     else passives.push({icon:'🏹',text:'RANGER NEVER MISS'});
   }
   if(ff==='VALKYLIE-GHOST') {
@@ -6546,7 +6547,7 @@ function doTurn(moveIdx) {
     const ewe = ewpn.effect;
     if(ewe.type==='atk_dmg_boost' && Math.random()<ewe.chance) { ed=Math.round(ed*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} ATK×${ewe.mult} →${ed}`}); }
     if(ewe.type==='on_win_dmg' && cmp==='lose') { ed=Math.round(ed*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} WIN dmg×${ewe.mult} →${ed}`}); }
-    if(ewe.type==='multi_attack' && Math.random()<ewe.chance) { const ed2=Math.round(ed*(ewe.hits-1)); ed+=ed2; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} ×${ewe.hits} HITS →${ed}`}); }
+    if(ewe.type==='multi_attack' && Math.random()<ewe.chance) { const ed2=Math.round(ed*(ewe.hits-1)); ed+=ed2; edHitCount=ewe.hits; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} ×${ewe.hits} HITS →${ed}`}); }
     if(ewe.type==='poison_on_hit' && ed>0 && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you!`}); }
     if(ewe.type==='burn_on_hit' && ed>0 && Math.random()<ewe.chance) { bs.playerBurnTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} burned you!`}); }
     if(ewe.type==='stun_on_hit' && ed>0 && Math.random()<ewe.chance) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN! (next turn)`});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN!`});} }
@@ -6712,7 +6713,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='TYRANT-IRONJAW') { ed=Math.round(ed*1.2); passives.push({icon:'🩸',text:`[E] TYRANT dmg+20%→${ed}`}); }
   if(fk2==='AGILE-IRONJAW') {
-    if(Math.random()<0.25) { const extra=ed; ed+=extra; passives.push({icon:'⚔',text:`[E] AGILE DOUBLE ATTACK→${ed}`}); }
+    if(Math.random()<0.25) { const extra=ed; ed+=extra; edHitCount=2; passives.push({icon:'⚔',text:`[E] AGILE DOUBLE ATTACK→${ed}`}); }
     if(!bs.playerTrueStrike && Math.random()<0.15) { pd=0; _eDodgeEffectApplied=true; passives.push({icon:'⚔',text:'[E] AGILE DODGE!'}); }
   }
   if(fk2==='RUNE-IRONJAW') {
@@ -6741,7 +6742,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='WARLORD-CHAMPION') {
     ed=Math.round(ed*1.2);
-    if(Math.random()<0.10) { const extra=ed*3; ed+=extra; passives.push({icon:'⚔️',text:`[E] WARLORD 4-HIT!→${ed}`}); }
+    if(Math.random()<0.10) { const extra=ed*3; ed+=extra; edHitCount=4; passives.push({icon:'⚔️',text:`[E] WARLORD 4-HIT!→${ed}`}); }
     else passives.push({icon:'⚔️',text:`[E] WARLORD dmg+20%→${ed}`});
   }
   if(fk2==='KING-CHAMPION') {
@@ -6770,7 +6771,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='DARK-SPECTER') { ed=Math.round(ed*1.2); passives.push({icon:'🌑',text:`[E] DARK dmg+20%→${ed}`}); }
   if(fk2==='SOUL-SPECTER') {
-    if(bs.e2NextBuffE) { const extra=ed; ed+=extra; bs.e2NextBuffE=false; passives.push({icon:'👻',text:`[E] SOUL DOUBLE HIT!→${ed}`}); }
+    if(bs.e2NextBuffE) { const extra=ed; ed+=extra; edHitCount=2; bs.e2NextBuffE=false; passives.push({icon:'👻',text:`[E] SOUL DOUBLE HIT!→${ed}`}); }
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.20) { pd=0; bs.e2NextBuffE=true; _eDodgeEffectApplied=true; passives.push({icon:'👻',text:'[E] SOUL DODGE!'}); }
   }
   if(fk2==='GRAVE-SPECTER') {
@@ -6886,7 +6887,7 @@ function doTurn(moveIdx) {
   }
   if(fk2==='WOLF-GHOST') {
     const wolfChance = enemy.hp < enemy.maxHp*0.5 ? 0.35 : 0.25;
-    if(Math.random()<wolfChance) { const extra=ed; ed+=extra; passives.push({icon:'🐺',text:`[E] WOLF DOUBLE ATTACK (${Math.round(wolfChance*100)}%)→${ed}`}); }
+    if(Math.random()<wolfChance) { const extra=ed; ed+=extra; edHitCount=2; passives.push({icon:'🐺',text:`[E] WOLF DOUBLE ATTACK (${Math.round(wolfChance*100)}%)→${ed}`}); }
   }
   if(fk2==='SHARK-GHOST' && creature.hp < creature.maxHp*0.5) {
     ed=Math.round(ed*1.3);
@@ -6898,7 +6899,7 @@ function doTurn(moveIdx) {
     if(enemy.hp < enemy.maxHp*0.2) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`[E] MANTIS HP<20% dmg+50%→${ed}`}); }
   }
   if(fk2==='BEE-GHOST' && Math.random()<0.15) {
-    ed += ed*2;
+    ed += ed*2; edHitCount=3;
     if(Math.random()<0.5 && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:'🐝',text:`[E] BEE TRIPLE HIT+POISON!→${ed}`}); }
     else passives.push({icon:'🐝',text:`[E] BEE TRIPLE HIT!→${ed}`});
   }
@@ -7005,7 +7006,7 @@ function doTurn(moveIdx) {
     if(!bs.playerTrueStrike && Math.random()<0.25) { pd=0; bs.e2NextBuffE=true; _eDodgeEffectApplied=true; passives.push({icon:'🔵',text:'[E] BLUE SENTINEL DODGE! next ATK+50%+pierce'}); }
   }
   if(fk2==='RANGER-GHOST') {
-    if(Math.random()<0.20) { const extra=ed; ed+=extra; passives.push({icon:'🏹',text:`[E] RANGER DOUBLE SHOT! NEVER MISS→${ed}`}); }
+    if(Math.random()<0.20) { const extra=ed; ed+=extra; edHitCount=2; passives.push({icon:'🏹',text:`[E] RANGER DOUBLE SHOT! NEVER MISS→${ed}`}); }
     else passives.push({icon:'🏹',text:'[E] RANGER NEVER MISS'});
   }
   if(fk2==='VALKYLIE-GHOST') {
@@ -7128,7 +7129,7 @@ function doTurn(moveIdx) {
       if(pd>0 && creature.hp>0) { const steal=Math.max(1,Math.round(pd*0.05)); _pHeal(steal,'🩸',`TYRANT ECHO dmg+10% +${steal}HP→${pd}`); }
     }
     else if(ip==='AGILE-IRONJAW') {
-      if(Math.random()<0.15) { const extra=pd; pd+=extra; passives.push({icon:'⚔',text:`AGILE ECHO DOUBLE ATTACK→${pd}`}); }
+      if(Math.random()<0.15) { const extra=pd; pd+=extra; pdHitCount=2; passives.push({icon:'⚔',text:`AGILE ECHO DOUBLE ATTACK→${pd}`}); }
       if(!enemyTrueStrike && Math.random()<0.08) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⚔',text:'AGILE ECHO DODGE!'}); }
     }
     else if(ip==='RUNE-IRONJAW') {
@@ -7166,7 +7167,7 @@ function doTurn(moveIdx) {
     }
     else if(ip==='WARLORD-CHAMPION') {
       pd=Math.round(pd*1.10);
-      if(Math.random()<0.05) { const extra=pd; pd+=extra*2; passives.push({icon:'⚔️',text:`WARLORD ECHO 4-HIT!→${pd}`}); }
+      if(Math.random()<0.05) { const extra=pd; pd+=extra*2; pdHitCount=3; passives.push({icon:'⚔️',text:`WARLORD ECHO 4-HIT!→${pd}`}); }
       else passives.push({icon:'⚔️',text:`WARLORD ECHO dmg+10%→${pd}`});
     }
     else if(ip==='KING-CHAMPION') {
@@ -7215,7 +7216,7 @@ function doTurn(moveIdx) {
       if(pd>0 && creature.hp>0) { const steal=Math.max(1,Math.round(pd*0.07)); _pHeal(steal,'🌑',`DARK ECHO dmg+10% +${steal}HP→${pd}`); }
     }
     else if(ip==='SOUL-SPECTER') {
-      if(bs.echoSoulDouble) { const extra=pd; pd+=extra; bs.echoSoulDouble=false; passives.push({icon:'👻',text:`SOUL ECHO DOUBLE HIT→${pd}`}); }
+      if(bs.echoSoulDouble) { const extra=pd; pd+=extra; pdHitCount=2; bs.echoSoulDouble=false; passives.push({icon:'👻',text:`SOUL ECHO DOUBLE HIT→${pd}`}); }
       if(!enemyTrueStrike && Math.random()<0.10) { ed=0; bs.echoSoulDouble=true; _dodgeEffectApplied=true; passives.push({icon:'👻',text:'SOUL ECHO DODGE! next hits twice'}); }
     }
     else if(ip==='MAGE-SPECTER') {
@@ -7319,7 +7320,7 @@ function doTurn(moveIdx) {
     }
     else if(ip==='BEE-GHOST') {
       if(Math.random() < 0.10) {
-        pd += pd * 2; // triple hit
+        pd += pd * 2; pdHitCount=3; // triple hit
         if(Math.random() < 0.25 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns = 3; passives.push({icon:'🐝',text:`SWARM ECHO TRIPLE HIT+POISON!→${pd}`}); }
         else passives.push({icon:'🐝',text:`SWARM ECHO TRIPLE HIT!→${pd}`});
       }
@@ -7457,7 +7458,7 @@ function doTurn(moveIdx) {
     }
     else if(ip==='RANGER-GHOST') {
       if(!enemyTrueStrike && Math.random()<0.50) { bs.playerTrueStrike=true; }
-      if(Math.random()<0.10) { const extra=pd; pd+=extra; passives.push({icon:'🏹',text:`STEADY AIM DOUBLE SHOT!→${pd}`}); }
+      if(Math.random()<0.10) { const extra=pd; pd+=extra; pdHitCount=2; passives.push({icon:'🏹',text:`STEADY AIM DOUBLE SHOT!→${pd}`}); }
     }
     else if(ip==='VALKYLIE-GHOST') {
       if(bs.echoValkylieBuff) { pd=Math.round(pd*1.10); if(!enemyTrueStrike && Math.random()<0.08){ed=0;_dodgeEffectApplied=true;} bs.echoValkylieBuff=false; passives.push({icon:'👼',text:`GUARDIAN WING BUFF ATK+10%,dodge+8%→${pd}${ed===0?' DODGE!':''}`}); }
@@ -7542,7 +7543,7 @@ function doTurn(moveIdx) {
   if(enemy.spriteFile==='monster & boss/F-werewolf2-boss.png' && enemy.hp<enemy.maxHp*0.5) {
     // ALPHA WEREWOLF: Berserk Mode below 50% HP
     ed=Math.round(ed*1.40);
-    if(Math.random()<0.20) { const extra=ed; ed+=extra; passives.push({icon:'🌕',text:`ALPHA WEREWOLF BERSERK DOUBLE!→${ed}`}); }
+    if(Math.random()<0.20) { const extra=ed; ed+=extra; edHitCount=2; passives.push({icon:'🌕',text:`ALPHA WEREWOLF BERSERK DOUBLE!→${ed}`}); }
     else passives.push({icon:'🌕',text:`ALPHA WEREWOLF BERSERK ATK+40%→${ed}`});
   }
   if(enemy.spriteFile==='monster & boss/S-slime-boss.png') {
@@ -7565,7 +7566,7 @@ function doTurn(moveIdx) {
       bs.eSpecialBossFinisherUsed = true;
       const h1=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
       const h2=Math.max(1,Math.round((em.dmg+eCurseAtk/3+Math.random()*4)*2.0)-Math.floor(getEffStat('def')/2));
-      ed = h1+h2;
+      ed = h1+h2; edHits=[h1,h2];
       const ls=Math.max(1,Math.round(ed*0.5)); if(bs.enemyHealBlockTurns>0||bs.e2NoHealTurns>0){healBlockedEnemy+=ls;passives.push({icon:'🚫☄️',text:T(`Heal Block: RAGNAROK ดูดเลือด 50% ถูกล็อค (+${ls})`,'Heal Block: RAGNAROK 50% lifesteal BLOCKED (+'+ls+')')});}else{enemy.hp=Math.min(enemy.maxHp,enemy.hp+ls);enemyHeal+=ls;}
       passives.push({icon:'☄️',text:T(`RAGNAROK ไม้ตาย WORLD ENDER! ×2.0 สองครั้ง + ดูดเลือด 50% →${ed}`,`RAGNAROK finisher WORLD ENDER! ×2.0 twice + 50% lifesteal →${ed}`)});
     } else {
@@ -7651,7 +7652,7 @@ function doTurn(moveIdx) {
       passives.push({icon:'👊',text:T(`MONKEY ไม้ตาย THOUSAND FIST FURY! โจมตี 5 ครั้งติด (คริบังคับครั้งสุดท้าย) →${ed}`,`MONKEY finisher THOUSAND FIST FURY! 5 strikes in a row (guaranteed crit on final) →${ed}`)});
     } else {
       if((bs.eMonkeyDefStacks||0) > 0) { ed = Math.round(ed*(1+0.10*bs.eMonkeyDefStacks)); }
-      if(Math.random()<0.30) { const extra=ed; ed+=extra; passives.push({icon:'🐒',text:T(`MONKEY คอมโบ! โจมตี×2→${ed}`,`MONKEY combo! ×2 attacks→${ed}`)}); }
+      if(Math.random()<0.30) { const extra=ed; ed+=extra; edHitCount=2; passives.push({icon:'🐒',text:T(`MONKEY คอมโบ! โจมตี×2→${ed}`,`MONKEY combo! ×2 attacks→${ed}`)}); }
       if(ed>0 && Math.random()<0.20) { bs.eMonkeyDefStacks=Math.min(3,(bs.eMonkeyDefStacks||0)+1); passives.push({icon:'🐒',text:T(`MONKEY ลด DEF ผู้เล่น! stack×${bs.eMonkeyDefStacks}`,`MONKEY reduced your DEF! stack×${bs.eMonkeyDefStacks}`)}); }
     }
   }
@@ -8014,9 +8015,12 @@ function doTurn(moveIdx) {
     passives.push({icon:'❄️✨',text:T(`ติดแช่แข็ง! ${pFreezeLabel} (เหลือ ${bs.playerFreezeSpdTurns} เทิร์น)`,`Frozen! ${pFreezeLabel} (${bs.playerFreezeSpdTurns} turns left)`)});
   }
 
+  // Split combined multi-hit damage into per-hit numbers so the display shows each strike.
+  if(pdHits.length===0 && pdHitCount>1 && pd>0) pdHits = _splitDmg(pd, pdHitCount);
+  if(edHits.length===0 && edHitCount>1 && ed>0) edHits = _splitDmg(ed, edHitCount);
   const turnNum = battleState.turn;
   battleState.lastCmp = cmp;
-  battleState.lastResult = { pm, em, cmp, crit, enemyCrit, pd, ed, playerFirst, passives, playerHeal, enemyHeal, reflectDmg, counterDmg, eReflectDmg, eCounterDmg, poisonDmgEnemy, poisonDmgPlayer, burnDmgEnemy, burnDmgPlayer, enemyStunned, playerStunned, pdHits, extraHits, playerHealPre:playerHeal, playerHealP1:0, playerHealP2:0, healBlockedEnemy, healBlockedPlayer, enemyJustFrozen, playerJustFrozen };
+  battleState.lastResult = { pm, em, cmp, crit, enemyCrit, pd, ed, playerFirst, passives, playerHeal, enemyHeal, reflectDmg, counterDmg, eReflectDmg, eCounterDmg, poisonDmgEnemy, poisonDmgPlayer, burnDmgEnemy, burnDmgPlayer, enemyStunned, playerStunned, pdHits, edHits, extraHits, playerHealPre:playerHeal, playerHealP1:0, playerHealP2:0, healBlockedEnemy, healBlockedPlayer, enemyJustFrozen, playerJustFrozen };
   battleState.turn++;
   battleState.log.push(
     `T${turnNum} ${pm.name} vs ${em.name}`+(cmp==='win'?' ▶WIN':cmp==='lose'?' ◀LOSE':''),
@@ -12880,7 +12884,12 @@ function renderBattleScreen() {
             if(lr.eCounterDmg>0) dmgNums += `<div class="dmg-num counter-player" style="color:#ff8800">⚔-${lr.eCounterDmg}</div>`;
           } else if(ap==='e-atk') {
             if(lr.ed>0) dmgNums += slashFx('left', lr.enemyCrit);
-            dmgNums += `<div class="dmg-num ${lr.ed===0?(lr.enemyStunned?'enemy-hit stun-tag':lr.fullyReflected?'enemy-hit reflect-tag':'player-hit miss-tag'):'player-hit'}">${lr.ed>0?'-'+lr.ed:(lr.enemyStunned?(lr.enemyJustFrozen?'❄️FROZEN!':'⚡STUNNED!'):lr.fullyReflected?'🪞REFLECTED!':'DODGE!')}</div>`;
+            const eHits = lr.edHits && lr.edHits.length>1 ? lr.edHits : (lr.ed>0 ? [lr.ed] : []);
+            if(eHits.length===0) {
+              dmgNums += `<div class="dmg-num ${lr.enemyStunned?'enemy-hit stun-tag':lr.fullyReflected?'enemy-hit reflect-tag':'player-hit miss-tag'}">${lr.enemyStunned?(lr.enemyJustFrozen?'❄️FROZEN!':'⚡STUNNED!'):lr.fullyReflected?'🪞REFLECTED!':'DODGE!'}</div>`;
+            } else {
+              eHits.forEach((h,i)=>{ dmgNums += `<div class="dmg-num player-hit" style="animation-delay:${i*0.22}s;top:${30-i*11}%">-${h}</div>`; });
+            }
             if(lr.enemyCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
             { const ph = lr.playerFirst ? (lr.playerHealP2||0) : (lr.playerHealP1||0); if(ph>0) dmgNums += `<div class="dmg-num heal">💚+${ph}</div>`; }
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;

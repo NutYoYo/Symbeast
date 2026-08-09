@@ -4569,8 +4569,8 @@ function genScoutGrid() {
   place('treasure', 3);
   place('gold_chest', 2);
   place('rest', 2);
-  // Secret Dungeon entrance: any Hell stage, 10% chance per map generation.
-  if(hellMode && Math.random() < 0.10) {
+  // Secret Dungeon entrance: any Hell stage — 10% chance per map generation, bumped to 15% on Hell 20.
+  if(hellMode && Math.random() < (hellStage===20 ? 0.15 : 0.10)) {
     place('dungeon_entrance', 1);
     const idx = Math.floor(Math.random()*SECRET_DUNGEONS.length);
     scoutGrid.forEach(c => { if(c.type==='dungeon_entrance') c.dungeonIdx = idx; });

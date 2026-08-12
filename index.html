@@ -8725,9 +8725,9 @@ function discardSymbol(idx) {
 }
 
 function applyEvolution() {
-  // 3-way roll regardless of symbols held: 93% normal / 5% GHOST / 2% EPIC-GHOST
+  // 3-way roll regardless of symbols held: 90% normal / 7% GHOST / 3% EPIC-GHOST
   const _evoRoll = Math.random();
-  const key = _evoRoll < 0.02 ? 'EPIC-GHOST' : _evoRoll < 0.07 ? 'GHOST' : getFormKey();
+  const key = _evoRoll < 0.03 ? 'EPIC-GHOST' : _evoRoll < 0.10 ? 'GHOST' : getFormKey();
   const form = FORMS[key];
   if(!form) return;
   const oldSvg = buildPetSvg(creature, 90); // แคปร่างเดิมก่อน

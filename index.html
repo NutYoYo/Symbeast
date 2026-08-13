@@ -873,6 +873,20 @@ const SFX = {
     _noise(0.2, t, 0.04, ctx);
   })},
 
+  // สวนกลับ (counter) — parry แล้ว riposte: clang โลหะ + "ชวิ้ง" พุ่งกลับ ให้ต่างจากหมัดปกติ/คริชัดเจน
+  counter() { _sfx(ctx => {
+    const t = ctx.currentTime;
+    // metallic parry clang (สั้น คม)
+    _osc('square', 520, 0.22, t, 0.03, ctx);
+    _osc('square', 800, 0.16, t, 0.025, ctx);
+    // reversal "shwing": ตกลงเร็ว แล้วพุ่งขึ้นสูง (ลายเซ็นของ counter)
+    _sweep('sine', 1700, 520, 0.16, t, 0.05, ctx);
+    _sweep('sine', 520, 2300, 0.24, t+0.05, 0.12, ctx);
+    // impact punch ปิดท้าย
+    _noise(0.5, t+0.05, 0.03, ctx);
+    _sweep('triangle', 300, 90, 0.25, t+0.05, 0.1, ctx);
+  })},
+
   // compat aliases
   strike() { SFX.hit(); },
   rush()   { SFX.hit(); },
@@ -1167,8 +1181,8 @@ const EVOLVE2_FORMS = {
     passive:'25% chance to dodge; on dodge, counter-attacks for 75% damage',
     passiveTh:'25% โอกาสหลบการโจมตี เมื่อหลบสำเร็จจะโจมตีโต้กลับด้วยดาเมจ 75%' },
   'CRIMSON-BRAWLER':    { name:'CRIMSON-BRAWLER',    color:'#ff2200', hp:117, atk:41, spd:16, def:6,  passiveIcon:'☯️',
-    passive:'Every round (WIN or LOSE): ATK+10% and SPD+10% (max 3 stacks per battle)',
-    passiveTh:'ไม่ว่า WIN หรือ LOSE: ATK+10% และ SPD+10% ทุกรอบ (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้)' },
+    passive:'Every round (WIN or LOSE): ATK+10% and SPD+10% (max 3 stacks per battle), and 20% chance to counter for 75% damage',
+    passiveTh:'ไม่ว่า WIN หรือ LOSE: ATK+10% และ SPD+10% ทุกรอบ (สะสมได้สูงสุด 3 ครั้ง/1 การต่อสู้) และมีโอกาส 20% สวนกลับด้วยดาเมจ 75%' },
   'KAIJU-BRAWLER':      { name:'KAIJU-BRAWLER',      color:'#aa2222', hp:137, atk:36, spd:13, def:8,  passiveIcon:'🦖',
     passive:'On LOSE: next round ATK +50%, DEF +50%, and 25% chance to burn the enemy',
     passiveTh:'เมื่อ LOSE รอบถัดไปจะ ATK +50%, DEF +50% และมีโอกาส 25% ที่จะทำให้ศัตรูติดเผาไหม้' },
@@ -1284,8 +1298,8 @@ const EVOLVE2_FORMS = {
     passive:'20% chance to dodge; every 3 turns, attacks cannot miss, deal +50% damage, and guarantee a critical hit',
     passiveTh:'20% โอกาสหลบการโจมตี, ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ +50% และติดคริติคอลแน่นอน' },
   'CRYSTAWOLF-BASTION': { name:'CRYSTAWOLF-BASTION', color:'#88aacc', hp:189, atk:21, spd:16, def:25, passiveIcon:'💎',
-    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, counter-attacks every round for 75% damage, and 10% chance to Freeze the enemy when hit',
-    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% โต้กลับด้วยดาเมจ 75% ทุกรอบ และมีโอกาส 10% ทำให้ศัตรูติดแช่แข็งเมื่อโดนโจมตี' },
+    passive:'While HP > 50%: ATK +25%. While HP < 50%: DEF +25%, 50% chance to counter for 75% damage, and 10% chance to Freeze the enemy when hit',
+    passiveTh:'เมื่อ HP > 50%: ATK+25% เมื่อ HP < 50%: DEF+25% มีโอกาส 50% สวนกลับด้วยดาเมจ 75% และมีโอกาส 10% ทำให้ศัตรูติดแช่แข็งเมื่อโดนโจมตี' },
   'GOLEM-BASTION':      { name:'GOLEM-BASTION',      color:'#1a2733', hp:221, atk:18, spd:13, def:34, passiveIcon:'🗿',
     passive:'All damage taken -20%; while HP < 30%, ATK +30% and recovers 5% HP each round',
     passiveTh:'ลดดาเมจที่รับทั้งหมด 20% และเมื่อ HP < 30% ATK+30%, ฟื้นฟู HP 5%' },
@@ -1378,8 +1392,8 @@ const EVOLVE2_FORMS = {
     passive:'Damage dealt +20% per 10% HP missing (max +160%)',
     passiveTh:'ดาเมจที่สร้างเพิ่มขึ้น 20% ต่อทุก 10% HP ที่หายไป (สูงสุด +160%)' },
   'SAMURAI-GHOST':      { name:'SAMURAI-GHOST',      color:'#b0b8c8', hp:125, atk:60, spd:21, def:7,  passiveIcon:'⚔️',
-    passive:'Guaranteed critical hit on every attack; dodge chance +20%',
-    passiveTh:'โจมตีติดคริติคอลแน่นอน และเพิ่มโอกาสหลบหลีก 20%' },
+    passive:'Guaranteed critical hit on every attack; 20% chance to counter for 75% damage',
+    passiveTh:'โจมตีติดคริติคอลแน่นอน และมีโอกาส 20% สวนกลับด้วยดาเมจ 75%' },
   // WING
   'BLUE-SENTINEL-GHOST':{ name:'BLUE-SENTINEL-GHOST',color:'#2288ff', hp:112, atk:30, spd:52, def:7,  passiveIcon:'🔵',
     passive:'25% chance to dodge; on dodge, the next attack ATK+50% and pierces DEF',
@@ -1391,12 +1405,12 @@ const EVOLVE2_FORMS = {
     passive:'On WIN: heal 10% Max HP, dodge+15%, and ATK+20% next round',
     passiveTh:'เมื่อ WIN: ฟื้น HP 10% ของ Max HP และโอกาสหลบ +15% และ ATK+20% ในรอบถัดไป' },
   'ARC-ANGEL-GHOST':    { name:'ARC-ANGEL-GHOST',    color:'#f5f0ff', hp:115, atk:29, spd:54, def:8,  passiveIcon:'😇',
-    passive:'50% chance each turn to cleanse a debuff; when HP<50%: 50% chance to stun the enemy and dodge+15%',
-    passiveTh:'ทุกเทิร์นมีโอกาส 50% ล้างดีบัฟ 1 อย่าง และเมื่อ HP<50% โอกาสสตันศัตรู 50% โอกาสหลบ +15%' },
+    passive:'50% chance each turn to cleanse a debuff; when HP<50%: 50% chance to stun the enemy and 25% chance to counter for 75% damage',
+    passiveTh:'ทุกเทิร์นมีโอกาส 50% ล้างดีบัฟ 1 อย่าง และเมื่อ HP<50% โอกาสสตันศัตรู 50% และมีโอกาส 25% สวนกลับด้วยดาเมจ 75%' },
   // SHIELD
   'GREEN-SENTINEL-GHOST':{ name:'GREEN-SENTINEL-GHOST',color:'#22aa22', hp:158, atk:24, spd:19, def:28, passiveIcon:'🟢',
-    passive:'30% chance to halve incoming damage; regen 4% Max HP/turn',
-    passiveTh:'30% โอกาสลดดาเมจที่รับครึ่งหนึ่ง และฟื้น HP 4% ของ Max HP ทุกเทิร์น' },
+    passive:'30% chance to halve incoming damage then counter for 75% damage; regen 4% Max HP/turn',
+    passiveTh:'30% โอกาสลดดาเมจที่รับครึ่งหนึ่งแล้วสวนกลับด้วยดาเมจ 75% และฟื้น HP 4% ของ Max HP ทุกเทิร์น' },
   'SKELETON-KING-GHOST':{ name:'SKELETON-KING-GHOST',color:'#d8d0c0', hp:165, atk:27, spd:16, def:25, passiveIcon:'💀',
     passive:'20% lifesteal on every attack; upon death, revive with 100% HP (once per battle)',
     passiveTh:'ดูดเลือด 20% ทุกการโจมตี และเมื่อตายจะฟื้นคืนชีพด้วย HP 100% (1 ครั้ง/การต่อสู้)' },
@@ -1408,8 +1422,8 @@ const EVOLVE2_FORMS = {
     passiveTh:'ทุกการโจมตี : 50% โอกาสสุ่มดีบัพ 1 อย่างที่มีในเกมใส่ศัตรู (พิษ, เผาไหม้, คำสาป, ตาบอด, ห้ามฮีล)' },
   // BALANCE
   'BAHAMUT-GHOST':      { name:'BAHAMUT-GHOST',      color:'#6633cc', hp:145, atk:38, spd:24, def:17, passiveIcon:'🐲',
-    passive:'On WIN: ATK+75%, DEF-50%. On LOSE: DEF+75%, ATK-50%',
-    passiveTh:'เมื่อ WIN: ATK+75% DEF-50% เมื่อ LOSE: DEF+75% ATK-50%' },
+    passive:'On WIN: ATK+100%, DEF-50%. On LOSE: DEF+75%, ATK-50%',
+    passiveTh:'เมื่อ WIN: ATK+100% DEF-50% เมื่อ LOSE: DEF+75% ATK-50%' },
   'DRAGON-TAMER-GHOST': { name:'DRAGON-TAMER-GHOST', color:'#dd8844', hp:130, atk:35, spd:26, def:16, passiveIcon:'🤝',
     passive:'On WIN: attacks pierce DEF and 50% chance to Burn the enemy. On LOSE: DEF+25%',
     passiveTh:'เมื่อ WIN: โจมตีทะลุ DEF และมีโอกาส 50% ทำให้ศัตรูติดเผาไหม้ เมื่อ LOSE: DEF+25%' },
@@ -1604,6 +1618,7 @@ const ARTIFACTS = {
   clouded_lens:    { name:'Clouded Lens',     nameTh:'เลนส์หมอกมัว',        grade:'R', icon:'👁️', desc:'In battle: 20% chance to Blind the enemy on hit', descTh:'ในการต่อสู้: 20% โอกาสทำให้ศัตรูตาบอดเมื่อโจมตี' },
   rimefrost_fang:  { name:'Rimefrost Fang',   nameTh:'เขี้ยวน้ำแข็ง',       grade:'R', icon:'❄️', desc:'In battle: 15% chance to Freeze the enemy on hit', descTh:'ในการต่อสู้: 15% โอกาสทำให้ศัตรูติด Freeze เมื่อโจมตี' },
   tri_attack:      { name:'Tri-Attack',       nameTh:'ไตรอาวุธ',           grade:'E', icon:'🔮', desc:'In battle: Each attack has a 25% chance to randomly inflict Freeze, Burn, or Poison on the enemy', descTh:'ในการต่อสู้: ทุกการโจมตีมีโอกาส 25% สุ่มทำให้ศัตรูติด Freeze, Burn หรือ Poison อย่างใดอย่างหนึ่ง' },
+  riposte_core:    { name:'Riposte Core',     nameTh:'แก่นสวนกลับ',         grade:'E', icon:'🪃', desc:'In battle: 25% chance to counter-attack for 90% of a normal hit (inflicts status/crit/lifesteal like a normal attack)', descTh:'ในการต่อสู้: 25% โอกาสสวนกลับด้วยดาเมจ 90% ของหมัดปกติ (ติดสถานะ/คริ/ดูดเลือด เหมือนหมัดปกติ)' },
 };
 // Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
 // have been moved to the Weapon system and removed from the drop pool below. Their ARTIFACTS entries and
@@ -1611,7 +1626,7 @@ const ARTIFACTS = {
 const ARTIFACT_POOL = {
   N: ['shock_bead','keen_edge','blade_shard','iron_plate','swift_ring','life_seed','crimson_fang','stone_skin','lucky_charm','venom_fang','frost_bead'],
   R: ['death_mark','precision_stone','paralysis_fang','berserker_claw','victory_chain','reflect_coat','wind_step','rage_core','drain_aura','blood_pact','tide_breaker','crit_core','toxic_coat','antidote_charm','reflect_ward','cursed_shackle','clouded_lens','rimefrost_fang'],
-  E: ['iron_will','true_sight','moon_veil','double_attack','wild_card','execution','chain_strike','soul_reaper','deathblow','sniper_eye','plague_scythe','piercing_fang','tri_attack'],
+  E: ['iron_will','true_sight','moon_veil','double_attack','wild_card','execution','chain_strike','soul_reaper','deathblow','sniper_eye','plague_scythe','piercing_fang','tri_attack','riposte_core'],
 };
 function rollArtifactGrade(floor) {
   const r = Math.random();
@@ -2698,7 +2713,7 @@ const OVERDRIVE_INFO = {
 const FUSION_ECHO_INFO = {
   'RAGING-BRAWLER':     {name:'RAGING ECHO',      icon:'💢', desc:'On WIN: damage dealt +8% per stack (max 5 stacks per battle)', descTh:'เมื่อ WIN ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
   'WINDBLADE-BRAWLER':  {name:'WINDBLADE ECHO',   icon:'🗡', desc:'12% chance to dodge; on dodge, counter-attacks for 75% damage', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จโต้กลับดาเมจ 75%'},
-  'CRIMSON-BRAWLER':    {name:'CRIMSON ECHO',     icon:'☯️', desc:'Every round: ATK+5% and SPD+5% (max 3 stacks per battle)', descTh:'ทุกรอบ ATK+5% และ SPD+5% (สะสมสูงสุด 3 ครั้ง)'},
+  'CRIMSON-BRAWLER':    {name:'CRIMSON ECHO',     icon:'☯️', desc:'Every round: ATK+5% and SPD+5% (max 3 stacks per battle), and 10% chance to counter for 75% damage', descTh:'ทุกรอบ ATK+5% และ SPD+5% (สะสมสูงสุด 3 ครั้ง) และมีโอกาส 10% สวนกลับด้วยดาเมจ 75%'},
   'KAIJU-BRAWLER':      {name:'KAIJU ECHO',       icon:'🦖', desc:'On LOSE: next round ATK+25%, DEF+25%, and 12% chance to burn the enemy', descTh:'เมื่อ LOSE รอบถัดไป ATK+25%, DEF+25% และ 12% โอกาสทำให้ศัตรูติดเผาไหม้'},
   'FIGHTER-PANDA':      {name:'FIGHTER ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +35% that turn', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้น 35% ในเทิร์นนั้น'},
   'PANDA-NINJA':         {name:'NINJA ECHO',      icon:'🥷', desc:'12% chance to dodge; on dodge, crit chance +50% next attack', descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ โอกาสคริ+50% ในการโจมตีถัดไป'},
@@ -2734,7 +2749,7 @@ const FUSION_ECHO_INFO = {
   'FATTY-SHIELDWING':   {name:'FATTY ECHO',       icon:'🛡', desc:'Damage taken -10%; while HP > 70%, ATK/DEF +15%; while HP < 70%, ATK +25%', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP > 70% ATK/DEF+15% เมื่อ HP < 70% ATK+25%'},
   'GUANLET-BASTION':    {name:'GUANLET ECHO',     icon:'🥊', desc:'On LOSE: damage dealt +8% per stack (max 5 stacks per battle)', descTh:'เมื่อ LOSE ดาเมจเพิ่มขึ้นครั้งละ 8% (สะสมสูงสุด 5 ครั้ง)'},
   'IRON-BASTION':       {name:'BASTION ECHO',     icon:'🎯', desc:'10% chance to dodge; every 3 turns, attacks cannot miss, deal +25% damage, and guarantee a crit', descTh:'10% โอกาสหลบการโจมตี ทุก 3 เทิร์น โจมตีไม่พลาดเป้า ดาเมจ+25% และติดคริแน่นอน'},
-  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, counter-attacks for 75% damage, 5% chance to Freeze when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, โต้กลับดาเมจ 75%, 5% โอกาสแช่แข็งเมื่อโดนโจมตี'},
+  'CRYSTAWOLF-BASTION': {name:'CRYSTAL ECHO',     icon:'💎', desc:'While HP > 50%: ATK+12%. While HP < 50%: DEF+12%, 50% chance to counter for 75% damage, 5% chance to Freeze when hit', descTh:'เมื่อ HP > 50%: ATK+12% เมื่อ HP < 50%: DEF+12%, มีโอกาส 50% สวนกลับดาเมจ 75%, 5% โอกาสแช่แข็งเมื่อโดนโจมตี'},
   'GOLEM-BASTION':      {name:'GOLEM ECHO',       icon:'🗿', desc:'Damage taken -10%; while HP < 30%, ATK +15% and recovers 2.5% HP each round', descTh:'ลดดาเมจที่รับ 10% เมื่อ HP < 30% ATK+15% และฟื้นฟู HP 2.5%'},
   // === GHOST Echo Passives (half-strength Fusion versions) ===
   'RAGEBEAR-GHOST':     {name:'RAGE ECHO',      icon:'💢', desc:'Damage +50% when enemy HP > 50%', descTh:'ดาเมจ +50% เมื่อศัตรูมี HP > 50%'},
@@ -2768,18 +2783,18 @@ const FUSION_ECHO_INFO = {
     descTh:'โอกาส 15% ทำให้ศัตรูติดเผาไหม้เมื่อโจมตี และเมื่อ WIN: ATK+5% ต่อครั้ง (สะสมสูงสุด 5 ครั้ง)'},
   'BABARIAN-GHOST':     {name:'BERSERK ECHO',    icon:'🪓', desc:'Damage dealt +15% per 10% HP missing (max +105%)',
     descTh:'ดาเมจที่สร้างเพิ่มขึ้น 15% ต่อทุก 10% HP ที่หายไป (สูงสุด +105%)'},
-  'SAMURAI-GHOST':      {name:'SWIFT BLADE',     icon:'⚔️', desc:'Crit chance +50%; dodge chance +10%',
-    descTh:'โอกาสคริ +50% และโอกาสหลบเพิ่ม 10%'},
+  'SAMURAI-GHOST':      {name:'SWIFT BLADE',     icon:'⚔️', desc:'Crit chance +50%; 10% chance to counter for 75% damage',
+    descTh:'โอกาสคริ +50% และมีโอกาส 10% สวนกลับด้วยดาเมจ 75%'},
   'BLUE-SENTINEL-GHOST':{name:'WAVE STEP',       icon:'🔵', desc:'12% chance to dodge; on dodge, next attack ATK+25% and pierces DEF',
     descTh:'12% โอกาสหลบการโจมตี เมื่อหลบสำเร็จ การโจมตีครั้งถัดไป ATK+25% และทะลุ DEF'},
   'RANGER-GHOST':       {name:'STEADY AIM',      icon:'🏹', desc:'50% chance for attacks to never miss; 10% chance to attack twice',
     descTh:'โอกาส 50% ที่จะโจมตีไม่พลาดเป้า และ โอกาส 10% โจมตี 2 ครั้ง'},
   'VALKYLIE-GHOST':     {name:'GUARDIAN WING',   icon:'👼', desc:'On WIN: heal 5% Max HP, dodge+8%, and ATK+10% next round',
     descTh:'เมื่อ WIN: ฟื้น HP 5% ของ Max HP, โอกาสหลบ+8% และ ATK+10% ในรอบถัดไป'},
-  'ARC-ANGEL-GHOST':    {name:'BLESSED LIGHT',   icon:'😇', desc:'50% chance each turn to cleanse a debuff; when HP<50%: 25% chance to stun the enemy and dodge+7%',
-    descTh:'ทุกเทิร์นมีโอกาส 50% ล้างดีบัฟ 1 อย่าง เมื่อ HP<50%: โอกาสสตันศัตรู 25% และโอกาสหลบ+7%'},
-  'GREEN-SENTINEL-GHOST':{name:'THORNED BARK',   icon:'🟢', desc:'20% chance to halve incoming damage; regen 2% Max HP/turn',
-    descTh:'20% โอกาสลดดาเมจที่รับครึ่งหนึ่ง และฟื้น HP 2% ของ Max HP ทุกเทิร์น'},
+  'ARC-ANGEL-GHOST':    {name:'BLESSED LIGHT',   icon:'😇', desc:'50% chance each turn to cleanse a debuff; when HP<50%: 25% chance to stun the enemy and 12% chance to counter for 75% damage',
+    descTh:'ทุกเทิร์นมีโอกาส 50% ล้างดีบัฟ 1 อย่าง เมื่อ HP<50%: โอกาสสตันศัตรู 25% และมีโอกาส 12% สวนกลับด้วยดาเมจ 75%'},
+  'GREEN-SENTINEL-GHOST':{name:'THORNED BARK',   icon:'🟢', desc:'20% chance to halve incoming damage then counter for 75% damage; regen 2% Max HP/turn',
+    descTh:'20% โอกาสลดดาเมจที่รับครึ่งหนึ่งแล้วสวนกลับด้วยดาเมจ 75% และฟื้น HP 2% ของ Max HP ทุกเทิร์น'},
   'SKELETON-KING-GHOST':{name:'BONE GUARD',      icon:'💀', desc:'10% lifesteal on every attack; once per battle, revive with 50% HP on death',
     descTh:'ดูดเลือด 10% ทุกการโจมตี และเมื่อตาย ฟื้นคืนชีพด้วย HP 50% (1 ครั้ง/การต่อสู้)'},
   'DRAGON-KNIGHT-GHOST':{name:'SCALE GUARD',     icon:'🐉', desc:'Reflects 20% of damage received; when HP<50%: DEF+12% and regen 1.5% Max HP/turn',
@@ -5724,6 +5739,18 @@ function doTurn(moveIdx) {
   const critMult = sniperReady ? 2.0 : hasDeathblow ? 2.0 : 1.6;
   let playerHeal = 0, enemyHeal = 0, reflectDmg = 0, counterDmg = 0, eReflectDmg = 0, eCounterDmg = 0, poisonDmgEnemy = 0, poisonDmgPlayer = 0, burnDmgEnemy = 0, burnDmgPlayer = 0, enemyStunned = false, playerStunned = false, pdHits = [], edHits = [], extraHits = [], pdHitCount = 1, edHitCount = 1;
   let healBlockedEnemy = 0, healBlockedPlayer = 0;
+  // Counter-as-real-strike: instead of applying counter damage inline (which looked identical to
+  // reflect), counter procs are QUEUED here and resolved as a genuine follow-up strike (own animation
+  // beat, own crit roll, DEF mitigation, KO-capable) after the main exchange. One slot per side/turn.
+  bs.pCounter = null; // player counters the enemy: { mult, icon, label }
+  bs.eCounter = null; // enemy counters the player
+  // queueCounter must be defined here (before the synchronous passive/artifact blocks that call it).
+  // by='player' → player strikes back at the enemy; by='enemy' → enemy strikes back at the player.
+  // If several counters proc the same side/turn, keep the strongest multiplier.
+  const queueCounter = (by, mult, icon, label) => {
+    const slot = by==='player' ? 'pCounter' : 'eCounter';
+    if(!bs[slot] || mult > bs[slot].mult) bs[slot] = { mult, icon, label };
+  };
   let _dodgeEffectApplied = false; // track if any artifact/weapon dodge should trigger form secondary effects
   let _eDodgeEffectApplied = false; // same, but for the enemy side (enemy artifact/weapon dodge → enemy form secondary effect)
   const _pHeal = (h, icon, txt) => { if(bs.playerHealBlockTurns>0||bs.e2NoHealTurnsE>0){healBlockedPlayer+=h;passives.push({icon:'🚫'+icon,text:txt+' '+T('(ถูกบล็อค)','(BLOCKED)')});return false;}else{creature.hp=Math.min(creature.maxHp,creature.hp+h);playerHeal+=h;passives.push({icon,text:txt});return true;} };
@@ -5802,6 +5829,8 @@ function doTurn(moveIdx) {
   if(eArtId || eArtId2) {
     const eas = bs.eArtStacks || (bs.eArtStacks = {});
     const eHasA = k => eArtId===k || eArtId2===k;
+    // 🪃 Riposte Core (enemy): 25% chance to counter the player for 90% of a normal hit
+    if(eHasA('riposte_core') && pd>0 && !playerReflectImmune && Math.random()<0.25) { queueCounter('enemy', 0.90, '🪃', 'Riposte Core'); passives.push({icon:'🪃',text:'[E] Riposte Core COUNTER!'}); }
     // blade_shard: ed +10%
     if(eHasA('blade_shard') && !enemyStunned) { ed=Math.round(ed*1.10); passives.push({icon:'🗡',text:`[E] Blade Shard →${ed}`}); }
     // iron_plate: reduce pd by 15%
@@ -5878,7 +5907,7 @@ function doTurn(moveIdx) {
     if(type==='KAIJU-BRAWLER') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'💥',text:`APOCALYPSE WALL Crit+15%,dmgTaken-15%→${ed}`}); }
     if(type==='FIGHTER-PANDA') { pd+=Math.floor(enemy.def/2); if(Math.random()<0.75){const c=Math.max(1,Math.round(_atk/3*0.75));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK pierce+counter→${pd}`}); }
     if(type==='PANDA-WARRIOR') { pd+=Math.floor(enemy.def/2); if(!enemyTrueStrike && Math.random()<0.20){ed=0;} if(Math.random()<0.5){const c=Math.max(1,Math.round(_atk/3*0.5));pd+=c;} passives.push({icon:'🛡',text:`FORTRESS BREAK RUSH pierce+counter+dodge→${pd}`}); }
-    if(type==='ARMOR-PANDA') { odCounterOnHit=0.5; ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'🛡',text:`FORTRESS BREAK WALL reflect50%,dmgTaken-15%→${ed}`}); }
+    if(type==='ARMOR-PANDA') { odCounterOnHit=0.5; ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'🛡',text:`FORTRESS BREAK WALL counter50%,dmgTaken-15%→${ed}`}); }
     if(type==='TYRANT-IRONJAW') { pd=Math.round(pd*1.25); passives.push({icon:'🩸',text:`CRIMSON REAPER ATK+25%→${pd}`}); }
     if(type==='AGILE-IRONJAW') { if(Math.random()<0.30){const extra=pd;pd+=extra;pdHitCount=2;} passives.push({icon:'🩸',text:`CRIMSON REAPER FANG doubleAttack+30%→${pd}`}); }
     if(type==='FULLARMOR-IRONJAW') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); odCounterOnHit=0.5; passives.push({icon:'🩸',text:`CRIMSON REAPER WARD dmgTaken-20%→${ed}`}); }
@@ -5888,10 +5917,10 @@ function doTurn(moveIdx) {
     if(type==='WARLORD-CHAMPION') { pd=Math.round(pd*1.2); if(Math.random()<0.25){const extra=pd;pd+=extra;pdHitCount=2;} passives.push({icon:'⚔️',text:`CONQUEROR'S WRATH ATK×1.2,4hit+25%→${pd}`}); }
     if(type==='KING-CHAMPION') { pd=Math.round(pd*2.0); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const ls=Math.max(1,Math.round(pd*0.35)); _pHeal(ls,'👑',`BLOOD TRIBUTE ATK×2,lifesteal35%→${pd}`); }
     if(type==='ROLLING-CHAMPION') { pd=Math.round(pd*2.0); ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); if(Math.random()<0.5){const extra=pd;pd+=extra;pdHitCount=2;} passives.push({icon:'🌀',text:`ROLLING STRIKE ATK×2,doubleAttack50%→${pd}`}); }
-    if(type==='BLAZING-FORTRESS') { pd=Math.round(pd*1.2); odCounterOnHit=0.5; passives.push({icon:'🏔️',text:`EARTHSHATTER STRIKE ATK+20%,reflect50%→${pd}`}); }
-    if(type==='SWIFT-FORTRESS') { odCounterOnHit=0.5; if(!enemyTrueStrike && Math.random()<0.15){ed=0;} const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🏔️',`EARTHSHATTER QUAKE reflect50%,dodge+15%,+${heal}HP`); }
+    if(type==='BLAZING-FORTRESS') { pd=Math.round(pd*1.2); odCounterOnHit=0.5; passives.push({icon:'🏔️',text:`EARTHSHATTER STRIKE ATK+20%,counter50%→${pd}`}); }
+    if(type==='SWIFT-FORTRESS') { odCounterOnHit=0.5; if(!enemyTrueStrike && Math.random()<0.15){ed=0;} const heal=Math.round(creature.maxHp*0.10); _pHeal(heal,'🏔️',`EARTHSHATTER QUAKE counter50%,dodge+15%,+${heal}HP`); }
     if(type==='GUARDIAN-FORTRESS') {
-      odCounterOnHit=1.0; passives.push({icon:'🏔️',text:'EARTHSHATTER reflect100%'});
+      odCounterOnHit=1.0; passives.push({icon:'🏔️',text:'EARTHSHATTER counter100%'});
       if(ed>0 && Math.random()<0.5 && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:'EARTHSHATTER POISON! Enemy poisoned'}); }
     }
     if(type==='DARK-SPECTER') { /* Crit+50% via OD_CRIT_BONUS */ passives.push({icon:'💀',text:'DEATH SCYTHE Crit+50%'}); }
@@ -6006,6 +6035,7 @@ function doTurn(moveIdx) {
     bs.e2Stack=Math.min(3,(bs.e2Stack||0)+1);
     pd=Math.round(pd*(1+0.10*bs.e2Stack));
     passives.push({icon:'☯️',text:`CRIMSON BALANCE ATK+10%×${bs.e2Stack},SPD+10%×${bs.e2Stack}→${pd}`});
+    if(Math.random()<0.20) { queueCounter('player', 0.75, '☯️', 'CRIMSON-BRAWLER'); passives.push({icon:'☯️',text:`CRIMSON 20% COUNTER!`}); }
   }
   if(ff==='KAIJU-BRAWLER') {
     if(bs.e2NextBuff) {
@@ -6021,12 +6051,12 @@ function doTurn(moveIdx) {
     if(!enemyTrueStrike && Math.random()<0.25) { ed=0; bs.e2NextGuaranteeCrit=true; _dodgeEffectApplied=true; passives.push({icon:'🥷',text:'PANDA-NINJA DODGE! Next crit GUARANTEED'}); }
   }
   if(ff==='PANDA-WARRIOR' && Math.random()<0.25) {
-    ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
-    passives.push({icon:'🐼',text:`PANDA-WARRIOR dmg½ Counter -${counter}`});
+    ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); queueCounter('player', 0.75, '🐼', 'PANDA-WARRIOR');
+    passives.push({icon:'🐼',text:`PANDA-WARRIOR dmg½ COUNTER!`});
   }
   if(ff==='ARMOR-PANDA') {
     ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
-    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter); passives.push({icon:'🛡',text:`ARMOR-PANDA dmg-20% Counter -${counter}`}); }
+    if(Math.random()<0.5) { queueCounter('player', 0.75, '🛡', 'ARMOR-PANDA'); passives.push({icon:'🛡',text:`ARMOR-PANDA dmg-20% COUNTER!`}); }
     else passives.push({icon:'🛡',text:`ARMOR-PANDA dmg-20%→${ed}`});
   }
   if(ff==='TYRANT-IRONJAW') { pd=Math.round(pd*1.2); passives.push({icon:'🩸',text:`TYRANT dmg+20%→${pd}`}); }
@@ -6041,8 +6071,8 @@ function doTurn(moveIdx) {
     else passives.push({icon:'🔮',text:`RUNE R.${bs.e2RuneType==='atk'?'+50%ATK':'+50%DEF'}→${pd}`});
   }
   if(ff==='FULLARMOR-IRONJAW' && creature.hp<creature.maxHp*0.5) {
-    ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
-    passives.push({icon:'🛡',text:`FULLARMOR HP<50% dmg-20% Counter -${counter}`});
+    ed=(enemyIgnoresDef?ed:Math.round(ed*0.8)); queueCounter('player', 0.75, '🛡', 'FULLARMOR-IRONJAW');
+    passives.push({icon:'🛡',text:`FULLARMOR HP<50% dmg-20% COUNTER!`});
   }
   if(ff==='STRONG-BLITZ' && cmp==='win') {
     pd=Math.round(pd*1.2);
@@ -6141,8 +6171,8 @@ function doTurn(moveIdx) {
     } else passives.push({icon:'🗿',text:`GOLEM dmg-20%→${ed}`});
   }
   if(ff==='WINDBLADE-BRAWLER' && !enemyTrueStrike && Math.random()<0.25) {
-    ed=0; const counter=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=counter; enemy.hp=Math.max(0,enemy.hp-counter);
-    passives.push({icon:'🗡',text:`WINDBLADE DODGE! Counter -${counter}`});
+    ed=0; queueCounter('player', 0.75, '🗡', 'WINDBLADE');
+    passives.push({icon:'🗡',text:`WINDBLADE DODGE! COUNTER!`});
     _dodgeEffectApplied = true;
   }
   if(ff==='THUNDERCLOUD-BLITZ') {
@@ -6196,8 +6226,8 @@ function doTurn(moveIdx) {
       passives.push({icon:'💎',text:`CRYSTAWOLF HP>50% ATK+25%→${pd}`});
     } else {
       ed=(enemyIgnoresDef?ed:Math.round(ed*0.8));
-      const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
-      passives.push({icon:'💎',text:`CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${ed}`});
+      if(Math.random()<0.5) { queueCounter('player', 0.75, '💎', 'CRYSTAWOLF'); passives.push({icon:'💎',text:`CRYSTAWOLF HP<50% DEF+25% COUNTER!→${ed}`}); }
+      else passives.push({icon:'💎',text:`CRYSTAWOLF HP<50% DEF+25%→${ed}`});
       if(ed>0 && Math.random()<0.10) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb) { passives.push({icon:'❄️✨',text:T('CRYSTAWOLF แช่แข็ง→ดูดซับ SPD+25%!','CRYSTAWOLF freeze→ABSORBED SPD UP!')}); } else { if(!playerFirst){bs.enemyStunnedNextTurn=true;bs.eFreezeCarry=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAWOLF แช่แข็งศัตรู!','CRYSTAWOLF froze the enemy!')}); } }
     }
   }
@@ -6326,7 +6356,7 @@ function doTurn(moveIdx) {
     pd=Math.round(pd*(1+bonus));
     passives.push({icon:'🪓',text:`BABARIAN dmg+${Math.round(bonus*100)}%→${pd}`});
   }
-  if(ff==='SAMURAI-GHOST' && !enemyTrueStrike && Math.random()<0.20) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⚔️',text:'SAMURAI DODGE!'}); }
+  if(ff==='SAMURAI-GHOST' && Math.random()<0.20) { queueCounter('player', 0.75, '⚔️', 'SAMURAI'); passives.push({icon:'⚔️',text:'SAMURAI 20% COUNTER!'}); }
   if(ff==='BLUE-SENTINEL-GHOST') {
     if(bs.e2NextBuff) { pd+=Math.floor(enemy.def/2); pd=Math.round(pd*1.5); bs.e2NextBuff=false; passives.push({icon:'🔵',text:`BLUE SENTINEL BUFF ATK+50%+pierce→${pd}`}); }
     if(!enemyTrueStrike && Math.random()<0.25) { ed=0; bs.e2NextBuff=true; _dodgeEffectApplied=true; passives.push({icon:'🔵',text:'BLUE SENTINEL DODGE! next ATK+50%+pierce'}); }
@@ -6354,13 +6384,13 @@ function doTurn(moveIdx) {
       if(cleansed) passives.push({icon:'😇',text:'ARC-ANGEL CLEANSED!'});
     }
     if(creature.hp < creature.maxHp*0.5) {
-      if(!enemyTrueStrike && Math.random()<0.15) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'😇',text:'ARC-ANGEL DODGE!'}); }
       if(ed>0 && !enemyStunned && Math.random()<0.50) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'😇',text:'ARC-ANGEL STUN!'}); }
+      if(Math.random()<0.25) { queueCounter('player', 0.75, '😇', 'ARC-ANGEL'); passives.push({icon:'😇',text:'ARC-ANGEL 25% COUNTER!'}); }
     }
   }
   if(ff==='GREEN-SENTINEL-GHOST') {
     const heal=Math.round(creature.maxHp*0.04); _pHeal(heal,'🟢',`GREEN SENTINEL +${heal}HP`);
-    if(Math.random()<0.30) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🟢',text:`GREEN SENTINEL dmg-50%→${ed}`}); }
+    if(Math.random()<0.30) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); queueCounter('player', 0.75, '🟢', 'GREEN SENTINEL'); passives.push({icon:'🟢',text:`GREEN SENTINEL dmg-50% COUNTER!→${ed}`}); }
   }
   if(ff==='SKELETON-KING-GHOST' && pd>0) { const steal=Math.max(1,Math.round(pd*0.20)); _pHeal(steal,'💀',`SKELETON KING lifesteal +${steal}HP`); }
   if(ff==='DRAGON-KNIGHT-GHOST') {
@@ -6379,7 +6409,7 @@ function doTurn(moveIdx) {
     else {bs.enemyHealBlockTurns=3;passives.push({icon:'😈',text:'ARC-DEMON HEAL-BLOCK!'});}
   }
   if(ff==='BAHAMUT-GHOST') {
-    if(cmp==='win') { pd=Math.round(pd*1.75); ed=Math.round(ed*1.25); passives.push({icon:'🐲',text:`BAHAMUT WIN ATK+75%,DEF-50%→${pd}/${ed}`}); }
+    if(cmp==='win') { pd=Math.round(pd*2.0); ed=Math.round(ed*1.25); passives.push({icon:'🐲',text:`BAHAMUT WIN ATK+100%,DEF-50%→${pd}/${ed}`}); }
     else if(cmp==='lose') { pd=Math.round(pd*0.5); ed=(enemyIgnoresDef?ed:Math.round(ed*0.25)); passives.push({icon:'🐲',text:`BAHAMUT LOSE DEF+75%,ATK-50%→${pd}/${ed}`}); }
   }
   if(ff==='DRAGON-TAMER-GHOST') {
@@ -6408,8 +6438,8 @@ function doTurn(moveIdx) {
     if(ep.includes('WWW')   && Math.random()<0.25) { pd=0; passives.push({icon:'👻',text:'GHOSTCLAW DODGE!'}); }
     // SKY GRIFFON (boss): 30% dodge + counter-attack for 50% of a normal hit (ATK-based, same formula as other counters)
     if(enemy.spriteFile==='monster & boss/W-griffon-boss.png' && pd>0 && Math.random()<0.30) {
-      const counter=Math.max(1,Math.round(eCurseAtk/3*0.5)); pd=0; eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
-      passives.push({icon:'🦅',text:T(`SKY GRIFFON หลบ + สวนกลับ ${counter} dmg!`,`SKY GRIFFON dodges + counters for ${counter} dmg!`)});
+      pd=0; queueCounter('enemy', 0.5, '🦅', 'SKY GRIFFON');
+      passives.push({icon:'🦅',text:T(`SKY GRIFFON หลบ + สวนกลับ!`,`SKY GRIFFON dodges + counters!`)});
     }
     // GRIFFON CHICK (mini-boss): 20% dodge
     if(enemy.spriteFile==='monster & boss/W-griffon-miniboss.png' && Math.random()<0.20) {
@@ -6501,6 +6531,8 @@ function doTurn(moveIdx) {
       else if(pick==='burn') { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:'Tri-Attack burned the enemy!'}); }
       else if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:'☠️',text:'Tri-Attack poisoned the enemy!'}); }
     }
+    // 🪃 Riposte Core: 25% chance to counter for 90% of a normal hit (routes through the real-strike queue)
+    if(artId==='riposte_core' && ed>0 && !enemyReflectImmune && Math.random()<0.25) { queueCounter('player', 0.90, '🪃', 'Riposte Core'); passives.push({icon:'🪃',text:'Riposte Core COUNTER!'}); }
   }
   _applyArtifact(creature.artifact, bs.artifactStacks);
   _applyArtifact(creature.artifact2, bs.artifactStacks2);
@@ -6516,7 +6548,7 @@ function doTurn(moveIdx) {
     if(we.type==='stun_on_hit' && pd>0 && Math.random()<we.chance) { if(!playerFirst){bs.enemyStunnedNextTurn=true;SFX.stun();passives.push({icon:wpn.icon,text:`${wpn.name} STUN! (next turn)`});}else{ed=0;enemyStunned=true;SFX.stun();passives.push({icon:wpn.icon,text:`${wpn.name} STUN!`});} }
     if(we.type==='block' && ed>0 && Math.random()<we.chance) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:wpn.icon,text:`${wpn.name} BLOCK! → ${ed}`}); }
     if(we.type==='dodge' && ed>0 && Math.random()<we.chance) { ed=0; passives.push({icon:wpn.icon,text:`${wpn.name} DODGE!`}); }
-    if(we.type==='counter' && ed>0 && !enemyReflectImmune && Math.random()<we.chance) { const ref=Math.max(1,Math.round(pCurseAtk/3*we.mult)); counterDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER ${ref} dmg`}); }
+    if(we.type==='counter' && ed>0 && !enemyReflectImmune && Math.random()<we.chance) { queueCounter('player', we.mult, wpn.icon, wpn.name); passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER!`}); }
     if(we.type==='reflect' && ed>0 && !enemyReflectImmune && Math.random()<we.chance) { const ref=Math.round(ed*we.mult); reflectDmg+=ref; enemy.hp=Math.max(0,enemy.hp-ref); passives.push({icon:wpn.icon,text:`${wpn.name} REFLECT ${ref} dmg`}); }
     if(we.type==='poison_when_hit' && ed>0 && Math.random()<we.chance) { if(!(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} poisoned the attacker!`}); } }
     if(we.type==='on_lose_dr' && cmp==='lose') { ed=Math.round(ed*we.mult); passives.push({icon:wpn.icon,text:`${wpn.name} dmg-${Math.round((1-we.mult)*100)}% → ${ed}`}); }
@@ -6553,7 +6585,7 @@ function doTurn(moveIdx) {
     if(ewe.type==='stun_on_hit' && ed>0 && Math.random()<ewe.chance) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN! (next turn)`});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} STUN!`});} }
     if(ewe.type==='block' && pd>0 && Math.random()<ewe.chance) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} BLOCK! →${pd}`}); }
     if(ewe.type==='dodge' && pd>0 && !bs.playerTrueStrike && Math.random()<ewe.chance) { pd=0; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} DODGE!`}); }
-    if(ewe.type==='counter' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { const ref=Math.max(1,Math.round(eCurseAtk/3*ewe.mult)); eCounterDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER ${ref} dmg`}); }
+    if(ewe.type==='counter' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { queueCounter('enemy', ewe.mult, ewpn.icon, ewpn.name); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER!`}); }
     if(ewe.type==='reflect' && pd>0 && !playerReflectImmune && Math.random()<ewe.chance) { const ref=Math.round(pd*ewe.mult); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} REFLECT ${ref} dmg`}); }
     if(ewe.type==='poison_when_hit' && pd>0 && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} poisoned you back!`}); }
     if(ewe.type==='on_lose_dr' && cmp==='win') { pd=Math.round(pd*ewe.mult); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} dmg-${Math.round((1-ewe.mult)*100)}% →${pd}`}); }
@@ -6607,7 +6639,7 @@ function doTurn(moveIdx) {
   // ── Deferred dodge effect: artifact/weapon dodge triggers form secondary effect ──
   if(ed===0 && !_dodgeEffectApplied && !enemyTrueStrike) {
     if(fk==='WWS') { const h=Math.round(creature.maxHp*0.15); _pHeal(h,'🌀',T(`หลบ! ฟื้น +${h} HP (artifact/weapon)`,`DODGE! Healed +${h} HP (artifact/weapon)`)); _dodgeEffectApplied=true; }
-    else if(ff==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`WINDBLADE Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
+    else if(ff==='WINDBLADE-BRAWLER') { queueCounter('player', 0.75, '🗡', 'WINDBLADE'); passives.push({icon:'🗡',text:`WINDBLADE COUNTER from dodge!`}); _dodgeEffectApplied=true; }
     else if(ff==='STORM-BLITZ') { bs.e2NextBuff=true; passives.push({icon:'🌩',text:'STORM BUFF from dodge! ATK+50% next round'}); _dodgeEffectApplied=true; }
     else if(ff==='KING-CHAMPION') { bs.e2Stack=Math.min(5,(bs.e2Stack||0)+1); passives.push({icon:'👑',text:`KING Stack from dodge! ×${bs.e2Stack}`}); _dodgeEffectApplied=true; }
     else if(ff==='SOUL-SPECTER') { bs.e2NextBuff=true; passives.push({icon:'👻',text:'SOUL BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
@@ -6615,7 +6647,7 @@ function doTurn(moveIdx) {
     else if(ff==='PANDA-NINJA') { bs.e2NextGuaranteeCrit=true; passives.push({icon:'🥷',text:'PANDA-NINJA next crit GUARANTEED from dodge!'}); _dodgeEffectApplied=true; }
     else if(ff==='BUNNY-GHOST') { bs.ghostBunnyAtkBuff=true; passives.push({icon:'🐰',text:'BUNNY ATK/SPD+50% next from dodge!'}); _dodgeEffectApplied=true; }
     else if(ff==='CAT-GHOST') { bs.ghostCatAtkBuff=true; passives.push({icon:'😼',text:'CAT ATK/SPD+50% next from dodge!'}); _dodgeEffectApplied=true; }
-    else if(creature.inheritedPassive==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🗡',text:`WINDBLADE ECHO Counter from dodge! -${c}`}); _dodgeEffectApplied=true; }
+    else if(creature.inheritedPassive==='WINDBLADE-BRAWLER') { queueCounter('player', 0.75, '🗡', 'WINDBLADE ECHO'); passives.push({icon:'🗡',text:`WINDBLADE ECHO COUNTER from dodge!`}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='STORM-BLITZ') { bs.echoStormBuff=true; passives.push({icon:'🌩',text:'STORM ECHO BUFF from dodge! ATK+25% next'}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='KING-CHAMPION') { bs.echoKingStack=Math.min(5,(bs.echoKingStack||0)+1); passives.push({icon:'👑',text:`KING ECHO Stack from dodge! ×${bs.echoKingStack}`}); _dodgeEffectApplied=true; }
     else if(creature.inheritedPassive==='SOUL-SPECTER') { bs.echoSoulDouble=true; passives.push({icon:'👻',text:'SOUL ECHO BUFF from dodge! next ×2'}); _dodgeEffectApplied=true; }
@@ -6644,7 +6676,7 @@ function doTurn(moveIdx) {
   if(ep.includes('dmg_reduce') && enemy.hp>enemy.maxHp*0.5) { pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); passives.push({icon:'⬛',text:T(`IRON BODY ลดดาเมจ → ${pd}`,`IRON BODY dmg halved → ${pd}`)}); }
   if(ep.includes('enrage') && enemy.hp<enemy.maxHp*0.5) { ed=Math.round(ed*1.5); passives.push({icon:'⚔️',text:`ENRAGE! ATK×1.5 → ${ed}`}); }
   if(ep.includes('barrier') && bs.turn%3===0) { pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); passives.push({icon:'🔰',text:T(`BARRIER ลดดาเมจ → ${pd}`,`BARRIER reduced dmg → ${pd}`)}); }
-  if(ep.includes('counter_rush') && pd>0 && Math.random()<0.25) { const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'💨',text:T(`COUNTER RUSH! สวนกลับ -${counter}`,`COUNTER RUSH! -${counter}`)}); }
+  if(ep.includes('counter_rush') && pd>0 && Math.random()<0.25) { queueCounter('enemy', 0.75, '💨', 'COUNTER RUSH'); passives.push({icon:'💨',text:T(`COUNTER RUSH! สวนกลับ!`,`COUNTER RUSH!`)}); }
   if(ep.includes('stun_player') && ed>0 && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาดเทิร์นถัดไป','PARALYZE! Miss next turn')});}else{pd=0;playerStunned=true;SFX.stun();passives.push({icon:'⚡',text:T('PARALYZE! โจมตีพลาด','PARALYZE! Your attack missed')});} }
   if(ep.includes('crit_boost') && Math.random()<0.25) { const bon=Math.round(ed*0.6); ed+=bon; passives.push({icon:'🎯',text:`CRIT BOOST! +60% → ${ed}`}); }
   if(ep.includes('double_strike') && Math.random()<0.25) { const hit2=ed; ed+=hit2; passives.push({icon:'⚔️',text:`DOUBLE STRIKE! ×2 → ${ed}`}); }
@@ -6688,6 +6720,7 @@ function doTurn(moveIdx) {
     bs.e2StackE=Math.min(3,(bs.e2StackE||0)+1);
     ed=Math.round(ed*(1+0.10*bs.e2StackE));
     passives.push({icon:'☯️',text:`[E] CRIMSON BALANCE ATK+10%×${bs.e2StackE},SPD+10%×${bs.e2StackE}→${ed}`});
+    if(Math.random()<0.20) { queueCounter('enemy', 0.75, '☯️', 'CRIMSON-BRAWLER'); passives.push({icon:'☯️',text:`[E] CRIMSON 20% COUNTER!`}); }
   }
   if(fk2==='KAIJU-BRAWLER') {
     if(bs.e2NextBuffE) {
@@ -6703,12 +6736,12 @@ function doTurn(moveIdx) {
     if(artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) { pd=0; bs.e2NextGuaranteeCritE=true; _eDodgeEffectApplied=true; passives.push({icon:'🥷',text:'[E] PANDA-NINJA DODGE!'}); }
   }
   if(fk2==='PANDA-WARRIOR' && Math.random()<0.25) {
-    pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
-    passives.push({icon:'🐼',text:`[E] PANDA-WARRIOR dmg½ Counter -${counter}`});
+    pd=(playerIgnoresDef?Math.round(pd*0.75):Math.round(pd*0.5)); queueCounter('enemy', 0.75, '🐼', 'PANDA-WARRIOR');
+    passives.push({icon:'🐼',text:`[E] PANDA-WARRIOR dmg½ COUNTER!`});
   }
   if(fk2==='ARMOR-PANDA') {
     pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8));
-    if(Math.random()<0.5) { const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA Counter -${counter}`}); }
+    if(Math.random()<0.5) { queueCounter('enemy', 0.75, '🛡', 'ARMOR-PANDA'); passives.push({icon:'🛡',text:`[E] ARMOR-PANDA COUNTER!`}); }
     else passives.push({icon:'🛡',text:`[E] ARMOR-PANDA dmg-20%→${pd}`});
   }
   if(fk2==='TYRANT-IRONJAW') { ed=Math.round(ed*1.2); passives.push({icon:'🩸',text:`[E] TYRANT dmg+20%→${ed}`}); }
@@ -6723,8 +6756,8 @@ function doTurn(moveIdx) {
     else passives.push({icon:'🔮',text:`[E] RUNE→${ed}`});
   }
   if(fk2==='FULLARMOR-IRONJAW' && enemy.hp<enemy.maxHp*0.5) {
-    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8)); const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
-    passives.push({icon:'🛡',text:`[E] FULLARMOR HP<50% Counter -${counter}`});
+    pd=(playerIgnoresDef?Math.round(pd*0.9):Math.round(pd*0.8)); queueCounter('enemy', 0.75, '🛡', 'FULLARMOR-IRONJAW');
+    passives.push({icon:'🛡',text:`[E] FULLARMOR HP<50% COUNTER!`});
   }
   if(fk2==='STRONG-BLITZ' && cmp==='lose') {
     ed=Math.round(ed*1.2);
@@ -6821,9 +6854,9 @@ function doTurn(moveIdx) {
     } else passives.push({icon:'🗿',text:`[E] GOLEM dmg-20%→${pd}`});
   }
   if(fk2==='WINDBLADE-BRAWLER' && artId!=='true_sight' && artId2!=='true_sight' && Math.random()<0.25) {
-    pd=0; const counter=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=counter; creature.hp=Math.max(0,creature.hp-counter);
+    pd=0; queueCounter('enemy', 0.75, '🗡', 'WINDBLADE');
     _eDodgeEffectApplied=true;
-    passives.push({icon:'🗡',text:`[E] WINDBLADE DODGE! Counter -${counter}`});
+    passives.push({icon:'🗡',text:`[E] WINDBLADE DODGE! COUNTER!`});
   }
   if(fk2==='THUNDERCLOUD-BLITZ') {
     if(!playerStunned && Math.random()<0.15) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'⛈️',text:'[E] THUNDERCLOUD STUN!'}); }
@@ -6871,8 +6904,8 @@ function doTurn(moveIdx) {
       passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP>50% ATK+25%→${ed}`});
     } else {
       pd=(playerIgnoresDef?pd:Math.round(pd*0.8));
-      const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c);
-      passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP<50% DEF+25% Counter -${c}→${pd}`});
+      if(Math.random()<0.5) { queueCounter('enemy', 0.75, '💎', 'CRYSTAWOLF'); passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP<50% DEF+25% COUNTER!→${pd}`}); }
+      else passives.push({icon:'💎',text:`[E] CRYSTAWOLF HP<50% DEF+25%→${pd}`});
       if(pd>0 && Math.random()<0.10) { bs.playerFreezeSpdTurns=3; if(freezeAbsorb) { passives.push({icon:'❄️✨',text:T('[ศัตรู] CRYSTAWOLF แช่แข็ง→คุณดูดซับ SPD+25%!','[E] CRYSTAWOLF freeze→YOU ABSORBED SPD UP!')}); } else { if(playerFirst){bs.playerStunnedNextTurn=true;bs.pFreezeCarry=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('[ศัตรู] CRYSTAWOLF แช่แข็งคุณ!','[E] CRYSTAWOLF froze you!')}); } }
     }
   }
@@ -7000,7 +7033,7 @@ function doTurn(moveIdx) {
     ed=Math.round(ed*(1+eBonus));
     passives.push({icon:'🪓',text:`[E] BABARIAN dmg+${Math.round(eBonus*100)}%→${ed}`});
   }
-  if(fk2==='SAMURAI-GHOST' && !bs.playerTrueStrike && Math.random()<0.20) { pd=0; _eDodgeEffectApplied=true; passives.push({icon:'⚔️',text:'[E] SAMURAI DODGE!'}); }
+  if(fk2==='SAMURAI-GHOST' && Math.random()<0.20) { queueCounter('enemy', 0.75, '⚔️', 'SAMURAI'); passives.push({icon:'⚔️',text:'[E] SAMURAI 20% COUNTER!'}); }
   if(fk2==='BLUE-SENTINEL-GHOST') {
     if(bs.e2NextBuffE) { ed+=Math.floor(getEffStat('def')/2); ed=Math.round(ed*1.5); bs.e2NextBuffE=false; passives.push({icon:'🔵',text:`[E] BLUE SENTINEL BUFF ATK+50%+pierce→${ed}`}); }
     if(!bs.playerTrueStrike && Math.random()<0.25) { pd=0; bs.e2NextBuffE=true; _eDodgeEffectApplied=true; passives.push({icon:'🔵',text:'[E] BLUE SENTINEL DODGE! next ATK+50%+pierce'}); }
@@ -7027,13 +7060,13 @@ function doTurn(moveIdx) {
       if(cleansed) passives.push({icon:'😇',text:'[E] ARC-ANGEL CLEANSED!'});
     }
     if(enemy.hp < enemy.maxHp*0.5) {
-      if(!bs.playerTrueStrike && Math.random()<0.15) { pd=0; _eDodgeEffectApplied=true; passives.push({icon:'😇',text:'[E] ARC-ANGEL DODGE!'}); }
       if(pd>0 && !playerStunned && Math.random()<0.50) { if(playerFirst){bs.playerStunnedNextTurn=true;}else{pd=0;playerStunned=true;} SFX.stun(); passives.push({icon:'😇',text:'[E] ARC-ANGEL STUN!'}); }
+      if(Math.random()<0.25) { queueCounter('enemy', 0.75, '😇', 'ARC-ANGEL'); passives.push({icon:'😇',text:'[E] ARC-ANGEL 25% COUNTER!'}); }
     }
   }
   if(fk2==='GREEN-SENTINEL-GHOST') {
     const heal=Math.round(enemy.maxHp*0.04); _eHeal(heal,'🟢',`[E] GREEN SENTINEL +${heal}HP`);
-    if(Math.random()<0.30) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'🟢',text:`[E] GREEN SENTINEL dmg-50%→${pd}`}); }
+    if(Math.random()<0.30) { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); queueCounter('enemy', 0.75, '🟢', 'GREEN SENTINEL'); passives.push({icon:'🟢',text:`[E] GREEN SENTINEL dmg-50% COUNTER!→${pd}`}); }
   }
   if(fk2==='SKELETON-KING-GHOST' && ed>0) { const steal=Math.max(1,Math.round(ed*0.20)); _eHeal(steal,'💀',`[E] SKELETON KING lifesteal +${steal}HP`); }
   if(fk2==='DRAGON-KNIGHT-GHOST') {
@@ -7052,7 +7085,7 @@ function doTurn(moveIdx) {
     else {bs.playerHealBlockTurns=3;passives.push({icon:'😈',text:'[E] ARC-DEMON HEAL-BLOCK!'});}
   }
   if(fk2==='BAHAMUT-GHOST') {
-    if(cmp==='lose') { ed=Math.round(ed*1.75); pd=Math.round(pd*1.25); passives.push({icon:'🐲',text:`[E] BAHAMUT WIN ATK+75%,DEF-50%→${ed}/${pd}`}); }
+    if(cmp==='lose') { ed=Math.round(ed*2.0); pd=Math.round(pd*1.25); passives.push({icon:'🐲',text:`[E] BAHAMUT WIN ATK+100%,DEF-50%→${ed}/${pd}`}); }
     else if(cmp==='win') { ed=Math.round(ed*0.5); pd=(playerIgnoresDef?pd:Math.round(pd*0.25)); passives.push({icon:'🐲',text:`[E] BAHAMUT LOSE DEF+75%,ATK-50%→${ed}/${pd}`}); }
   }
   if(fk2==='DRAGON-TAMER-GHOST') {
@@ -7075,7 +7108,7 @@ function doTurn(moveIdx) {
   }
   // ── Deferred dodge effect (enemy side): artifact/weapon dodge triggers form secondary effect ──
   if(pd===0 && !_eDodgeEffectApplied && !bs.playerTrueStrike) {
-    if(fk2==='WINDBLADE-BRAWLER') { const c=Math.max(1,Math.round(eCurseAtk/3*0.75)); eCounterDmg+=c; creature.hp=Math.max(0,creature.hp-c); passives.push({icon:'🗡',text:`[E] WINDBLADE Counter from dodge! -${c}`}); _eDodgeEffectApplied=true; }
+    if(fk2==='WINDBLADE-BRAWLER') { queueCounter('enemy', 0.75, '🗡', 'WINDBLADE'); passives.push({icon:'🗡',text:`[E] WINDBLADE COUNTER from dodge!`}); _eDodgeEffectApplied=true; }
     else if(fk2==='STORM-BLITZ') { bs.e2NextBuffE=true; passives.push({icon:'🌩',text:'[E] STORM BUFF from dodge! next round'}); _eDodgeEffectApplied=true; }
     else if(fk2==='KING-CHAMPION') { bs.e2StackE=Math.min(5,(bs.e2StackE||0)+1); passives.push({icon:'👑',text:`[E] KING Stack from dodge! ×${bs.e2StackE}`}); _eDodgeEffectApplied=true; }
     else if(fk2==='SOUL-SPECTER') { bs.e2NextBuffE=true; passives.push({icon:'👻',text:'[E] SOUL BUFF from dodge! next ×2'}); _eDodgeEffectApplied=true; }
@@ -7094,12 +7127,13 @@ function doTurn(moveIdx) {
       if(bs.echoRagingStack>0) { pd=Math.round(pd*(1+0.08*bs.echoRagingStack)); passives.push({icon:'💢',text:`RAGING ECHO ×${bs.echoRagingStack} dmg+${bs.echoRagingStack*8}%→${pd}`}); }
     }
     else if(ip==='WINDBLADE-BRAWLER') {
-      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); _dodgeEffectApplied=true; passives.push({icon:'🗡',text:`WINDBLADE ECHO DODGE! Counter -${c}`}); }
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=0; queueCounter('player', 0.75, '🗡', 'WINDBLADE ECHO'); _dodgeEffectApplied=true; passives.push({icon:'🗡',text:`WINDBLADE ECHO DODGE! COUNTER!`}); }
     }
     else if(ip==='CRIMSON-BRAWLER') {
       bs.echoCrimsonStack=Math.min(3,(bs.echoCrimsonStack||0)+1);
       pd=Math.round(pd*(1+0.05*bs.echoCrimsonStack));
       passives.push({icon:'☯️',text:`CRIMSON ECHO ×${bs.echoCrimsonStack} ATK+${bs.echoCrimsonStack*5}%→${pd}`});
+      if(Math.random()<0.10) { queueCounter('player', 0.75, '☯️', 'CRIMSON ECHO'); passives.push({icon:'☯️',text:`CRIMSON ECHO COUNTER!`}); }
     }
     else if(ip==='KAIJU-BRAWLER') {
       if(bs.echoKaijuBuff) {
@@ -7117,11 +7151,11 @@ function doTurn(moveIdx) {
       if(!enemyTrueStrike && Math.random()<0.12) { ed=0; bs.echoNinjaCrit=true; _dodgeEffectApplied=true; passives.push({icon:'🥷',text:'NINJA ECHO DODGE! Crit chance next'}); }
     }
     else if(ip==='PANDA-WARRIOR') {
-      if(!enemyTrueStrike && Math.random()<0.12) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🐼',text:`WARRIOR ECHO half-dmg Counter -${c}`}); }
+      if(!enemyTrueStrike && Math.random()<0.12) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); queueCounter('player', 0.75, '🐼', 'WARRIOR ECHO'); passives.push({icon:'🐼',text:`WARRIOR ECHO half-dmg COUNTER!`}); }
     }
     else if(ip==='ARMOR-PANDA') {
       ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
-      if(Math.random()<0.25) { const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c); passives.push({icon:'🛡',text:`ARMOR ECHO dmg-10% Counter -${c}`}); }
+      if(Math.random()<0.25) { queueCounter('player', 0.75, '🛡', 'ARMOR ECHO'); passives.push({icon:'🛡',text:`ARMOR ECHO dmg-10% COUNTER!`}); }
       else passives.push({icon:'🛡',text:`ARMOR ECHO dmg-10%→${ed}`});
     }
     else if(ip==='TYRANT-IRONJAW') {
@@ -7141,8 +7175,8 @@ function doTurn(moveIdx) {
     else if(ip==='FULLARMOR-IRONJAW') {
       if(creature.hp<creature.maxHp*0.5) {
         ed=(enemyIgnoresDef?ed:Math.round(ed*0.9));
-        const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
-        passives.push({icon:'🛡',text:`FULLARMOR ECHO HP<50% dmg-10% Counter -${c}`});
+        queueCounter('player', 0.75, '🛡', 'FULLARMOR ECHO');
+        passives.push({icon:'🛡',text:`FULLARMOR ECHO HP<50% dmg-10% COUNTER!`});
       }
     }
     else if(ip==='STRONG-BLITZ') {
@@ -7282,8 +7316,8 @@ function doTurn(moveIdx) {
       if(creature.hp>creature.maxHp*0.5) { pd=Math.round(pd*1.12); passives.push({icon:'💎',text:`CRYSTAL ECHO HP>50% ATK+12%→${pd}`}); }
       else {
         ed=(enemyIgnoresDef?ed:Math.round(ed*0.88));
-        const c=Math.max(1,Math.round(pCurseAtk/3*0.75)); counterDmg+=c; enemy.hp=Math.max(0,enemy.hp-c);
-        passives.push({icon:'💎',text:`CRYSTAL ECHO HP<50% DEF+12% Counter -${c}`});
+        if(Math.random()<0.5) { queueCounter('player', 0.75, '💎', 'CRYSTAL ECHO'); passives.push({icon:'💎',text:`CRYSTAL ECHO HP<50% DEF+12% COUNTER!`}); }
+        else passives.push({icon:'💎',text:`CRYSTAL ECHO HP<50% DEF+12%`});
         if(pd>0 && Math.random()<0.05) { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb) { passives.push({icon:'❄️✨',text:T('CRYSTAL ECHO แช่แข็ง→ดูดซับ!','CRYSTAL ECHO freeze→ABSORBED!')}); } else { if(!playerFirst){bs.enemyStunnedNextTurn=true;bs.eFreezeCarry=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'❄️',text:T('CRYSTAL ECHO แช่แข็งศัตรู!','CRYSTAL ECHO froze the enemy!')}); } }
       }
     }
@@ -7450,7 +7484,7 @@ function doTurn(moveIdx) {
       passives.push({icon:'🪓',text:`BERSERK ECHO dmg+${Math.round(bonus*100)}%→${pd}`});
     }
     else if(ip==='SAMURAI-GHOST') {
-      if(!enemyTrueStrike && Math.random()<0.10) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'⚔️',text:'SWIFT BLADE DODGE!'}); }
+      if(Math.random()<0.10) { queueCounter('player', 0.75, '⚔️', 'SWIFT BLADE'); passives.push({icon:'⚔️',text:'SWIFT BLADE COUNTER!'}); }
     }
     else if(ip==='BLUE-SENTINEL-GHOST') {
       if(bs.echoBlueBuff) { pd+=Math.floor(enemy.def/2); pd=Math.round(pd*1.25); bs.echoBlueBuff=false; passives.push({icon:'🔵',text:`WAVE STEP BUFF ATK+25%+pierce→${pd}`}); }
@@ -7478,13 +7512,13 @@ function doTurn(moveIdx) {
         if(cleansed) passives.push({icon:'😇',text:'BLESSED LIGHT CLEANSED!'});
       }
       if(creature.hp < creature.maxHp*0.5) {
-        if(!enemyTrueStrike && Math.random()<0.07) { ed=0; _dodgeEffectApplied=true; passives.push({icon:'😇',text:'BLESSED LIGHT DODGE!'}); }
         if(ed>0 && !enemyStunned && Math.random()<0.25) { if(!playerFirst){bs.enemyStunnedNextTurn=true;}else{ed=0;enemyStunned=true;} SFX.stun(); passives.push({icon:'😇',text:'BLESSED LIGHT STUN!'}); }
+        if(Math.random()<0.12) { queueCounter('player', 0.75, '😇', 'BLESSED LIGHT'); passives.push({icon:'😇',text:'BLESSED LIGHT COUNTER!'}); }
       }
     }
     else if(ip==='GREEN-SENTINEL-GHOST') {
       const heal=Math.round(creature.maxHp*0.02); _pHeal(heal,'🟢',`THORNED BARK +${heal}HP`);
-      if(Math.random()<0.20) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); passives.push({icon:'🟢',text:`THORNED BARK dmg-50%→${ed}`}); }
+      if(Math.random()<0.20) { ed=(enemyIgnoresDef?ed:Math.round(ed*0.5)); queueCounter('player', 0.75, '🟢', 'THORNED BARK'); passives.push({icon:'🟢',text:`THORNED BARK dmg-50% COUNTER!→${ed}`}); }
     }
     else if(ip==='SKELETON-KING-GHOST' && pd>0) { const steal=Math.max(1,Math.round(pd*0.10)); _pHeal(steal,'💀',`BONE GUARD lifesteal +${steal}HP`); }
     else if(ip==='DRAGON-KNIGHT-GHOST') {
@@ -7764,6 +7798,153 @@ function doTurn(moveIdx) {
   const _eHasArt = k => eArtId===k || eArtId2===k;
 
   // Called when PLAYER's attack lands on enemy (phase 1 if playerFirst, phase 2 if !playerFirst)
+  // ===== COUNTER-AS-REAL-STRIKE =====
+  // (queueCounter is defined near the top of doTurn, before the passive blocks that call it.)
+  // Resolve one queued counter as a genuine strike: fresh crit roll, DEF mitigation, lifesteal, KO-capable.
+  // Damage mirrors a normal attack (RUSH-weight base 15 + ATK/3) scaled by the counter's mult (usually 0.75).
+  const _doCounterStrike = (by) => {
+    if(by==='player') {
+      const pc = bs.pCounter; if(!pc || creature.hp<=0 || enemy.hp<=0) return;
+      const atk = pCurseAtk;
+      const cCrit = Math.random() < critChance;
+      const dmg = Math.max(Math.floor(atk/6*pc.mult),
+        Math.round((15 + atk/3 + Math.random()*4) * pc.mult * (cCrit?critMult:1)) - Math.floor(enemy.def/2));
+      enemy.hp = Math.max(0, enemy.hp - dmg);
+      counterDmg += dmg;
+      bs.lastResult.counterDmg = counterDmg;
+      bs.lastResult.counterCrit = cCrit;
+      bs.lastResult.counterLabel = pc.label;
+      bs.lastResult.counterIcon = pc.icon;
+      // Lifesteal forms carry into the counter strike too
+      if((fk==='FFS'||ff==='TYRANT-IRONJAW'||ff==='DARK-SPECTER') && dmg>0 && creature.hp>0) {
+        const rate = ff==='DARK-SPECTER' ? 0.15 : ff==='TYRANT-IRONJAW' ? 0.35 : 0.25;
+        _pHeal(Math.max(1,Math.round(dmg*rate)),'🩸',T(`Counter ดูดเลือด +${Math.max(1,Math.round(dmg*rate))}`,`Counter lifesteal +${Math.max(1,Math.round(dmg*rate))}`));
+      }
+      // Status procs — a counter lands like a normal attack: it inflicts EVERY on-hit STATUS the
+      // attacker's weapon/artifacts would (poison/burn/freeze/stun/blind/curse/heal-block) plus lifesteal
+      // & crit-heal. It does NOT inherit damage-multiplying combos (multi-hit/execution/chain/etc.) — the
+      // counter's damage stays a flat 0.75 strike. Freeze/Stun apply NEXT turn (the enemy already acted).
+      if(dmg>0) {
+        const eAnti = eArtId==='antidote_charm' || eArtId2==='antidote_charm';
+        const _freezeE = (icon,txt) => { bs.enemyFreezeSpdTurns=3; if(eFreezeAbsorb){passives.push({icon:'❄️✨',text:txt+' →ABSORBED!'});}else{bs.enemyStunnedNextTurn=true;bs.eFreezeCarry=true;SFX.stun();passives.push({icon,text:txt});} };
+        const _stunE   = (icon,txt) => { bs.enemyStunnedNextTurn=true; SFX.stun(); passives.push({icon,text:txt+' (next turn)'}); };
+        const we = wpn?.effect;
+        if(we) {
+          if(we.type==='poison_on_hit' && !eAnti && Math.random()<we.chance) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER poisoned the enemy!`}); }
+          if(we.type==='burn_on_hit'   && Math.random()<we.chance) { bs.enemyBurnTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER burned the enemy!`}); }
+          if(we.type==='stun_on_hit'   && Math.random()<we.chance) _stunE(wpn.icon, `${wpn.name} COUNTER STUN!`);
+          if(we.type==='freeze_on_hit' && Math.random()<we.chance) _freezeE(wpn.icon, `${wpn.name} COUNTER froze the enemy!`);
+          if(we.type==='curse_on_hit'  && Math.random()<we.chance) { bs.e2CurseTurns=2; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER cursed the enemy!`}); }
+          if(we.type==='freeze_both_on_hit' && Math.random()<we.chance) { bs.playerFreezeSpdTurns=3; _freezeE(wpn.icon, `${wpn.name} COUNTER froze both!`); }
+          if(we.type==='random_debuff_on_hit' && Math.random()<we.chance) {
+            const pick = we.pool[Math.floor(Math.random()*we.pool.length)];
+            if(pick==='blind') { bs.eBlindTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER blinded the enemy!`}); }
+            else if(pick==='curse') { bs.e2CurseTurns=2; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER cursed the enemy!`}); }
+            else if(pick==='healblock') { bs.enemyHealBlockTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER blocked enemy healing!`}); }
+            else if(pick==='freeze') _freezeE(wpn.icon, `${wpn.name} COUNTER froze the enemy!`);
+            else if(pick==='burn') { bs.enemyBurnTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER burned the enemy!`}); }
+            else if(pick==='poison' && !eAnti) { bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER poisoned the enemy!`}); }
+          }
+        }
+        [artId, artId2].forEach(a => {
+          if(!a) return;
+          if(a==='venom_fang'     && !eAnti && Math.random()<0.20) { bs.enemyPoisonTurns=3; passives.push({icon:'🐍',text:'Venom Fang COUNTER poisoned the enemy!'}); }
+          if(a==='plague_scythe'  && !eAnti && Math.random()<0.30) { bs.enemyPoisonTurns=3; passives.push({icon:'☣️',text:'Plague Scythe COUNTER poisoned the enemy!'}); }
+          if(a==='frost_bead'     && Math.random()<0.08) _freezeE('❄️','Frost Bead COUNTER froze the enemy!');
+          if(a==='rimefrost_fang' && Math.random()<0.15) _freezeE('❄️','Rimefrost Fang COUNTER froze the enemy!');
+          if(a==='clouded_lens'   && Math.random()<0.20) { bs.eBlindTurns=3; passives.push({icon:'👁️',text:'Clouded Lens COUNTER blinded the enemy!'}); }
+          if(a==='shock_bead'     && Math.random()<0.08) _stunE('⚡','Shock Bead COUNTER STUN!');
+          if(a==='paralysis_fang' && Math.random()<0.15) _stunE('🦷','Paralysis Fang COUNTER STUN!');
+          if(a==='cursed_shackle' && Math.random()<0.25) { bs.enemyHealBlockTurns=3; passives.push({icon:'⛓️',text:'Cursed Shackle COUNTER blocked enemy healing!'}); }
+          if(a==='tri_attack'     && Math.random()<0.25) { const pk=['freeze','burn','poison'][Math.floor(Math.random()*3)]; if(pk==='freeze') _freezeE('❄️','Tri-Attack COUNTER froze the enemy!'); else if(pk==='burn'){bs.enemyBurnTurns=3;passives.push({icon:'🔥',text:'Tri-Attack COUNTER burned the enemy!'});} else if(!eAnti){bs.enemyPoisonTurns=3;passives.push({icon:'☠️',text:'Tri-Attack COUNTER poisoned the enemy!'});} }
+          if(a==='crit_core'    && cCrit && creature.hp>0) { const h=Math.max(1,Math.round(creature.maxHp*0.05)); _pHeal(h,'🎯',`Crit Core COUNTER Heal +${h}`); }
+          if(a==='crimson_fang' && creature.hp>0) { const h=Math.max(1,Math.round(dmg*0.05)); _pHeal(h,'🩸',`Crimson Fang COUNTER +${h}`); }
+          if(a==='blood_pact'   && creature.hp>0) { const h=Math.max(1,Math.round(dmg*0.15)); _pHeal(h,'🔴',`Blood Pact COUNTER +${h}`); }
+          if(a==='soul_reaper'  && creature.hp>0) { const h=Math.max(1,Math.round(dmg*0.25)); _pHeal(h,'☠️',`Soul Reaper COUNTER +${h}`); }
+        });
+      }
+      SFX.counter(); if(cCrit) SFX.crit();
+      battleState.log.push(`  ${pc.icon} COUNTER ${pc.label} -${dmg}${cCrit?' CRIT':''}`);
+    } else {
+      const pc = bs.eCounter; if(!pc || enemy.hp<=0 || creature.hp<=0) return;
+      const atk = eCurseAtk;
+      const cCrit = Math.random() < enemyCritChance;
+      const dmg = Math.max(1,
+        Math.round((15 + atk/3 + Math.random()*4) * pc.mult * (cCrit?eCritMult:1)) - Math.floor(getEffStat('def')/2));
+      creature.hp = Math.max(0, creature.hp - dmg);
+      eCounterDmg += dmg;
+      bs.lastResult.eCounterDmg = eCounterDmg;
+      bs.lastResult.eCounterCrit = cCrit;
+      bs.lastResult.eCounterLabel = pc.label;
+      bs.lastResult.eCounterIcon = pc.icon;
+      if(ep.includes('lifesteal') && dmg>0 && enemy.hp>0) { const s=Math.max(1,Math.round(dmg*0.15)); _eHeal(s,'🩸',`[E] Counter Lifesteal +${s}`); }
+      // Status procs — an enemy counter lands like a normal attack too: the full on-hit status set from
+      // the enemy's weapon/artifacts/innate passives, plus lifesteal & crit-heal. No damage-combo multipliers.
+      if(dmg>0) {
+        const pAnti = artId==='antidote_charm' || artId2==='antidote_charm';
+        const _freezeP = (icon,txt) => { bs.playerFreezeSpdTurns=3; if(freezeAbsorb){passives.push({icon:'❄️✨',text:txt+' →ABSORBED!'});}else{bs.playerStunnedNextTurn=true;bs.pFreezeCarry=true;SFX.stun();passives.push({icon,text:txt});} };
+        const _stunP   = (icon,txt) => { bs.playerStunnedNextTurn=true; SFX.stun(); passives.push({icon,text:txt+' (next turn)'}); };
+        const ewe = ewpn?.effect;
+        if(ewe) {
+          if(ewe.type==='poison_on_hit' && !pAnti && Math.random()<ewe.chance) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER poisoned you!`}); }
+          if(ewe.type==='burn_on_hit'   && Math.random()<ewe.chance) { bs.playerBurnTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER burned you!`}); }
+          if(ewe.type==='stun_on_hit'   && Math.random()<ewe.chance) _stunP(ewpn.icon, `[E] ${ewpn.name} COUNTER STUN!`);
+          if(ewe.type==='freeze_on_hit' && Math.random()<ewe.chance) _freezeP(ewpn.icon, `[E] ${ewpn.name} COUNTER froze you!`);
+          if(ewe.type==='curse_on_hit'  && Math.random()<ewe.chance) { bs.e2CurseTurnsE=2; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER cursed you!`}); }
+          if(ewe.type==='freeze_both_on_hit' && Math.random()<ewe.chance) { bs.enemyFreezeSpdTurns=3; _freezeP(ewpn.icon, `[E] ${ewpn.name} COUNTER froze both!`); }
+          if(ewe.type==='random_debuff_on_hit' && Math.random()<ewe.chance) {
+            const pick = ewe.pool[Math.floor(Math.random()*ewe.pool.length)];
+            if(pick==='blind') { bs.pBlindTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER blinded you!`}); }
+            else if(pick==='curse') { bs.e2CurseTurnsE=2; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER cursed you!`}); }
+            else if(pick==='healblock') { bs.playerHealBlockTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER blocked your healing!`}); }
+            else if(pick==='freeze') _freezeP(ewpn.icon, `[E] ${ewpn.name} COUNTER froze you!`);
+            else if(pick==='burn') { bs.playerBurnTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER burned you!`}); }
+            else if(pick==='poison' && !pAnti) { bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER poisoned you!`}); }
+          }
+        }
+        [enemy.artifact, enemy.artifact2].forEach(a => {
+          if(!a) return;
+          if(a==='venom_fang'     && !pAnti && Math.random()<0.20) { bs.playerPoisonTurns=3; passives.push({icon:'🐍',text:'[E] Venom Fang COUNTER poisoned you!'}); }
+          if(a==='plague_scythe'  && !pAnti && Math.random()<0.30) { bs.playerPoisonTurns=3; passives.push({icon:'☣️',text:'[E] Plague Scythe COUNTER poisoned you!'}); }
+          if(a==='frost_bead'     && Math.random()<0.08) _freezeP('❄️','[E] Frost Bead COUNTER froze you!');
+          if(a==='rimefrost_fang' && Math.random()<0.15) _freezeP('❄️','[E] Rimefrost Fang COUNTER froze you!');
+          if(a==='clouded_lens'   && Math.random()<0.20) { bs.pBlindTurns=3; passives.push({icon:'👁️',text:'[E] Clouded Lens COUNTER blinded you!'}); }
+          if(a==='shock_bead'     && Math.random()<0.08) _stunP('⚡','[E] Shock Bead COUNTER STUN!');
+          if(a==='paralysis_fang' && Math.random()<0.15) _stunP('🦷','[E] Paralysis Fang COUNTER STUN!');
+          if(a==='cursed_shackle' && Math.random()<0.25) { bs.playerHealBlockTurns=3; passives.push({icon:'⛓️',text:'[E] Cursed Shackle COUNTER blocked your healing!'}); }
+          if(a==='tri_attack'     && Math.random()<0.25) { const pk=['freeze','burn','poison'][Math.floor(Math.random()*3)]; if(pk==='freeze') _freezeP('❄️','[E] Tri-Attack COUNTER froze you!'); else if(pk==='burn'){bs.playerBurnTurns=3;passives.push({icon:'🔥',text:'[E] Tri-Attack COUNTER burned you!'});} else if(!pAnti){bs.playerPoisonTurns=3;passives.push({icon:'☠️',text:'[E] Tri-Attack COUNTER poisoned you!'});} }
+          if(a==='crit_core'    && cCrit && enemy.hp>0) { const h=Math.max(1,Math.round(enemy.maxHp*0.05)); _eHeal(h,'🎯',`[E] Crit Core COUNTER Heal +${h}`); }
+          if(a==='crimson_fang' && enemy.hp>0) { const h=Math.max(1,Math.round(dmg*0.05)); _eHeal(h,'🩸',`[E] Crimson Fang COUNTER +${h}`); }
+          if(a==='blood_pact'   && enemy.hp>0) { const h=Math.max(1,Math.round(dmg*0.15)); _eHeal(h,'🔴',`[E] Blood Pact COUNTER +${h}`); }
+          if(a==='soul_reaper'  && enemy.hp>0) { const h=Math.max(1,Math.round(dmg*0.25)); _eHeal(h,'☠️',`[E] Soul Reaper COUNTER +${h}`); }
+        });
+        if(ep.includes('venom_bite') && !pAnti && Math.random()<0.20) { bs.playerPoisonTurns=3; passives.push({icon:'☠️',text:'[E] Venom Bite COUNTER poisoned you!'}); }
+        if(ep.includes('burn_touch') && Math.random()<0.20) { bs.playerBurnTurns=3; passives.push({icon:'🔥',text:'[E] Burn Touch COUNTER burned you!'}); }
+        if(ep.includes('blind_gaze') && Math.random()<0.20) { bs.pBlindTurns=3; passives.push({icon:'👁️',text:'[E] Blind Gaze COUNTER blinded you!'}); }
+      }
+      SFX.counter(); if(cCrit) SFX.crit();
+      battleState.log.push(`  ${pc.icon} [E] COUNTER ${pc.label} -${dmg}${cCrit?' CRIT':''}`);
+    }
+  };
+  // Play ONE side's queued counter as its own animation beat — an immediate reaction right after the
+  // hit that triggered it — then invoke done(). side='player' → player counters the enemy; 'enemy' →
+  // enemy counters the player. If that side has no counter queued (or someone's already dead), it's a no-op.
+  const playOneCounter = (side, done) => {
+    if(battleState!==bs) return;
+    const slot = side==='player' ? 'pCounter' : 'eCounter';
+    if(!bs[slot] || creature.hp<=0 || enemy.hp<=0) { done(); return; }
+    bs.animPhase = side==='player' ? 'p-counter' : 'e-counter';
+    bs.preAnimCleared = false;
+    render();
+    setTimeout(() => {
+      if(battleState!==bs) return;
+      _doCounterStrike(side);
+      bs.preAnimCleared = true;
+      render();
+      setTimeout(() => { if(battleState===bs) done(); }, 450);
+    }, 350);
+  };
+
   const _whenPlayerHitsEnemy = () => {
     enemy.hp = Math.max(0, enemy.hp - pd); pdApplied = true;
     // IRONJAW: lifesteal 25%
@@ -7873,8 +8054,10 @@ function doTurn(moveIdx) {
     }
     // Evolve II Overdrive ongoing counter/reflect (ARMOR-PANDA, FULLARMOR-IRONJAW, BLAZING-FORTRESS, SWIFT-FORTRESS, GUARDIAN-FORTRESS)
     if(odCounterOnHit>0 && edApplied && ed>0 && !enemyReflectImmune) {
-      const ref=Math.max(1,Math.round(ed*odCounterOnHit)); reflectDmg+=ref; enemy.hp=Math.max(_eIWMin,enemy.hp-ref);
-      passives.push({icon:'🛡',text:`Overdrive Reflect ${Math.round(odCounterOnHit*100)}% → -${ref}`});
+      // Overdrive ongoing counter — now a real counter strike (own beat, ATK-based, KO-capable) instead
+      // of a flat ed-reflect. mult is a fraction of a normal attack, matching every other counter.
+      queueCounter('player', odCounterOnHit, '🛡', 'OVERDRIVE');
+      passives.push({icon:'🛡',text:`Overdrive COUNTER ${Math.round(odCounterOnHit*100)}%!`});
     }
     // Enemy lifesteal after hitting player
     if(ep.includes('FFS') && bs.ironjawEd>0 && enemy.hp>0) {
@@ -8119,73 +8302,70 @@ function doTurn(moveIdx) {
   // (e.g. a VS win replaced battleState with the next enemy during this delay), a stray/late callback
   // must not mutate the new battleState or call endBattle() against it — that was the cause of the
   // "enemy shows 0 HP but nothing responds" freeze.
+  // Sync the shared heal/reflect/counter primitives onto lastResult after a hit's closures run.
+  const _syncLR = () => {
+    bs.lastResult.enemyHeal   = enemyHeal;
+    bs.lastResult.reflectDmg  = reflectDmg;
+    bs.lastResult.counterDmg  = counterDmg;
+    bs.lastResult.eReflectDmg = eReflectDmg;
+    bs.lastResult.eCounterDmg = eCounterDmg;
+  };
+  const _finishTurn = () => {
+    _endOfTurn();
+    bs.lastResult.poisonDmgEnemy  = poisonDmgEnemy;
+    bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
+    bs.lastResult.burnDmgEnemy    = burnDmgEnemy;
+    bs.lastResult.burnDmgPlayer   = burnDmgPlayer;
+    bs.waiting = false;
+    finish();
+    bs.weaponRegenFlash = null;
+  };
+  // Counters resolve as an immediate reaction to the hit that triggered them, INTERLEAVED between the two
+  // attack phases: attacker strikes → the struck side counters right away → the slower side takes its
+  // normal attack → whoever it struck counters → end of turn. (Previously both counters were bolted on at
+  // the very end, which made your counter appear only after your own normal attack — that looked wrong.)
+  const c1Side = playerFirst ? 'enemy' : 'player';  // struck in phase 1 → counters right after phase 1
+  const c2Side = playerFirst ? 'player' : 'enemy';  // struck in phase 2 → counters right after phase 2
   // Phase 1 impact: apply phase-1 damage at the hit moment (350ms into 750ms anim)
   setTimeout(() => {
     if(battleState !== bs) return;
-    if(playerFirst) {
-      _whenPlayerHitsEnemy();
-      bs.preAnimPlayerHp = creature.hp; // refresh for phase 2 display
-    } else {
-      _whenEnemyHitsPlayer();
-      bs.preAnimEnemyHp = enemy.hp;     // refresh for phase 2 display
-    }
-    // Sync heal & reflect/counter values (primitives copied before closures ran)
+    if(playerFirst) { _whenPlayerHitsEnemy(); bs.preAnimPlayerHp = creature.hp; }
+    else            { _whenEnemyHitsPlayer(); bs.preAnimEnemyHp = enemy.hp; }
     bs.lastResult.playerHeal = playerHeal;
     bs.lastResult.playerHealP1 = playerHeal - (bs.lastResult.playerHealPre||0);
-    bs.lastResult.enemyHeal  = enemyHeal;
-    bs.lastResult.reflectDmg = reflectDmg;
-    bs.lastResult.counterDmg = counterDmg;
-    bs.lastResult.eReflectDmg = eReflectDmg;
-    bs.lastResult.eCounterDmg = eCounterDmg;
+    _syncLR();
     bs.preAnimCleared = true;
     render();
   }, 350);
   setTimeout(() => {
     if(battleState !== bs) return;
-    // Skip phase 2 only if the phase-1 attacker already killed the defender
-    const phase1DefenderDead = playerFirst ? enemy.hp <= 0 : creature.hp <= 0;
-    if(phase1DefenderDead) {
-      _endOfTurn();
-      bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
-      bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
-      bs.lastResult.burnDmgEnemy = burnDmgEnemy;
-      bs.lastResult.burnDmgPlayer = burnDmgPlayer;
-      bs.waiting = false;
-      finish();
-      bs.weaponRegenFlash = null;
-      return;
-    }
-    // Phase 2: always play when phase-1 defender survived (shows killing-blow damage if applicable)
-    bs.animPhase = playerFirst ? 'e-atk' : 'p-atk';
-    bs.preAnimCleared = false;
-    _playMoveSound(!playerFirst);
-    render();
-    // Phase 2 impact: apply phase-2 damage at hit moment
-    setTimeout(() => {
+    // Phase-1 defender counters immediately (a reaction, before the phase-2 attacker gets to act)
+    playOneCounter(c1Side, () => {
       if(battleState !== bs) return;
-      if(playerFirst) _whenEnemyHitsPlayer(); else _whenPlayerHitsEnemy();
-      // Sync heal & reflect/counter values after phase 2 closures
-      bs.lastResult.playerHeal = playerHeal;
-      bs.lastResult.playerHealP2 = playerHeal - (bs.lastResult.playerHealPre||0) - (bs.lastResult.playerHealP1||0);
-      bs.lastResult.enemyHeal  = enemyHeal;
-      bs.lastResult.reflectDmg = reflectDmg;
-      bs.lastResult.counterDmg = counterDmg;
-      bs.lastResult.eReflectDmg = eReflectDmg;
-      bs.lastResult.eCounterDmg = eCounterDmg;
-      bs.preAnimCleared = true;
+      // Any death (from the phase-1 hit or its counter) ends the turn — there is no phase 2.
+      if(creature.hp<=0 || enemy.hp<=0) { _finishTurn(); return; }
+      // Phase 2: the slower side takes its normal attack
+      bs.animPhase = playerFirst ? 'e-atk' : 'p-atk';
+      bs.preAnimPlayerHp = creature.hp; bs.preAnimEnemyHp = enemy.hp;
+      bs.preAnimCleared = false;
+      _playMoveSound(!playerFirst);
       render();
-    }, 350);
-    setTimeout(() => {
-      if(battleState !== bs) return;
-      _endOfTurn();
-      bs.lastResult.poisonDmgEnemy = poisonDmgEnemy;
-      bs.lastResult.poisonDmgPlayer = poisonDmgPlayer;
-      bs.lastResult.burnDmgEnemy = burnDmgEnemy;
-      bs.lastResult.burnDmgPlayer = burnDmgPlayer;
-      bs.waiting = false;
-      finish();
-      bs.weaponRegenFlash = null;
-    }, 750);
+      // Phase 2 impact
+      setTimeout(() => {
+        if(battleState !== bs) return;
+        if(playerFirst) _whenEnemyHitsPlayer(); else _whenPlayerHitsEnemy();
+        bs.lastResult.playerHeal = playerHeal;
+        bs.lastResult.playerHealP2 = playerHeal - (bs.lastResult.playerHealPre||0) - (bs.lastResult.playerHealP1||0);
+        _syncLR();
+        bs.preAnimCleared = true;
+        render();
+      }, 350);
+      setTimeout(() => {
+        if(battleState !== bs) return;
+        // Phase-2 defender counters immediately, then the turn ends
+        playOneCounter(c2Side, () => { if(battleState===bs) _finishTurn(); });
+      }, 750);
+    });
   }, 750);
 }
 
@@ -12856,9 +13036,11 @@ function renderBattleScreen() {
         const atkCls = (moveName, dir) => moveName==='RUSH' ? `rush-${dir}` : moveName==='GUARD' ? `guard-${dir}` : `atk-${dir}`;
         // player anim: lunge when player attacks, hit+flash only when enemy actually attacks (not during
         // the neutral 'od-callout' shout phase, where the pet just charges up).
-        const playerCls = animActive ? (ap==='p-atk' ? atkCls(lr&&lr.pm&&lr.pm.name,'r') : ap==='e-atk' ? 'hit flash' : '') : '';
+        // Counter beats (p-counter/e-counter) animate exactly like a normal attack: the counter-er lunges
+        // (quick RUSH-style jab) and the target takes the hit+flash — so a counter reads as a real strike.
+        const playerCls = animActive ? ((ap==='p-atk'||ap==='p-counter') ? atkCls(ap==='p-counter'?'RUSH':(lr&&lr.pm&&lr.pm.name),'r') : (ap==='e-atk'||ap==='e-counter') ? 'hit flash' : '') : '';
         // enemy anim: lunge when enemy attacks, hit+flash only when player actually attacks.
-        const enemyCls  = animActive ? (ap==='e-atk' ? atkCls(lr&&lr.em&&lr.em.name,'l') : ap==='p-atk' ? 'hit flash' : '') : '';
+        const enemyCls  = animActive ? ((ap==='e-atk'||ap==='e-counter') ? atkCls(ap==='e-counter'?'RUSH':(lr&&lr.em&&lr.em.name),'l') : (ap==='p-atk'||ap==='p-counter') ? 'hit flash' : '') : '';
 
         // Damage numbers — only show at impact moment (preAnimCleared), not at animation start
         let dmgNums = '';
@@ -12867,6 +13049,14 @@ function renderBattleScreen() {
           <div style="position:absolute;top:64%;${side}:22%;width:1px;height:1px;pointer-events:none;z-index:9">
             <div style="position:absolute;width:${crit?92:70}px;height:${crit?9:6}px;background:linear-gradient(90deg,transparent,${crit?'#ffdd55':'#ffffff'},transparent);border-radius:6px;box-shadow:0 0 12px ${crit?'#ffaa00':'#88ccff'},0 0 22px ${crit?'#ff6600':'#4488cc'};animation:slash-fx 0.3s ease-out forwards"></div>
             <div style="position:absolute;font-size:${crit?42:30}px;filter:drop-shadow(0 0 6px ${crit?'#ff8800':'#88ccff'});animation:impact-pop 0.4s ease-out forwards">💥</div>
+          </div>`;
+        // Counter strike gets its OWN gold/orange FX (expanding parry ring + gold arc + 🪃) so it reads
+        // visually as a riposte, distinct from the white/blue slash of a normal hit.
+        const counterFx = (side, crit) => `
+          <div style="position:absolute;top:60%;${side}:20%;width:1px;height:1px;pointer-events:none;z-index:10">
+            <div style="position:absolute;left:-32px;top:-32px;width:64px;height:64px;border:3px solid ${crit?'#ffe066':'#ff9922'};border-radius:50%;box-shadow:0 0 18px ${crit?'#ffbb00':'#ff7700'},inset 0 0 10px ${crit?'#ffd24d':'#ff8800'};animation:impact-pop 0.5s ease-out forwards"></div>
+            <div style="position:absolute;width:${crit?104:80}px;height:${crit?10:7}px;background:linear-gradient(90deg,transparent,#ffcc33,transparent);border-radius:6px;box-shadow:0 0 14px #ff8800,0 0 26px #ff5500;animation:slash-fx 0.32s ease-out forwards"></div>
+            <div style="position:absolute;font-size:${crit?42:32}px;filter:drop-shadow(0 0 8px #ff8800);animation:impact-pop 0.5s ease-out forwards">🪃</div>
           </div>`;
         if(lr && _cleared) {
           if(ap==='p-atk') {
@@ -12893,6 +13083,18 @@ function renderBattleScreen() {
             if(lr.enemyCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
             { const ph = lr.playerFirst ? (lr.playerHealP2||0) : (lr.playerHealP1||0); if(ph>0) dmgNums += `<div class="dmg-num heal">💚+${ph}</div>`; }
             if(lr.enemyHeal>0) dmgNums += `<div class="dmg-num enemy-heal">🩸+${lr.enemyHeal}</div>`;
+          } else if(ap==='p-counter') {
+            // Player's counter strike — a real hit landing on the enemy, with a COUNTER! banner.
+            if(lr.counterDmg>0) dmgNums += counterFx('right', lr.counterCrit);
+            dmgNums += `<div class="dmg-num enemy-hit" style="animation-delay:0s;top:30%">-${lr.counterDmg||0}</div>`;
+            dmgNums += `<div class="dmg-num" style="color:#ffcc44;font-size:20px;font-weight:900;top:14%;left:10%;right:auto;text-shadow:0 0 10px #ff8800,0 2px 4px #000;animation:dmg-float 0.9s ease-out forwards">⚔ COUNTER!</div>`;
+            if(lr.counterCrit) dmgNums += `<div class="dmg-num crit-tag">⚡CRIT!</div>`;
+          } else if(ap==='e-counter') {
+            // Enemy's counter strike — a real hit landing on the player.
+            if(lr.eCounterDmg>0) dmgNums += counterFx('left', lr.eCounterCrit);
+            dmgNums += `<div class="dmg-num player-hit" style="animation-delay:0s;top:30%">-${lr.eCounterDmg||0}</div>`;
+            dmgNums += `<div class="dmg-num" style="color:#ffcc44;font-size:20px;font-weight:900;top:14%;right:10%;left:auto;text-shadow:0 0 10px #ff8800,0 2px 4px #000;animation:dmg-float 0.9s ease-out forwards">⚔ COUNTER!</div>`;
+            if(lr.eCounterCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
           }
           // Reflect/Counter — show only when enemy attacks
           if(ap==='e-atk') {

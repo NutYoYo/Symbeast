@@ -873,18 +873,18 @@ const SFX = {
     _noise(0.2, t, 0.04, ctx);
   })},
 
-  // สวนกลับ (counter) — parry แล้ว riposte: clang โลหะ + "ชวิ้ง" พุ่งกลับ ให้ต่างจากหมัดปกติ/คริชัดเจน
+  // สวนกลับ (counter) — หมัด "หนักหน่วง": impact แน่น + เบสลึก + double thump ให้หนักกว่าหมัดปกติ
   counter() { _sfx(ctx => {
     const t = ctx.currentTime;
-    // metallic parry clang (สั้น คม)
-    _osc('square', 520, 0.22, t, 0.03, ctx);
-    _osc('square', 800, 0.16, t, 0.025, ctx);
-    // reversal "shwing": ตกลงเร็ว แล้วพุ่งขึ้นสูง (ลายเซ็นของ counter)
-    _sweep('sine', 1700, 520, 0.16, t, 0.05, ctx);
-    _sweep('sine', 520, 2300, 0.24, t+0.05, 0.12, ctx);
-    // impact punch ปิดท้าย
-    _noise(0.5, t+0.05, 0.03, ctx);
-    _sweep('triangle', 300, 90, 0.25, t+0.05, 0.1, ctx);
+    // big impact burst (แน่นกว่าหมัดปกติ)
+    _noise(0.9, t, 0.05, ctx);
+    // deep sub-bass thud (แรงกระแทกลึก)
+    _sweep('sine', 200, 38, 0.75, t, 0.24, ctx);
+    // body punch layer (เนื้อหมัด)
+    _sweep('triangle', 330, 70, 0.4, t, 0.16, ctx);
+    // second late thump — "weight" ให้รู้สึกหนักหน่วง
+    _sweep('sine', 150, 42, 0.55, t+0.07, 0.2, ctx);
+    _noise(0.35, t+0.07, 0.03, ctx);
   })},
 
   // compat aliases
@@ -2425,6 +2425,38 @@ const PATCH_NOTES = [
       '   • Weapon: N/R/E grades yield 5/20/50 Fragments respectively',
       '   • Artifact Box (50🧩💎): random Artifact — Normal 60%, Rare 35%, Epic 5%',
       '   • Weapon Box (50🧩🗡️): random Weapon — Normal 70%, Rare 25%, Epic 5%',
+    ]
+  },
+  { ver:'v0.4.0', date:'2026-08-13', th:[
+      '🥊 ยกเครื่องระบบ COUNTER (สวนกลับ) — กลายเป็น "หมัดโจมตีจริง" ไม่ใช่ตัวเลขสะท้อนแบบ Reflect อีกต่อไป',
+      '   • สวนกลับคิดจาก ATK ตัวเอง ×0.75 — คริได้ / หัก DEF / ดูดเลือด / ฆ่าศัตรูได้จริง',
+      '   • ติดสถานะครบเหมือนหมัดปกติ (พิษ/ไฟ/แช่แข็ง/สตัน/ตาบอด/สาป/ห้ามฮีล) แต่ไม่รับคอมโบคูณดาเมจ (ดาเมจคงที่)',
+      '   • สวนทันทีหลังโดนโจมตี (จังหวะไล่ลำดับ) + เสียงหมัดหนักหน่วง + เอฟเฟกต์สีทอง 🪃 + ป้าย COUNTER! (แยกจาก Reflect ชัดเจน)',
+      '🪃 อาติแฟคใหม่ Riposte Core (Epic) — 25% โอกาสสวนกลับด้วยดาเมจ 90% (ดรอปจากกล่อง Epic)',
+      '🔧 ปรับสกิลฟอร์มสาย COUNTER:',
+      '   • CRYSTAWOLF-BASTION: HP<50% สวนกลับ 50% (จากเดิมทุกรอบ)',
+      '   • CRIMSON-BRAWLER: เพิ่ม 20% โอกาสสวนกลับ',
+      '   • SAMURAI-GHOST: คริแน่นอน + 20% สวนกลับ (แทนการหลบเดิม)',
+      '   • ARC-ANGEL-GHOST: HP<50% สตันศัตรู 50% + 25% สวนกลับ',
+      '   • GREEN-SENTINEL-GHOST: 30% ลดดาเมจครึ่งหนึ่งแล้วสวนกลับ + ฟื้น HP 4% ทุกเทิร์น',
+      '   • BAHAMUT-GHOST: เมื่อ WIN ATK +100% (จากเดิม +75%)',
+      '   • Overdrive สาย FORTRESS/PANDA/IRONJAW สวนกลับเป็นหมัดจริงแล้ว',
+      '   • Fusion Echo ของฟอร์มสวนกลับก็สวนได้ตาม (โอกาสประมาณครึ่ง)',
+    ], en:[
+      '🥊 COUNTER system overhaul — counters are now a REAL follow-up strike, no longer a Reflect-style flat number',
+      '   • Counter deals your own ATK ×0.75 — can crit, mitigated by DEF, lifesteals, and can KO the enemy',
+      '   • Inflicts every on-hit status like a normal attack (poison/burn/freeze/stun/blind/curse/heal-block); no damage-combo multipliers (flat damage)',
+      '   • Fires immediately after the hit that triggered it, with a heavy punch SFX, gold impact FX 🪃 and a COUNTER! banner (clearly separate from Reflect)',
+      '🪃 New Epic artifact Riposte Core — 25% chance to counter for 90% (drops from Epic boxes)',
+      '🔧 Counter-form skill reworks:',
+      '   • CRYSTAWOLF-BASTION: HP<50% now 50% chance to counter (was every round)',
+      '   • CRIMSON-BRAWLER: added a 20% chance to counter',
+      '   • SAMURAI-GHOST: guaranteed crit + 20% counter (replaces its dodge)',
+      '   • ARC-ANGEL-GHOST: HP<50% now 50% stun + 25% counter',
+      '   • GREEN-SENTINEL-GHOST: 30% chance to halve damage then counter; regen 4% HP/turn',
+      '   • BAHAMUT-GHOST: on WIN, ATK +100% (was +75%)',
+      '   • Overdrive counters (FORTRESS/PANDA/IRONJAW lines) are now real counter strikes too',
+      '   • Fusion Echo of counter forms can counter as well (about half the chance)',
     ]
   },
 ];

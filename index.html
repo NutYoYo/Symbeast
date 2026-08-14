@@ -8693,15 +8693,19 @@ function endBattle(won) {
     const isSpecial = battleState.enemy.isSpecialBoss;
     const isDBoss = battleState.isBoss && !isSpecial;
     if(isDBoss || isSpecial) {
-      const g = isSpecial ? (30000 + Math.floor(Math.random()*20001)) : (8000 + Math.floor(Math.random()*4001));
-      gold += g; rewards.push(`💰 +${g}G`);
+      // An Elite dungeon boss gets the Elite bonus too: Gold x4 and probabilistic drops rolled x2
+      const isEliteEnemy = !!(battleState.enemy && battleState.enemy.isElite);
+      const eliteGoldMult = isEliteEnemy ? 4 : 1;
+      const dropRolls = isEliteEnemy ? 2 : 1;
+      const g = (isSpecial ? (30000 + Math.floor(Math.random()*20001)) : (8000 + Math.floor(Math.random()*4001))) * eliteGoldMult;
+      gold += g; rewards.push(`💰 +${g}G${isEliteEnemy?' (Elite ×4)':''}`);
       const symKey = ['sym_F','sym_W','sym_S'][Math.floor(Math.random()*3)];
       addItemToInventory(symKey); rewards.push(`${ITEMS[symKey].icon} ${ITEMS[symKey].name}`);
-      if(Math.random() < 0.50) { addItemToInventory('revive'); rewards.push(`${ITEMS.revive.icon} ${ITEMS.revive.name}`); }
-      if(Math.random() < 0.20) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
-      if(Math.random() < (isSpecial?0.20:0.15)) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
+      for(let i=0;i<dropRolls;i++) if(Math.random() < 0.50) { addItemToInventory('revive'); rewards.push(`${ITEMS.revive.icon} ${ITEMS.revive.name}`); }
+      for(let i=0;i<dropRolls;i++) if(Math.random() < 0.20) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
+      for(let i=0;i<dropRolls;i++) if(Math.random() < (isSpecial?0.20:0.15)) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
       if(isSpecial) { addItemToInventory('weapon_box'); rewards.push(`${ITEMS.weapon_box.icon} Weapon Box!`); }
-      if(isSpecial && Math.random() < 0.20) { addItemToInventory('shiny_egg'); rewards.push(`${ITEMS.shiny_egg.icon} ${ITEMS.shiny_egg.name}!`); }
+      if(isSpecial) for(let i=0;i<dropRolls;i++) if(Math.random() < 0.20) { addItemToInventory('shiny_egg'); rewards.push(`${ITEMS.shiny_egg.icon} ${ITEMS.shiny_egg.name}!`); }
       // Bulk potion/shard drop, same pool as a standard Hell-tier boss — dboss gets 3-6 pieces,
       // special_boss gets 5-9 (guaranteed, not a percentage roll — it's the dungeon's climax kill).
       {
@@ -8729,11 +8733,14 @@ function endBattle(won) {
         exitSecretDungeon();
       }
     } else {
-      // regular dungeon monster
-      const g = 3000 + Math.floor(Math.random()*1501);
-      gold += g; rewards.push(`💰 +${g}G`);
-      if(Math.random() < 0.175) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); }
-      if(Math.random() < 0.25) { const item = rollTreasureItem(); addItemToInventory(item); rewards.push(`${ITEMS[item].icon} ${ITEMS[item].name}`); }
+      // regular dungeon monster — Elite gets the same bonus as an Elite Scout enemy: Gold x4, drop rolls x2
+      const isEliteEnemy = !!(battleState.enemy && battleState.enemy.isElite);
+      const eliteGoldMult = isEliteEnemy ? 4 : 1;
+      const dropRolls = isEliteEnemy ? 2 : 1;
+      const g = (3000 + Math.floor(Math.random()*1501)) * eliteGoldMult;
+      gold += g; rewards.push(`💰 +${g}G${isEliteEnemy?' (Elite ×4)':''}`);
+      for(let i=0;i<dropRolls;i++) { if(Math.random() < 0.175) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); } }
+      for(let i=0;i<dropRolls;i++) { if(Math.random() < 0.25) { const item = rollTreasureItem(); addItemToInventory(item); rewards.push(`${ITEMS[item].icon} ${ITEMS[item].name}`); } }
     }
   } else if(won) {
     // Elite Scout enemy: Gold x4 / item drop count x2 (applied below)

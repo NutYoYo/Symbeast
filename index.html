@@ -1169,6 +1169,14 @@ function evolve2BaseOfKey(key) {
   }
   return null;
 }
+// ASCENSION (Tier 5) — fuse all 4 Evolve II branches of one base line into its ultimate form.
+const TIER5_MAP = {
+  FFF:'ULTIMATE-BRAWLER', FFW:'ANCIENT-PANDA',   FFS:'SHARKLORD-IRONJAW',
+  FWW:'GOD-BLITZ',        FWS:'WUKONG-CHAMPION', FSS:'VENOMBLAZE-FORTRESS',
+  WWW:'DARKPRIEST-SPECTER', WWS:'METALPHOENIX-SWIFTGUARD',
+  WSS:'LORD-SHIELDWING',    SSS:'WEREWOLF-BASTION',
+};
+const ASCENSION_GOLD_COST = 100000;
 
 // Evolve II: base form's passive stays active (baseFormKey), plus a bespoke Branch Skill
 // per form (implemented in the EVOLVE II BRANCH SKILL block in doTurn).
@@ -1433,6 +1441,37 @@ const EVOLVE2_FORMS = {
   'SHIVA-GHOST':        { name:'SHIVA-GHOST',        color:'#66ccff', hp:138, atk:37, spd:23, def:18, passiveIcon:'🔱',
     passive:'Every 3rd turn: damage dealt ×2.0, 50% chance to Freeze the enemy, and immune to debuffs that turn',
     passiveTh:'ทุก 3 เทิร์น: ดาเมจที่สร้าง ×2.0 และมีโอกาส 50% แช่แข็งศัตรู และภูมิคุ้มกันดีบัฟในเทิร์นนั้น' },
+  // ===== TIER 5 — ASCENSION forms (fuse all 4 Evolve II branches of a line) =====
+  'ULTIMATE-BRAWLER':        { name:'ULTIMATE-BRAWLER',        color:'#ff3300', hp:135, atk:66, spd:21, def:8,  passiveIcon:'👊', tier5:true,
+    passive:'Every round: ATK+10%/SPD+10% (max 5 stacks). 25% chance to counter for 75% damage. On LOSE, next round ATK+50%',
+    passiveTh:'ทุกรอบ ATK+10%/SPD+10% (สะสมสูงสุด 5) · 25% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE รอบถัดไป ATK+50%' },
+  'ANCIENT-PANDA':            { name:'ANCIENT-PANDA',           color:'#e8c088', hp:138, atk:62, spd:24, def:9,  passiveIcon:'🐼', tier5:true,
+    passive:'Damage taken -20%. 25% chance to dodge, guaranteeing a critical hit next attack. 40% chance to counter for 75% damage. On LOSE, damage dealt +50%',
+    passiveTh:'ลดดาเมจที่รับ 20% · 25% โอกาสหลบ (หมัดถัดไปคริแน่นอน) · 40% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE ดาเมจที่สร้าง +50%' },
+  'SHARKLORD-IRONJAW':        { name:'SHARKLORD-IRONJAW',       color:'#2a6f8f', hp:150, atk:62, spd:18, def:12, passiveIcon:'🦈', tier5:true,
+    passive:'Lifesteal 20%. 20% chance to attack twice. While HP<50%: damage dealt +30% and 75% chance to counter. 15% chance to stun the enemy',
+    passiveTh:'ดูดเลือด 20% · 20% โอกาสโจมตี 2 ครั้ง · เมื่อ HP<50%: ดาเมจ+30% และมีโอกาส 75% สวนกลับ · 15% โอกาสสตันศัตรู' },
+  'GOD-BLITZ':                { name:'GOD-BLITZ',               color:'#ffee55', hp:116, atk:33, spd:62, def:7,  passiveIcon:'⚡', tier5:true,
+    passive:'30% chance to dodge, granting ATK/SPD+50% and guaranteed hits next round. On WIN, 30% chance to stun. Damage taken -15%',
+    passiveTh:'30% โอกาสหลบ (ได้ ATK/SPD+50% และโจมตีไม่พลาดรอบถัดไป) · เมื่อ WIN 30% โอกาสสตัน · ลดดาเมจที่รับ 15%' },
+  'WUKONG-CHAMPION':          { name:'WUKONG-CHAMPION',         color:'#cc9922', hp:150, atk:42, spd:28, def:18, passiveIcon:'🐒', tier5:true,
+    passive:'15% chance to attack 4 times. On WIN, damage stacks +15% (max 5). 25% chance to dodge, doubling your next hit’s damage',
+    passiveTh:'15% โอกาสโจมตี 4 ครั้ง · เมื่อ WIN ดาเมจสะสม +15% (สูงสุด 5) · 25% โอกาสหลบ (หมัดถัดไปดาเมจ ×2)' },
+  'VENOMBLAZE-FORTRESS':      { name:'VENOMBLAZE-FORTRESS',     color:'#66aa22', hp:180, atk:32, spd:20, def:28, passiveIcon:'🔥', tier5:true,
+    passive:'Poison Absorb. Every attack: 30% chance to inflict Poison and Burn. While HP<50%: reflect 30% of damage received. Regen 4% Max HP each turn',
+    passiveTh:'ภูมิพิษ (ดูดพิษเป็นเลือด) · ทุกโจมตี 30% โอกาสติดพิษ+ไฟ · เมื่อ HP<50%: สะท้อนดาเมจที่รับ 30% · ฟื้น HP 4% ทุกเทิร์น' },
+  'DARKPRIEST-SPECTER':       { name:'DARKPRIEST-SPECTER',      color:'#7722aa', hp:122, atk:36, spd:54, def:8,  passiveIcon:'🌑', tier5:true,
+    passive:'Lifesteal 20%. 20% chance to curse the enemy (ATK-25% and cannot heal). 20% chance to dodge, making your next attack strike twice',
+    passiveTh:'ดูดเลือด 20% · 20% โอกาสสาปศัตรู (ATK-25% และห้ามฟื้น HP) · 20% โอกาสหลบ (หมัดถัดโจมตี 2 ครั้ง)' },
+  'METALPHOENIX-SWIFTGUARD':  { name:'METALPHOENIX-SWIFTGUARD', color:'#dd6633', hp:128, atk:34, spd:52, def:11, passiveIcon:'🔱', tier5:true,
+    passive:'Burn Absorb. On WIN: regen 5% HP/turn. On LOSE: crit chance/damage/dodge +5% (max 5 stacks). Revives once per battle at full HP. 20% chance to Burn the enemy',
+    passiveTh:'ภูมิคุ้มกันเผาไหม้ · เมื่อ WIN: ฟื้น 5% HP/เทิร์น · เมื่อ LOSE: คริ/ดาเมจ/หลบ +5% (สะสมสูงสุด 5) · ฟื้นคืนชีพ 1 ครั้ง/การต่อสู้ (HP เต็ม) · 20% โอกาสทำให้ศัตรูติดไฟ' },
+  'LORD-SHIELDWING':          { name:'LORD-SHIELDWING',         color:'#66bbdd', hp:165, atk:34, spd:26, def:24, passiveIcon:'🛡️', tier5:true,
+    passive:'Freeze Absorb. Damage taken -20%. Every attack: 20% chance to Freeze the enemy. On WIN: damage +50% and pierces DEF. Regen 3% HP/turn',
+    passiveTh:'ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 20% · ทุกโจมตี 20% โอกาสแช่แข็งศัตรู · เมื่อ WIN: ดาเมจ+50% และทะลุ DEF · ฟื้น 3% HP/เทิร์น' },
+  'WEREWOLF-BASTION':         { name:'WEREWOLF-BASTION',        color:'#556655', hp:195, atk:30, spd:18, def:33, passiveIcon:'🐺', tier5:true,
+    passive:'Freeze Absorb. Damage taken -20%. While HP<50%: DEF+25%, 75% chance to counter, 10% chance to Freeze. While HP<30%: ATK+30% and regen 5% HP. Every 3rd turn, attacks twice',
+    passiveTh:'ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 20% · เมื่อ HP<50%: DEF+25%, โอกาส 75% สวนกลับ, 10% โอกาสแช่แข็ง · เมื่อ HP<30%: ATK+30% และฟื้น HP 5% · ทุก 3 เทิร์นโจมตี 2 ครั้ง' },
 };
 
 const SPRITE_NAMES = {
@@ -2841,6 +2880,27 @@ const FUSION_ECHO_INFO = {
     descTh:'เมื่อโดน พิษ/เผาไหม้/คำสาป/แช่แข็ง ดีบัฟจะยังคงอยู่ตามเวลาปกติ แต่ผลที่ได้รับกลายเป็นตรงกันข้าม (เป็นผลดีแทน ครึ่งกำลัง) และโอกาส 8% ทำให้ศัตรูตาบอดเมื่อโจมตี'},
   'SHIVA-GHOST':        {name:'BALANCE ECHO',    icon:'🔱', desc:'Every 3 turns: damage dealt x1.5 and 25% chance to Freeze the enemy',
     descTh:'ทุก 3 เทิร์น: ดาเมจที่สร้าง x1.5 และโอกาส 25% แช่แข็งศัตรู'},
+  // ===== TIER 5 — ASCENSION form Echoes (half-strength, so tier5 pets stay valid Fusion parents) =====
+  'ULTIMATE-BRAWLER':        {name:'APEX ECHO',   icon:'👊', desc:'Every round: ATK+5%/SPD+5% (max 5 stacks). 12% chance to counter for 75% damage. On LOSE, next round ATK+25%',
+    descTh:'ทุกรอบ ATK+5%/SPD+5% (สะสมสูงสุด 5) · 12% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE รอบถัดไป ATK+25%'},
+  'ANCIENT-PANDA':            {name:'SAGE ECHO',   icon:'🐼', desc:'Damage taken -10%. 12% chance to dodge, guaranteeing a critical hit next attack. 20% chance to counter for 75% damage. On LOSE, damage dealt +25%',
+    descTh:'ลดดาเมจที่รับ 10% · 12% โอกาสหลบ (หมัดถัดไปคริแน่นอน) · 20% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE ดาเมจที่สร้าง +25%'},
+  'SHARKLORD-IRONJAW':        {name:'ABYSS ECHO',  icon:'🦈', desc:'Lifesteal 10%. 10% chance to attack twice. While HP<50%: damage dealt +15% and 40% chance to counter for 75% damage. 10% chance to stun',
+    descTh:'ดูดเลือด 10% · 10% โอกาสโจมตี 2 ครั้ง · เมื่อ HP<50%: ดาเมจ+15% และ 40% โอกาสสวนกลับ 75% · 10% โอกาสสตัน'},
+  'GOD-BLITZ':                {name:'STORM ECHO',  icon:'⚡', desc:'15% chance to dodge, granting ATK/SPD+25% and guaranteed hits next round. On WIN, 15% chance to stun. Damage taken -8%',
+    descTh:'15% โอกาสหลบ (ATK/SPD+25% และโจมตีไม่พลาดรอบถัดไป) · เมื่อ WIN 15% โอกาสสตัน · ลดดาเมจที่รับ 8%'},
+  'WUKONG-CHAMPION':          {name:'MONKEY ECHO', icon:'🐒', desc:'8% chance to attack 4 times. On WIN, damage stacks +8% (max 5). 12% chance to dodge, doubling your next hit’s damage',
+    descTh:'8% โอกาสโจมตี 4 ครั้ง · เมื่อ WIN ดาเมจสะสม +8% (สูงสุด 5) · 12% โอกาสหลบ (หมัดถัดไปดาเมจ ×2)'},
+  'VENOMBLAZE-FORTRESS':      {name:'PLAGUE ECHO', icon:'🔥', desc:'Poison Absorb. Every attack: 15% chance to inflict Poison and Burn. While HP<50%: reflect 15% of damage received. Regen 2% Max HP each turn',
+    descTh:'ภูมิพิษ (ดูดพิษเป็นเลือด) · ทุกโจมตี 15% โอกาสติดพิษ+ไฟ · เมื่อ HP<50%: สะท้อนดาเมจที่รับ 15% · ฟื้น HP 2% ทุกเทิร์น'},
+  'DARKPRIEST-SPECTER':       {name:'SHADE ECHO',  icon:'🌑', desc:'Lifesteal 10%. 10% chance to curse the enemy (ATK-25% and cannot heal). 10% chance to dodge, making your next attack strike twice',
+    descTh:'ดูดเลือด 10% · 10% โอกาสสาปศัตรู (ATK-25% และห้ามฟื้น HP) · 10% โอกาสหลบ (หมัดถัดโจมตี 2 ครั้ง)'},
+  'METALPHOENIX-SWIFTGUARD':  {name:'REBORN ECHO', icon:'🔱', desc:'Burn Absorb. On WIN: regen 2.5% HP/turn. On LOSE: crit chance/damage/dodge +3% (max 5 stacks). Revives once per battle at 50% HP. 10% chance to Burn the enemy',
+    descTh:'ภูมิคุ้มกันเผาไหม้ · เมื่อ WIN: ฟื้น 2.5% HP/เทิร์น · เมื่อ LOSE: คริ/ดาเมจ/หลบ +3% (สะสมสูงสุด 5) · ฟื้นคืนชีพ 1 ครั้ง/การต่อสู้ (HP 50%) · 10% โอกาสทำให้ศัตรูติดไฟ'},
+  'LORD-SHIELDWING':          {name:'GLACIER ECHO',icon:'🛡️', desc:'Freeze Absorb. Damage taken -10%. Every attack: 10% chance to Freeze the enemy. On WIN: damage +25% and pierces DEF. Regen 2% HP/turn',
+    descTh:'ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 10% · ทุกโจมตี 10% โอกาสแช่แข็ง · เมื่อ WIN: ดาเมจ+25% + ทะลุ DEF · ฟื้น HP 2%/เทิร์น'},
+  'WEREWOLF-BASTION':         {name:'FERAL ECHO',  icon:'🐺', desc:'Freeze Absorb. Damage taken -10%. While HP<50%: DEF+12%, 40% chance to counter, 5% chance to Freeze. While HP<30%: ATK+15% and regen 2.5% HP. Every 3rd turn, attacks twice',
+    descTh:'ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 10% · เมื่อ HP<50%: DEF+12%, 40% โอกาสสวนกลับ, 5% โอกาสแช่แข็ง · เมื่อ HP<30%: ATK+15% และฟื้น HP 2.5% · ทุก 3 เทิร์นโจมตี 2 ครั้ง'},
 };
 // Overdrive-buff crit-chance bonuses that must apply before the crit roll (see doTurn's critChance calc)
 const OD_CRIT_BONUS = {
@@ -3112,6 +3172,8 @@ let rebirthConfirm = null; // {from, idx}
 let fusionPickA = null; // {from, idx} — first pet picked for Fusion
 let fusionPickB = null; // {from, idx} — second pet picked for Fusion
 let fusionConfirm = false; // true when showing the Fusion confirm modal
+let ascensionPicks = []; // [{from, idx}, ...] up to 4 — pets picked for ASCENSION (Tier 5)
+let ascensionConfirm = false; // true when showing the Ascension confirm modal
 let emptySlotModal = null; // {phase:'choose'|'hatch_confirm'|'storage_pick', slotIdx}
 let storageRemoveConfirm = null; // index ใน storage
 let partyRemoveConfirm = null;   // index ใน party
@@ -3343,6 +3405,86 @@ function doEvolve2(petIdx, fromList, symbol) {
   evolve2SymbolPick = null;
   partyDetailIdx = null;
   scoutToast = pet.shiny ? `✨ ${ff.name} EVOLVE II! SHINY!` : T(`🧬 ${ff.name} EVOLVE II สำเร็จ!`,`🧬 ${ff.name} EVOLVE II complete!`);
+  saveGame(); render();
+}
+
+// ASCENSION — consume 4 pets (the F/W/S/B Evolve II branches of one base line) into that line's
+// Tier 5 form. Stats carry 50% of the average trained bonus across the 4 (mirrors doEvolve2's own
+// bonus-carry pattern); the Echo is randomly inherited from one of the 4 (may be none); Shiny carries
+// over if any of the 4 was Shiny.
+function doAscension() {
+  if(ascensionPicks.length !== 4) return;
+  const petsArr = ascensionPicks.map(p => p.from==='party' ? pets[p.idx] : storage[p.idx]);
+  if(petsArr.some(p=>!p)) { ascensionPicks=[]; ascensionConfirm=false; render(); return; }
+  if(petsArr.some(p=>p.phase!=='final' || EVOLVE2_FORMS[p.finalKey]?.tier5)) {
+    scoutToast = T('⚠ ต้องเป็น Evolve II ธรรมดา 4 ตัว (ไม่ใช่ร่างที่ 5)!','⚠ Must be 4 regular Evolve II pets (not Tier 5)!');
+    ascensionPicks=[]; ascensionConfirm=false; render(); return;
+  }
+  if(petsArr.some(p=>p.artifact||p.artifact2||p.weapon)) {
+    scoutToast = T('⚠ ถอด Weapon/Artifact ก่อน Ascension!','⚠ Unequip Weapon/Artifact before Ascension!');
+    ascensionConfirm=false; render(); return;
+  }
+  const bases = petsArr.map(p=>evolve2BaseOfKey(p.finalKey));
+  const base = bases[0];
+  if(!base || bases.some(b=>b!==base)) {
+    scoutToast = T('⚠ ต้องเป็น 4 ตัวจากสายเดียวกัน!','⚠ Must be 4 pets from the same line!');
+    ascensionPicks=[]; ascensionConfirm=false; render(); return;
+  }
+  const branchSet = new Set(petsArr.map(p=>p.finalKey));
+  const required = Object.values(EVOLVE2_BRANCHES[base]);
+  if(branchSet.size!==4 || !required.every(k=>branchSet.has(k))) {
+    scoutToast = T('⚠ ต้องมีครบ 4 Branch (F/W/S/B) ของสายนี้!','⚠ Need all 4 branches (F/W/S/B) of this line!');
+    ascensionPicks=[]; ascensionConfirm=false; render(); return;
+  }
+  const tier5Key = TIER5_MAP[base];
+  const tier5Form = tier5Key ? EVOLVE2_FORMS[tier5Key] : null;
+  if(!tier5Form) { ascensionPicks=[]; ascensionConfirm=false; render(); return; }
+  if(gold < ASCENSION_GOLD_COST) {
+    scoutToast = T(`💰 ต้องมี Gold ${ASCENSION_GOLD_COST}G!`,`💰 Need ${ASCENSION_GOLD_COST}G!`);
+    ascensionConfirm=false; render(); return;
+  }
+
+  // Stat carry-over: 50% of the average "trained excess" over each pet's own Evolve II base (doEvolve2 pattern)
+  const bonuses = petsArr.map(p=>{
+    const b2 = EVOLVE2_FORMS[p.finalKey] || {hp:0,atk:0,spd:0,def:0};
+    return { hp: Math.max(0,p.maxHp-b2.hp), atk: Math.max(0,p.atk-b2.atk), spd: Math.max(0,p.spd-b2.spd), def: Math.max(0,p.def-b2.def) };
+  });
+  const avg = k => bonuses.reduce((s,b)=>s+b[k],0)/4;
+  const carryHp  = Math.round(avg('hp')  * 0.5);
+  const carryAtk = Math.round(avg('atk') * 0.5);
+  const carrySpd = Math.round(avg('spd') * 0.5);
+  const carryDef = Math.round(avg('def') * 0.5);
+
+  // Echo: randomly inherited from one of the 4 (that pet may itself have none)
+  const echoSrc = petsArr[Math.floor(Math.random()*4)];
+  const inheritedPassive = echoSrc.inheritedPassive || null;
+  // Shiny carries over if any of the 4 was Shiny
+  const isShiny = petsArr.some(p=>p.shiny);
+
+  gold -= ASCENSION_GOLD_COST;
+  const partyRemovals = ascensionPicks.filter(p=>p.from==='party').map(p=>p.idx).sort((a,b)=>b-a);
+  const storageRemovals = ascensionPicks.filter(p=>p.from==='storage').map(p=>p.idx).sort((a,b)=>b-a);
+  partyRemovals.forEach(i=>pets.splice(i,1));
+  storageRemovals.forEach(i=>storage.splice(i,1));
+  if(activePetIdx >= pets.length) activePetIdx = Math.max(0, pets.length-1);
+
+  const newPet = {
+    phase:'final', finalKey:tier5Key, baseFormKey:base, formKey:null,
+    name: tier5Form.name,
+    maxHp: tier5Form.hp + carryHp, hp: tier5Form.hp + carryHp,
+    atk: tier5Form.atk + carryAtk, spd: tier5Form.spd + carrySpd, def: tier5Form.def + carryDef,
+    trainCount:0, rebirthRank:0, rebirthBonus:null,
+    inheritedPassive, shiny:isShiny,
+    weapon:null, artifact:null, artifact2:null, resting:false,
+  };
+  if(newPet.shiny) applyShinyStats(newPet);
+  seenFinal.add(tier5Key);
+  if(pets.length < MAX_PETS) pets.push(newPet); else storage.push(newPet);
+  ascensionPicks = [];
+  ascensionConfirm = false;
+  syncCreature();
+  SFX.evolve();
+  scoutToast = newPet.shiny ? `🌟 ${tier5Form.name} ASCENSION! SHINY!` : T(`🌟 ${tier5Form.name} ASCENSION สำเร็จ!`,`🌟 ${tier5Form.name} ASCENSION complete!`);
   saveGame(); render();
 }
 
@@ -5647,15 +5789,15 @@ function doOverdriveTurn() {
     pd=_pierceHit(3.0,1.0); ed=_ed(); bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'👽',text:`COSMIC ANOMALY ×3.0 (pierce)→${pd} | 50% Blind/turn (3T)`});
   } else if(ff==='SHIVA-GHOST') {
-    const h=_hit(4.0); pd=h.d; const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown');
+    const h=_hit(4.0); pd=h.d; const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING'||enemy.evolve2Key==='LORD-SHIELDWING'||enemy.evolve2Key==='WEREWOLF-BASTION')) || enemy.weapon?.startsWith('permafrost_crown');
     ed=0; if(eFreezeAbsorbOD) { ed=_ed(); } /* freeze absorbed: damage goes through, SPD inverted in getEnemyEffSpd */
     bs.enemyFreezeSpdTurns=3; bs.odBuff={type:ff,turnsLeft:3};
     passives.push({icon:'🔱',text:`COSMIC DESTRUCTION ×4.0→${pd}${eFreezeAbsorbOD?' (FREEZE ABSORBED)':''} + FREEZE | SPD+100% (3T)`});
   }
   // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit
   // 🔥 Fire Absorb: Phoenix-form monsters absorb fire — take -25% dmg instead of +25%
-  const eFireAbsorbOD = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION' || enemy.evolve2Key==='ALIEN-GHOST' || enemy.evolve2Key==='IFRIT-GHOST' || enemy.evolve2Key==='DRAGON-TAMER-GHOST' || enemy.evolve2Key==='BAHAMUT-GHOST' || enemy.evolve2Key==='DRAGON-KNIGHT-GHOST' || enemy.evolve2Key==='TRICKFOX-GHOST');
-  const pFireAbsorbOD = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION' || ff==='IFRIT-GHOST' || ff==='DRAGON-TAMER-GHOST' || ff==='BAHAMUT-GHOST' || ff==='DRAGON-KNIGHT-GHOST' || ff==='TRICKFOX-GHOST';
+  const eFireAbsorbOD = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION' || enemy.evolve2Key==='ALIEN-GHOST' || enemy.evolve2Key==='IFRIT-GHOST' || enemy.evolve2Key==='DRAGON-TAMER-GHOST' || enemy.evolve2Key==='BAHAMUT-GHOST' || enemy.evolve2Key==='DRAGON-KNIGHT-GHOST' || enemy.evolve2Key==='TRICKFOX-GHOST' || enemy.evolve2Key==='METALPHOENIX-SWIFTGUARD');
+  const pFireAbsorbOD = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION' || ff==='IFRIT-GHOST' || ff==='DRAGON-TAMER-GHOST' || ff==='BAHAMUT-GHOST' || ff==='DRAGON-KNIGHT-GHOST' || ff==='TRICKFOX-GHOST' || ff==='METALPHOENIX-SWIFTGUARD';
   if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorbOD ? Math.round(pd*0.75) : Math.round(pd*1.25);
   if(bs.playerBurnTurns>0 && ed>0) ed = pFireAbsorbOD ? Math.round(ed*0.75) : ff==='ALIEN-GHOST' ? Math.round(ed*0.75) : Math.round(ed*1.25);
   // ⏰ Stalemate Breaker
@@ -5933,7 +6075,7 @@ function doTurn(moveIdx) {
     const {type} = bs.odBuff;
     const _atk = getEffStat('atk');
     // ❄️ Enemy freeze absorb check for OD buff freeze procs (defined here since OD runs before main freezeAbsorb)
-    const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown');
+    const eFreezeAbsorbOD = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST'||enemy.evolve2Key==='CRYSTAWOLF-BASTION'||enemy.evolve2Key==='PENGUIN-GHOST'||enemy.evolve2Key==='CHILL-SHIELDWING'||enemy.evolve2Key==='GAIA-SHIELDWING'||enemy.evolve2Key==='LORD-SHIELDWING'||enemy.evolve2Key==='WEREWOLF-BASTION')) || enemy.weapon?.startsWith('permafrost_crown');
     if(type==='RAGING-BRAWLER') { /* Crit+25% via OD_CRIT_BONUS */ passives.push({icon:'💥',text:'APOCALYPSE Crit+25%'}); }
     if(type==='CRIMSON-BRAWLER') { pd=Math.round(pd*1.3); if(Math.random()<0.15){const orig=pd;pd=orig*2;pdHits=[orig,orig];} passives.push({icon:'☯️',text:`APOCALYPSE RUSH ATK+30%,SPD+30%,double15%→${pd}`}); }
     if(type==='KAIJU-BRAWLER') { ed=(enemyIgnoresDef?ed:Math.round(ed*0.85)); passives.push({icon:'💥',text:`APOCALYPSE WALL Crit+15%,dmgTaken-15%→${ed}`}); }
@@ -6238,8 +6380,8 @@ function doTurn(moveIdx) {
     if(pd>0 && Math.random()<0.15) { bs.enemyBurnTurns=3; passives.push({icon:'🔥',text:`PHOENIX BURN! Enemy is on fire→${pd}`}); }
   }
   // ❄️ Freeze Absorb: ice-themed monsters absorb freeze — SPD inverted + no stun
-  const freezeAbsorb = ff==='SHIVA-GHOST' || ff==='CRYSTAWOLF-BASTION' || ff==='PENGUIN-GHOST' || ff==='CHILL-SHIELDWING' || ff==='GAIA-SHIELDWING' || wpnId?.startsWith('permafrost_crown');
-  const eFreezeAbsorb = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST' || enemy.evolve2Key==='CRYSTAWOLF-BASTION' || enemy.evolve2Key==='PENGUIN-GHOST' || enemy.evolve2Key==='CHILL-SHIELDWING' || enemy.evolve2Key==='GAIA-SHIELDWING')) || enemy.weapon?.startsWith('permafrost_crown');
+  const freezeAbsorb = ff==='SHIVA-GHOST' || ff==='CRYSTAWOLF-BASTION' || ff==='PENGUIN-GHOST' || ff==='CHILL-SHIELDWING' || ff==='GAIA-SHIELDWING' || ff==='LORD-SHIELDWING' || ff==='WEREWOLF-BASTION' || wpnId?.startsWith('permafrost_crown');
+  const eFreezeAbsorb = (enemy.isEvolve2Enemy && (enemy.evolve2Key==='SHIVA-GHOST' || enemy.evolve2Key==='CRYSTAWOLF-BASTION' || enemy.evolve2Key==='PENGUIN-GHOST' || enemy.evolve2Key==='CHILL-SHIELDWING' || enemy.evolve2Key==='GAIA-SHIELDWING' || enemy.evolve2Key==='LORD-SHIELDWING' || enemy.evolve2Key==='WEREWOLF-BASTION')) || enemy.weapon?.startsWith('permafrost_crown');
 
   // GAIA: 10% freeze on hit every turn
   if(ff==='GAIA-SHIELDWING' && pd>0 && Math.random()<0.10) {
@@ -8138,11 +8280,11 @@ function doTurn(moveIdx) {
 
   // 🔥 Burn damage amplification — while burned, take +25% more damage from any hit this turn
   // 🔥 Fire Absorb: Phoenix-form monsters absorb fire — take -25% dmg instead of +25%
-  const fireAbsorb = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION' || ff==='IFRIT-GHOST' || ff==='DRAGON-TAMER-GHOST' || ff==='BAHAMUT-GHOST' || ff==='DRAGON-KNIGHT-GHOST' || ff==='TRICKFOX-GHOST';
-  const eFireAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION' || enemy.evolve2Key==='IFRIT-GHOST' || enemy.evolve2Key==='DRAGON-TAMER-GHOST' || enemy.evolve2Key==='BAHAMUT-GHOST' || enemy.evolve2Key==='DRAGON-KNIGHT-GHOST' || enemy.evolve2Key==='TRICKFOX-GHOST');
+  const fireAbsorb = ff==='PHOENIX-GHOST' || ff==='PHEONIX-SWIFTGUARD' || ff==='DRAGON-GHOST' || ff==='KAIJU-BRAWLER' || ff==='SOUL-CHAMPION' || ff==='IFRIT-GHOST' || ff==='DRAGON-TAMER-GHOST' || ff==='BAHAMUT-GHOST' || ff==='DRAGON-KNIGHT-GHOST' || ff==='TRICKFOX-GHOST' || ff==='METALPHOENIX-SWIFTGUARD';
+  const eFireAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='PHOENIX-GHOST' || enemy.evolve2Key==='PHEONIX-SWIFTGUARD' || enemy.evolve2Key==='DRAGON-GHOST' || enemy.evolve2Key==='KAIJU-BRAWLER' || enemy.evolve2Key==='SOUL-CHAMPION' || enemy.evolve2Key==='IFRIT-GHOST' || enemy.evolve2Key==='DRAGON-TAMER-GHOST' || enemy.evolve2Key==='BAHAMUT-GHOST' || enemy.evolve2Key==='DRAGON-KNIGHT-GHOST' || enemy.evolve2Key==='TRICKFOX-GHOST' || enemy.evolve2Key==='METALPHOENIX-SWIFTGUARD');
   // ☠️ Poison Absorb: poison-themed monsters absorb poison — heal instead of damage
-  const poisonAbsorb = ff==='SLIME-GHOST' || ff==='BLAZING-FORTRESS' || ff==='GUARDIAN-FORTRESS' || ff==='SWIFT-FORTRESS' || ff==='GREEN-SENTINEL-GHOST' || ff==='ARC-DEMON-GHOST' || ff==='LEAPFROG-GHOST' || ff==='GRAVE-SPECTER' || ff==='POISON-FORTRESS';
-  const ePoisonAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='SLIME-GHOST' || enemy.evolve2Key==='BLAZING-FORTRESS' || enemy.evolve2Key==='GUARDIAN-FORTRESS' || enemy.evolve2Key==='SWIFT-FORTRESS' || enemy.evolve2Key==='GREEN-SENTINEL-GHOST' || enemy.evolve2Key==='ARC-DEMON-GHOST' || enemy.evolve2Key==='LEAPFROG-GHOST' || enemy.evolve2Key==='GRAVE-SPECTER' || enemy.evolve2Key==='POISON-FORTRESS');
+  const poisonAbsorb = ff==='SLIME-GHOST' || ff==='BLAZING-FORTRESS' || ff==='GUARDIAN-FORTRESS' || ff==='SWIFT-FORTRESS' || ff==='GREEN-SENTINEL-GHOST' || ff==='ARC-DEMON-GHOST' || ff==='LEAPFROG-GHOST' || ff==='GRAVE-SPECTER' || ff==='POISON-FORTRESS' || ff==='VENOMBLAZE-FORTRESS';
+  const ePoisonAbsorb = enemy.isEvolve2Enemy && (enemy.evolve2Key==='SLIME-GHOST' || enemy.evolve2Key==='BLAZING-FORTRESS' || enemy.evolve2Key==='GUARDIAN-FORTRESS' || enemy.evolve2Key==='SWIFT-FORTRESS' || enemy.evolve2Key==='GREEN-SENTINEL-GHOST' || enemy.evolve2Key==='ARC-DEMON-GHOST' || enemy.evolve2Key==='LEAPFROG-GHOST' || enemy.evolve2Key==='GRAVE-SPECTER' || enemy.evolve2Key==='POISON-FORTRESS' || enemy.evolve2Key==='VENOMBLAZE-FORTRESS');
   if(bs.enemyBurnTurns>0 && pd>0) pd = eFireAbsorb||eAlienReverse>0 ? Math.round(pd*0.75) : Math.round(pd*1.25);
   if(bs.playerBurnTurns>0 && ed>0) ed = fireAbsorb ? Math.round(ed*0.75) : alienReverse>0 ? Math.round(ed*(1-0.25*alienReverse)) : Math.round(ed*1.25);
 
@@ -14295,6 +14437,7 @@ screenContent.addEventListener('click', e=>{
       if(partyViewTab !== 'evolve2') { evolve2PetSource = null; evolve2SymbolPick = null; }
       if(partyViewTab !== 'rebirth') { rebirthConfirm = null; }
       if(partyViewTab !== 'fusion') { fusionPickA = null; fusionPickB = null; fusionConfirm = false; }
+      if(partyViewTab !== 'ascension') { ascensionPicks = []; ascensionConfirm = false; }
       render(); return;
     }
     // Evolve II tab — pick pet
@@ -14409,6 +14552,20 @@ screenContent.addEventListener('click', e=>{
       scoutToast = T('🥚 Fusion สำเร็จ! ได้ Fusion Egg แล้ว','🥚 Fusion complete! Got a Fusion Egg');
       saveGame(); render(); return;
     }
+    // Ascension tab — pick up to 4 pets, confirm, then delegate to doAscension() (self-contained: it
+    // validates/consumes/renders/saves/toasts on its own)
+    const ascPickEl = el.closest('[data-ascensionpick]');
+    if(ascPickEl && partyViewTab==='ascension') {
+      const [from, idxStr] = ascPickEl.dataset.ascensionpick.split(':');
+      const idx = parseInt(idxStr);
+      const already = ascensionPicks.findIndex(x=>x.from===from && x.idx===idx);
+      if(already>=0) ascensionPicks.splice(already,1);
+      else if(ascensionPicks.length<4) ascensionPicks.push({from, idx});
+      render(); return;
+    }
+    if(el.closest('#ascensionConfirmBtn') && partyViewTab==='ascension') { ascensionConfirm = true; render(); return; }
+    if(el.closest('#ascensionCancel')) { ascensionConfirm = false; render(); return; }
+    if(el.closest('#ascensionConfirmYes')) { doAscension(); return; }
     // Evolve II tab — confirm
     if(el.closest('[data-doevo2]') && partyViewTab==='evolve2') {
       const src = evolve2PetSource, symbol = evolve2SymbolPick;
@@ -15638,6 +15795,7 @@ function renderParty() {
       <div data-partytab="evolve2" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='evolve2'?'rgba(120,40,0,0.4)':'#08080f'};border:1px solid ${partyViewTab==='evolve2'?'#ff6600':'#2a2a4a'};color:${partyViewTab==='evolve2'?'#ff9944':'#4a4a7a'}">🧬 EVOLVE II</div>
       <div data-partytab="rebirth" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='rebirth'?'rgba(80,0,120,0.5)':'#08080f'};border:1px solid ${partyViewTab==='rebirth'?'#cc88ff':'#2a2a4a'};color:${partyViewTab==='rebirth'?'#dd99ff':'#4a4a7a'}">🔮 REBIRTH</div>
       <div data-partytab="fusion" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='fusion'?'rgba(0,80,120,0.5)':'#08080f'};border:1px solid ${partyViewTab==='fusion'?'#88ccff':'#2a2a4a'};color:${partyViewTab==='fusion'?'#99ddff':'#4a4a7a'}">🥚 FUSION</div>
+      <div data-partytab="ascension" style="flex:1;padding:6px 2px;border-radius:8px;font-family:Kanit,sans-serif;font-size:10px;text-align:center;cursor:pointer;background:${partyViewTab==='ascension'?'rgba(140,100,0,0.5)':'#08080f'};border:1px solid ${partyViewTab==='ascension'?'#ffcc33':'#2a2a4a'};color:${partyViewTab==='ascension'?'#ffdd77':'#4a4a7a'}">🌟 ASCEND</div>
     </div>`;
 
   const storageDetailOverlay = storageDetailIdx !== null && storage[storageDetailIdx] ? (()=>{
@@ -16124,12 +16282,86 @@ function renderParty() {
     </div>`;
   })();
 
+  const ascensionHtml = (()=>{
+    const eligibleA = [...pets.map((p,i)=>({p,i,from:'party'})), ...storage.map((p,i)=>({p,i,from:'storage'}))]
+      .filter(({p})=>p.phase==='final' && !EVOLVE2_FORMS[p.finalKey]?.tier5);
+    const isPickedAsc = (from,i) => ascensionPicks.some(x=>x.from===from && x.idx===i);
+    const pickedPets = ascensionPicks.map(x=>x.from==='party'?pets[x.idx]:storage[x.idx]).filter(Boolean);
+    const goldOk3 = gold >= ASCENSION_GOLD_COST;
+    let tier5Preview = null, validSelection = false;
+    if(pickedPets.length===4) {
+      const bases = pickedPets.map(p=>evolve2BaseOfKey(p.finalKey));
+      const base = bases[0];
+      const sameLine = base && bases.every(b=>b===base);
+      const branchSet = new Set(pickedPets.map(p=>p.finalKey));
+      const required = sameLine ? Object.values(EVOLVE2_BRANCHES[base]) : [];
+      validSelection = sameLine && branchSet.size===4 && required.every(k=>branchSet.has(k));
+      if(validSelection) tier5Preview = EVOLVE2_FORMS[TIER5_MAP[base]];
+    }
+    const canAscend = validSelection && goldOk3;
+    return `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:#201a08;border:1px solid #aa8833;border-radius:10px;padding:10px 12px">
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#ffcc33;margin-bottom:4px">🌟 ASCENSION SYSTEM</div>
+        <div style="font-size:10px;color:#b09050;line-height:1.6">${T(`เลือก Pet ร่าง Evolve II ให้ครบ 4 Branch (F/W/S/B) ของสายเดียวกัน — ทั้ง 4 ตัวจะหายไป ได้ร่างที่ 5 (Ascension) แทน<br>สเตตัสสืบทอด <b style="color:#ffdd77">50% ของค่าเฉลี่ยส่วนเกินทั้ง 4 ตัว</b> พร้อมพาสซีพสืบทอดสุ่มจาก 1 ใน 4 ตัว<br>ค่าใช้จ่าย: 💰 ${ASCENSION_GOLD_COST.toLocaleString()}G`,`Pick 4 Evolve II pets covering all 4 branches (F/W/S/B) of the same line — all 4 are consumed for that line's Tier 5 Ascension form<br>Stats inherit <b style="color:#ffdd77">50% of the 4 pets' combined trained bonus</b>, plus a passive randomly inherited from one of the four<br>Cost: 💰 ${ASCENSION_GOLD_COST.toLocaleString()}G`)}</div>
+        <div style="margin-top:6px;font-family:Kanit,sans-serif;font-size:11px;color:${goldOk3?'#ffdd77':'#7a6a3a'}">💰 Gold: ${gold.toLocaleString()}/${ASCENSION_GOLD_COST.toLocaleString()}</div>
+        <div style="margin-top:2px;font-family:Kanit,sans-serif;font-size:11px;color:#ffcc33">${T('เลือกแล้ว','Picked')}: ${ascensionPicks.length}/4</div>
+      </div>
+      ${eligibleA.length<4?`<div style="text-align:center;font-family:Kanit,sans-serif;font-size:11px;color:#665533;padding:20px">${T('ต้องมี Pet ร่าง Evolve II อย่างน้อย 4 ตัว','Need at least 4 Evolve II pets')}</div>`
+      :eligibleA.map(({p,i,from})=>{
+        const f = EVOLVE2_FORMS[p.finalKey];
+        const col = f?.color||'#c0a050';
+        const picked = isPickedAsc(from,i);
+        const hasGear = !!(p.artifact || p.artifact2 || p.weapon);
+        const full4 = ascensionPicks.length>=4 && !picked;
+        const disabled = hasGear || full4;
+        return `
+        <div ${disabled?'':`data-ascensionpick="${from}:${i}"`} style="background:${picked?'rgba(180,130,0,0.18)':'#08080f'};border:2px solid ${picked?'#ffcc33':hasGear?'#4a2222':col+'55'};border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:${disabled?'default':'pointer'};opacity:${disabled?0.5:1}">
+          <span style="font-size:20px">${f?.icon||'🐾'}</span>
+          <div style="flex:1">
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${petName(p)} <span style="font-size:9px;color:#8a7a4a">(${f?.name||''})</span></div>
+            <div style="font-size:9px;color:#7a6a4a">ATK ${p.atk} DEF ${p.def} SPD ${p.spd} HP ${p.maxHp}</div>
+            ${hasGear?`<div style="font-size:9px;color:#cc6666;margin-top:2px">⚠ ${T('ถอด Artifact/Weapon ออกก่อน','Remove Artifact/Weapon first')}</div>`:''}
+          </div>
+          ${picked?`<span style="font-size:14px;color:#ffcc33">✓</span>`:''}
+        </div>`;
+      }).join('')}
+      ${pickedPets.length===4 ? (tier5Preview ? `
+      <div style="padding:10px;border-radius:10px;background:#1a1204;border:2px solid #aa8833;margin-top:4px">
+        <div style="font-family:Kanit,sans-serif;font-size:12px;color:#ffdd77;text-align:center;margin-bottom:6px">${tier5Preview.passiveIcon||'🌟'} ${tier5Preview.name}</div>
+        <div style="font-size:9px;color:#b09050;text-align:center;line-height:1.6">${T(tier5Preview.passiveTh, tier5Preview.passive)}</div>
+        <div style="font-size:9px;color:#8a7040;text-align:center;margin-top:4px">${T('พาสซีพสืบทอดจะสุ่มจาก 1 ใน 4 ตัวตอนยืนยัน','The inherited passive is randomly rolled from one of the four on confirm')}</div>
+        <div style="margin-top:8px">
+          <div style="padding:6px;border-radius:8px;background:#04141a;border:1px solid ${goldOk3?'#ffcc00':'#4a3a00'};font-family:Kanit,sans-serif;font-size:10px;color:${goldOk3?'#ffcc00':'#6a5a00'};text-align:center">💰 ${ASCENSION_GOLD_COST.toLocaleString()}G ${goldOk3?'✓':'✗'}</div>
+        </div>
+        ${canAscend ? `<div id="ascensionConfirmBtn" style="margin-top:8px;padding:10px;border-radius:10px;background:linear-gradient(135deg,#5a4a00,#9a7a0a);border:2px solid #ffcc33;font-family:Kanit,sans-serif;font-size:13px;color:#ffdd77;text-align:center;cursor:pointer;font-weight:700">🌟 ASCEND!</div>`
+        : `<div style="margin-top:8px;padding:10px;border-radius:10px;background:#0a0a0a;border:1px solid #2a2a2a;font-family:Kanit,sans-serif;font-size:12px;color:#3a3a3a;text-align:center">${T('🌟 ASCEND (ของไม่พอ)','🌟 ASCEND (missing items)')}</div>`}
+      </div>` : `
+      <div style="padding:10px;border-radius:10px;background:#1a0f04;border:2px solid #883322;margin-top:4px;text-align:center">
+        <div style="font-family:Kanit,sans-serif;font-size:11px;color:#ff8866">${T('⚠ ต้องเป็น 4 ตัวครบ Branch F/W/S/B ของสายเดียวกัน','⚠ Must be all 4 branches (F/W/S/B) of the same line')}</div>
+      </div>`) : ''}
+    ${ascensionConfirm ? `
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:50;border-radius:16px">
+        <div style="background:#1a1204;border:2px solid #ffcc33;border-radius:16px;padding:20px;width:240px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 30px #ffcc3344">
+          <div style="font-family:Kanit,sans-serif;font-size:14px;color:#ffdd77;text-align:center;letter-spacing:2px">🌟 ${T('ยืนยันการ Ascension','Confirm Ascension')}</div>
+          <div style="font-size:11px;color:#b09050;text-align:center">${pickedPets.map(p=>petName(p)).join(' + ')}</div>
+          ${pickedPets.some(p=>p.shiny)?`<div style="font-size:10px;color:#ffd700;text-align:center">✨ ${T('มีตัว Shiny — ร่างที่ 5 จะเป็น Shiny ทันที','A Shiny is included — the Tier 5 form will be Shiny')}</div>`:''}
+          <div style="font-size:10px;color:#cc6666;text-align:center;font-weight:bold">${T('⚠ ทั้ง 4 ตัวจะหายไปถาวร!','⚠ All 4 beasts will be lost permanently!')}</div>
+          <div style="display:flex;gap:8px">
+            <div id="ascensionCancel" style="flex:1;padding:9px;border-radius:8px;background:#1a1a3a;border:1px solid #3a3a6a;font-family:Kanit,sans-serif;font-size:11px;color:#8080c0;cursor:pointer;text-align:center">${T('ยกเลิก','CANCEL')}</div>
+            <div id="ascensionConfirmYes" style="flex:1;padding:9px;border-radius:8px;background:linear-gradient(135deg,#5a4a00,#9a7a0a);border:2px solid #ffcc33;font-family:Kanit,sans-serif;font-size:11px;color:#ffdd77;cursor:pointer;text-align:center;font-weight:bold">${T('✓ ASCEND!','✓ ASCEND!')}</div>
+          </div>
+        </div>
+      </div>` : ''}
+    </div>`;
+  })();
+
   screenContent.innerHTML = `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:6px;padding:2px 0;position:relative">
       ${tabBar}
-      ${partyViewTab!=='evolve2'&&partyViewTab!=='rebirth'&&partyViewTab!=='fusion' ? swapBanner : ''}
+      ${partyViewTab!=='evolve2'&&partyViewTab!=='rebirth'&&partyViewTab!=='fusion'&&partyViewTab!=='ascension' ? swapBanner : ''}
       <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto">
-        ${partyViewTab==='party' ? slotHtml : partyViewTab==='storage' ? storageHtml : partyViewTab==='rebirth' ? rebirthHtml : partyViewTab==='fusion' ? fusionHtml : evo2Html}
+        ${partyViewTab==='party' ? slotHtml : partyViewTab==='storage' ? storageHtml : partyViewTab==='rebirth' ? rebirthHtml : partyViewTab==='fusion' ? fusionHtml : partyViewTab==='ascension' ? ascensionHtml : evo2Html}
       </div>
       <div data-opencollection style="position:absolute;bottom:4px;right:4px;padding:5px 10px;border-radius:20px;background:#0d0d20;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:10px;color:#6858a0;cursor:pointer;z-index:10">📖 COLLECTION${achPendingCount()>0?`<span style="position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff4444;color:#fff;font-size:9px;line-height:16px;font-weight:700">${achPendingCount()}</span>`:''}</div>
       ${collectionOpen ? collectionHtml : ''}

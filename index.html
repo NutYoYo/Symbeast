@@ -7195,24 +7195,60 @@ function doTurn(moveIdx) {
     }
   }
 
-  // ===== GAUNTLET BOSS / SECRET DUNGEON: HP<30% one-time finisher + post-finisher Enrage buff =====
+  // ===== GAUNTLET BOSS / SECRET DUNGEON: HP<30% one-time finisher + post-finisher buff =====
   if((bs.isGauntletBattle || bs.isSecretDungeonBattle) && enemy.evolve2Key) {
+    const _t5Key = enemy.evolve2Key;
+    const _isTier5Finisher = !!EVOLVE2_FORMS[_t5Key]?.tier5;
+    // Tier 5 forms get their OWN real Overdrive (mirrored from the player-side ff=== dispatch above/
+    // below) instead of the shared generic ×3.0+Enrage — everything else still uses the generic one.
+    const _eBase = () => Math.max(1, Math.round(em.dmg + eCurseAtk/3 + Math.random()*4));
+    const _ePierce = (mult) => Math.max(1, Math.round(_eBase()*mult));
+    const _eHit = (mult) => Math.max(1, Math.round(_eBase()*mult) - Math.floor(getEffStat('def')/2));
+    let _finisherJustFired = false;
     if(!bs.gauntletFinisherUsed && enemy.hp>0 && enemy.hp < enemy.maxHp*0.30) {
       bs.gauntletFinisherUsed = true;
-      const odInfo = OVERDRIVE_INFO[enemy.evolve2Key];
-      // Same pattern as Raid's Special Boss finishers (RAGNAROK/PHANTASM/etc): recompute the enemy's
-      // attack from scratch at a big multiplier and REPLACE ed with it, so it flows through the same
-      // single damage-application point as every other attack (line ~4988) instead of a separate
-      // direct creature.hp mutation, which would double-apply damage alongside the normal ed.
-      ed = Math.max(1, Math.round((em.dmg + eCurseAtk/3 + Math.random()*4) * 3.0) - Math.floor(getEffStat('def')/2));
-      passives.push({icon:odInfo?.icon||'💥', text:T(`${enemy.name} ใช้ ${odInfo?.name||'ท่าไม้ตาย'}! ดาเมจ ×3.0 →${ed}`,`${enemy.name} unleashes ${odInfo?.name||'a desperate finisher'}! Damage ×3.0 →${ed}`)});
-      const ffStat = EVOLVE2_FORMS[enemy.evolve2Key];
-      const cmpAtk = ffStat.atk, cmpDef = ffStat.def*1.8, cmpSpd = ffStat.spd;
-      const top = Math.max(cmpAtk, cmpDef, cmpSpd);
-      bs.gauntletEnrage = { type: top===cmpAtk?'atk':top===cmpDef?'def':'spd' };
+      _finisherJustFired = true;
+      const odInfo = OVERDRIVE_INFO[_t5Key];
+      if(_isTier5Finisher) {
+        if(_t5Key==='ULTIMATE-BRAWLER') { const h1=_ePierce(3.0), h2=_ePierce(3.0); ed=h1+h2; edHits=[h1,h2]; passives.push({icon:'👊',text:`APOCALYPSE FIST ×3.0×2 (pierce)→${ed}`}); }
+        else if(_t5Key==='ANCIENT-PANDA') { ed=_eHit(5.0); passives.push({icon:'🐼',text:`IMPACT SLASH ×5.0 (guaranteed crit)→${ed}`}); }
+        else if(_t5Key==='SHARKLORD-IRONJAW') { ed=_eHit(4.0); const ls=ed; _eHeal(ls,'🦈',`ABYSS DEVOUR ×4.0→${ed} + Lifesteal100% +${ls}`); }
+        else if(_t5Key==='GOD-BLITZ') { ed=_eHit(3.0); if(!playerStunned){bs.playerStunnedNextTurn=true;} passives.push({icon:'⚡',text:`RAGNAROK BOLT ×3.0→${ed} + STUN`}); }
+        else if(_t5Key==='WUKONG-CHAMPION') { const hs=[1,2,3,4,5,6].map(()=>_ePierce(1.0)); ed=hs.reduce((a,b)=>a+b,0); edHits=hs; passives.push({icon:'🐒',text:`72 TRANSFORMATIONS ×1.0×6 (pierce)→${ed}`}); }
+        else if(_t5Key==='VENOMBLAZE-FORTRESS') { ed=_eHit(2.5); if(!(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerPoisonTurns=3; bs.playerBurnTurns=3; } passives.push({icon:'🔥',text:`INFERNO PLAGUE ×2.5→${ed} + POISON+BURN`}); }
+        else if(_t5Key==='DARKPRIEST-SPECTER') { ed=_eHit(5.0); const ls=Math.max(1,Math.round(ed*0.5)); _eHeal(ls,'🌑',`SOUL REQUIEM ×5.0→${ed} + Lifesteal50% +${ls}`); bs.e2CurseTurnsE=3; bs.playerHealBlockTurns=3; }
+        else if(_t5Key==='METALPHOENIX-SWIFTGUARD') { ed=_eHit(3.0); const _mpBefore=enemy.hp; enemy.hp=enemy.maxHp; passives.push({icon:'🔱',text:`ETERNAL REBIRTH ×3.0→${ed} + FULL HEAL (+${enemy.maxHp-_mpBefore})`}); }
+        else if(_t5Key==='LORD-SHIELDWING') { ed=_ePierce(3.5); bs.enemyFreezeSpdTurns=3; if(!playerStunned){bs.playerStunnedNextTurn=true;} passives.push({icon:'🛡️',text:`ABSOLUTE ZERO WALL ×3.5 (pierce)→${ed} + FREEZE`}); }
+        else if(_t5Key==='WEREWOLF-BASTION') { const _wbBase=_eHit(3.0); const _wbCd=pd>0?_eHit(3.0):0; ed=_wbBase+_wbCd; passives.push({icon:'🐺',text:`BLOOD MOON HOWL ×3.0→${ed}${_wbCd>0?` (incl. counter ATK×3)`:''}`}); }
+        bs.eOdBuff = {type:_t5Key, turnsLeft:3};
+      } else {
+        // Same pattern as Raid's Special Boss finishers (RAGNAROK/PHANTASM/etc): recompute the enemy's
+        // attack from scratch at a big multiplier and REPLACE ed with it, so it flows through the same
+        // single damage-application point as every other attack (line ~4988) instead of a separate
+        // direct creature.hp mutation, which would double-apply damage alongside the normal ed.
+        ed = Math.max(1, Math.round((em.dmg + eCurseAtk/3 + Math.random()*4) * 3.0) - Math.floor(getEffStat('def')/2));
+        passives.push({icon:odInfo?.icon||'💥', text:T(`${enemy.name} ใช้ ${odInfo?.name||'ท่าไม้ตาย'}! ดาเมจ ×3.0 →${ed}`,`${enemy.name} unleashes ${odInfo?.name||'a desperate finisher'}! Damage ×3.0 →${ed}`)});
+        const ffStat = EVOLVE2_FORMS[_t5Key];
+        const cmpAtk = ffStat.atk, cmpDef = ffStat.def*1.8, cmpSpd = ffStat.spd;
+        const top = Math.max(cmpAtk, cmpDef, cmpSpd);
+        bs.gauntletEnrage = { type: top===cmpAtk?'atk':top===cmpDef?'def':'spd' };
+      }
       passives.push({icon:'🔥', text:T(`${enemy.name} เข้าสู่โหมด ENRAGE!`,`${enemy.name} enters ENRAGE mode!`)});
     }
-    if(bs.gauntletEnrage) {
+    if(!_finisherJustFired && bs.eOdBuff && bs.eOdBuff.type===_t5Key) {
+      if(_t5Key==='ULTIMATE-BRAWLER') { bs.ubStackE=Math.min(5,(bs.ubStackE||0)+1); ed=Math.round(ed*(1+0.10*bs.ubStackE)); if(Math.random()<0.5) { queueCounter('enemy', 0.75, '👊', 'APOCALYPSE FIST'); passives.push({icon:'👊',text:'[E] APOCALYPSE FIST 50% COUNTER!'}); } passives.push({icon:'👊',text:`[E] APOCALYPSE Stack×${bs.ubStackE} ATK/SPD+${bs.ubStackE*10}%→${ed}`}); }
+      else if(_t5Key==='ANCIENT-PANDA') { pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); if(Math.random()<0.75) { queueCounter('enemy', 0.75, '🐼', 'IMPACT SLASH'); passives.push({icon:'🐼',text:'[E] IMPACT SLASH 75% COUNTER!'}); } passives.push({icon:'🐼',text:`[E] IMPACT SLASH dmgTaken-50%→${pd}`}); }
+      else if(_t5Key==='SHARKLORD-IRONJAW') { ed=Math.round(ed*1.4); if(Math.random()<0.25){const extra=ed;ed+=extra;edHitCount=2;} const ls=Math.max(1,Math.round(ed*0.4)); _eHeal(ls,'🦈',`[E] ABYSS DEVOUR ATK+40%,lifesteal+40%,double25%→${ed}`); }
+      else if(_t5Key==='GOD-BLITZ') { ed=Math.round(ed*2.0); if(ed>0 && !playerStunned && Math.random()<0.25){bs.playerStunnedNextTurn=true;} passives.push({icon:'⚡',text:`[E] RAGNAROK BOLT ATK/SPD+100%,stun25%→${ed}`}); }
+      else if(_t5Key==='WUKONG-CHAMPION') { if(Math.random()<0.30){const orig=ed;ed=orig*4;edHits=[orig,orig,orig,orig];} const ls=Math.max(1,Math.round(ed*0.5)); _eHeal(ls,'🐒',`[E] 72 TRANSFORMATIONS 4-hit30%,lifesteal+50%→${ed}`); }
+      else if(_t5Key==='VENOMBLAZE-FORTRESS') { if(pd>0 && !playerReflectImmune) { const ref=Math.max(1,Math.round(pd*0.5)); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🔥',text:`[E] INFERNO PLAGUE Reflect50% ${ref}`}); } const heal=Math.round(enemy.maxHp*0.10); _eHeal(heal,'🔥',`[E] INFERNO PLAGUE regen10%→+${heal}HP`); }
+      else if(_t5Key==='DARKPRIEST-SPECTER') { if(Math.random()<0.30){const orig=ed;ed=orig*4;edHits=[orig,orig,orig,orig];} const ls=Math.max(1,Math.round(ed*0.4)); _eHeal(ls,'🌑',`[E] SOUL REQUIEM lifesteal+40%,4-hit30%→${ed}`); }
+      else if(_t5Key==='METALPHOENIX-SWIFTGUARD') { ed=Math.round(ed*1.5); const heal=Math.round(enemy.maxHp*0.15); _eHeal(heal,'🔱',`[E] ETERNAL REBIRTH ATK+50%,+${heal}HP→${ed}`); if(pd>0 && !(artId==='antidote_charm'||artId2==='antidote_charm')) { bs.playerBurnTurns=3; passives.push({icon:'🔱',text:'[E] ETERNAL REBIRTH BURN! (hit back)'}); } }
+      else if(_t5Key==='LORD-SHIELDWING') { ed=Math.round(ed*1.5); pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); passives.push({icon:'🛡️',text:`[E] ABSOLUTE ZERO WALL dmgTaken-50%,ATK/DEF/SPD+50%→${ed}/${pd}`}); }
+      else if(_t5Key==='WEREWOLF-BASTION') { ed=Math.round(ed*1.5); pd=(playerIgnoresDef?pd:Math.round(pd*0.5)); if(pd>0 && !playerReflectImmune) { const ref=Math.max(1,Math.round(pd*0.75)); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); } const heal=Math.round(enemy.maxHp*0.10); _eHeal(heal,'🐺',`[E] BLOOD MOON HOWL ATK/DEF+50%,counterAlways,+${heal}HP→${ed}`); }
+      bs.eOdBuff.turnsLeft--;
+      if(bs.eOdBuff.turnsLeft<=0) bs.eOdBuff=null;
+    } else if(bs.gauntletEnrage) {
       if(bs.gauntletEnrage.type==='atk') { ed=Math.round(ed*1.20); passives.push({icon:'🔥',text:`ENRAGE ATK+20% →${ed}`}); }
       else if(bs.gauntletEnrage.type==='def') { pd=(playerIgnoresDef?pd:Math.round(pd*0.80)); passives.push({icon:'🔥',text:`ENRAGE DEF+20% →${pd}`}); }
       else if(bs.gauntletEnrage.type==='spd') {

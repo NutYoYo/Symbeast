@@ -10372,7 +10372,7 @@ function renderTitle() {
 
   if(titlePhase === 'start') {
     screenContent.innerHTML = `
-      <div style="width:100%;height:100%;position:relative;overflow:hidden;background:url('Battle Scene/Title-symbeast.png') center/cover no-repeat">
+      <div style="width:100%;height:100%;position:relative;overflow:hidden;background:url('Battle Scene/Title-symbeast.jpg') center/cover no-repeat">
         <div id="title-start-btn" style="position:absolute;left:50%;transform:translateX(-50%);top:83%;width:58%;height:9%;cursor:pointer;border-radius:8px;background:transparent"></div>
       </div>`;
     document.getElementById('title-start-btn')?.addEventListener('click', () => {
@@ -16737,7 +16737,7 @@ function renderParty() {
       ? (/^[FWS]+$/.test(collectionDetailKey)
           ? collectionDetailKey.split('').map(symChip).join('')
           : `<span style="font-size:11px;color:#ffd700;font-family:Kanit,sans-serif">👻 ${T('ตัวละครลับ (หาได้จากการ EVOLVE)','Secret Character (found through EVOLVE)')}</span>`)
-      : (()=>{ const base=evolve2BaseOfKey(collectionDetailKey), sym=evolve2SymbolOfKey(collectionDetailKey); if(!base) return `<span style="font-size:11px;color:#ffd700;font-family:Kanit,sans-serif">👻 ${T('GHOST ร่างวิวัฒนาการขั้นสอง','GHOST Stage II')}</span>`; const matLabel = sym==='B' ? `+${EVOLVE2_BALANCE_SYM_COST} ${T('ของแต่ละสาย F/W/S','each of F/W/S')}` : `+${EVOLVE2_SYM_COST} ${SYMS[sym].name}`; return `${base.split('').map(symChip).join('')}<div style="display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#1a0a18;border:1px solid #ff880044"><span style="font-size:11px;color:#ff9944">${matLabel} (${T('วัตถุดิบ','material')})</span></div>`; })();
+      : (()=>{ const base=evolve2BaseOfKey(collectionDetailKey), sym=evolve2SymbolOfKey(collectionDetailKey); if(!base) return EVOLVE2_FORMS[collectionDetailKey]?.tier5 ? `<span style="font-size:11px;color:#ffd700;font-family:Kanit,sans-serif">🌟 ${T('ASCENSION — รวมร่าง Evolve II ครบ 4 สาย (F/W/S/B) ของสายเดียวกัน','ASCENSION — fuse all 4 Evolve II branches (F/W/S/B) of the same line')}</span>` : `<span style="font-size:11px;color:#ffd700;font-family:Kanit,sans-serif">👻 ${T('GHOST ร่างวิวัฒนาการขั้นสอง','GHOST Stage II')}</span>`; const matLabel = sym==='B' ? `+${EVOLVE2_BALANCE_SYM_COST} ${T('ของแต่ละสาย F/W/S','each of F/W/S')}` : `+${EVOLVE2_SYM_COST} ${SYMS[sym].name}`; return `${base.split('').map(symChip).join('')}<div style="display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;background:#1a0a18;border:1px solid #ff880044"><span style="font-size:11px;color:#ff9944">${matLabel} (${T('วัตถุดิบ','material')})</span></div>`; })();
     return `
     <div style="position:absolute;inset:0;background:#09091e;z-index:50;border-radius:16px;display:flex;flex-direction:column;border:1px solid #2a2a4a">
       <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}44">
@@ -16749,7 +16749,7 @@ function renderParty() {
         <div style="${ok?'':'filter:brightness(0) invert(1) opacity(0.25)'};width:120px;height:120px;display:flex;align-items:center;justify-content:center">${buildEvolvedSvg(collectionDetailKey,110,ok)}</div>
         ${ok ? `
         <div style="width:100%;padding:10px 14px;border-radius:10px;background:#08080f;border:1px solid ${col}44">
-          <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;margin-bottom:6px">${isFinal?'EVOLVE II FORM':'EVOLVED FORM'}</div>
+          <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;margin-bottom:6px">${isFinal?(form.tier5?'TIER 5 FORM':'EVOLVE II FORM'):'EVOLVED FORM'}</div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center">
             <div><div style="font-size:18px;font-weight:700;color:#e0e0ff">${form.hp}</div><div style="font-size:9px;color:#4a4a7a">HP</div></div>
             <div><div style="font-size:18px;font-weight:700;color:#ff8888">${form.atk}</div><div style="font-size:9px;color:#4a4a7a">ATK</div></div>
@@ -16767,12 +16767,12 @@ function renderParty() {
         <div style="padding:16px;text-align:center;color:#3a3a5a;font-size:12px">${T('— ยังไม่ได้รับ —','— Not yet unlocked —')}</div>
         `}
         <div style="width:100%;padding:10px 14px;border-radius:10px;background:#08080f;border:1px solid #2a2a3a">
-          <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;margin-bottom:8px">${isFinal ? T('วิธี EVOLVE II','HOW TO EVOLVE II') : T('วิธี EVOLVE','HOW TO EVOLVE')}</div>
+          <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;margin-bottom:8px">${isFinal ? (form.tier5 ? T('วิธี ASCENSION','HOW TO ASCEND') : T('วิธี EVOLVE II','HOW TO EVOLVE II')) : T('วิธี EVOLVE','HOW TO EVOLVE')}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">${symsHtml}</div>
         </div>
         ${isFinal && !ok ? `
         <div style="width:100%;padding:10px 14px;border-radius:10px;background:#08080f;border:1px solid #2a2a3a;text-align:center">
-          <div style="font-size:11px;color:#3a3a5a">${T('EVOLVE II FORM — ค้นพบได้ด้วยการ Evolve II','EVOLVE II FORM — Discovered through Evolve II')}</div>
+          <div style="font-size:11px;color:#3a3a5a">${form.tier5 ? T('ร่างที่ 5 — ค้นพบได้ด้วยการ Ascension','TIER 5 FORM — Discovered through Ascension') : T('EVOLVE II FORM — ค้นพบได้ด้วยการ Evolve II','EVOLVE II FORM — Discovered through Evolve II')}</div>
         </div>
         ` : ''}
       </div>

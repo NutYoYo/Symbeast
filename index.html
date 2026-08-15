@@ -8617,6 +8617,22 @@ function doTurn(moveIdx) {
           if(a==='blood_pact'   && creature.hp>0) { const h=Math.max(1,Math.round(dmg*0.15)); _pHeal(h,'🔴',`Blood Pact COUNTER +${h}`); }
           if(a==='soul_reaper'  && creature.hp>0) { const h=Math.max(1,Math.round(dmg*0.25)); _pHeal(h,'☠️',`Soul Reaper COUNTER +${h}`); }
         });
+        // toxic_coat on the enemy: a "when hit" reactive item — should fire on a landed counter the
+        // same as it would on a normal attack. Checks the enemy's own artifact (not the player's).
+        if((eArtId==='toxic_coat'||eArtId2==='toxic_coat') && !(artId==='antidote_charm'||artId2==='antidote_charm') && Math.random()<0.25) {
+          bs.playerPoisonTurns=3; passives.push({icon:'🧪',text:'[E] Toxic Coat COUNTER-reacted, poisoned you!'});
+        }
+        // Same "when hit" gap for the enemy's WEAPON (Phantom Cloak / Glacial Aegis) — checks the
+        // enemy's own weapon, reacting against the player (the counter's attacker).
+        const ewe = ewpn?.effect;
+        if(ewe?.type==='poison_when_hit' && Math.random()<ewe.chance && !(artId==='antidote_charm'||artId2==='antidote_charm')) {
+          bs.playerPoisonTurns=3; passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER-reacted, poisoned you!`});
+        }
+        if(ewe?.type==='freeze_when_hit' && Math.random()<ewe.chance) {
+          bs.playerFreezeSpdTurns=3;
+          if(freezeAbsorb) { passives.push({icon:'❄️✨',text:`${ewpn.name} COUNTER Freeze→YOU ABSORBED!`}); }
+          else { bs.playerStunnedNextTurn=true; bs.pFreezeCarry=true; SFX.stun(); passives.push({icon:ewpn.icon,text:`[E] ${ewpn.name} COUNTER-reacted, froze you!`}); }
+        }
       }
       SFX.counter(); if(cCrit) SFX.crit();
       battleState.log.push(`  ${pc.icon} COUNTER ${pc.label} -${dmg}${cCrit?' CRIT':''}`);
@@ -8673,6 +8689,22 @@ function doTurn(moveIdx) {
           if(a==='blood_pact'   && enemy.hp>0) { const h=Math.max(1,Math.round(dmg*0.15)); _eHeal(h,'🔴',`[E] Blood Pact COUNTER +${h}`); }
           if(a==='soul_reaper'  && enemy.hp>0) { const h=Math.max(1,Math.round(dmg*0.25)); _eHeal(h,'☠️',`[E] Soul Reaper COUNTER +${h}`); }
         });
+        // toxic_coat on the player: a "when hit" reactive item — should fire on a landed enemy counter
+        // the same as it would on a normal attack. Checks the player's own artifact (not the enemy's).
+        if((artId==='toxic_coat'||artId2==='toxic_coat') && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm') && Math.random()<0.25) {
+          bs.enemyPoisonTurns=3; passives.push({icon:'🧪',text:'Toxic Coat COUNTER-reacted, poisoned the enemy!'});
+        }
+        // Same "when hit" gap for the player's WEAPON (Phantom Cloak / Glacial Aegis) — checks the
+        // player's own weapon, reacting against the enemy (the counter's attacker).
+        const we = wpn?.effect;
+        if(we?.type==='poison_when_hit' && Math.random()<we.chance && !(enemy.artifact==='antidote_charm'||enemy.artifact2==='antidote_charm')) {
+          bs.enemyPoisonTurns=3; passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER-reacted, poisoned the enemy!`});
+        }
+        if(we?.type==='freeze_when_hit' && Math.random()<we.chance) {
+          bs.enemyFreezeSpdTurns=3;
+          if(eFreezeAbsorb) { passives.push({icon:'❄️✨',text:`${wpn.name} COUNTER Freeze→ABSORBED!`}); }
+          else { bs.enemyStunnedNextTurn=true; bs.eFreezeCarry=true; SFX.stun(); passives.push({icon:wpn.icon,text:`${wpn.name} COUNTER-reacted, froze the enemy!`}); }
+        }
         if(ep.includes('venom_bite') && !pAnti && Math.random()<0.20) { bs.playerPoisonTurns=3; passives.push({icon:'☠️',text:'[E] Venom Bite COUNTER poisoned you!'}); }
         if(ep.includes('burn_touch') && Math.random()<0.20) { bs.playerBurnTurns=3; passives.push({icon:'🔥',text:'[E] Burn Touch COUNTER burned you!'}); }
         if(ep.includes('blind_gaze') && Math.random()<0.20) { bs.pBlindTurns=3; passives.push({icon:'👁️',text:'[E] Blind Gaze COUNTER blinded you!'}); }

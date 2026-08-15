@@ -7394,6 +7394,10 @@ function doTurn(moveIdx) {
   if(fk2==='GUARDIAN-FORTRESS') {
     pd=(playerIgnoresDef?Math.round(pd*0.875):Math.round(pd*0.75));
     passives.push({icon:'🏰',text:`[E] GUARDIAN dmg-25%→${pd}`});
+    if(enemy.hp < enemy.maxHp*0.5 && pd>0 && !playerReflectImmune) {
+      const ref=Math.max(1,Math.round(pd*0.25)); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref);
+      passives.push({icon:'🏰',text:`[E] GUARDIAN HP<50% extra reflect ${ref}`});
+    }
   }
   if(fk2==='DARK-SPECTER') { ed=Math.round(ed*1.2); passives.push({icon:'🌑',text:`[E] DARK dmg+20%→${ed}`}); }
   if(fk2==='SOUL-SPECTER') {

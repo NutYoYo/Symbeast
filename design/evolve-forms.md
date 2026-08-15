@@ -112,6 +112,40 @@ Source of truth for pet Evolve I/II forms and Fusion Echo passives. Migrated fro
 |  |  |  | BALANCE | ALIEN-GHOST | 128 | 34 | 28 | 14 | เมื่อโดน พิษ/เผาไหม้/คำสาป/แช่แข็ง ดีบัฟจะยังคงอยู่ตามเวลาปกติ แต่ผลที่ได้รับกลายเป็นตรงกันข้าม (เป็นผลดีแทน) และมีโอกาส 15% ทำให้ศัตรูตาบอดเมื่อโจมตี | COSMIC ANOMALY | โจมตี ×3.0 ทะลุ DEF และไม่พลาดเป้า จากนั้น 3 เทิร์น: มีโอกาส 50% ทำให้ศัตรูตาบอด |
 |  |  |  | BALANCE | SHIVA-GHOST | 138 | 37 | 23 | 18 | ทุก 3 เทิร์น: ดาเมจที่สร้าง ×2.0 และมีโอกาส 50% แช่แข็งศัตรู และภูมิคุ้มกันดีบัฟในเทิร์นนั้น | COSMIC DESTRUCTION | โจมตี ×4.0 + แช่แข็งศัตรู จากนั้น SPD+100% เป็นเวลานาน 3 เทิร์น |
 
+## Tier 5 Forms (Ascension)
+
+*SYMBEAST — Tier 5 / Ascension Forms (10 forms, 1 per base line)*
+
+*Ascend by combining all 4 Evolve II branches (FIST/WING/BALANCE/SHIELD) of the same base line — the 4 pets are consumed, the result inherits 50% of the average excess trained across them, plus a random Echo passive from one of the four \| Cost: 🔮 Rebirth Stone ×5 + 💰 Gold 50,000 \| The Evolve II base branch's own passive does NOT carry over (replaced entirely by the Tier 5 passive below) — only the Overdrive changes to a new signature finisher*
+
+| Base Line | Key | Icon | Name | HP | ATK | SPD | DEF | Passive | Overdrive Name | Overdrive Effect |
+|---|---|---|---|---|---|---|---|---|---|---|
+| FFF (BRAWLER) | 👊 | ULTIMATE-BRAWLER | 135 | 66 | 21 | 8 | ทุกรอบ ATK+10%/SPD+10% (สะสมสูงสุด 5) · 25% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE รอบถัดไป ATK+50% | APOCALYPSE FIST | โจมตี ×3.0 ทะลุ DEF สองครั้ง จากนั้น ATK/SPD+50% และมีโอกาส 50% โต้กลับเมื่อโดนโจมตี นาน 3 เทิร์น |
+| FFW (PANDA) | 🐼 | ANCIENT-PANDA | 138 | 62 | 24 | 9 | ลดดาเมจที่รับ 20% · 25% โอกาสหลบ (หมัดถัดไปคริแน่นอน) · 40% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE ดาเมจที่สร้าง +50% | IMPACT SLASH | โจมตี ×5.0 (คริติคอลแน่นอน) จากนั้นลดดาเมจที่รับ 50% และมีโอกาส 75% โต้กลับ นาน 3 เทิร์น |
+| FFS (IRONJAW) | 🦈 | SHARKLORD-IRONJAW | 150 | 62 | 18 | 12 | ดูดเลือด 20% · 20% โอกาสโจมตี 2 ครั้ง · เมื่อ HP<50%: ดาเมจ+30% และมีโอกาส 75% สวนกลับ · 15% โอกาสสตันศัตรู | ABYSS DEVOUR | โจมตี ×4.0 + ดูดเลือด 100% ของดาเมจที่สร้าง จากนั้น ATK+40%, ดูดเลือดเพิ่ม+40% และมีโอกาส 25% โจมตี 2 ครั้ง นาน 3 เทิร์น |
+| FWW (BLITZ) | ⚡ | GOD-BLITZ | 116 | 33 | 62 | 7 | 30% โอกาสหลบ (ได้ ATK/SPD+50% และโจมตีไม่พลาดรอบถัดไป) · เมื่อ WIN 30% โอกาสสตัน · ลดดาเมจที่รับ 15% | RAGNAROK BOLT | โจมตี ×3.0 + สตันศัตรู 2 เทิร์น จากนั้น ATK/SPD+100% และทุกครั้งที่โจมตีมีโอกาส 25% สตันศัตรู นาน 3 เทิร์น |
+| FWS (CHAMPION) | 🐒 | WUKONG-CHAMPION | 150 | 42 | 28 | 18 | 15% โอกาสโจมตี 4 ครั้ง · เมื่อ WIN ดาเมจสะสม +15% (สูงสุด 5) · 25% โอกาสหลบ (หมัดถัดไปดาเมจ ×2) | 72 TRANSFORMATIONS | โจมตี ×1.0 หกครั้ง ทะลุ DEF จากนั้นมีโอกาส 30% โจมตี 4 ครั้ง และดูดเลือดเพิ่ม+50% นาน 3 เทิร์น |
+| FSS (FORTRESS) | 🔥 | VENOMBLAZE-FORTRESS | 180 | 32 | 20 | 28 | ภูมิพิษ (ดูดพิษเป็นเลือด) · ทุกโจมตี 30% โอกาสติดพิษ+ไฟ · เมื่อ HP<50%: สะท้อนดาเมจที่รับ 30% · ฟื้น HP 4% ทุกเทิร์น | INFERNO PLAGUE | โจมตี ×2.5 + ทำให้ศัตรูติดพิษและไฟไหม้ 3 เทิร์น จากนั้นสะท้อนดาเมจที่ได้รับ 50% และฟื้นฟู HP 10% ต่อเทิร์น นาน 3 เทิร์น |
+| WWW (SPECTER) | 🌑 | DARKPRIEST-SPECTER | 122 | 36 | 54 | 8 | ดูดเลือด 20% · 20% โอกาสสาปศัตรู (ATK-25% และห้ามฟื้น HP) · 20% โอกาสหลบ (หมัดถัดโจมตี 2 ครั้ง) | SOUL REQUIEM | โจมตี ×5.0 + ดูดเลือด 50% + สาปศัตรู (ห้ามฟื้น) 3 เทิร์น จากนั้นดูดเลือดเพิ่ม+40% และมีโอกาส 30% โจมตี 4 ครั้ง นาน 3 เทิร์น |
+| WWS (SWIFTGUARD) | 🔱 | METALPHOENIX-SWIFTGUARD | 128 | 34 | 52 | 11 | ภูมิคุ้มกันเผาไหม้ · เมื่อ WIN: ฟื้น 5% HP/เทิร์น · เมื่อ LOSE: คริ/ดาเมจ/หลบ +5% (สะสมสูงสุด 5) · ฟื้นคืนชีพ 1 ครั้ง/การต่อสู้ (HP เต็ม) · 20% โอกาสทำให้ศัตรูติดไฟ | ETERNAL REBIRTH | โจมตี ×3.0 + ฟื้นฟู HP ตัวเองเต็ม จากนั้น ATK+50%, ฟื้นฟู HP 15% ต่อเทิร์น และเผาศัตรูทุกครั้งที่โดนโจมตี นาน 3 เทิร์น |
+| WSS (SHIELDWING) | 🛡️ | LORD-SHIELDWING | 165 | 34 | 26 | 24 | ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 20% · ทุกโจมตี 20% โอกาสแช่แข็งศัตรู · เมื่อ WIN: ดาเมจ+50% และทะลุ DEF · ฟื้น 3% HP/เทิร์น | ABSOLUTE ZERO WALL | โจมตี ×3.5 ทะลุ DEF + แช่แข็งศัตรู จากนั้นลดดาเมจที่รับ 50% และ ATK/DEF/SPD+50% นาน 3 เทิร์น |
+| SSS (BASTION) | 🐺 | WEREWOLF-BASTION | 195 | 30 | 18 | 33 | ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 20% · เมื่อ HP<50%: DEF+25%, โอกาส 75% สวนกลับ, 10% โอกาสแช่แข็ง · เมื่อ HP<30%: ATK+30% และฟื้น HP 5% · ทุก 3 เทิร์นโจมตี 2 ครั้ง | BLOOD MOON HOWL | โจมตี ×3.0 + โต้กลับด้วย ATK×3 เทิร์นนี้ จากนั้น ATK/DEF+50%, ฟื้นฟู HP 10% ต่อเทิร์น และโต้กลับทุกครั้งที่โดนโจมตี นาน 3 เทิร์น |
+
+### Tier 5 Echo (half-strength, for future Fusion-style inheritance)
+
+| Tier 5 Form | Icon | Echo Passive Name | Effect (EN) | Effect (TH) |
+|---|---|---|---|---|
+| ULTIMATE-BRAWLER | 👊 | APEX ECHO | Every round: ATK+5%/SPD+5% (max 5 stacks). 12% chance to counter for 75% damage. On LOSE, next round ATK+25% | ทุกรอบ ATK+5%/SPD+5% (สะสมสูงสุด 5) · 12% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE รอบถัดไป ATK+25% |
+| ANCIENT-PANDA | 🐼 | SAGE ECHO | Damage taken -10%. 12% chance to dodge, guaranteeing a critical hit next attack. 20% chance to counter for 75% damage. On LOSE, damage dealt +25% | ลดดาเมจที่รับ 10% · 12% โอกาสหลบ (หมัดถัดไปคริแน่นอน) · 20% โอกาสสวนกลับด้วยดาเมจ 75% · เมื่อ LOSE ดาเมจที่สร้าง +25% |
+| SHARKLORD-IRONJAW | 🦈 | ABYSS ECHO | Lifesteal 10%. 10% chance to attack twice. While HP<50%: damage dealt +15% and 40% chance to counter for 75% damage. 10% chance to stun | ดูดเลือด 10% · 10% โอกาสโจมตี 2 ครั้ง · เมื่อ HP<50%: ดาเมจ+15% และ 40% โอกาสสวนกลับ 75% · 10% โอกาสสตัน |
+| GOD-BLITZ | ⚡ | STORM ECHO | 15% chance to dodge, granting ATK/SPD+25% and guaranteed hits next round. On WIN, 15% chance to stun. Damage taken -8% | 15% โอกาสหลบ (ATK/SPD+25% และโจมตีไม่พลาดรอบถัดไป) · เมื่อ WIN 15% โอกาสสตัน · ลดดาเมจที่รับ 8% |
+| WUKONG-CHAMPION | 🐒 | MONKEY ECHO | 8% chance to attack 4 times. On WIN, damage stacks +8% (max 5). 12% chance to dodge, doubling your next hit's damage | 8% โอกาสโจมตี 4 ครั้ง · เมื่อ WIN ดาเมจสะสม +8% (สูงสุด 5) · 12% โอกาสหลบ (หมัดถัดไปดาเมจ ×2) |
+| VENOMBLAZE-FORTRESS | 🔥 | PLAGUE ECHO | Poison Absorb. Every attack: 15% chance to inflict Poison and Burn. While HP<50%: reflect 15% of damage received. Regen 2% Max HP each turn | ภูมิพิษ (ดูดพิษเป็นเลือด) · ทุกโจมตี 15% โอกาสติดพิษ+ไฟ · เมื่อ HP<50%: สะท้อนดาเมจที่รับ 15% · ฟื้น HP 2% ทุกเทิร์น |
+| DARKPRIEST-SPECTER | 🌑 | SHADE ECHO | Lifesteal 10%. 10% chance to curse the enemy (ATK-25% and cannot heal). 10% chance to dodge, making your next attack strike twice | ดูดเลือด 10% · 10% โอกาสสาปศัตรู (ATK-25% และห้ามฟื้น HP) · 10% โอกาสหลบ (หมัดถัดโจมตี 2 ครั้ง) |
+| METALPHOENIX-SWIFTGUARD | 🔱 | REBORN ECHO | Burn Absorb. On WIN: regen 2.5% HP/turn. On LOSE: crit chance/damage/dodge +3% (max 5 stacks). Revives once per battle at 50% HP. 10% chance to Burn the enemy | ภูมิคุ้มกันเผาไหม้ · เมื่อ WIN: ฟื้น 2.5% HP/เทิร์น · เมื่อ LOSE: คริ/ดาเมจ/หลบ +3% (สะสมสูงสุด 5) · ฟื้นคืนชีพ 1 ครั้ง/การต่อสู้ (HP 50%) · 10% โอกาสทำให้ศัตรูติดไฟ |
+| LORD-SHIELDWING | 🛡️ | GLACIER ECHO | Freeze Absorb. Damage taken -10%. Every attack: 10% chance to Freeze the enemy. On WIN: damage +25% and pierces DEF. Regen 2% HP/turn | ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 10% · ทุกโจมตี 10% โอกาสแช่แข็ง · เมื่อ WIN: ดาเมจ+25% + ทะลุ DEF · ฟื้น HP 2%/เทิร์น |
+| WEREWOLF-BASTION | 🐺 | FERAL ECHO | Freeze Absorb. Damage taken -10%. While HP<50%: DEF+12%, 40% chance to counter, 5% chance to Freeze. While HP<30%: ATK+15% and regen 2.5% HP. Every 3rd turn, attacks twice | ภูมิคุ้มกันแช่แข็ง · ลดดาเมจที่รับ 10% · เมื่อ HP<50%: DEF+12%, 40% โอกาสสวนกลับ, 5% โอกาสแช่แข็ง · เมื่อ HP<30%: ATK+15% และฟื้น HP 2.5% · ทุก 3 เทิร์นโจมตี 2 ครั้ง |
+
 ## Fusion Passives v2 (Echo)
 
 *SYMBEAST — Fusion Passives v2 (proposal, ยังไม่ implement) — Approach B: 1 new half-strength Echo passive per Evolve II form (40 total, not per-pair)*

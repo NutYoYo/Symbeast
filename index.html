@@ -1176,7 +1176,8 @@ const TIER5_MAP = {
   WWW:'DARKPRIEST-SPECTER', WWS:'METALPHOENIX-SWIFTGUARD',
   WSS:'LORD-SHIELDWING',    SSS:'WEREWOLF-BASTION',
 };
-const ASCENSION_GOLD_COST = 100000;
+const ASCENSION_GOLD_COST = 50000;
+const ASCENSION_STONE_COST = 5;
 
 // Evolve II: base form's passive stays active (baseFormKey), plus a bespoke Branch Skill
 // per form (implemented in the EVOLVE II BRANCH SKILL block in doTurn).
@@ -1909,22 +1910,22 @@ const RAID_SPECIAL_BOSSES = [
 const SECRET_DUNGEONS = [
   { key:'volcano', name:'Volcano', bossIdx:0 /*RAGNAROK*/,
     bg:'Background/BG-Dungeon-Volcano.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-volcano.jpg', bgm:'BGM/Magma Throne.mp3',
-    monsterPool:['RAGING-BRAWLER','CRIMSON-BRAWLER','KAIJU-BRAWLER','TYRANT-IRONJAW','BLAZING-FORTRESS','PHEONIX-SWIFTGUARD','HAMMER-SHIELDWING','LION-GHOST','TIGER-GHOST','PHOENIX-GHOST','FIGHTER-PANDA'] },
+    monsterPool:['RAGING-BRAWLER','CRIMSON-BRAWLER','KAIJU-BRAWLER','TYRANT-IRONJAW','BLAZING-FORTRESS','PHEONIX-SWIFTGUARD','HAMMER-SHIELDWING','LION-GHOST','TIGER-GHOST','PHOENIX-GHOST','FIGHTER-PANDA','ULTIMATE-BRAWLER','IFRIT-GHOST','RED-SENTINEL-GHOST'] },
   { key:'rock', name:'Rock Cave', bossIdx:1 /*COLOSSUS*/,
     bg:'Background/BG-Dungeon-Rock-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-rock-cave.jpg', bgm:'BGM/Crown Below Stone.mp3',
-    monsterPool:['ARMOR-PANDA','FULLARMOR-IRONJAW','BULWARK-BLITZ','GUARDIAN-FORTRESS','IRON-SWIFTGUARD','GUANLET-BASTION','IRON-BASTION','GOLEM-BASTION','COCKROACH-GHOST','AGILE-IRONJAW','SWIFT-FORTRESS'] },
+    monsterPool:['ARMOR-PANDA','FULLARMOR-IRONJAW','BULWARK-BLITZ','GUARDIAN-FORTRESS','IRON-SWIFTGUARD','GUANLET-BASTION','IRON-BASTION','GOLEM-BASTION','COCKROACH-GHOST','AGILE-IRONJAW','SWIFT-FORTRESS','WEREWOLF-BASTION','SHARKLORD-IRONJAW','GREEN-SENTINEL-GHOST','SKELETON-KING-GHOST'] },
   { key:'dark', name:'Dark Cave', bossIdx:2 /*PHANTASM*/,
     bg:'Background/BG-Dungeon-Dark-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-dark-cave.jpg', bgm:'BGM/Catacomb Pulse.mp3',
-    monsterPool:['PANDA-NINJA','DARK-SPECTER','SOUL-SPECTER','MAGE-SPECTER','GRAVE-SPECTER','OWL-GHOST','CAT-GHOST','WOLF-GHOST','POISON-FORTRESS','WARLORD-CHAMPION','OCTOPUS-GHOST'] },
+    monsterPool:['PANDA-NINJA','DARK-SPECTER','SOUL-SPECTER','MAGE-SPECTER','GRAVE-SPECTER','OWL-GHOST','CAT-GHOST','WOLF-GHOST','POISON-FORTRESS','WARLORD-CHAMPION','OCTOPUS-GHOST','DARKPRIEST-SPECTER','ARC-DEMON-GHOST','ALIEN-GHOST'] },
   { key:'ice', name:'Ice Cave', bossIdx:3 /*TYRANTJAW*/,
     bg:'Background/BG-Dungeon-Ice-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-ice-cave.jpg', bgm:'BGM/Shard Throne.mp3',
-    monsterPool:['CHILL-SHIELDWING','FATTY-SHIELDWING','CRYSTAWOLF-BASTION','THUNDERCLOUD-BLITZ','SHARK-GHOST','PENGUIN-GHOST','AXOLOTL-GHOST','QUICK-SWIFTGUARD','PANDA-GHOST','STORM-BLITZ'] },
+    monsterPool:['CHILL-SHIELDWING','FATTY-SHIELDWING','CRYSTAWOLF-BASTION','THUNDERCLOUD-BLITZ','SHARK-GHOST','PENGUIN-GHOST','AXOLOTL-GHOST','QUICK-SWIFTGUARD','PANDA-GHOST','STORM-BLITZ','LORD-SHIELDWING','GOD-BLITZ','BLUE-SENTINEL-GHOST','SHIVA-GHOST'] },
   { key:'desert', name:'Desert Cave', bossIdx:4 /*VANGUARD*/,
     bg:'Background/BG-Dungeon-Desert-Cave.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-desert-cave.jpg', bgm:'BGM/Tomb of the Guardian.mp3',
-    monsterPool:['RUNE-IRONJAW','KING-CHAMPION','SOUL-CHAMPION','ROLLING-CHAMPION','HAMSTER-GHOST','GRIFFON-GHOST','UNICORN-GHOST','TRICKFOX-GHOST','WINDBLADE-BRAWLER','PANDA-WARRIOR','STRONG-BLITZ'] },
+    monsterPool:['RUNE-IRONJAW','KING-CHAMPION','SOUL-CHAMPION','ROLLING-CHAMPION','HAMSTER-GHOST','GRIFFON-GHOST','UNICORN-GHOST','TRICKFOX-GHOST','WINDBLADE-BRAWLER','PANDA-WARRIOR','STRONG-BLITZ','WUKONG-CHAMPION','BABARIAN-GHOST','VALKYLIE-GHOST','DRAGON-TAMER-GHOST'] },
   { key:'forest', name:'Deep Forest', bossIdx:5 /*MONKEY*/,
     bg:'Background/BG-Dungeon-Deep-Forest.jpg', battleBg:'Battle Scene/Battle-scene-dungeon-deep-forest.jpg', bgm:'BGM/Moonroot Labyrinth.mp3',
-    monsterPool:['GAIA-SHIELDWING','MANTIS-GHOST','BEE-GHOST','BUNNY-GHOST','SLIME-GHOST','LEAPFROG-GHOST','DRAGON-GHOST','FIGHT-SWIFTGUARD','RAGEBEAR-GHOST','VOLTMOUSE-GHOST'] },
+    monsterPool:['GAIA-SHIELDWING','MANTIS-GHOST','BEE-GHOST','BUNNY-GHOST','SLIME-GHOST','LEAPFROG-GHOST','DRAGON-GHOST','FIGHT-SWIFTGUARD','RAGEBEAR-GHOST','VOLTMOUSE-GHOST','VENOMBLAZE-FORTRESS','METALPHOENIX-SWIFTGUARD','ANCIENT-PANDA','RANGER-GHOST','ARC-ANGEL-GHOST','DRAGON-KNIGHT-GHOST','SAMURAI-GHOST','BAHAMUT-GHOST'] },
 ];
 const SECRET_DUNGEON_LV = 120;
 const SECRET_DUNGEON_ACH_IDS = [78,79,80,81,82,83]; // index-aligned with SECRET_DUNGEONS
@@ -2496,6 +2497,36 @@ const PATCH_NOTES = [
       '   • BAHAMUT-GHOST: on WIN, ATK +100% (was +75%)',
       '   • Overdrive counters (FORTRESS/PANDA/IRONJAW lines) are now real counter strikes too',
       '   • Fusion Echo of counter forms can counter as well (about half the chance)',
+    ]
+  },
+  { ver:'v0.5.0', date:'2026-08-15', th:[
+      '🌟 ระบบใหม่: ASCENSION (ร่างที่ 5) — จุดสูงสุดของทั้ง 10 สายพันธุ์',
+      '   • รวม Pet ร่าง Evolve II ให้ครบ 4 Branch (F/W/S/B) ของสายเดียวกัน — ทั้ง 4 ตัวจะหายไป ได้ร่างที่ 5 แทน',
+      '   • สเตตัสสืบทอด 50% ของค่าเฉลี่ยส่วนเกินที่เทรนมาทั้ง 4 ตัว พร้อมพาสซีพสืบทอดสุ่มจาก 1 ใน 4 ตัว',
+      '   • ค่าใช้จ่าย: 🔮 Rebirth Stone ×5 + 💰 Gold 50,000',
+      '   • แต่ละร่างมีพาสซีพหลัก, Echo (สืบทอดผ่าน Fusion), และท่าไม้ตาย Overdrive ของตัวเอง',
+      '   • มีฉากรวมร่างแบบเต็มจอตอนยืนยัน พร้อมรีวิวร่างใหม่',
+      '👻 มอนตัวใหม่ 10 ร่าง Ascension เจอได้ในสนามจริงแล้ว:',
+      '   • บอส Hell Mode (Scout) — สุ่มเจอได้',
+      '   • Secret Dungeon — ทั้งมอนทั่วไปและบอสในดันเจี้ยน',
+      '   • VS Mode — ตั้งแต่ Stage 80 ขึ้นไป',
+      '   • Tower — ตั้งแต่ชั้น 150 ขึ้นไป',
+      '   • Champion Gauntlet — ทีม Champion เท่านั้น',
+      '👻 แถมด้วย: Epic Ghost ทั้ง 16 ร่างที่เคยขาดไป ตอนนี้เจอได้ใน Secret Dungeon และ Champion Gauntlet ครบแล้ว (รวม Ghost ทั้งหมด 40 ร่าง)',
+    ], en:[
+      '🌟 New system: ASCENSION (Tier 5 forms) — the ultimate form for all 10 lines',
+      '   • Combine 4 Evolve II pets covering all 4 branches (F/W/S/B) of the same line — all 4 are consumed for that line\'s Tier 5 form',
+      '   • Stats inherit 50% of the 4 pets\' combined trained excess, plus a passive randomly inherited from one of the four',
+      '   • Cost: 🔮 Rebirth Stone ×5 + 💰 50,000 Gold',
+      '   • Each Tier 5 form has its own main passive, Echo (inherited via Fusion), and Overdrive finisher',
+      '   • Full-screen fusion cutscene on confirm, with a preview of the new form',
+      '👻 The 10 new Ascension monsters can now be encountered in battle:',
+      '   • Hell Mode bosses (Scout) — chance to appear',
+      '   • Secret Dungeon — both regular monsters and dungeon bosses',
+      '   • VS Mode — from Stage 80 onward',
+      '   • Tower — from Floor 150 onward',
+      '   • Champion Gauntlet — Champion team only',
+      '👻 Bonus: all 16 previously-missing Epic Ghost forms can now appear in Secret Dungeon and Champion Gauntlet (all 40 Ghost forms are now in rotation)',
     ]
   },
 ];
@@ -3460,8 +3491,10 @@ function doAscension() {
   const tier5Key = TIER5_MAP[base];
   const tier5Form = tier5Key ? EVOLVE2_FORMS[tier5Key] : null;
   if(!tier5Form) { ascensionPicks=[]; ascensionConfirm=false; render(); return; }
-  if(gold < ASCENSION_GOLD_COST) {
-    scoutToast = T(`💰 ต้องมี Gold ${ASCENSION_GOLD_COST}G!`,`💰 Need ${ASCENSION_GOLD_COST}G!`);
+  const ascStoneIdx = inventory.findIndex(i=>i.type==='rebirth_stone');
+  const ascStoneQty = ascStoneIdx>=0 ? inventory[ascStoneIdx].qty : 0;
+  if(ascStoneQty < ASCENSION_STONE_COST || gold < ASCENSION_GOLD_COST) {
+    scoutToast = T(`🔮 ต้องมี Rebirth Stone ${ASCENSION_STONE_COST} + 💰 Gold ${ASCENSION_GOLD_COST}G!`,`🔮 Need ${ASCENSION_STONE_COST} Rebirth Stone + 💰 ${ASCENSION_GOLD_COST}G!`);
     ascensionConfirm=false; render(); return;
   }
 
@@ -3476,13 +3509,17 @@ function doAscension() {
   const carrySpd = Math.round(avg('spd') * 0.5);
   const carryDef = Math.round(avg('def') * 0.5);
 
-  // Echo: randomly inherited from one of the 4 (that pet may itself have none)
+  // Echo: pick 1 of the 4 pets uniformly. If that pet carries a hidden Echo of its own (from
+  // an earlier Fusion egg — possibly a totally unrelated form), it's a coin flip between that
+  // hidden Echo and the pet's own current-form Echo; otherwise it's just the pet's own form.
   const echoSrc = petsArr[Math.floor(Math.random()*4)];
-  const inheritedPassive = echoSrc.inheritedPassive || null;
+  const inheritedPassive = (echoSrc.inheritedPassive && Math.random()<0.5) ? echoSrc.inheritedPassive : echoSrc.finalKey;
   // Shiny carries over if any of the 4 was Shiny
   const isShiny = petsArr.some(p=>p.shiny);
 
   gold -= ASCENSION_GOLD_COST;
+  inventory[ascStoneIdx].qty -= ASCENSION_STONE_COST;
+  if(inventory[ascStoneIdx].qty<=0) inventory.splice(ascStoneIdx,1);
   const partyRemovals = ascensionPicks.filter(p=>p.from==='party').map(p=>p.idx).sort((a,b)=>b-a);
   const storageRemovals = ascensionPicks.filter(p=>p.from==='storage').map(p=>p.idx).sort((a,b)=>b-a);
   partyRemovals.forEach(i=>pets.splice(i,1));
@@ -5362,6 +5399,8 @@ function startBattle(battleType) {
     const hbRoll = cell?.hellBossSeed ?? Math.random();
     const hbKeyRoll = cell?.hellBossKeySeed ?? Math.random();
     if(hbRoll < 2/3 && hbRoll >= 1/3) {
+      // Hell-mode bosses are the one place Tier 5 (Ascension) forms are always eligible —
+      // left unfiltered on purpose, unlike the regular-mob Hard/Hell branch below.
       const scoutFusScale = baseHp / 135;
       const fkeys=Object.keys(EVOLVE2_FORMS), fk=fkeys[Math.floor(hbKeyRoll*fkeys.length)], ff=EVOLVE2_FORMS[fk];
       scoutHardForm = { name:`${ff.name}`, typeKey, isBoss:true, isMini:false, isMimic:false, spriteFile:null, isEvolve2Enemy:true, evolve2Key:fk,
@@ -5382,7 +5421,10 @@ function startBattle(battleType) {
     const scoutFusScale = baseHp / 135;
     const useFusion = effectiveHardStage>=11 && (cell?.hardTypeSeed??Math.random())<0.5;
     if(useFusion) {
-      const fkeys=Object.keys(EVOLVE2_FORMS), fk=fkeys[Math.floor((cell?.hardKeySeed??Math.random())*fkeys.length)], ff=EVOLVE2_FORMS[fk];
+      // Tier 5 (Ascension) forms are excluded here — regular Hard/Hell mobs never roll them;
+      // Tier 5 is reserved for Hell bosses (the branch above), Secret Dungeon, and the gated
+      // late-stage VS/Tower thresholds elsewhere.
+      const fkeys=Object.keys(EVOLVE2_FORMS).filter(k=>!EVOLVE2_FORMS[k].tier5), fk=fkeys[Math.floor((cell?.hardKeySeed??Math.random())*fkeys.length)], ff=EVOLVE2_FORMS[fk];
       const bm = isBoss?1.4:isMini?1.2:1, am = isBoss?1.2:isMini?1.6:1.7;
       scoutHardForm = { name:`${ff.name}`, typeKey, isBoss, isMini, isMimic, spriteFile:null, isEvolve2Enemy:true, evolve2Key:fk,
         maxHp:Math.round(ff.hp*scoutFusScale*bm), hp:Math.round(ff.hp*scoutFusScale*bm),
@@ -10310,7 +10352,8 @@ function generateVsEnemy(vsStage) {
   const extraPassives = vsStage > 40 ? 2 : vsStage > 20 ? 1 : 0;
   const useFusion = vsStage > 60 ? true : vsStage > 40 ? true : vsStage > 20 ? Math.random() < 0.5 : false;
   if(useFusion) {
-    const fkeys = Object.keys(EVOLVE2_FORMS);
+    // Tier 5 (Ascension) forms only enter the VS ladder pool from Stage 80+.
+    const fkeys = vsStage>=80 ? Object.keys(EVOLVE2_FORMS) : Object.keys(EVOLVE2_FORMS).filter(k=>!EVOLVE2_FORMS[k].tier5);
     const key = fkeys[Math.floor(Math.random()*fkeys.length)];
     const ff = EVOLVE2_FORMS[key];
     const sc = baseHp / 135;
@@ -10917,10 +10960,28 @@ function generateGauntletTeam(symbol, pos) {
   const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
   return bases.map(b => buildGauntletBossPet(EVOLVE2_BRANCHES[b][symbol], pos));
 }
+// Picks a random Ghost-line form (regular or Epic, any symbol) — Ghost forms don't belong
+// to any of the 10 regular base lines, so they're rolled independently of `bases` below.
+function _gauntletRandomGhostForm() {
+  const symbols = ['F','W','S','B'];
+  const sym = symbols[Math.floor(Math.random()*4)];
+  const pool = Math.random()<0.5 ? EPIC_GHOST_EVOLVE2_POOLS[sym] : GHOST_EVOLVE2_POOLS[sym];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 function generateGauntletChampionTeam() {
   const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
   const symbols = ['F','W','S','B'];
-  return bases.map((b,i) => buildGauntletBossPet(EVOLVE2_BRANCHES[b][symbols[i]], 4));
+  // The Champion team is the only Gauntlet team that can roll something other than a plain
+  // branch form: each slot has a 15% chance to be a random Ghost/Epic Ghost form (any of the
+  // 40), else a 20% chance (of the remainder) to be that line's Tier 5 (Ascension) form,
+  // else its normal branch. Regular rooms (generateGauntletTeam) never roll either.
+  return bases.map((b,i) => {
+    const roll = Math.random();
+    const formKey = roll < 0.15 ? _gauntletRandomGhostForm()
+      : roll < 0.35 ? TIER5_MAP[b]
+      : EVOLVE2_BRANCHES[b][symbols[i]];
+    return buildGauntletBossPet(formKey, 4);
+  });
 }
 function generateGauntletWeek() {
   const levels = gauntletLevels();
@@ -11666,7 +11727,8 @@ function startTowerBattle() {
     };
   } else if(allFusion || ((useEvolved || useFusion) && Math.random() < 0.5)) {
     if(allFusion) {
-      const fkeys = Object.keys(EVOLVE2_FORMS);
+      // Tier 5 (Ascension) forms only enter the Tower pool from Floor 150+.
+      const fkeys = floor>=150 ? Object.keys(EVOLVE2_FORMS) : Object.keys(EVOLVE2_FORMS).filter(k=>!EVOLVE2_FORMS[k].tier5);
       const fk = fkeys[Math.floor(Math.random()*fkeys.length)];
       const ff = EVOLVE2_FORMS[fk];
       const ownPassive = fk;
@@ -11686,7 +11748,7 @@ function startTowerBattle() {
         ownPassiveDesc: ff.passive, ownPassiveIcon: ff.passiveIcon,
       };
     } else if(useFusion && Math.random()<0.5) {
-      const fkeys = Object.keys(EVOLVE2_FORMS);
+      const fkeys = floor>=150 ? Object.keys(EVOLVE2_FORMS) : Object.keys(EVOLVE2_FORMS).filter(k=>!EVOLVE2_FORMS[k].tier5);
       const fk = fkeys[Math.floor(Math.random()*fkeys.length)];
       const ff = EVOLVE2_FORMS[fk];
       const extraCount = isBossFloor ? bossPassiveCount-1 : monPassiveCount-1;
@@ -13615,13 +13677,13 @@ function renderBattleScreen() {
           } else if(ap==='p-counter') {
             // Player's counter strike — a real hit landing on the enemy, with a COUNTER! banner.
             if(lr.counterDmg>0) dmgNums += counterFx('right', lr.counterCrit);
-            dmgNums += `<div class="dmg-num enemy-hit" style="animation-delay:0s;top:30%">-${lr.counterDmg||0}</div>`;
+            dmgNums += `<div class="dmg-num enemy-hit" style="animation-delay:0s;top:30%;color:#ffcc44;text-shadow:0 0 10px #ff8800,0 2px 4px #000">-${lr.counterDmg||0}</div>`;
             dmgNums += `<div class="dmg-num" style="color:#ffcc44;font-size:20px;font-weight:900;top:14%;left:10%;right:auto;text-shadow:0 0 10px #ff8800,0 2px 4px #000;animation:dmg-float 0.9s ease-out forwards">⚔ COUNTER!</div>`;
             if(lr.counterCrit) dmgNums += `<div class="dmg-num crit-tag">⚡CRIT!</div>`;
           } else if(ap==='e-counter') {
             // Enemy's counter strike — a real hit landing on the player.
             if(lr.eCounterDmg>0) dmgNums += counterFx('left', lr.eCounterCrit);
-            dmgNums += `<div class="dmg-num player-hit" style="animation-delay:0s;top:30%">-${lr.eCounterDmg||0}</div>`;
+            dmgNums += `<div class="dmg-num player-hit" style="animation-delay:0s;top:30%;color:#ffcc44;text-shadow:0 0 10px #ff8800,0 2px 4px #000">-${lr.eCounterDmg||0}</div>`;
             dmgNums += `<div class="dmg-num" style="color:#ffcc44;font-size:20px;font-weight:900;top:14%;right:10%;left:auto;text-shadow:0 0 10px #ff8800,0 2px 4px #000;animation:dmg-float 0.9s ease-out forwards">⚔ COUNTER!</div>`;
             if(lr.eCounterCrit) dmgNums += `<div class="dmg-num miss-tag" style="color:#ff4444;left:8%;right:auto;top:48%;font-size:13px">💢CRIT!</div>`;
           }
@@ -16849,6 +16911,8 @@ function renderParty() {
     const isPickedAsc = (from,i) => ascensionPicks.some(x=>x.from===from && x.idx===i);
     const pickedPets = ascensionPicks.map(x=>x.from==='party'?pets[x.idx]:storage[x.idx]).filter(Boolean);
     const goldOk3 = gold >= ASCENSION_GOLD_COST;
+    const stoneCount3 = inventory.find(s=>s.type==='rebirth_stone')?.qty || 0;
+    const stoneOk3 = stoneCount3 >= ASCENSION_STONE_COST;
     let tier5Preview = null, validSelection = false;
     if(pickedPets.length===4) {
       const bases = pickedPets.map(p=>evolve2BaseOfKey(p.finalKey));
@@ -16859,7 +16923,7 @@ function renderParty() {
       validSelection = sameLine && branchSet.size===4 && required.every(k=>branchSet.has(k));
       if(validSelection) tier5Preview = EVOLVE2_FORMS[TIER5_MAP[base]];
     }
-    const canAscend = validSelection && goldOk3;
+    const canAscend = validSelection && goldOk3 && stoneOk3;
     // Once the first pet is picked, lock the working line: same-line pets needed for the
     // remaining branches are highlighted; everything else (other lines, duplicate branches
     // already covered) dims out so players with many pets can find the right ones fast.
@@ -16871,8 +16935,9 @@ function renderParty() {
     <div style="display:flex;flex-direction:column;gap:8px">
       <div style="background:#201a08;border:1px solid #aa8833;border-radius:10px;padding:10px 12px">
         <div style="font-family:Kanit,sans-serif;font-size:11px;color:#ffcc33;margin-bottom:4px">🌟 ASCENSION SYSTEM</div>
-        <div style="font-size:10px;color:#b09050;line-height:1.6">${T(`เลือก Pet ร่าง Evolve II ให้ครบ 4 Branch (F/W/S/B) ของสายเดียวกัน — ทั้ง 4 ตัวจะหายไป ได้ร่างที่ 5 (Ascension) แทน<br>สเตตัสสืบทอด <b style="color:#ffdd77">50% ของค่าเฉลี่ยส่วนเกินทั้ง 4 ตัว</b> พร้อมพาสซีพสืบทอดสุ่มจาก 1 ใน 4 ตัว<br>ค่าใช้จ่าย: 💰 ${ASCENSION_GOLD_COST.toLocaleString()}G`,`Pick 4 Evolve II pets covering all 4 branches (F/W/S/B) of the same line — all 4 are consumed for that line's Tier 5 Ascension form<br>Stats inherit <b style="color:#ffdd77">50% of the 4 pets' combined trained bonus</b>, plus a passive randomly inherited from one of the four<br>Cost: 💰 ${ASCENSION_GOLD_COST.toLocaleString()}G`)}</div>
-        <div style="margin-top:6px;font-family:Kanit,sans-serif;font-size:11px;color:${goldOk3?'#ffdd77':'#7a6a3a'}">💰 Gold: ${gold.toLocaleString()}/${ASCENSION_GOLD_COST.toLocaleString()}</div>
+        <div style="font-size:10px;color:#b09050;line-height:1.6">${T(`เลือก Pet ร่าง Evolve II ให้ครบ 4 Branch (F/W/S/B) ของสายเดียวกัน — ทั้ง 4 ตัวจะหายไป ได้ร่างที่ 5 (Ascension) แทน<br>สเตตัสสืบทอด <b style="color:#ffdd77">50% ของค่าเฉลี่ยส่วนเกินทั้ง 4 ตัว</b> พร้อมพาสซีพสืบทอดสุ่มจาก 1 ใน 4 ตัว<br>ค่าใช้จ่าย: 🔮 Rebirth Stone ×${ASCENSION_STONE_COST} + 💰 ${ASCENSION_GOLD_COST.toLocaleString()}G`,`Pick 4 Evolve II pets covering all 4 branches (F/W/S/B) of the same line — all 4 are consumed for that line's Tier 5 Ascension form<br>Stats inherit <b style="color:#ffdd77">50% of the 4 pets' combined trained bonus</b>, plus a passive randomly inherited from one of the four<br>Cost: 🔮 Rebirth Stone ×${ASCENSION_STONE_COST} + 💰 ${ASCENSION_GOLD_COST.toLocaleString()}G`)}</div>
+        <div style="margin-top:6px;font-family:Kanit,sans-serif;font-size:11px;color:${stoneOk3?'#ffdd77':'#7a6a3a'}">🔮 Rebirth Stone: ${stoneCount3}/${ASCENSION_STONE_COST}</div>
+        <div style="margin-top:2px;font-family:Kanit,sans-serif;font-size:11px;color:${goldOk3?'#ffdd77':'#7a6a3a'}">💰 Gold: ${gold.toLocaleString()}/${ASCENSION_GOLD_COST.toLocaleString()}</div>
         <div style="margin-top:2px;font-family:Kanit,sans-serif;font-size:11px;color:#ffcc33">${T('เลือกแล้ว','Picked')}: ${ascensionPicks.length}/4</div>
       </div>
       ${lineHint ? `<div style="background:#0a1a14;border:1px solid #33aa77;border-radius:10px;padding:8px 12px;font-family:Kanit,sans-serif;font-size:11px;color:#77ddaa">
@@ -16914,8 +16979,9 @@ function renderParty() {
         <div style="font-family:Kanit,sans-serif;font-size:12px;color:#ffdd77;text-align:center;margin-bottom:6px">${tier5Preview.passiveIcon||'🌟'} ${tier5Preview.name}</div>
         <div style="font-size:9px;color:#b09050;text-align:center;line-height:1.6">${T(tier5Preview.passiveTh, tier5Preview.passive)}</div>
         <div style="font-size:9px;color:#8a7040;text-align:center;margin-top:4px">${T('พาสซีพสืบทอดจะสุ่มจาก 1 ใน 4 ตัวตอนยืนยัน','The inherited passive is randomly rolled from one of the four on confirm')}</div>
-        <div style="margin-top:8px">
-          <div style="padding:6px;border-radius:8px;background:#04141a;border:1px solid ${goldOk3?'#ffcc00':'#4a3a00'};font-family:Kanit,sans-serif;font-size:10px;color:${goldOk3?'#ffcc00':'#6a5a00'};text-align:center">💰 ${ASCENSION_GOLD_COST.toLocaleString()}G ${goldOk3?'✓':'✗'}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <div style="flex:1;padding:6px;border-radius:8px;background:#04141a;border:1px solid ${stoneOk3?'#ffcc00':'#4a3a00'};font-family:Kanit,sans-serif;font-size:10px;color:${stoneOk3?'#ffcc00':'#6a5a00'};text-align:center">🔮 ${ASCENSION_STONE_COST} ${stoneOk3?'✓':'✗'}</div>
+          <div style="flex:1;padding:6px;border-radius:8px;background:#04141a;border:1px solid ${goldOk3?'#ffcc00':'#4a3a00'};font-family:Kanit,sans-serif;font-size:10px;color:${goldOk3?'#ffcc00':'#6a5a00'};text-align:center">💰 ${ASCENSION_GOLD_COST.toLocaleString()}G ${goldOk3?'✓':'✗'}</div>
         </div>
         ${canAscend ? `<div id="ascensionConfirmBtn" style="margin-top:8px;padding:10px;border-radius:10px;background:linear-gradient(135deg,#5a4a00,#9a7a0a);border:2px solid #ffcc33;font-family:Kanit,sans-serif;font-size:13px;color:#ffdd77;text-align:center;cursor:pointer;font-weight:700">🌟 ASCEND!</div>`
         : `<div style="margin-top:8px;padding:10px;border-radius:10px;background:#0a0a0a;border:1px solid #2a2a2a;font-family:Kanit,sans-serif;font-size:12px;color:#3a3a3a;text-align:center">${T('🌟 ASCEND (ของไม่พอ)','🌟 ASCEND (missing items)')}</div>`}

@@ -3491,20 +3491,26 @@ function doAscension() {
 
   const newPet = {
     phase:'final', finalKey:tier5Key, baseFormKey:base, formKey:null,
-    name: tier5Form.name,
+    name: tier5Form.name, symbols:[], tapCount:100, tapTarget:100,
     maxHp: tier5Form.hp + carryHp, hp: tier5Form.hp + carryHp,
     atk: tier5Form.atk + carryAtk, spd: tier5Form.spd + carrySpd, def: tier5Form.def + carryDef,
-    trainCount:0, rebirthRank:0, rebirthBonus:null,
+    buffExpiry:{atk:0,spd:0,def:0}, trainBonuses:{hp:0,atk:0,spd:0,def:0},
+    trainCount:0, rebirthRank:0, rebirthBonus:null, locked:false,
     inheritedPassive, shiny:isShiny,
-    weapon:null, artifact:null, artifact2:null, resting:false,
+    weapon:null, artifact:null, artifact2:null, resting:false, deadRestUntil:0,
+    affection:0, lastFeedAt:0, playWindowStart:0, playsUsedInWindow:0, lastGiftDay:'', pendingGiftItem:null,
   };
   if(newPet.shiny) applyShinyStats(newPet);
   seenFinal.add(tier5Key);
-  if(pets.length < MAX_PETS) pets.push(newPet); else storage.push(newPet);
+  // Jump straight to the new pet's detail view — the ASCEND tab it filters out tier5 pets
+  // (they can't be ascended again), so staying there would leave nothing to click on.
+  if(pets.length < MAX_PETS) { pets.push(newPet); partyViewTab='party'; partyDetailIdx=pets.length-1; }
+  else { storage.push(newPet); partyViewTab='storage'; storageDetailIdx=storage.length-1; }
   ascensionPicks = [];
   ascensionConfirm = false;
   syncCreature();
   SFX.evolve();
+  showAscensionEffect(petsArr.map(p=>p.finalKey), tier5Key, T(tier5Form.passiveTh, tier5Form.passive), newPet.shiny);
   scoutToast = newPet.shiny ? `🌟 ${tier5Form.name} ASCENSION! SHINY!` : T(`🌟 ${tier5Form.name} ASCENSION สำเร็จ!`,`🌟 ${tier5Form.name} ASCENSION complete!`);
   saveGame(); render();
 }
@@ -3949,7 +3955,7 @@ function showEvoAnimation(data, callback) {
       newEl.style.opacity = '1';
       newEl.style.filter  = `drop-shadow(0 0 20px ${data.color})`;
       flash.style.opacity = '0';
-      label.textContent   = '✨ EVOLVED!';
+      label.textContent   = data.shiny ? '✨ EVOLVED! SHINY!' : '🧬 EVOLVED!';
       label.style.color   = data.color;
     }, 1900);
 
@@ -9461,6 +9467,7 @@ function applyEvolution() {
     color: form.color || '#c0a0ff',
     passive: form.passive,
     passiveIcon: form.passiveIcon,
+    shiny: creature.shiny,
   }, () => {});
 }
 
@@ -14851,7 +14858,9 @@ screenContent.addEventListener('click', e=>{
       else if(fusionPickB && fusionPickB.from===from && fusionPickB.idx===idx) fusionPickB = null;
       else if(!fusionPickA) fusionPickA = {from, idx};
       else if(!fusionPickB) fusionPickB = {from, idx};
-      render(); return;
+      render();
+      if(fusionPickA && fusionPickB) scrollPartyToBottom();
+      return;
     }
     if(el.closest('#fusionConfirmBtn') && partyViewTab==='fusion') { fusionConfirm = true; render(); return; }
     if(el.closest('#fusionCancel')) { fusionConfirm = false; render(); return; }
@@ -14890,6 +14899,7 @@ screenContent.addEventListener('click', e=>{
       fusionPickA = null; fusionPickB = null;
       syncCreature();
       SFX.evolve();
+      showFusionEffect(petA.finalKey, petB.finalKey, shinyInherit);
       scoutToast = T('🥚 Fusion สำเร็จ! ได้ Fusion Egg แล้ว','🥚 Fusion complete! Got a Fusion Egg');
       saveGame(); render(); return;
     }
@@ -14902,6 +14912,21 @@ screenContent.addEventListener('click', e=>{
       const already = ascensionPicks.findIndex(x=>x.from===from && x.idx===idx);
       if(already>=0) ascensionPicks.splice(already,1);
       else if(ascensionPicks.length<4) ascensionPicks.push({from, idx});
+      render();
+      if(ascensionPicks.length===4) scrollPartyToBottom();
+      return;
+    }
+    // Ascension tab — tapping a grayed-out (unpickable) card explains why instead of doing nothing
+    const ascBlockedEl = el.closest('[data-ascensionblocked]');
+    if(ascBlockedEl && partyViewTab==='ascension') {
+      const reasonMsgs = {
+        gear: T('⚠ ถอด Artifact/Weapon ออกก่อน','⚠ Remove Artifact/Weapon first'),
+        locked: T('⚠ ปลดล็อคตัวนี้ก่อน (กด 🔒 ในหน้ารายละเอียด Pet)','⚠ Unlock this pet first (🔒 in its detail view)'),
+        dup: T('⚠ มี Branch นี้อยู่ในรายการที่เลือกแล้ว','⚠ This branch is already picked'),
+        wrongline: T('⚠ ต้องเป็นสายเดียวกับตัวที่เลือกไว้','⚠ Must be the same line as your current picks'),
+        full: T('⚠ เลือกครบ 4 ตัวแล้ว — แตะตัวที่เลือกไว้เพื่อยกเลิกก่อน','⚠ Already picked 4 — tap a picked one to deselect first'),
+      };
+      scoutToast = reasonMsgs[ascBlockedEl.dataset.ascensionblocked] || '';
       render(); return;
     }
     if(el.closest('#ascensionConfirmBtn') && partyViewTab==='ascension') { ascensionConfirm = true; render(); return; }
@@ -14925,6 +14950,7 @@ screenContent.addEventListener('click', e=>{
           color: ff.color || '#ff9944',
           passive: ff.passive,
           passiveIcon: ff.passiveIcon,
+          shiny: pet.shiny,
         }, () => { render(); });
       }
       return;
@@ -15636,6 +15662,200 @@ function showRebirthEffect(pet) {
 
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 2400);
+}
+
+// Grand cutscene for ASCENSION (Tier 5 fusion): 4 branch sprites converge into a burst,
+// then the new Tier 5 form is revealed with gold rings/glow and its name+passive.
+// Stays on screen until the player taps to continue (no auto-dismiss).
+function showAscensionEffect(sourceKeys, resultKey, passiveText, isShiny) {
+  // Anchor inside the game's own screen frame (not document.body) so the cutscene stays
+  // within the device UI instead of covering the whole browser viewport.
+  const frame = document.getElementById('screenContent')?.closest('.screen-frame') || document.body;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,0,12,0.94)';
+
+  // fade-in-and-hold helper (unlike the keyframe-based rebirth-flash, this never fades back out)
+  const holdFadeIn = (el, delayMs) => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.5s ease-out';
+    setTimeout(() => { el.style.opacity = '1'; }, delayMs);
+  };
+
+  // Timing: hold on the "4 pets" beat a bit longer before they converge, then everything
+  // past the merge (flash/rings/reveal/text) is timed relative to when the merge actually lands.
+  const HOLD_MS = 1100;      // how long the 4 sprites sit still before converging
+  const CONVERGE_MS = 1050;  // convergence transition duration
+  const MERGE_S = (HOLD_MS + CONVERGE_MS) / 1000; // merge moment, in seconds, for CSS animation-delay
+
+  // A fixed-size stage holds the convergence point + flash/rings/result sprite, so the burst
+  // is centered on the PET itself, not the overall overlay (which also has text below it).
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;flex-shrink:0';
+  overlay.appendChild(stage);
+
+  // 4 source sprites fly in big from the corners, hold, then converge + fade into the stage center
+  const positions = [[-125,-105],[125,-105],[-125,105],[125,105]];
+  sourceKeys.slice(0,4).forEach((k,i) => {
+    const [dx,dy] = positions[i] || [0,0];
+    const el = document.createElement('div');
+    el.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1);opacity:1;filter:drop-shadow(0 0 12px #ffcc66);transition:transform ${CONVERGE_MS/1000}s cubic-bezier(.32,.6,.4,1) ${i*0.05}s, opacity ${CONVERGE_MS/1000}s ease-in ${i*0.05}s`;
+    el.innerHTML = buildEvolvedSvg(k, 108, true);
+    stage.appendChild(el);
+    setTimeout(() => {
+      el.style.transform = 'translate(-50%,-50%) scale(0.15)';
+      el.style.opacity = '0';
+    }, HOLD_MS);
+  });
+
+  // merge flash
+  const flash = document.createElement('div');
+  flash.style.cssText = `position:absolute;inset:-60px;background:radial-gradient(circle,#fff 0%,#ffe08c 30%,transparent 70%);animation:od-flash 0.7s ease-out ${MERGE_S}s forwards;opacity:0`;
+  stage.appendChild(flash);
+
+  // expanding gold rings at the merge moment. Centered via top/left+margin, NOT transform:
+  // the rebirth-ring keyframe animates `transform:scale(...)`, which would otherwise fully
+  // replace (not compose with) an inline translate(-50%,-50%) and knock the ring off-center.
+  [0,1,2].forEach(i => {
+    const size = 140+i*50;
+    const ring = document.createElement('div');
+    ring.style.cssText = `position:absolute;top:50%;left:50%;margin:${-size/2}px 0 0 ${-size/2}px;width:${size}px;height:${size}px;border-radius:50%;border:2px solid #ffd76688;box-shadow:0 0 24px #ffcc33,0 0 60px #ff9900aa;animation:rebirth-ring 1.3s ease-out ${MERGE_S+i*0.12}s forwards;opacity:0`;
+    stage.appendChild(ring);
+  });
+
+  // the new Tier 5 form, revealed big with a pulsing gold aura, centered in the stage
+  const resultWrap = document.createElement('div');
+  resultWrap.style.cssText = `color:#ffcc33;opacity:0;animation:evo-appear 0.6s ease-out ${MERGE_S}s forwards, evo-glow 1.1s ease-in-out ${MERGE_S+0.05}s infinite alternate`;
+  resultWrap.innerHTML = buildEvolvedSvg(resultKey, 200, true, isShiny);
+  // buildEvolvedSvg anchors the sprite art to the BOTTOM of its box (matches how party/dex cards
+  // crop it) — for this centered burst we want it vertically centered instead, so the gold ring
+  // lands on the character, not empty space above its head.
+  const resultImg = resultWrap.querySelector('img');
+  if(resultImg) resultImg.style.objectPosition = 'center';
+  stage.appendChild(resultWrap);
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-family:Kanit,sans-serif;font-size:14px;letter-spacing:6px;color:#ffdd77;margin-top:14px;text-shadow:0 0 12px #ffaa00,0 0 28px #ff6600';
+  title.textContent = '★ ASCENSION COMPLETE ★';
+  overlay.appendChild(title);
+  holdFadeIn(title, HOLD_MS+1300);
+
+  const nameTxt = document.createElement('div');
+  nameTxt.style.cssText = 'font-family:Kanit,sans-serif;font-size:22px;font-weight:700;color:#fff;margin-top:4px;text-shadow:0 0 10px #ffcc33';
+  nameTxt.textContent = (EVOLVE2_FORMS[resultKey]?.name) || resultKey;
+  overlay.appendChild(nameTxt);
+  holdFadeIn(nameTxt, HOLD_MS+1500);
+
+  if(passiveText) {
+    const passTxt = document.createElement('div');
+    passTxt.style.cssText = 'font-family:Kanit,sans-serif;font-size:10px;color:#e0c088;max-width:82%;text-align:center;margin-top:8px;line-height:1.5';
+    passTxt.textContent = passiveText;
+    overlay.appendChild(passTxt);
+    holdFadeIn(passTxt, HOLD_MS+1700);
+  }
+
+  // tap-to-continue prompt — only becomes clickable once the reveal has finished
+  const closeBtn = document.createElement('div');
+  closeBtn.style.cssText = 'margin-top:18px;padding:8px 22px;border-radius:20px;background:rgba(255,204,51,0.12);border:1px solid #ffcc33;font-family:Kanit,sans-serif;font-size:11px;letter-spacing:2px;color:#ffdd77;opacity:0;pointer-events:none;animation:pulse 1.6s ease-in-out infinite';
+  closeBtn.textContent = T('▶ แตะเพื่อดำเนินการต่อ','▶ TAP TO CONTINUE');
+  overlay.appendChild(closeBtn);
+  setTimeout(() => {
+    closeBtn.style.transition = 'opacity 0.5s ease-out';
+    closeBtn.style.opacity = '1';
+    closeBtn.style.pointerEvents = 'auto';
+    closeBtn.style.cursor = 'pointer';
+    overlay.style.pointerEvents = 'auto';
+    overlay.addEventListener('click', () => overlay.remove());
+  }, HOLD_MS+2200);
+
+  frame.appendChild(overlay);
+  try { playShinySound(); } catch(e) {}
+}
+
+// Cutscene for the (older) 2-pet FUSION system: both parents converge into a Fusion Egg.
+// Simpler/shorter than the Ascension burst since the payoff here is an egg, not a new form.
+function showFusionEffect(keyA, keyB, isShiny) {
+  const frame = document.getElementById('screenContent')?.closest('.screen-frame') || document.body;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:rgba(3,8,14,0.94)';
+
+  const holdFadeIn = (el, delayMs) => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.5s ease-out';
+    setTimeout(() => { el.style.opacity = '1'; }, delayMs);
+  };
+
+  const HOLD_MS = 850;
+  const CONVERGE_MS = 850;
+  const MERGE_S = (HOLD_MS + CONVERGE_MS) / 1000;
+
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;flex-shrink:0';
+  overlay.appendChild(stage);
+
+  // the 2 parents fly in from left/right, hold, then converge into the stage center
+  [[keyA,-100],[keyB,100]].forEach(([k,dx],i) => {
+    const el = document.createElement('div');
+    el.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(calc(-50% + ${dx}px), -50%) scale(1);opacity:1;filter:drop-shadow(0 0 10px #66ccff);transition:transform ${CONVERGE_MS/1000}s cubic-bezier(.32,.6,.4,1), opacity ${CONVERGE_MS/1000}s ease-in`;
+    el.innerHTML = buildEvolvedSvg(k, 96, true);
+    stage.appendChild(el);
+    setTimeout(() => {
+      el.style.transform = 'translate(-50%,-50%) scale(0.15)';
+      el.style.opacity = '0';
+    }, HOLD_MS);
+  });
+
+  const flash = document.createElement('div');
+  flash.style.cssText = `position:absolute;inset:-50px;background:radial-gradient(circle,#fff 0%,#bbeeff 30%,transparent 70%);animation:od-flash 0.6s ease-out ${MERGE_S}s forwards;opacity:0`;
+  stage.appendChild(flash);
+
+  [0,1].forEach(i => {
+    const size = 110+i*45;
+    const ring = document.createElement('div');
+    ring.style.cssText = `position:absolute;top:50%;left:50%;margin:${-size/2}px 0 0 ${-size/2}px;width:${size}px;height:${size}px;border-radius:50%;border:2px solid #88ddff88;box-shadow:0 0 20px #66ccff,0 0 44px #3399ffaa;animation:rebirth-ring 1.1s ease-out ${MERGE_S+i*0.12}s forwards;opacity:0`;
+    stage.appendChild(ring);
+  });
+
+  const eggWrap = document.createElement('div');
+  eggWrap.style.cssText = `color:#88ddff;opacity:0;transform:scale(2.1);animation:evo-appear 0.6s ease-out ${MERGE_S}s forwards, evo-glow 1.1s ease-in-out ${MERGE_S+0.05}s infinite alternate`;
+  eggWrap.innerHTML = buildEggSvg(0);
+  stage.appendChild(eggWrap);
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-family:Kanit,sans-serif;font-size:14px;letter-spacing:4px;color:#99ddff;margin-top:14px;text-shadow:0 0 12px #55aaff,0 0 26px #3388ff';
+  title.textContent = isShiny ? '✨ SHINY FUSION EGG! ✨' : '🥚 FUSION EGG OBTAINED';
+  overlay.appendChild(title);
+  holdFadeIn(title, HOLD_MS+1100);
+
+  const subTxt = document.createElement('div');
+  subTxt.style.cssText = 'font-family:Kanit,sans-serif;font-size:10px;color:#7ab8e0;max-width:82%;text-align:center;margin-top:8px;line-height:1.5';
+  subTxt.textContent = T('ฟักไข่ที่หน้า ITEMS เพื่อรับสัตว์ใหม่พร้อม Echo สืบทอด','Hatch it from ITEMS to get your new beast with an inherited Echo');
+  overlay.appendChild(subTxt);
+  holdFadeIn(subTxt, HOLD_MS+1300);
+
+  const closeBtn2 = document.createElement('div');
+  closeBtn2.style.cssText = 'margin-top:18px;padding:8px 22px;border-radius:20px;background:rgba(102,204,255,0.12);border:1px solid #66ccff;font-family:Kanit,sans-serif;font-size:11px;letter-spacing:2px;color:#99ddff;opacity:0;pointer-events:none;animation:pulse 1.6s ease-in-out infinite';
+  closeBtn2.textContent = T('▶ แตะเพื่อดำเนินการต่อ','▶ TAP TO CONTINUE');
+  overlay.appendChild(closeBtn2);
+  setTimeout(() => {
+    closeBtn2.style.transition = 'opacity 0.5s ease-out';
+    closeBtn2.style.opacity = '1';
+    closeBtn2.style.pointerEvents = 'auto';
+    closeBtn2.style.cursor = 'pointer';
+    overlay.style.pointerEvents = 'auto';
+    overlay.addEventListener('click', () => overlay.remove());
+  }, HOLD_MS+1800);
+
+  frame.appendChild(overlay);
+  try { playShinySound(); } catch(e) {}
+}
+
+// After the last required pick (Fusion's 2nd pet, Ascension's 4th), the confirm button sits
+// below the pet list — scroll it into view so players with a long list don't have to hunt for it.
+function scrollPartyToBottom() {
+  requestAnimationFrame(() => {
+    const el = document.getElementById('partyScrollArea');
+    if(el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  });
 }
 
 function switchPartyDetail(delta) {
@@ -16499,7 +16719,7 @@ function renderParty() {
         return `
         <div style="background:#08080f;border:1px solid ${col}55;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px">
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:22px">${f?.icon||'🐾'}</span>
+            <div style="width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${buildPetSvg(p, 44, true)}</div>
             <div style="flex:1">
               <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${petName(p)}</div>
               <div style="font-family:Kanit,sans-serif;font-size:11px;color:#9966cc;letter-spacing:2px">${rankStars} Rank ${rank}/3</div>
@@ -16578,14 +16798,14 @@ function renderParty() {
         const picked = isPicked(from,i);
         const hasGear = !!(p.artifact || p.artifact2 || p.weapon);
         return `
-        <div ${hasGear?'':`data-fusionpick="${from}:${i}"`} style="background:${picked?'rgba(0,120,180,0.18)':'#08080f'};border:2px solid ${picked?'#88ccff':hasGear?'#4a2222':col+'55'};border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:${hasGear?'default':'pointer'};opacity:${hasGear?0.5:1}">
-          <span style="font-size:20px">${f?.icon||'🐾'}</span>
+        <div ${hasGear?'':`data-fusionpick="${from}:${i}"`} style="background:${picked?'rgba(0,150,220,0.22)':'#0c0c16'};border:${picked?'3px solid #55ddff':`2px solid ${hasGear?'#4a2222':'#4499dd'}`};border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:${hasGear?'default':'pointer'};opacity:${hasGear?0.5:1};${picked?'box-shadow:0 0 14px #33bbff88, inset 0 0 10px #33bbff22;':hasGear?'':'box-shadow:0 0 8px #3a7aaa66;'}">
+          <div style="width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${buildPetSvg(p, 40, true)}</div>
           <div style="flex:1">
-            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${petName(p)} <span style="font-size:9px;color:#6a8a9a">(${f?.name||''})</span></div>
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${picked?'#aaeeff':'#cfe8ff'}">${petName(p)} <span style="font-size:9px;color:#6a8a9a">(${f?.name||''})</span></div>
             <div style="font-size:9px;color:#5a7a8a">ATK ${p.atk} DEF ${p.def} SPD ${p.spd} HP ${p.maxHp}</div>
             ${hasGear?`<div style="font-size:9px;color:#cc6666;margin-top:2px">⚠ ${T('ถอด Artifact/Weapon ออกก่อน Fusion','Remove Artifact/Weapon before Fusion')}</div>`:''}
           </div>
-          ${picked?`<span style="font-size:14px;color:#88ccff">✓</span>`:''}
+          ${picked?`<span style="font-size:20px;color:#55ddff;text-shadow:0 0 8px #33bbff">✓</span>`:''}
         </div>`;
       }).join('')}
       ${petA && petB ? (()=>{
@@ -16640,6 +16860,13 @@ function renderParty() {
       if(validSelection) tier5Preview = EVOLVE2_FORMS[TIER5_MAP[base]];
     }
     const canAscend = validSelection && goldOk3;
+    // Once the first pet is picked, lock the working line: same-line pets needed for the
+    // remaining branches are highlighted; everything else (other lines, duplicate branches
+    // already covered) dims out so players with many pets can find the right ones fast.
+    const pickedBase = pickedPets.length ? evolve2BaseOfKey(pickedPets[0].finalKey) : null;
+    const pickedBranches = new Set(pickedPets.map(p=>p.finalKey));
+    const lineHint = pickedBase ? EVOLVE2_FORMS[TIER5_MAP[pickedBase]] : null;
+    const missingBranches = pickedBase ? Object.values(EVOLVE2_BRANCHES[pickedBase]).filter(k=>!pickedBranches.has(k)) : [];
     return `
     <div style="display:flex;flex-direction:column;gap:8px">
       <div style="background:#201a08;border:1px solid #aa8833;border-radius:10px;padding:10px 12px">
@@ -16648,23 +16875,38 @@ function renderParty() {
         <div style="margin-top:6px;font-family:Kanit,sans-serif;font-size:11px;color:${goldOk3?'#ffdd77':'#7a6a3a'}">💰 Gold: ${gold.toLocaleString()}/${ASCENSION_GOLD_COST.toLocaleString()}</div>
         <div style="margin-top:2px;font-family:Kanit,sans-serif;font-size:11px;color:#ffcc33">${T('เลือกแล้ว','Picked')}: ${ascensionPicks.length}/4</div>
       </div>
+      ${lineHint ? `<div style="background:#0a1a14;border:1px solid #33aa77;border-radius:10px;padding:8px 12px;font-family:Kanit,sans-serif;font-size:11px;color:#77ddaa">
+        ${lineHint.passiveIcon||'🌟'} ${T('กำลังรวมร่าง','Fusing toward')}: <b>${lineHint.name}</b> — ${missingBranches.length ? T(`ยังขาดอีก ${missingBranches.length} ตัว (สายเดียวกัน)`, `${missingBranches.length} more needed (same line)`) : T('ครบแล้ว!','All set!')}
+      </div>` : ''}
       ${eligibleA.length<4?`<div style="text-align:center;font-family:Kanit,sans-serif;font-size:11px;color:#665533;padding:20px">${T('ต้องมี Pet ร่าง Evolve II อย่างน้อย 4 ตัว','Need at least 4 Evolve II pets')}</div>`
       :eligibleA.map(({p,i,from})=>{
         const f = EVOLVE2_FORMS[p.finalKey];
         const col = f?.color||'#c0a050';
         const picked = isPickedAsc(from,i);
         const hasGear = !!(p.artifact || p.artifact2 || p.weapon);
+        const isLocked = !!p.locked;
         const full4 = ascensionPicks.length>=4 && !picked;
-        const disabled = hasGear || full4;
+        const wrongLine = !picked && pickedBase && evolve2BaseOfKey(p.finalKey)!==pickedBase;
+        const dupBranch = !picked && pickedBranches.has(p.finalKey);
+        // Only gear/locked truly block picking — everything else (wrong line, duplicate branch,
+        // already have 4) is still tappable, it just explains why via a toast instead of toggling.
+        const blocked = hasGear || isLocked;
+        const disabled = blocked || full4 || wrongLine || dupBranch;
+        const reasonKey = hasGear ? 'gear' : isLocked ? 'locked' : dupBranch ? 'dup' : wrongLine ? 'wrongline' : full4 ? 'full' : '';
+        const reason = hasGear ? T('⚠ ถอด Artifact/Weapon ออกก่อน','Remove Artifact/Weapon first')
+          : isLocked ? T('⚠ ปลดล็อคตัวนี้ก่อน (🔒)','Unlock this pet first (🔒)')
+          : dupBranch ? T('⚠ มี Branch นี้อยู่แล้ว','⚠ This branch is already picked')
+          : wrongLine ? T('— คนละสายกับที่กำลังเลือก','— different line from your pick')
+          : '';
         return `
-        <div ${disabled?'':`data-ascensionpick="${from}:${i}"`} style="background:${picked?'rgba(180,130,0,0.18)':'#08080f'};border:2px solid ${picked?'#ffcc33':hasGear?'#4a2222':col+'55'};border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:${disabled?'default':'pointer'};opacity:${disabled?0.5:1}">
-          <span style="font-size:20px">${f?.icon||'🐾'}</span>
+        <div ${blocked||full4||wrongLine||dupBranch?`data-ascensionblocked="${reasonKey}"`:`data-ascensionpick="${from}:${i}"`} style="background:${picked?'rgba(180,130,0,0.22)':'#0c0c16'};border:${picked?'3px solid #ffdd55':`2px solid ${blocked?'#4a2222':(wrongLine||dupBranch||full4)?'#3a3a4a':'#ddaa33'}`};border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:${disabled?(wrongLine?0.35:0.5):1};${picked?'box-shadow:0 0 14px #ffcc3388, inset 0 0 10px #ffcc3322;':blocked||wrongLine||dupBranch||full4?'':'box-shadow:0 0 8px #aa883366;'}">
+          <div style="width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${buildPetSvg(p, 40, true)}</div>
           <div style="flex:1">
-            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${col}">${petName(p)} <span style="font-size:9px;color:#8a7a4a">(${f?.name||''})</span></div>
+            <div style="font-family:Kanit,sans-serif;font-size:12px;color:${picked?'#ffe680':(wrongLine||dupBranch||full4)?'#8a7a4a':'#ffe0a0'}">${petName(p)} <span style="font-size:9px;color:#8a7a4a">(${f?.name||''})</span></div>
             <div style="font-size:9px;color:#7a6a4a">ATK ${p.atk} DEF ${p.def} SPD ${p.spd} HP ${p.maxHp}</div>
-            ${hasGear?`<div style="font-size:9px;color:#cc6666;margin-top:2px">⚠ ${T('ถอด Artifact/Weapon ออกก่อน','Remove Artifact/Weapon first')}</div>`:''}
+            ${reason?`<div style="font-size:9px;color:${blocked?'#cc6666':'#8a7a4a'};margin-top:2px">${reason}</div>`:''}
           </div>
-          ${picked?`<span style="font-size:14px;color:#ffcc33">✓</span>`:''}
+          ${picked?`<span style="font-size:20px;color:#ffdd55;text-shadow:0 0 8px #ffcc33">✓</span>`:''}
         </div>`;
       }).join('')}
       ${pickedPets.length===4 ? (tier5Preview ? `
@@ -16701,7 +16943,7 @@ function renderParty() {
     <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:6px;padding:2px 0;position:relative">
       ${tabBar}
       ${partyViewTab!=='evolve2'&&partyViewTab!=='rebirth'&&partyViewTab!=='fusion'&&partyViewTab!=='ascension' ? swapBanner : ''}
-      <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto">
+      <div id="partyScrollArea" style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto">
         ${partyViewTab==='party' ? slotHtml : partyViewTab==='storage' ? storageHtml : partyViewTab==='rebirth' ? rebirthHtml : partyViewTab==='fusion' ? fusionHtml : partyViewTab==='ascension' ? ascensionHtml : evo2Html}
       </div>
       <div data-opencollection style="position:absolute;bottom:4px;right:4px;padding:5px 10px;border-radius:20px;background:#0d0d20;border:1px solid #2a2a5a;font-family:Kanit,sans-serif;font-size:10px;color:#6858a0;cursor:pointer;z-index:10">📖 COLLECTION${achPendingCount()>0?`<span style="position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff4444;color:#fff;font-size:9px;line-height:16px;font-weight:700">${achPendingCount()}</span>`:''}</div>

@@ -292,6 +292,7 @@ body::after {
 .scout-cell.player { background:rgba(30,14,74,0.7); border-color:#6040ff !important; box-shadow:0 0 6px #6040ff88; position:relative; overflow:visible; }
 .scout-cell.adjacent { border-color:rgba(160,160,255,0.35) !important; }
 .scout-cell.monster { color:#ff4444; }
+.scout-cell.pack { color:#ff8833; }
 .scout-cell.boss { color:#ffaa00; font-size:13px; }
 .scout-cell.sym_F { color:#ff6b35; }
 .scout-cell.sym_W { color:#4ecdc4; }
@@ -4828,8 +4829,9 @@ function genScoutGrid() {
       if (scoutGrid[i].type==='empty' && i!==0) { scoutGrid[i].type=type; c++; }
     }
   };
-  place('monster', 13);
+  place('monster', 11);
   place('boss', 1);
+  place('pack', 2); // monster pack — replaces 2 of the old 13 monster cells (same total density), sequential 2-4 back-to-back fights, no rest between, bundled reward
   if(Math.random() < 0.25) place('mini_boss', 1);
   if(Math.random() < 0.12) place('secret_shop', 1);
   if(Math.random() < 0.20) place('minigame', 1);
@@ -4907,6 +4909,11 @@ function moveScout(dx,dy) {
     startBattle(t==='boss' ? 'boss' : t==='mini_boss' ? 'mini' : false);
     return;
   }
+  if(t==='pack') {
+    pendingBattleCell = {x:nx, y:ny, type:t};
+    startPackBattle(cell, 0);
+    return;
+  }
   if(t==='dungeon_entrance') {
     cell.type = 'empty';
     enterSecretDungeon(cell.dungeonIdx);
@@ -4937,7 +4944,8 @@ function genDungeonGrid() {
       if (scoutGrid[i].type==='empty' && i!==0) { scoutGrid[i].type=type; c++; }
     }
   };
-  place('monster', 11);
+  place('monster', 9);
+  place('pack', 2); // monster pack — replaces 2 of the old 11 monster cells (same total density)
   place('dboss', 3);
   place('treasure', 3);
   place('gold_chest', 2);
@@ -5498,6 +5506,199 @@ function startBattle(battleType) {
   };
   state = 'battle';
   render();
+}
+
+// ============================================================
+// MONSTER PACK — a Scout cell that's 2-4 regular-monster-tier fights back-to-back, no rest
+// between (HP carries over, mirroring how Champion Gauntlet chains its room), one bundled
+// reward at the end. No pet-switch fallback on loss — Scout never had that mechanic, so a
+// pack loss behaves exactly like any other Scout loss (walk back onto the cell to retry the
+// same cached roster from the start).
+// ============================================================
+const PACK_MONSTER_SPRITES = {
+  F: ['monster & boss/F-Slime-Mon.png','monster & boss/F-wolf-mon.png','monster & boss/F-Bear-Mon.png','monster & boss/F-scropion-mon.png'],
+  W: ['monster & boss/W-chicken-mon.png','monster & boss/W-slime-mon.png','monster & boss/W-cat-mon.png','monster & boss/W-bat-mon.png'],
+  S: ['monster & boss/S-goblin-mon.png','monster & boss/S-slime-mon.png','monster & boss/S-Skeleton-mon.png','monster & boss/S-golem-mon.png'],
+};
+// One pack member — same stat formulas/difficulty profile as a regular Scout 'monster' cell
+// (not boss-tier), with the same Hard-mode 40% chance at an Evolved/Fusion form.
+function buildPackMember(eliteChance) {
+  // Secret Dungeon packs are always pure Evolve2 forms drawn from the dungeon's themed pool at
+  // the fixed dungeon level — same convention as a regular dungeon 'monster' cell (startBattle's
+  // inSecretDungeon branch), just without the dboss ×1.4/×1.2 multiplier.
+  if(inSecretDungeon) {
+    const dungeon = SECRET_DUNGEONS[secretDungeonIdx];
+    const lv = SECRET_DUNGEON_LV;
+    const typeKey = ['F','W','S'][Math.floor(Math.random()*3)];
+    const isElite = Math.random() < (eliteChance ?? 0.05);
+    const ELITE_STAT_MULT = { hp:2.0, atk:1.5, def:1.5, spd:1.5 };
+    const baseHp = Math.round((40+lv*9+lv*lv*0.4) * (isElite?ELITE_STAT_MULT.hp:1));
+    const baseSpd = Math.round((7+lv*1.2+0.02*lv*lv) * (isElite?ELITE_STAT_MULT.spd:1));
+    const pool = dungeon.monsterPool;
+    const fk = pool[Math.floor(Math.random()*pool.length)];
+    const ff = EVOLVE2_FORMS[fk];
+    const fusScale = baseHp / 135;
+    const enemy = { name:ff.name, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:null, isEvolve2Enemy:true, evolve2Key:fk,
+      maxHp:Math.round(ff.hp*fusScale), hp:Math.round(ff.hp*fusScale),
+      atk:Math.round(ff.atk*fusScale), def:Math.round(ff.def*fusScale), spd:baseSpd,
+      passives:[fk, ...pickEnemyPassivesCached(null, typeKey, 2)], ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
+    enemy.isElite = isElite;
+    return enemy;
+  }
+  const effectiveStage = replayStage > 0 ? (replayHell ? 40 + replayStage : replayHard ? 20 + replayStage : replayStage) : hellMode ? 40 + hellStage : hardMode ? 20 + hardStage : stage;
+  const lv = effectiveStage;
+  const typeKey = ['F','W','S'][Math.floor(Math.random()*3)];
+  const et = ENEMY_TYPES[typeKey];
+  const tierStage = replayStage>0 ? (replayHard||replayHell?20:replayStage) : stage;
+  const tier = Math.min(2, Math.floor((tierStage-1)/3));
+  // Elite pack member: same stat multiplier as a regular Scout enemy — rolled BEFORE baseHp so it
+  // flows through into the hard-form branch too (fusScale/scoutEvoScale below both derive from
+  // baseHp), matching startBattle()'s own Elite pattern. Chance defaults to 5% (regular members)
+  // but buildPackRoster() passes 25% for the last member — the "pack leader".
+  const isElite = Math.random() < (eliteChance ?? 0.05);
+  const ELITE_STAT_MULT = { hp:2.0, atk:1.5, def:1.5, spd:1.5 };
+  const baseHp  = Math.round((40+lv*9+lv*lv*0.4) * (isElite?ELITE_STAT_MULT.hp:1));
+  const baseAtk = Math.round((8+lv*3+lv*lv*0.15) * (isElite?ELITE_STAT_MULT.atk:1));
+  const baseDef = Math.round((3+lv*2+lv*lv*0.1) * (isElite?ELITE_STAT_MULT.def:1));
+  const baseSpd = Math.round((7+lv*1.2+0.02*lv*lv) * (isElite?ELITE_STAT_MULT.spd:1));
+  const spritePool = PACK_MONSTER_SPRITES[typeKey] || PACK_MONSTER_SPRITES.F;
+  const spriteFile = spritePool[Math.floor(Math.random()*spritePool.length)];
+
+  const isEffectiveHard = replayStage>0 ? (replayHard||replayHell) : (hardMode || hellMode);
+  const effectiveHardStage = replayStage>0 ? replayStage : hellMode ? hellStage : hardStage;
+  let hardForm = null;
+  if(isEffectiveHard && Math.random()<0.4) {
+    const useFusion = effectiveHardStage>=11 && Math.random()<0.5;
+    if(useFusion) {
+      const fkeys = Object.keys(EVOLVE2_FORMS).filter(k=>!EVOLVE2_FORMS[k].tier5); // same Tier5 exclusion as regular mobs
+      const fk = fkeys[Math.floor(Math.random()*fkeys.length)], ff = EVOLVE2_FORMS[fk];
+      const fusScale = baseHp / 135;
+      hardForm = { name:ff.name, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:null, isEvolve2Enemy:true, evolve2Key:fk,
+        maxHp:Math.round(ff.hp*fusScale), hp:Math.round(ff.hp*fusScale),
+        atk:Math.round(ff.atk*fusScale*1.7), def:Math.round(ff.def*fusScale*1.7), spd:Math.round(baseSpd*(ff.spd/14)*1.7),
+        passives:[fk], ownPassiveDesc:ff.passive, ownPassiveIcon:ff.passiveIcon };
+    } else {
+      const ekeys = Object.keys(FORMS).filter(k=>k!=='EPIC-GHOST');
+      const ek = ekeys[Math.floor(Math.random()*ekeys.length)], ef = FORMS[ek];
+      const scoutEvoScale = baseHp / 75;
+      hardForm = { name:ef.name, typeKey, isBoss:false, isMini:false, isMimic:false, spriteFile:null, isEvolvedEnemy:true, evolvedKey:ek,
+        maxHp:Math.round(ef.hp*scoutEvoScale), hp:Math.round(ef.hp*scoutEvoScale),
+        atk:Math.round(ef.atk*scoutEvoScale*1.4), def:Math.round(ef.def*scoutEvoScale*1.4), spd:Math.round(baseSpd*(ef.spd/14)*1.4),
+        passives:[ek], ownPassiveDesc:ef.passive, ownPassiveIcon:ef.passiveIcon };
+    }
+  }
+  const enemy = hardForm || {
+    name: SPRITE_NAMES[spriteFile] || et.names[tier], typeKey,
+    maxHp: Math.round(baseHp*et.hp), hp: Math.round(baseHp*et.hp),
+    atk: Math.round(baseAtk*et.atk), def: Math.round(baseDef*et.def), spd: Math.round(baseSpd*et.spd),
+    isBoss:false, isMini:false, isMimic:false, spriteFile,
+  };
+  enemy.isElite = isElite;
+  if(!enemy.passives) {
+    const n = hellMode ? 2 : hardMode ? 1 : stage>=11 ? 1 : 0;
+    enemy.passives = n>0 ? pickEnemyPassives(typeKey, n) : [];
+  }
+  return enemy;
+}
+function buildPackRoster(cell) {
+  if(cell.packEnemies) return cell.packEnemies; // cached so a retry after a loss faces the same roster
+  const count = cell.packCount || (cell.packCount = 2 + Math.floor(Math.random()*3)); // 2-4
+  const roster = [];
+  // The last member is the "pack leader" — 25% Elite chance instead of the regular 5%.
+  for(let i=0;i<count;i++) roster.push(buildPackMember(i===count-1 ? 0.25 : 0.05));
+  cell.packEnemies = roster;
+  return roster;
+}
+// Starts (or resumes, mid-sequence, via the endBattle chain) one fight within a monster pack.
+// `carriedRewards` is the reward list accumulated from earlier pack members (empty on the first fight).
+function startPackBattle(cell, memberIdx, carriedRewards) {
+  if(creature.hp <= 0) { scoutToast = T('💀 ตัวนี้ HP=0 เปลี่ยนตัวก่อน!','💀 HP=0 — swap to another beast first!'); render(); return; }
+  if(creature.resting) { scoutToast = T('🛌 กำลัง Rest อยู่ — หยุด Rest ก่อน!','🛌 Resting — stop Rest first!'); render(); return; }
+  // Only reset auto-battle on the first member — otherwise the 800ms transition to the next
+  // pack member would silently stop Auto-Battle mid-pack (same fix as startDuelBattle/startVsBattle).
+  if(memberIdx === 0) battleAutoMode = false;
+  if(creature.shiny) playShinySound();
+  const roster = buildPackRoster(cell);
+  const enemy = roster[memberIdx];
+  enemy.hp = enemy.maxHp; // only the enemy is topped up each fight — the player's pet HP carries over damaged
+  battleState = {
+    enemy, isBoss:false, isMini:false, isMimic:false, isSecretDungeonBattle:inSecretDungeon,
+    isPackBattle:true, packCell:cell, packIdx:memberIdx, packTotal:roster.length, packRewards: carriedRewards || [],
+    turn: 1, log: [],
+    passivesLog: [],
+    lastResult: null,
+    animPhase: null,
+    waiting: false,
+    overdriveUsed: false,
+    odBuff: null,
+    enemyStunTurns: 0,
+    e2Stack: 0,
+    e2NextBuff: false,
+    enemyPoisonTurns: 0,
+    playerPoisonTurns: 0,
+    enemyBurnTurns: 0,
+    playerBurnTurns: 0,
+    enemyHealBlockTurns: 0,
+    playerHealBlockTurns: 0,
+    e2CurseTurns: 0, e2CurseTurnsE: 0,
+    e2NoHealTurns: 0, e2NoHealTurnsE: 0,
+    e2PhoenixUsed: false, e2PhoenixUsedE: false,
+    e2RuneType: null, e2RuneTypeE: null,
+    eBlindTurns: 0, pBlindTurns: 0,
+    echoLionAtkReduced: false, echoBunnyAtkBuff: false, echoCatAtkBuff: false,
+    echoCockroachUsed: false, echoCockroachActive: false, echoDragonStack: 0, echoPhoenixUsed: false,
+    ghostAtkMult: 1.0, ghostSpdMult: 1.0,
+  };
+  state = 'battle';
+  render();
+}
+// Computes one pack member's reward (same shape/odds as a regular Scout 'monster' kill) without
+// granting it yet — endBattle accumulates these across the whole pack and grants them once.
+function packMemberReward(isEliteEnemy) {
+  const rewards = [];
+  const eliteGoldMult = isEliteEnemy ? 4 : 1;
+  // Secret Dungeon packs pay out on the dungeon's own flat gold scale (matches endBattle's
+  // "regular dungeon monster" branch) — the dungeon's stage-independent 120-lv economy has
+  // nothing to do with Scout's gs/stage formula, so this stays a separate branch entirely.
+  if(inSecretDungeon) {
+    const g = (3000 + Math.floor(Math.random()*1501)) * eliteGoldMult * 3; // ×3 pack bonus
+    gold += g;
+    rewards.push(`💰 +${g}G${isEliteEnemy?' (Elite ×4)':''}`);
+    const dropRolls = isEliteEnemy ? 2 : 1;
+    for(let i=0;i<dropRolls;i++) { if(Math.random() < 0.175) { addItemToInventory('artifact_box'); rewards.push(`📦 Artifact Box!`); } }
+    for(let i=0;i<dropRolls;i++) { if(Math.random() < 0.25) { const item = rollTreasureItem(); addItemToInventory(item); rewards.push(`${ITEMS[item].icon} ${ITEMS[item].name}`); } }
+    return rewards;
+  }
+  // Same replay-aware gold formula as a regular Scout monster kill (endBattle's Scout win branch) —
+  // must match exactly so pack gold tracks the replay target's difficulty, not the player's live mode.
+  const isEffHellGold = replayStage > 0 ? replayHell : hellMode;
+  const isEffHardGold = replayStage > 0 ? (replayHard||replayHell) : (hardMode || hellMode);
+  const effectiveHardStageGold = replayStage > 0 ? replayStage : hellMode ? hellStage : hardStage;
+  const effectiveNormalStageGold = replayStage > 0 ? replayStage : stage;
+  const goldMult = (isEffHellGold ? 3 : isEffHardGold ? 2 : 1) * eliteGoldMult;
+  const gs = isEffHellGold ? 40+effectiveHardStageGold : isEffHardGold ? 20+effectiveHardStageGold : effectiveNormalStageGold;
+  // ×3 gold per member — packs are riskier than fighting the same monsters separately (no rest
+  // between fights, HP carries over damaged), so they pay out better than solo monster grinding.
+  const goldGain = (5 + gs*3 + Math.floor(Math.random()*6)) * goldMult * 3;
+  gold += goldGain;
+  rewards.push(`💰 +${goldGain}G`);
+  if(Math.random() < 0.05) { const sk=['sym_F','sym_W','sym_S'][Math.floor(Math.random()*3)]; addItemToInventory(sk); rewards.push(`${ITEMS[sk].icon} ${ITEMS[sk].name}`); }
+  if(Math.random() < 0.05) { addItemToInventory('map_scroll'); rewards.push(`${ITEMS.map_scroll.icon} ${ITEMS.map_scroll.name}`); }
+  if(isEffHardGold && Math.random() < 0.05) { const ek=dropEssence(); addItemToInventory(ek); rewards.push(`${ITEMS[ek].icon} ${ITEMS[ek].name}!`); }
+  if(isEffHardGold && Math.random() < 0.01) { addItemToInventory('rebirth_stone'); rewards.push(`🔮 Rebirth Stone!`); }
+  {
+    const h = isEffHardGold;
+    const dropChance = h?0.25:0.20, cntMin = h?2:1, cntMax = h?4:3;
+    if(Math.random() < dropChance) {
+      const cnt = (cntMin + Math.floor(Math.random()*(cntMax-cntMin+1))) * (isEliteEnemy?2:1);
+      const pool = h
+        ? [{t:'super_potion',w:16},{t:'max_potion',w:10},{t:'power_shard',w:3},{t:'speed_shard',w:3},{t:'guard_shard',w:3},{t:'revive',w:5}]
+        : [{t:'hp_potion',w:15},{t:'super_potion',w:8},{t:'max_potion',w:3},{t:'power_shard',w:3},{t:'speed_shard',w:3},{t:'guard_shard',w:3},{t:'revive',w:5}];
+      const poolTotal = pool.reduce((s,p)=>s+p.w, 0);
+      for(let i=0;i<cnt;i++) { const it=pickFromPool(pool, poolTotal); addItemToInventory(it); rewards.push(`${ITEMS[it].icon} ${ITEMS[it].name}`); }
+    }
+  }
+  return rewards;
 }
 
 // 🤖 Auto-Battle: picks a random move each turn (or Overdrive if ready, or auto-revives via pet switch)
@@ -8964,6 +9165,32 @@ function endBattle(won) {
     mode: battleState.isDuelBattle ? 'duel' : battleState.isVsBattle ? 'vs' : battleState.isTowerBattle ? 'tower' : battleState.isRaidBattle ? 'raid' : 'scout',
     result: won ? 'win' : 'loss',
   });
+
+  // ===== MONSTER PACK RESULT =====
+  // Sequential 1v1 fights, no rest between (player HP carries over damaged; only the enemy is
+  // topped up each fight, mirroring Gauntlet). No pet-switch fallback on loss — Scout never had
+  // that mechanic — a pack loss is just a normal Scout loss; the cell stays 'pack' for retry.
+  if(battleState.isPackBattle) {
+    if(won) {
+      const rewards = battleState.packRewards.concat(packMemberReward(!!battleState.enemy.isElite));
+      const nextIdx = battleState.packIdx + 1;
+      if(nextIdx < battleState.packTotal) {
+        const _cell = battleState.packCell;
+        setTimeout(() => { startPackBattle(_cell, nextIdx, rewards); }, 800);
+        return;
+      }
+      if(pendingBattleCell) { scoutGrid[idx(pendingBattleCell.x, pendingBattleCell.y)].type = 'empty'; }
+      pendingBattleCell = null;
+      battleState.reward = rewards.length ? rewards.join('  ') : null;
+      saveGame();
+      state = 'result'; render(); return;
+    } else {
+      pendingBattleCell = null;
+      battleState.reward = null;
+      saveGame();
+      state = 'result'; render(); return;
+    }
+  }
 
   // ===== DUEL BATTLE RESULT =====
   if(battleState.isDuelBattle) {
@@ -12796,6 +13023,7 @@ function renderMenu() {
               ['🔮','REBIRTH',T(`Pet ที่ Evolve หรือ Evolve II แล้ว (ต้องถอด Artifact ก่อน) ใช้ Rebirth Stone 1 ชิ้น + Gold ${REBIRTH_GOLD_COST} เพื่อ Rebirth — สเตตัสรีเซ็ตกลับฐาน แต่ได้โบนัสถาวร +25% ของสเตตัสก่อน Rebirth ติดตัวไปตลอด ทำซ้ำได้เรื่อยๆ เพื่อสะสมโบนัส (มีดาว ✦ แสดง rank)\n\n🔮 หา Rebirth Stone ได้จาก: ชนะ Boss (10%) หรือ Mini-Boss (10%) ใน Scout, ซื้อได้ที่ Secret Shop (${REBIRTH_GOLD_COST}G/ครั้ง), First-Clear Tower Floor 70 (การันตี 5 ก้อน), หรือลุ้นจาก Special Boss ใน Raid — โอกาสจะสูงขึ้นมากในโหมด Hard/Hell`,`An Evolved or Evolve II Pet (with no Artifact equipped) can Rebirth using 1 Rebirth Stone + ${REBIRTH_GOLD_COST} Gold — stats reset to base, but you keep a permanent +25% bonus based on stats before the Rebirth. Repeatable to stack more bonuses (shown as ✦ rank stars)\n\n🔮 Get Rebirth Stones from: beating a Boss (10%) or Mini-Boss (10%) in Scout, buying one at the Secret Shop (${REBIRTH_GOLD_COST}G each), Tower Floor 70's First-Clear (guaranteed 5), or a chance from Raid's Special Boss — odds go up a lot in Hard/Hell Mode`)],
               ['✨','SHINY',T('Pet บางตัวมีโอกาสพิเศษเป็น Shiny — ได้โบนัสสเตตัสถาวร +10% ของค่าสเตตัสตอนเกิดหรือเปลี่ยนร่าง พร้อมเอฟเฟกต์เรืองแสงสวยงามเฉพาะตัว','Some Pets have a rare chance to be Shiny — a permanent +10% bonus of their stats at birth/evolution, plus a unique glowing visual effect')],
               ['🥚','FUSION',T(`เลือก Pet ร่าง Evolve II 2 ตัว (ต้องถอด Artifact/Weapon ก่อน) มา Fusion ด้วย Rebirth Stone ${FUSION_STONE_COST} ชิ้น + Gold ${FUSION_GOLD_COST} — ทั้งคู่จะหายไป ได้ Fusion Egg แทน\n\n🥚 ฟักไข่แบบปกติ ได้สัตว์ใหม่ที่มีสเตตัสเริ่มต้นสูงขึ้น (25% ของค่าเฉลี่ยพ่อแม่) พร้อมพาสซีพ "Echo" ติดตัวมาแบบสุ่มจาก 1 ใน 2 ตัว (พาสซีพครึ่งความแรง ไม่ขึ้นกับร่างที่วิวัฒนาการทีหลัง) ดูได้ที่หน้ารายละเอียด Pet\n\n✨ ถ้าพ่อแม่เป็น Shiny มีโอกาสสืบทอดความ Shiny ด้วย — พ่อแม่ Shiny 1 ตัว = 28%, ทั้งคู่ = 53% (ปกติ 3%)`,`Pick 2 Evolve II Pets (must unequip Artifact/Weapon first) to Fuse using ${FUSION_STONE_COST} Rebirth Stones + ${FUSION_GOLD_COST} Gold — both are consumed, you get a Fusion Egg instead\n\n🥚 Hatches normally into a new beast with a stat head-start (25% of the parents' combined average), plus a random "Echo" passive inherited from one of the two parents (half-strength, independent of whatever form it evolves into later) — check the Pet detail screen to see it\n\n✨ Shiny parents can pass it on — one Shiny parent = 28%, both = 53% (base 3%)`)],
+              ['🌟','ASCENSION',T(`จุดสูงสุดของแต่ละสายพันธุ์ — รวม Pet ร่าง Evolve II ให้ครบทั้ง 4 Branch (F/W/S/B) ของสายเดียวกัน (ต้องถอด Artifact/Weapon ก่อน) มา Ascend ด้วย 🔮 Rebirth Stone ${ASCENSION_STONE_COST} ชิ้น + 💰 Gold ${ASCENSION_GOLD_COST} — ทั้ง 4 ตัวจะหายไป ได้ร่างที่ 5 (Tier 5) แทนทันที ไม่ต้องฟักไข่\n\n🌟 สเตตัสสืบทอด 50% ของค่าเฉลี่ยส่วนเกินที่เทรนมาทั้ง 4 ตัว พร้อม "Echo" พาสซีฟสืบทอดแบบสุ่มจาก 1 ใน 4 ตัว (เหมือน Fusion) ร่างที่ 5 แต่ละตัวมีพาสซีฟหลัก, Echo, และท่าไม้ตายขั้นเทพ Overdrive เป็นของตัวเอง\n\n💡 ไปที่ PARTY → แท็บ ASCENSION เพื่อเลือก 4 ตัว — ระบบจะกรองให้เหลือเฉพาะ Pet สายเดียวกับตัวแรกที่เลือกโดยอัตโนมัติ`,`The pinnacle of each species — combine 4 Evolve II Pets covering all 4 branches (F/W/S/B) of the same line (must unequip Artifact/Weapon first) to Ascend using ${ASCENSION_STONE_COST} Rebirth Stones + ${ASCENSION_GOLD_COST} Gold — all 4 are consumed and instantly become the Tier 5 form, no hatching required\n\n🌟 Stats inherit 50% of the average excess trained across all 4 parents, plus a random "Echo" passive inherited from one of the four (same rule as Fusion). Each Tier 5 form has its own main passive, Echo, and a signature Overdrive finisher\n\n💡 Go to PARTY → ASCENSION tab to pick your 4 — the picker automatically filters down to pets from the same line as whichever one you pick first`)],
             ];
             const BATTLE_SYSTEMS = [
               ['⚔️','HOW TO BATTLE',T('ทุกเทิร์นเลือกท่า 1 ใน 3: ⚔️STRIKE ชนะ RUSH, 💨RUSH ชนะ GUARD, 🛡GUARD ชนะ STRIKE (แบบเป่ายิ้งฉุบ) — เลือกท่าที่ชนะคู่ต่อสู้ได้ดาเมจ ×2, เลือกท่าที่แพ้ได้แค่ ×0.5, เลือกท่าเดียวกันได้ดาเมจปกติ ใครที่ HP หมดก่อนแพ้\n\n💡 ศัตรูแต่ละ Type (F/W/S) มักใช้ท่าที่ตรงกับธาตุตัวเองบ่อยกว่าท่าอื่น ลองสังเกตแล้วเดาทางดู!\n\n⚡ SPD ไม่ได้มีผลแค่ใครโจมตีก่อน — ยิ่ง SPD ของคุณนำศัตรูมากเท่าไหร่ ยิ่งมีโอกาสหลบการโจมตีเพิ่มขึ้นด้วย: ทุกๆ 25% ที่ SPD นำอยู่ เพิ่มโอกาสหลบ +4% (สูงสุด +20%) ซ้อนทับกับโอกาสหลบจากสกิล/Artifact ที่มีอยู่เดิม ใช้ได้ทั้งฝั่งคุณและศัตรู','Every turn, pick 1 of 3 moves: ⚔️STRIKE beats RUSH, 💨RUSH beats GUARD, 🛡GUARD beats STRIKE (rock-paper-scissors). Winning the matchup deals ×2 damage, losing only deals ×0.5, and picking the same move deals normal damage. Whoever\'s HP hits 0 first loses\n\n💡 Enemies of each Type (F/W/S) tend to favor their own themed move more often — watch for patterns!\n\n⚡ SPD does more than decide who attacks first — the more SPD you have over your opponent, the more likely you are to dodge their attacks too: every 25% SPD advantage grants +4% dodge chance (capped at +20%), stacking on top of any existing skill/Artifact dodge sources, for both you and enemies')],
@@ -13062,7 +13290,7 @@ function renderScout() {
   // Icon maps + active-pet token name — hoisted so both the main grid and the minimap popup reuse them.
   const mgIcons = {slot:'🎰',hilo:'🎲',rps:'⚔️'};
   const specialBossIcon = inSecretDungeon ? RAID_SPECIAL_BOSSES[SECRET_DUNGEONS[secretDungeonIdx].bossIdx].icon : '⚡';
-  const icons = {monster:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'💀',special_boss:specialBossIcon};
+  const icons = {monster:'👾',pack:'🐺',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'💀',special_boss:specialBossIcon};
   const _tokPet = pets[activePetIdx] || creature;
   const tokName = _tokPet.phase==='larva' ? 'LARVA' : ((FORMS[_tokPet.formKey]||EVOLVE2_FORMS[_tokPet.finalKey||''])?.name || _tokPet.name);
   let cellsHtml = '';
@@ -13117,6 +13345,7 @@ function renderScout() {
       else if(c.type==='secret_shop') col='#44ddaa';
       else if(c.type==='mini_boss') col='#ff9944';
       else if(c.type==='monster'||c.type==='dboss') col='#aa5566';
+      else if(c.type==='pack') col='#cc7733';
       else if(c.type==='treasure'||c.type==='gold_chest') col='#ddcc44';
       else if(c.type==='minigame') col='#66aaff';
       else col='rgba(150,150,220,0.35)';
@@ -13302,7 +13531,7 @@ function renderScout() {
 
 function renderBattleScreen() {
   const {enemy, lastResult, turn, isBoss, isMini, isMimic} = battleState;
-  labelStrip.textContent = isBoss ? '⚠ BOSS BATTLE' : isMimic ? '🎭 MIMIC!' : isMini ? '⚡ MINI-BOSS' : '⚔ BATTLE';
+  labelStrip.textContent = battleState.isPackBattle ? `🐺 PACK ${battleState.packIdx+1}/${battleState.packTotal}` : isBoss ? '⚠ BOSS BATTLE' : isMimic ? '🎭 MIMIC!' : isMini ? '⚡ MINI-BOSS' : '⚔ BATTLE';
 
   // During phase-1 animation, show pre-damage HP for the defender so HP bar
   // only drops when the attack visually lands (phase-2 render shows actual HP)
@@ -13518,6 +13747,11 @@ function renderBattleScreen() {
           ${battleState.isVsBattle ? `<div style="display:flex;gap:4px">${vsEnemies.map((e,i)=>{
             const dead=e.hp<=0, isActive=i===vsEnemyIdx;
             return `<div style="width:9px;height:9px;border-radius:50%;background:${dead?'#2a2a2a':isActive?'#e0d0ff':'#7060a0'};border:1px solid ${dead?'#3a3a3a':isActive?'#c0a0ff':'#5040a0'};box-shadow:${isActive?'0 0 5px #c0a0ff':'none'};transition:all 0.3s"></div>`;
+          }).join('')}</div>` : ''}
+          ${battleState.isPackBattle ? `<div style="display:flex;gap:4px">${Array.from({length:battleState.packTotal}).map((_,i)=>{
+            const defeated=i<battleState.packIdx, isActive=i===battleState.packIdx;
+            const isLeader = i===battleState.packTotal-1;
+            return `<div style="width:9px;height:9px;border-radius:50%;background:${defeated?'#2a2a2a':isActive?'#ffcc66':'#aa6633'};border:1px solid ${defeated?'#3a3a3a':isActive?'#ffdd88':isLeader?'#ff8833':'#8a5023'};box-shadow:${isActive?'0 0 5px #ffcc66':'none'};transition:all 0.3s" title="${isLeader?'Pack Leader':`Monster ${i+1}`}"></div>`;
           }).join('')}</div>` : ''}
           <div style="font-family:Kanit,sans-serif;font-size:10px;color:#6858a0">T${turn}</div>
         </div>

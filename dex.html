@@ -713,6 +713,11 @@ function getSpritePath(name) {
 
 function getAllPets() {
   const pets = [];
+  // Larva: universal mid-stage between Egg and the 10 Evolved forms (same sprite for every line)
+  pets.push({ key: 'LARVA', name: 'LARVA', color: '#8878b8', hp: 60, atk: 12, spd: 10, def: 4,
+    passive: 'Mid-stage after hatching — collect 3 Symbols to Evolve',
+    passiveTh: 'ด่านกลางหลังฟักไข่ — เก็บ Symbol 3 ชิ้นเพื่อ Evolve', passiveIcon: '🐛',
+    formType: 'Base', branch: 'BALANCE', spriteKey: 'LARVA' });
   // Base forms
   for (const [key, data] of Object.entries(FORMS)) {
     if (key === 'GHOST') continue;

@@ -16911,9 +16911,21 @@ function renderParty() {
       const totalFinal = Object.keys(EVOLVE2_FORMS).length;
       const finalCards = Object.entries(EVOLVE2_FORMS).map(([key, form]) => finalCard(key, form)).join('');
 
+      // Larva: a single universal mid-stage (same sprite regardless of eventual line), so it has no
+      // locked/unlocked state — every player passes through it hatching their very first egg.
+      const larvaCard = `
+        <div style="padding:8px;border-radius:10px;background:#080810;border:1px solid #8878b855;display:flex;gap:8px;align-items:center">
+          <div style="flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center">${buildLarvaSvg(40,false,false)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:Kanit,sans-serif;font-size:11px;font-weight:700;color:#c0b0e0">LARVA</div>
+            <div style="font-size:9px;color:#5858a0">${T('ด่านกลางหลังฟักไข่ — เก็บ Symbol 3 ชิ้นเพื่อ Evolve','Mid-stage after hatching — collect 3 Symbols to Evolve')}</div>
+          </div>
+        </div>`;
       countHtml = `${unlockedEvolved.size}/10 · ${unlockedFinal.size}/${totalFinal}`;
       bodyHtml = `
-        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px">── EVOLVED FORMS ──</div>
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px">── LARVA ──</div>
+        ${larvaCard}
+        <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── EVOLVED FORMS ──</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${evolvedCards}</div>
         <div style="font-family:Kanit,sans-serif;font-size:10px;color:#4a4a7a;letter-spacing:1px;margin-top:4px">── EVOLVE II FORMS ──</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${finalCards}</div>`;

@@ -11255,20 +11255,32 @@ function buildGauntletBossPet(formKey, pos) {
     passives: [],
   };
 }
-function generateGauntletTeam(symbol, pos) {
-  const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
-  // Guarantee exactly 1 of the 4 slots is that line's Tier 5 (Ascension) form — the other 3 stay
-  // plain branch forms, same as before.
-  const tier5Slot = Math.floor(Math.random()*4);
-  return bases.map((b,i) => buildGauntletBossPet(i===tier5Slot ? TIER5_MAP[b] : EVOLVE2_BRANCHES[b][symbol], pos));
-}
-// Picks a random Ghost-line form (regular or Epic, any symbol) — Ghost forms don't belong
-// to any of the 10 regular base lines, so they're rolled independently of `bases` below.
-function _gauntletRandomGhostForm() {
-  const symbols = ['F','W','S','B'];
-  const sym = symbols[Math.floor(Math.random()*4)];
+// Picks a random Ghost-line form (regular or Epic) for a given symbol — used so a regular
+// trainer room's Ghost roll still matches that room's own theme instead of a random one.
+function _gauntletRandomGhostFormForSymbol(sym) {
   const pool = Math.random()<0.5 ? EPIC_GHOST_EVOLVE2_POOLS[sym] : GHOST_EVOLVE2_POOLS[sym];
   return pool[Math.floor(Math.random()*pool.length)];
+}
+// Same as above but any symbol — used by the Champion team, which isn't tied to one theme.
+function _gauntletRandomGhostForm() {
+  const symbols = ['F','W','S','B'];
+  return _gauntletRandomGhostFormForSymbol(symbols[Math.floor(Math.random()*4)]);
+}
+function generateGauntletTeam(symbol, pos) {
+  const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
+  // Guarantee exactly 1 of the 4 slots is that line's Tier 5 (Ascension) form. The other 3 use
+  // the same variety roll as the Champion team: 15% chance to be a Ghost/Epic Ghost form themed
+  // to this room's own symbol, else a 20% chance (of the remainder) to also be that line's Tier 5,
+  // else its normal branch form.
+  const tier5Slot = Math.floor(Math.random()*4);
+  return bases.map((b,i) => {
+    if(i===tier5Slot) return buildGauntletBossPet(TIER5_MAP[b], pos);
+    const roll = Math.random();
+    const formKey = roll < 0.15 ? _gauntletRandomGhostFormForSymbol(symbol)
+      : roll < 0.35 ? TIER5_MAP[b]
+      : EVOLVE2_BRANCHES[b][symbol];
+    return buildGauntletBossPet(formKey, pos);
+  });
 }
 function generateGauntletChampionTeam() {
   const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);

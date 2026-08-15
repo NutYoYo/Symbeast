@@ -1179,6 +1179,14 @@ const TIER5_MAP = {
 };
 const ASCENSION_GOLD_COST = 50000;
 const ASCENSION_STONE_COST = 5;
+// Gauntlet-only categorization: which branch "theme" each Tier 5 form belongs to, for symbol-matched
+// Tier 5 rolls in trainer rooms (mirrors how Ghost/Epic Ghost picks are already themed per room).
+const TIER5_SYMBOL_POOLS = {
+  F: ['ULTIMATE-BRAWLER','ANCIENT-PANDA','SHARKLORD-IRONJAW'],
+  W: ['GOD-BLITZ','DARKPRIEST-SPECTER','METALPHOENIX-SWIFTGUARD'],
+  B: ['WUKONG-CHAMPION','LORD-SHIELDWING'],
+  S: ['VENOMBLAZE-FORTRESS','WEREWOLF-BASTION'],
+};
 
 // Evolve II: base form's passive stays active (baseFormKey), plus a bespoke Branch Skill
 // per form (implemented in the EVOLVE II BRANCH SKILL block in doTurn).
@@ -11255,48 +11263,81 @@ function buildGauntletBossPet(formKey, pos) {
     passives: [],
   };
 }
-// Picks a random Ghost-line form (regular or Epic) for a given symbol — used so a regular
-// trainer room's Ghost roll still matches that room's own theme instead of a random one.
-function _gauntletRandomGhostFormForSymbol(sym) {
-  const pool = Math.random()<0.5 ? EPIC_GHOST_EVOLVE2_POOLS[sym] : GHOST_EVOLVE2_POOLS[sym];
-  return pool[Math.floor(Math.random()*pool.length)];
+// Picks a random Ghost-line form (regular or Epic) for a given symbol, avoiding any key already
+// in `usedKeys` (falls back to whatever it rolls if the whole matching pool is exhausted — with
+// only 10 forms per symbol and a 4-pet team that can never actually happen, but is a safe cap).
+function _gauntletRandomGhostFormForSymbol(sym, usedKeys) {
+  const pool = [...GHOST_EVOLVE2_POOLS[sym], ...EPIC_GHOST_EVOLVE2_POOLS[sym]].filter(k => !usedKeys.has(k));
+  const fallback = [...GHOST_EVOLVE2_POOLS[sym], ...EPIC_GHOST_EVOLVE2_POOLS[sym]];
+  const list = pool.length ? pool : fallback;
+  return list[Math.floor(Math.random()*list.length)];
 }
 // Same as above but any symbol — used by the Champion team, which isn't tied to one theme.
-function _gauntletRandomGhostForm() {
+function _gauntletRandomGhostForm(usedKeys) {
   const symbols = ['F','W','S','B'];
-  return _gauntletRandomGhostFormForSymbol(symbols[Math.floor(Math.random()*4)]);
+  return _gauntletRandomGhostFormForSymbol(symbols[Math.floor(Math.random()*4)], usedKeys);
+}
+// Picks a Tier 5 form themed to a given symbol (see TIER5_SYMBOL_POOLS), skipping anything
+// already in `usedKeys`. Returns null if that symbol's whole pool (only 2-3 forms) is already
+// used — callers fall back to a branch form in that case rather than allow a duplicate.
+function _gauntletRandomTier5FormForSymbol(sym, usedKeys) {
+  const pool = TIER5_SYMBOL_POOLS[sym].filter(k => !usedKeys.has(k));
+  return pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
+}
+// Same as above but any symbol — used by the Champion team, which isn't tied to one theme.
+function _gauntletRandomTier5Form(usedKeys) {
+  const pool = Object.values(TIER5_SYMBOL_POOLS).flat().filter(k => !usedKeys.has(k));
+  return pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
 }
 function generateGauntletTeam(symbol, pos) {
   const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
-  // Guarantee exactly 1 of the 4 slots is that line's Tier 5 (Ascension) form. The other 3 use
-  // the same variety roll as the Champion team: 15% chance to be a Ghost/Epic Ghost form themed
-  // to this room's own symbol, else a 20% chance (of the remainder) to also be that line's Tier 5,
-  // else its normal branch form.
+  // Guarantee exactly 1 of the 4 slots is a Tier 5 (Ascension) form themed to this room's own
+  // symbol (TIER5_SYMBOL_POOLS), not tied to any of the 4 randomly-picked base lines below — same
+  // theming convention as the Ghost/Epic Ghost roll. The other 3 slots: 15% chance to be a themed
+  // Ghost/Epic Ghost form, else a 20% chance (of the remainder) to also be a themed Tier 5 (falls
+  // back to the branch form if that symbol's small Tier5 pool is already used up), else its normal
+  // branch form. `usedKeys` prevents any Ghost/Tier5 form from appearing twice in the same team.
   const tier5Slot = Math.floor(Math.random()*4);
-  return bases.map((b,i) => {
-    if(i===tier5Slot) return buildGauntletBossPet(TIER5_MAP[b], pos);
-    const roll = Math.random();
-    const formKey = roll < 0.15 ? _gauntletRandomGhostFormForSymbol(symbol)
-      : roll < 0.35 ? TIER5_MAP[b]
-      : EVOLVE2_BRANCHES[b][symbol];
+  const usedKeys = new Set();
+  const guaranteedTier5 = _gauntletRandomTier5FormForSymbol(symbol, usedKeys);
+  usedKeys.add(guaranteedTier5);
+  const roster = bases.map((b,i) => {
+    let formKey;
+    if(i===tier5Slot) formKey = guaranteedTier5;
+    else {
+      const roll = Math.random();
+      formKey = roll < 0.15 ? _gauntletRandomGhostFormForSymbol(symbol, usedKeys)
+        : roll < 0.35 ? (_gauntletRandomTier5FormForSymbol(symbol, usedKeys) || EVOLVE2_BRANCHES[b][symbol])
+        : EVOLVE2_BRANCHES[b][symbol];
+    }
+    usedKeys.add(formKey);
     return buildGauntletBossPet(formKey, pos);
   });
+  return roster;
 }
 function generateGauntletChampionTeam() {
   const bases = _gauntletShuffle(Object.keys(EVOLVE2_BRANCHES)).slice(0,4);
   const symbols = ['F','W','S','B'];
-  // Guarantee exactly 1 of the 4 slots is that line's Tier 5 (Ascension) form. The other 3 keep
-  // the existing random roll: 15% chance to be a random Ghost/Epic Ghost form (any of the 40),
-  // else a 20% chance (of the remainder) to also be that line's Tier 5, else its normal branch.
+  // Guarantee exactly 1 of the 4 slots is a Tier 5 form (any symbol, unrestricted). The other 3
+  // keep the existing random roll: 15% chance to be a random Ghost/Epic Ghost form (any of the
+  // 40), else a 20% chance (of the remainder) to also be a Tier 5, else its normal branch.
   const tier5Slot = Math.floor(Math.random()*4);
-  return bases.map((b,i) => {
-    if(i===tier5Slot) return buildGauntletBossPet(TIER5_MAP[b], 4);
-    const roll = Math.random();
-    const formKey = roll < 0.15 ? _gauntletRandomGhostForm()
-      : roll < 0.35 ? TIER5_MAP[b]
-      : EVOLVE2_BRANCHES[b][symbols[i]];
+  const usedKeys = new Set();
+  const guaranteedTier5 = _gauntletRandomTier5Form(usedKeys);
+  usedKeys.add(guaranteedTier5);
+  const roster = bases.map((b,i) => {
+    let formKey;
+    if(i===tier5Slot) formKey = guaranteedTier5;
+    else {
+      const roll = Math.random();
+      formKey = roll < 0.15 ? _gauntletRandomGhostForm(usedKeys)
+        : roll < 0.35 ? (_gauntletRandomTier5Form(usedKeys) || EVOLVE2_BRANCHES[b][symbols[i]])
+        : EVOLVE2_BRANCHES[b][symbols[i]];
+    }
+    usedKeys.add(formKey);
     return buildGauntletBossPet(formKey, 4);
   });
+  return roster;
 }
 function generateGauntletWeek() {
   const levels = gauntletLevels();

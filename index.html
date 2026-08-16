@@ -14025,7 +14025,7 @@ function renderBattleScreen() {
             if(lr.extraHits&&lr.extraHits.length>0) lr.extraHits.forEach((h,i)=>{ dmgNums += `<div class="dmg-num enemy-hit" style="animation-delay:${(hits.length+i)*0.22}s;top:${30-(hits.length+i)*11}%;color:#ffaa44">+${h}</div>`; });
             if(lr.crit && lr.pd>0) dmgNums += `<div class="dmg-num crit-tag">⚡CRIT!</div>`;
             { const ph = (lr.playerHealPre||0) + (lr.playerFirst ? (lr.playerHealP1||0) : (lr.playerHealP2||0)); if(ph>0) dmgNums += `<div class="dmg-num heal">🩸+${ph}</div>`; }
-            if(lr.eReflectDmg>0) dmgNums += `<div class="dmg-num player-hit" style="color:#00ffcc;font-size:18px;top:44%;animation-delay:0.3s;text-shadow:0 0 8px #00ffcc">🛡-${lr.eReflectDmg}</div>`;
+            if(lr.eReflectDmg>0) dmgNums += `<div class="dmg-num player-hit" style="color:#00ffcc;font-size:18px;top:44%;text-shadow:0 0 8px #00ffcc">🛡-${lr.eReflectDmg}</div>`;
             if(lr.eCounterDmg>0) dmgNums += `<div class="dmg-num counter-player" style="color:#ff8800">⚔-${lr.eCounterDmg}</div>`;
           } else if(ap==='e-atk') {
             if(lr.ed>0) dmgNums += slashFx('left', lr.enemyCrit);
@@ -14053,7 +14053,7 @@ function renderBattleScreen() {
           }
           // Reflect/Counter — show only when enemy attacks
           if(ap==='e-atk') {
-            if(lr.reflectDmg>0) dmgNums += `<div class="dmg-num enemy-hit" style="color:#00ffcc;font-size:18px;top:44%;animation-delay:0.3s;text-shadow:0 0 8px #00ffcc">🛡-${lr.reflectDmg}</div>`;
+            if(lr.reflectDmg>0) dmgNums += `<div class="dmg-num enemy-hit" style="color:#00ffcc;font-size:18px;top:44%;text-shadow:0 0 8px #00ffcc">🛡-${lr.reflectDmg}</div>`;
             if(lr.counterDmg>0) dmgNums += `<div class="dmg-num counter-enemy" style="color:#ff8800">⚔-${lr.counterDmg}</div>`;
           }
           // Poison / Heal Block — per-turn effects, show only at end of turn (ap=null)

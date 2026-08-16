@@ -5531,7 +5531,7 @@ const PACK_MONSTER_SPRITES = {
 };
 // One pack member — same stat formulas/difficulty profile as a regular Scout 'monster' cell
 // (not boss-tier), with the same Hard-mode 40% chance at an Evolved/Fusion form.
-function buildPackMember(eliteChance) {
+function buildPackMember(eliteChance, guaranteeEvolve) {
   // Secret Dungeon packs are always pure Evolve2 forms drawn from the dungeon's themed pool at
   // the fixed dungeon level — same convention as a regular dungeon 'monster' cell (startBattle's
   // inSecretDungeon branch), just without the dboss ×1.4/×1.2 multiplier.
@@ -5576,8 +5576,11 @@ function buildPackMember(eliteChance) {
   const isEffectiveHard = replayStage>0 ? (replayHard||replayHell) : (hardMode || hellMode);
   const effectiveHardStage = replayStage>0 ? replayStage : hellMode ? hellStage : hardStage;
   let hardForm = null;
-  if(isEffectiveHard && Math.random()<0.4) {
-    const useFusion = effectiveHardStage>=11 && Math.random()<0.5;
+  // guaranteeEvolve (the pack leader / last member) skips the 40% roll and always lands on a hard
+  // form when Hard/Hell is active — biased toward Fusion (Evolve2, which includes Ghost/Epic Ghost)
+  // once the stage is high enough to unlock it, same threshold the regular 50/50 roll already uses.
+  if(isEffectiveHard && (guaranteeEvolve || Math.random()<0.4)) {
+    const useFusion = guaranteeEvolve ? effectiveHardStage>=11 : (effectiveHardStage>=11 && Math.random()<0.5);
     if(useFusion) {
       const fkeys = Object.keys(EVOLVE2_FORMS).filter(k=>!EVOLVE2_FORMS[k].tier5); // same Tier5 exclusion as regular mobs
       const fk = fkeys[Math.floor(Math.random()*fkeys.length)], ff = EVOLVE2_FORMS[fk];
@@ -5613,8 +5616,10 @@ function buildPackRoster(cell) {
   if(cell.packEnemies) return cell.packEnemies; // cached so a retry after a loss faces the same roster
   const count = cell.packCount || (cell.packCount = 2 + Math.floor(Math.random()*3)); // 2-4
   const roster = [];
-  // The last member is the "pack leader" — 25% Elite chance instead of the regular 5%.
-  for(let i=0;i<count;i++) roster.push(buildPackMember(i===count-1 ? 0.25 : 0.05));
+  // The last member is the "pack leader" — 25% Elite chance instead of the regular 5%, and
+  // (in Hard/Hell) guaranteed to be an Evolved/Fusion form instead of rolling the normal 40%,
+  // so a pack always has at least one non-plain enemy to fight when the mode allows it at all.
+  for(let i=0;i<count;i++) { const isLeader = i===count-1; roster.push(buildPackMember(isLeader ? 0.25 : 0.05, isLeader)); }
   cell.packEnemies = roster;
   return roster;
 }

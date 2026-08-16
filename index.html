@@ -552,6 +552,7 @@ body::after {
 @keyframes hatchExplode { 0%{opacity:1;transform:scale(1)} 60%{opacity:0.6;transform:scale(1.6)} 100%{opacity:0;transform:scale(2.2)} }
 @keyframes larvaReveal { 0%{opacity:0;transform:scale(0.3) translateY(20px)} 60%{transform:scale(1.15) translateY(-4px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
 @keyframes mon-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.anim-mon-bob { animation:mon-bob 2.2s ease-in-out infinite; }
 @keyframes dmg-fake { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-30px)} }
 @keyframes shiny-pulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.5) drop-shadow(0 0 8px #c0a0ff)} }
 @keyframes idle-popup-in { 0%{opacity:0;transform:scale(0.85) translateY(20px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
@@ -17546,7 +17547,7 @@ function renderIdle() {
         <div id="idle-mon-wrap" class="" style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;align-self:center">
           <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
             <div style="position:absolute;width:170px;height:170px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,0.55) 0%,transparent 70%);pointer-events:none"></div>
-            <img id="idle-mon-img" src="${ALL_ENEMY_SPRITES[0]}" style="object-fit:contain;image-rendering:pixelated;position:relative;z-index:1" onerror="this.style.display='none'">
+            <img id="idle-mon-img" class="anim-mon-bob" src="${ALL_ENEMY_SPRITES[0]}" style="object-fit:contain;image-rendering:pixelated;position:relative;z-index:1" onerror="this.style.display='none'">
             <img id="idle-mon-next" src="${ALL_ENEMY_SPRITES[0]}" style="position:absolute;object-fit:contain;image-rendering:pixelated;opacity:0;z-index:1" onerror="this.style.display='none'">
           </div>
           <div id="idle-mon-name" style="font-family:Kanit,sans-serif;font-size:9px;color:#cc8888;text-align:center">Monster</div>
@@ -17745,6 +17746,7 @@ function startIdleAnim() {
     // Enemy death / spawn
     if (monImg) {
       monImg.style.opacity = isDying ? Math.max(0, 1 - (fightPh - 0.88) / 0.12) : 1;
+      monImg.style.animation = isDying ? 'none' : '';
       monImg.style.transform = isDying ? `scale(${1 - (fightPh - 0.88) * 0.6}) rotate(${(fightPh - 0.88) * 20}deg)` : 'none';
     }
     if (monNext) {

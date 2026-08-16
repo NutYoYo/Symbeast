@@ -292,7 +292,7 @@ body::after {
 .scout-cell.player { background:rgba(30,14,74,0.7); border-color:#6040ff !important; box-shadow:0 0 6px #6040ff88; position:relative; overflow:visible; }
 .scout-cell.adjacent { border-color:rgba(160,160,255,0.35) !important; }
 .scout-cell.monster { color:#ff4444; }
-.scout-cell.pack { color:#ff8833; }
+.scout-cell.pack { color:#ff8833; filter:sepia(1) saturate(6) hue-rotate(-50deg) brightness(1.05); }
 .scout-cell.boss { color:#ffaa00; font-size:13px; }
 .scout-cell.sym_F { color:#ff6b35; }
 .scout-cell.sym_W { color:#4ecdc4; }
@@ -13419,7 +13419,7 @@ function renderScout() {
   // Icon maps + active-pet token name — hoisted so both the main grid and the minimap popup reuse them.
   const mgIcons = {slot:'🎰',hilo:'🎲',rps:'⚔️'};
   const specialBossIcon = inSecretDungeon ? RAID_SPECIAL_BOSSES[SECRET_DUNGEONS[secretDungeonIdx].bossIdx].icon : '⚡';
-  const icons = {monster:'👾',pack:'🐺',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'💀',special_boss:specialBossIcon};
+  const icons = {monster:'👾',pack:'👾',boss:'💀',mini_boss:'👹',secret_shop:'🏪',heal:'💚',treasure:'🎁',gold_chest:'💰',rest:'🏕',empty:'·',dungeon_entrance:'🌀',dboss:'💀',special_boss:specialBossIcon};
   const _tokPet = pets[activePetIdx] || creature;
   const tokName = _tokPet.phase==='larva' ? 'LARVA' : ((FORMS[_tokPet.formKey]||EVOLVE2_FORMS[_tokPet.finalKey||''])?.name || _tokPet.name);
   let cellsHtml = '';
@@ -13660,7 +13660,7 @@ function renderScout() {
 
 function renderBattleScreen() {
   const {enemy, lastResult, turn, isBoss, isMini, isMimic} = battleState;
-  labelStrip.textContent = battleState.isPackBattle ? `🐺 PACK ${battleState.packIdx+1}/${battleState.packTotal}` : isBoss ? '⚠ BOSS BATTLE' : isMimic ? '🎭 MIMIC!' : isMini ? '⚡ MINI-BOSS' : '⚔ BATTLE';
+  labelStrip.textContent = battleState.isPackBattle ? `👾 PACK ${battleState.packIdx+1}/${battleState.packTotal}` : isBoss ? '⚠ BOSS BATTLE' : isMimic ? '🎭 MIMIC!' : isMini ? '⚡ MINI-BOSS' : '⚔ BATTLE';
 
   // During phase-1 animation, show pre-damage HP for the defender so HP bar
   // only drops when the attack visually lands (phase-2 render shows actual HP)

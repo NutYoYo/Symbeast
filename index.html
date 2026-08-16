@@ -6188,6 +6188,14 @@ function doTurn(moveIdx) {
   const fk = creature.phase==='final' ? creature.baseFormKey : creature.formKey;
   const ff = creature.phase==='final' ? creature.finalKey : null;
   const bs = battleState;
+  // Snapshot HP for the pre-hit animation display BEFORE any passive/artifact/reflect dispatch below
+  // has a chance to mutate creature.hp/enemy.hp. Reactive effects like Chain Strike, Reflect Coat, and
+  // several Tier5 ongoing buffs apply their bonus damage synchronously, right here in this function,
+  // long before the actual attack's impact frame — capturing the snapshot late (after that cascade)
+  // meant the "pre-hit" reference already included their damage, so the HP bar showed a premature
+  // partial drop during the windup, then dropped again for the real hit.
+  bs.preAnimPlayerHp = creature.hp;
+  bs.preAnimEnemyHp  = enemy.hp;
   // ALIEN-GHOST: while Poison/Burn/Curse/Freeze is ticking, its effect is inverted into a
   // beneficial one instead of being cleansed — the debuff still runs its normal duration.
   // 1 = full Skill strength, 0.5 = Echo (half strength), 0 = not an Alien-lineage creature.
@@ -8592,8 +8600,9 @@ function doTurn(moveIdx) {
   if(ed>0 && Math.random() < spdDodgeChance(getEffStat('spd')*spdBoost, getEnemyEffSpd(enemy,bs))) { ed=0; passives.push({icon:'💨',text:T('ว่องไวกว่าศัตรู หลบการโจมตี!',"You're faster — dodged the attack!")}); }
 
   // ===== DAMAGE: sequential closures called from animation callbacks =====
-  bs.preAnimPlayerHp = creature.hp;
-  bs.preAnimEnemyHp  = enemy.hp;
+  // (preAnimPlayerHp/preAnimEnemyHp were already snapshotted at the top of this function, before any
+  // reactive passive/artifact damage — do not recapture here, that would re-include this turn's reflect/
+  // chain-strike/etc. bonus damage and reintroduce the premature-HP-drop bug.)
   let edApplied = false, pdApplied = false;
   const _eHasArt = k => eArtId===k || eArtId2===k;
 

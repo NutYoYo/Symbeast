@@ -17710,10 +17710,17 @@ function startIdleAnim() {
     setIdleCls(petWrap, petCls);
     setIdleCls(monWrap, monCls);
 
-    // Pet sprite — bigger
+    // Pet sprite — bigger. Only rebuild the markup when the displayed pet/pose actually changes —
+    // rebuilding every frame (this runs ~60x/sec) would tear down and recreate the sprite's CSS bob
+    // animation and the shiny sparkle elements before they ever get to progress, making both look
+    // completely frozen even though the animations are defined correctly.
     if (petImg) {
       const sz = pet.phase === 'final' ? 180 : 160;
-      petImg.innerHTML = buildPetSvg(pet, sz, true) + (pet.shiny ? buildShinySparkles(8, 80) : '');
+      const petKey = `${pet.formKey||''}|${pet.finalKey||''}|${pet.phase}|${sz}|${pet.shiny?1:0}`;
+      if (petImg.dataset.petKey !== petKey) {
+        petImg.dataset.petKey = petKey;
+        petImg.innerHTML = buildPetSvg(pet, sz, true) + (pet.shiny ? buildShinySparkles(8, 80) : '');
+      }
     }
     if (petNameEl) { petNameEl.textContent = petName(pet); petNameEl.style.color = petCol; petNameEl.style.textShadow = `0 0 6px ${petCol}44`; }
     if (petLvEl) petLvEl.textContent = pet.formKey ? (FORMS[pet.formKey]?.name || '') : (pet.phase === 'final' ? 'Final' : '');

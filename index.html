@@ -1628,7 +1628,7 @@ const ARTIFACTS = {
   precision_stone: { name:'Precision Stone',  nameTh:'หินแม่นยำ',         grade:'R', icon:'🔮', desc:'In battle: Every 3 rounds, deal 1.5x damage', descTh:'ในการต่อสู้: ทุก 3 รอบ โจมตีด้วยดาเมจ 1.5 เท่า' },
   paralysis_fang:  { name:'Paralysis Fang',   nameTh:'เขี้ยวอัมพาต',     grade:'R', icon:'🦷', desc:'In battle: 15% chance to stun the enemy; if stunned, ATK +30% next round', descTh:'ในการต่อสู้: 15% โอกาส Stun ศัตรู หาก Stun ATK +30% รอบถัดไป' },
   berserker_claw:  { name:'Berserker Claw',   nameTh:'กรงเล็บคลั่ง',     grade:'R', icon:'🐾', desc:'In battle: ATK +25%, Crit chance +20%, but you take 10% more damage', descTh:'ในการต่อสู้: ATK +25%, โอกาสคริติคอล +20% แต่รับดาเมจเพิ่ม 10%' },
-  sniper_eye:      { name:'Sniper Eye',       nameTh:'ตานักแม่น',         grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, guaranteed critical hit (×2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ คริติคอลแน่นอน (ดาเมจ ×2.0)' },
+  sniper_eye:      { name:'Sniper Eye',       nameTh:'ตานักแม่น',         grade:'E', icon:'👁', desc:'In battle: Every 3 rounds, ATK +50% and a guaranteed critical hit (×2.0 damage)', descTh:'ในการต่อสู้: ทุก 3 รอบ ATK +50% และคริติคอลแน่นอน (ดาเมจ ×2.0)' },
   victory_chain:   { name:'Victory Chain',    nameTh:'โซ่แห่งชัยชนะ',    grade:'R', icon:'⛓', desc:'In battle: Each WIN increases ATK by 20%, stacking up to 3 times', descTh:'ในการต่อสู้: ทุกครั้งที่ชนะ ATK +20% สะสมสูงสุด 3 ครั้ง' },
   reflect_coat:    { name:'Reflect Coat',     nameTh:'เสื้อสะท้อน',       grade:'R', icon:'🪞', desc:'In battle: Reflects 15% of damage received back to the enemy', descTh:'ในการต่อสู้: สะท้อนดาเมจที่รับ 15% กลับไปยังศัตรู' },
   wind_step:       { name:'Wind Step',        nameTh:'ก้าวลม',            grade:'R', icon:'🌀', desc:'In battle: 15% chance to dodge attacks',    descTh:'ในการต่อสู้: 15% โอกาสหลบการโจมตี' },
@@ -1642,7 +1642,7 @@ const ARTIFACTS = {
   double_attack:   { name:'Double Attack',    nameTh:'โจมตีสองครั้ง',     grade:'E', icon:'⚔', desc:'In battle: 20% chance to attack twice in one round', descTh:'ในการต่อสู้: 20% โอกาสโจมตีสองครั้งในรอบเดียว' },
   wild_card:       { name:'Wild Card',        nameTh:'ไพ่มหัศจรรย์',      grade:'E', icon:'🎲', desc:'In battle: 25% chance to randomly Heal/ATK×1.5/Reflect(30% each) or Bad Luck +50% dmg taken (10%)', descTh:'ในการต่อสู้: 25% โอกาสสุ่ม Heal/ATK×1.5/Reflect (30% ต่ออัน) หรือ Bad Luck โดนดาเมจ+50% (10%)' },
   execution:       { name:'Execution',        nameTh:'ประหาร',            grade:'E', icon:'☠', desc:'In battle: When your HP drops below 20%, deal 200% more damage', descTh:'ในการต่อสู้: เมื่อ HP ของคุณต่ำกว่า 20% โจมตีเพิ่ม 200%' },
-  chain_strike:    { name:'Chain Strike',     nameTh:'โจมตีลูกโซ่',       grade:'E', icon:'💥', desc:'In battle: WIN streak bonus — ×1: 50% ATK / ×2: 100% ATK / ×3: 200% ATK. Breaks on non-WIN.', descTh:'ในการต่อสู้: ชนะต่อเนื่อง — ×1: 50% ATK / ×2: 100% ATK / ×3: 200% ATK | ไม่ชนะ = รีเซ็ต' },
+  chain_strike:    { name:'Chain Strike',     nameTh:'โจมตีลูกโซ่',       grade:'E', icon:'💥', desc:'In battle: WIN streak bonus — ×1: 50% ATK / ×2: 100% ATK / ×3: 150% ATK. Breaks on non-WIN.', descTh:'ในการต่อสู้: ชนะต่อเนื่อง — ×1: 50% ATK / ×2: 100% ATK / ×3: 150% ATK | ไม่ชนะ = รีเซ็ต' },
   // stat boosts (equip-time)
   atk_shard:       { name:'ATK Shard',        nameTh:'เศษพลังโจมตี',      grade:'N', icon:'🗡', desc:'ATK +15% when equipped',                  descTh:'ATK +15% เมื่อสวมใส่' },
   def_shard:       { name:'DEF Shard',        nameTh:'เศษพลังป้องกัน',    grade:'N', icon:'🛡', desc:'DEF +15% when equipped',                  descTh:'DEF +15% เมื่อสวมใส่' },
@@ -1652,7 +1652,7 @@ const ARTIFACTS = {
   lucky_charm:     { name:'Lucky Charm',      nameTh:'เครื่องรางโชค',     grade:'N', icon:'🍀', desc:'After winning a battle: Gold earned ×1.5', descTh:'หลังชนะการต่อสู้: ได้ Gold เพิ่มขึ้น ×1.5' },
   tide_breaker:    { name:'Tide Breaker',     nameTh:'ทลายกระแส',         grade:'R', icon:'🌊', desc:'In battle: If you lost last round, ATK +75% this round', descTh:'ในการต่อสู้: ถ้าแพ้รอบที่แล้ว ATK +75% รอบนี้' },
   all_stats_r:     { name:'Power Crest',      nameTh:'ตราพลัง',           grade:'R', icon:'💠', desc:'All stats (ATK/DEF/SPD/HP) +15% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +15% เมื่อสวมใส่' },
-  all_stats_e:     { name:'Omega Crest',      nameTh:'ตราโอเมก้า',        grade:'E', icon:'🔷', desc:'All stats (ATK/DEF/SPD/HP) +25% when equipped', descTh:'ทุก Stat (ATK/DEF/SPD/HP) +25% เมื่อสวมใส่' },
+  all_stats_e:     { name:'Omega Surge',      nameTh:'คลื่นโอเมก้า',        grade:'E', icon:'🔷', desc:'In battle: ATK/DEF/SPD +3% every turn (stacks up to 20 times)', descTh:'ในการต่อสู้: ATK/DEF/SPD +3% ทุกเทิร์น (สะสมสูงสุด 20 ครั้ง)' },
   crit_core:       { name:'Crit Core',        nameTh:'แก่นคริ',            grade:'R', icon:'💫', desc:'In battle: Crit chance +20%; on crit, heal 5% max HP', descTh:'ในการต่อสู้: โอกาสคริ +20%; เมื่อคริ ฟื้น HP 5% ของ HP สูงสุด' },
   deathblow:       { name:'Deathblow',        nameTh:'ฆ่าตัดตอน',          grade:'E', icon:'⚰️', desc:'In battle: Crit chance +15% and crit deals ×2.0 damage', descTh:'ในการต่อสู้: โอกาสคริ +15% และคริดาเมจ ×2.0' },
   // ☠️ Poison artifacts
@@ -1670,13 +1670,14 @@ const ARTIFACTS = {
   tri_attack:      { name:'Tri-Attack',       nameTh:'ไตรอาวุธ',           grade:'E', icon:'🔮', desc:'In battle: Each attack has a 25% chance to randomly inflict Freeze, Burn, or Poison on the enemy', descTh:'ในการต่อสู้: ทุกการโจมตีมีโอกาส 25% สุ่มทำให้ศัตรูติด Freeze, Burn หรือ Poison อย่างใดอย่างหนึ่ง' },
   riposte_core:    { name:'Riposte Core',     nameTh:'แก่นสวนกลับ',         grade:'E', icon:'🪃', desc:'In battle: 25% chance to counter-attack for 90% of a normal hit (inflicts status/crit/lifesteal like a normal attack)', descTh:'ในการต่อสู้: 25% โอกาสสวนกลับด้วยดาเมจ 90% ของหมัดปกติ (ติดสถานะ/คริ/ดูดเลือด เหมือนหมัดปกติ)' },
 };
-// Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r/all_stats_e)
-// have been moved to the Weapon system and removed from the drop pool below. Their ARTIFACTS entries and
-// equip/unequip math are kept intact (not deleted) so pre-existing saves with them equipped still work.
+// Pure equip-time stat artifacts (vitality_core/atk_shard/def_shard/spd_shard/hp_core/all_stats_r) have been
+// moved to the Weapon system and removed from the drop pool below. Their ARTIFACTS entries and equip/unequip
+// math are kept intact (not deleted) so pre-existing saves with them equipped still work. all_stats_e was
+// redesigned into a battle-only stacking buff (Omega Surge) instead and is back in the E pool below.
 const ARTIFACT_POOL = {
   N: ['shock_bead','keen_edge','blade_shard','iron_plate','swift_ring','life_seed','crimson_fang','stone_skin','lucky_charm','venom_fang','frost_bead'],
   R: ['death_mark','precision_stone','paralysis_fang','berserker_claw','victory_chain','reflect_coat','wind_step','rage_core','drain_aura','blood_pact','tide_breaker','crit_core','toxic_coat','antidote_charm','reflect_ward','cursed_shackle','clouded_lens','rimefrost_fang'],
-  E: ['iron_will','true_sight','moon_veil','double_attack','wild_card','execution','chain_strike','soul_reaper','deathblow','sniper_eye','plague_scythe','piercing_fang','tri_attack','riposte_core'],
+  E: ['iron_will','true_sight','moon_veil','double_attack','wild_card','execution','chain_strike','soul_reaper','deathblow','sniper_eye','plague_scythe','piercing_fang','tri_attack','riposte_core','all_stats_e'],
 };
 function rollArtifactGrade(floor) {
   const r = Math.random();
@@ -3643,6 +3644,10 @@ function getEffStat(stat) {
   }
   // Playground Affection bond bonus: +1% ATK/DEF/SPD per heart (max 5 hearts), battle-only
   if((stat==='atk'||stat==='def'||stat==='spd') && heartsOf(creature)>0) val = Math.round(val * (1 + 0.01*heartsOf(creature)));
+  // Omega Surge artifact: ATK/DEF/SPD +3% per stack, stacking every turn up to 20 (see doTurn)
+  if((stat==='atk'||stat==='def'||stat==='spd') && (creature.artifact==='all_stats_e'||creature.artifact2==='all_stats_e') && battleState?.omegaSurgeStack) {
+    val = Math.round(val * (1 + 0.03*battleState.omegaSurgeStack));
+  }
   return val;
 }
 
@@ -3663,7 +3668,6 @@ let invFullPending = null; // {type, qty} รอให้ผู้เล่น�
 const STAT_ART_MULT = {
   atk_shard:{atk:1.15}, def_shard:{def:1.15}, spd_shard:{spd:1.15}, hp_core:{hp:1.15},
   all_stats_r:{atk:1.15,def:1.15,spd:1.15,hp:1.15},
-  all_stats_e:{atk:1.25,def:1.25,spd:1.25,hp:1.25},
 };
 function applyArtifactStat(pet, key, revert=false) {
   const m = STAT_ART_MULT[key]; if(!m) return;
@@ -6202,6 +6206,12 @@ function doTurn(moveIdx) {
   const fk = creature.phase==='final' ? creature.baseFormKey : creature.formKey;
   const ff = creature.phase==='final' ? creature.finalKey : null;
   const bs = battleState;
+  // Omega Surge: ATK/DEF/SPD +3%/turn (max 20 stacks), read by getEffStat(). Increment BEFORE this
+  // turn's own pd/ed/playerFirst math runs (all of which call getEffStat) so turn 1 already benefits
+  // from the first stack instead of the buff only kicking in starting turn 2.
+  if(creature.artifact==='all_stats_e' || creature.artifact2==='all_stats_e') {
+    bs.omegaSurgeStack = Math.min(20, (bs.omegaSurgeStack||0)+1);
+  }
   // Snapshot HP for the pre-hit animation display BEFORE any passive/artifact/reflect dispatch below
   // has a chance to mutate creature.hp/enemy.hp. Reactive effects like Chain Strike, Reflect Coat, and
   // several Tier5 ongoing buffs apply their bonus damage synchronously, right here in this function,
@@ -6293,7 +6303,7 @@ function doTurn(moveIdx) {
   const minPd = Math.floor(getEffStat('atk') / 6);
   // Piercing Fang (artifact): ignores enemy DEF and all incoming damage-reduction effects below
   const playerIgnoresDef = artId==='piercing_fang' || artId2==='piercing_fang';
-  let pd = Math.max(minPd, Math.round((pm.dmg + getEffStat('atk')/3 + Math.random()*4) * mult * (crit?critMult:1)) - (playerIgnoresDef ? Math.floor(enemy.def/4) : Math.floor(enemy.def/2)));
+  let pd = Math.max(minPd, Math.round((pm.dmg + getEffStat('atk')*(sniperReady?1.5:1)/3 + Math.random()*4) * mult * (crit?critMult:1)) - (playerIgnoresDef ? Math.floor(enemy.def/4) : Math.floor(enemy.def/2)));
   const eArtId  = enemy.artifact  || null;
   const eArtId2 = enemy.artifact2 || null;
   const eHasIronWill = eArtId==='iron_will' || eArtId2==='iron_will';
@@ -6323,7 +6333,7 @@ function doTurn(moveIdx) {
   const eCritMult = (eArtId==='deathblow'||eArtId2==='deathblow') ? 2.0 : 1.5;
   // PIERCE (enemy passive) / Piercing Fang (player artifact): ignores DEF and all incoming damage-reduction effects below
   const enemyIgnoresDef = (enemy.passives||[]).includes('pierce_atk');
-  let ed = Math.max(1, Math.round((em.dmg + eCurseAtk/3 + Math.random()*4) / mult * ((eSniperReady||enemyCrit) ? eCritMult : 1)) - (enemyIgnoresDef ? 0 : Math.floor(getEffStat('def')/2)));
+  let ed = Math.max(1, Math.round((em.dmg + eCurseAtk*(eSniperReady?1.5:1)/3 + Math.random()*4) / mult * ((eSniperReady||enemyCrit) ? eCritMult : 1)) - (enemyIgnoresDef ? 0 : Math.floor(getEffStat('def')/2)));
 
   const passives = [];
   const startHp = creature.hp; // HP at start of turn (before any heals/modifications)
@@ -6402,7 +6412,7 @@ function doTurn(moveIdx) {
       { const ed2=Math.max(1,Math.round(ed)); ed+=ed2; edHitCount=2; passives.push({icon:'⚔',text:`[E] Double Attack +${ed2}→${ed}`}); }
     // chain_strike: WIN streak bonus on ed
     if(eHasA('chain_strike')) {
-      if(cmp==='lose') { eas.chainStreak=(eas.chainStreak||0)+1; const rate=eas.chainStreak>=3?2.00:eas.chainStreak>=2?1.30:0.65; const bonus=Math.round(ed*rate); if(!enemyStunned){creature.hp=Math.max(0,creature.hp-bonus); eReflectDmg+=bonus;} passives.push({icon:'💥',text:`[E] Chain Strike ×${eas.chainStreak} +${bonus}`}); }
+      if(cmp==='lose') { eas.chainStreak=(eas.chainStreak||0)+1; const rate=eas.chainStreak>=3?1.50:eas.chainStreak>=2?1.00:0.50; const bonus=Math.round(ed*rate); if(!enemyStunned){creature.hp=Math.max(0,creature.hp-bonus); eReflectDmg+=bonus;} passives.push({icon:'💥',text:`[E] Chain Strike ×${eas.chainStreak} +${bonus}`}); }
       else eas.chainStreak=0;
     }
     // death_mark: ed +75% when player HP < 30%
@@ -6421,7 +6431,7 @@ function doTurn(moveIdx) {
       else if(!playerReflectImmune) { const ref=Math.round(pd*0.50); eReflectDmg+=ref; creature.hp=Math.max(0,creature.hp-ref); passives.push({icon:'🎲',text:`[E] Wild Card Reflect ${ref}`}); }
     }
     // sniper_eye / crit log
-    if(eSniperReady) passives.push({icon:'👁',text:`[E] Sniper Eye ×${eCritMult}→${ed}`});
+    if(eSniperReady) passives.push({icon:'👁',text:`[E] Sniper Eye ATK+50%,×${eCritMult}→${ed}`});
     else if(enemyCrit && eCritBonus>0) passives.push({icon:'🎯',text:`[E] Crit Art ×${eCritMult}→${ed}`});
     // plague_scythe: +30% dmg vs an already-poisoned player
     if(eHasA('plague_scythe') && ed>0 && bs.playerPoisonTurns>0) { ed=Math.round(ed*1.50); passives.push({icon:'☣️',text:`[E] Plague Scythe vs Poisoned →${ed}`}); }
@@ -7133,7 +7143,8 @@ function doTurn(moveIdx) {
     if(artId==='moon_veil') { const h=Math.max(1,Math.round(creature.maxHp*0.05)); _pHeal(h,'🌙',`Moon Veil +${h}`); pd=Math.round(pd*1.10); ed=(enemyIgnoresDef?ed:Math.round(ed*0.90)); passives.push({icon:'🌙',text:`Moon Veil ATK/DEF/SPD+10%`}); }
     if(artId==='double_attack' && Math.random()<0.20) { const orig=pd; pd=Math.round(pd*2); pdHits=[orig,orig]; passives.push({icon:'⚔',text:`Double Attack ×2 → ${pd}`}); }
     if(artId==='execution' && startHp<creature.maxHp*0.20) { pd=Math.round(pd*3.00); passives.push({icon:'☠',text:`Execution +200% → ${pd}`}); }
-    if(artId==='chain_strike') { if(cmp==='win') { bs.chainStrikeStreak=(bs.chainStrikeStreak||0)+1; const rate=bs.chainStrikeStreak>=3?2.00:bs.chainStrikeStreak>=2?1.00:0.50; const bonus=Math.round(pd*rate); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike${bs.chainStrikeStreak>=3?' ×3':bs.chainStrikeStreak>=2?' ×2':''} ${Math.round(rate*100)}% → +${bonus}`}); } else { bs.chainStrikeStreak=0; } }
+    if(artId==='chain_strike') { if(cmp==='win') { bs.chainStrikeStreak=(bs.chainStrikeStreak||0)+1; const rate=bs.chainStrikeStreak>=3?1.50:bs.chainStrikeStreak>=2?1.00:0.50; const bonus=Math.round(pd*rate); enemy.hp=Math.max(0,enemy.hp-bonus); extraHits.push(bonus); passives.push({icon:'💥',text:`Chain Strike${bs.chainStrikeStreak>=3?' ×3':bs.chainStrikeStreak>=2?' ×2':''} ${Math.round(rate*100)}% → +${bonus}`}); } else { bs.chainStrikeStreak=0; } }
+    if(artId==='all_stats_e') { passives.push({icon:'🔷',text:`Omega Surge ×${bs.omegaSurgeStack} ATK/DEF/SPD+${3*bs.omegaSurgeStack}%`}); }
     if(artId==='crit_core' && crit && pd>0) { const h=Math.max(1,Math.round(creature.maxHp*0.05)); _pHeal(h,'🎯',`Crit Core Heal +${h}`); }
     if(artId==='deathblow') { /* crit mult handled above */ }
     if(artId==='wild_card' && Math.random()<0.25) {
